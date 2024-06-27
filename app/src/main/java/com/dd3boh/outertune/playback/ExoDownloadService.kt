@@ -9,6 +9,7 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import androidx.media3.exoplayer.scheduler.Scheduler
+import androidx.media3.exoplayer.workmanager.WorkManagerScheduler
 import com.dd3boh.outertune.R
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -35,7 +36,7 @@ class ExoDownloadService : DownloadService(
 
     override fun getDownloadManager() = downloadUtil.downloadManager
 
-    override fun getScheduler(): Scheduler = PlatformScheduler(this, JOB_ID)
+    override fun getScheduler(): Scheduler = WorkManagerScheduler(this, "$JOB_NAME ($JOB_ID)")
 
     override fun getForegroundNotification(downloads: MutableList<Download>, notMetRequirements: Int): Notification =
         if (downloads.isEmpty()) {
@@ -77,6 +78,7 @@ class ExoDownloadService : DownloadService(
         const val CHANNEL_ID = "download"
         const val NOTIFICATION_ID = 1
         const val JOB_ID = 1
+        const val JOB_NAME ="ot_download"
         const val REMOVE_ALL_PENDING_DOWNLOADS = "REMOVE_ALL_PENDING_DOWNLOADS"
     }
 
