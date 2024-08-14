@@ -48,6 +48,12 @@
 # @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 
+-dontwarn com.huaban.analysis.jieba.JiebaSegmenter
+# Keep Data data classes
+-keep class com.my.kizzy.data.remote.** { <fields>; }
+# Keep Gateway data classes
+-keep class com.my.kizzy.gateway.entities.** { <fields>; }
+
 -dontwarn javax.servlet.ServletContainerInitializer
 -dontwarn org.bouncycastle.jsse.BCSSLParameters
 -dontwarn org.bouncycastle.jsse.BCSSLSocket
