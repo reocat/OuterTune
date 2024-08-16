@@ -99,7 +99,7 @@
     <string name="add_to_playlist">Add to playlist</string>
     <string name="view_artist">View artist</string>
     <string name="view_album">View album</string>
-    <string name="refetch">Refetch</string>
+    <string name="refetch">Re-fetch</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="remove_from_history">Remove from history</string>
@@ -326,7 +326,6 @@
     <string name="options">Options</string>
     <string name="preview">Preview</string>
     <string name="login_failed">Login failed</string>
-    <string name="logout">Logout</string>
     <string name="enable_discord_rpc">Enable Rich Presense</string>
 
     <string name="about">About</string>
