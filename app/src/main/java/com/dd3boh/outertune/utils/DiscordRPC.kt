@@ -1,7 +1,7 @@
 package com.dd3boh.outertune.utils
 import android.content.Context
-import com.my.kizzy.data.rpc.KizzyRPC
-import com.my.kizzy.data.rpc.RpcImage
+import com.my.kizzy.rpc.KizzyRPC
+import com.my.kizzy.rpc.RpcImage
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.db.entities.Song
 class DiscordRPC(
@@ -22,6 +22,7 @@ class DiscordRPC(
                 "Visit InnerTune" to "https://github.com/z-huang/InnerTune"
             ),
             type = Type.LISTENING,
+            startTime = System.currentTimeMillis(),
             applicationId = APPLICATION_ID
         )
     }

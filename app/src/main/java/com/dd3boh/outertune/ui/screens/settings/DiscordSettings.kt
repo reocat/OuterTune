@@ -27,6 +27,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.my.kizzy.data.rpc.KizzyRPC
+import com.my.kizzy.rpc.KizzyRPC
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -112,8 +115,9 @@ fun DiscordSettings(
                     .padding(16.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.info),
+                    imageVector = Icons.Filled.Info,
                     contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(16.dp)
                 )
                 Text(
@@ -187,8 +191,8 @@ fun DiscordSettings(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = null,
                 )
             }
         },
@@ -213,7 +217,7 @@ fun RichPresence(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Listening to InnerTune",
+                text = buildString { append("Listening to ${stringResource(id = R.string.app_name)}") },
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.ExtraBold,
@@ -300,12 +304,15 @@ fun RichPresence(
             }
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/z-huang/InnerTune"))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/DD3Boh/OuterTune"))
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Visit InnerTune")
+                Text(buildString {
+                    append("Visit ")
+                    append(stringResource(id = R.string.app_name))
+                })
             }
         }
     }
