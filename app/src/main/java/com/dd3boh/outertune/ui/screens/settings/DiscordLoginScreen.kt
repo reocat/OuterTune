@@ -29,12 +29,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.DiscordNameKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
-import com.dd3boh.outertune.constants.DiscordUsernameKey
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,9 +44,9 @@ fun DiscordLoginScreen(
 ) {
     val scope = rememberCoroutineScope()
     var discordToken by rememberPreference(DiscordTokenKey, "")
-    var discordUsername by rememberPreference(DiscordUsernameKey, "")
-    var discordName by rememberPreference(DiscordNameKey, "")
+
     var webView: WebView? = null
+
     AndroidView(
         modifier = Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
@@ -82,7 +83,9 @@ fun DiscordLoginScreen(
                     @JavascriptInterface
                     fun onRetrieveToken(token: String) {
                         discordToken = token
-                        navController.navigateUp()
+                        scope.launch(Dispatchers.Main) {
+                            navController.navigateUp()
+                        }
                     }
                 }, "Android")
                 webView = this
