@@ -23,6 +23,13 @@ val DefaultOpenTabKey = stringPreferencesKey("defaultOpenTab")
 val DefaultOpenTabNewKey = stringPreferencesKey("defaultOpenTabNew")
 val SlimNavBarKey = booleanPreferencesKey("slimNavBar")
 
+val PlayerTextAlignmentKey = stringPreferencesKey("playerTextAlignment")
+val SliderStyleKey = stringPreferencesKey("sliderStyle")
+
+enum class SliderStyle {
+    DEFAULT, SQUIGGLY
+}
+
 /**
  * Content
  */

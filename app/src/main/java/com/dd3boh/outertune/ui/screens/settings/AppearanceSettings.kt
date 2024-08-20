@@ -12,6 +12,8 @@ package com.dd3boh.outertune.ui.screens.settings
 import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -42,18 +45,20 @@ import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.FolderCopy
 import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Reorder
 import androidx.compose.material.icons.rounded.Tab
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +66,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -77,11 +85,14 @@ import com.dd3boh.outertune.constants.NewInterfaceKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
+import com.dd3boh.outertune.constants.SliderStyle
+import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.constants.SwipeToQueueKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
+import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
@@ -93,6 +104,7 @@ import com.dd3boh.outertune.utils.decodeTabString
 import com.dd3boh.outertune.utils.encodeTabString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import me.saket.squiggles.SquigglySlider
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -124,6 +136,7 @@ fun AppearanceSettings(
     val (enabledTabs, onEnabledTabsChange) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME)
     val (defaultOpenTabNew, onDefaultOpenTabNewChange) = rememberEnumPreference(DefaultOpenTabNewKey, defaultValue = NavigationTabNew.HOME)
+    val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(SliderStyleKey, defaultValue = SliderStyle.DEFAULT)
     val (newInterfaceStyle, onNewInterfaceStyleChange) = rememberPreference(key = NewInterfaceKey, defaultValue = true)
     val (showLikedAndDownloadedPlaylist, onShowLikedAndDownloadedPlaylistChange) = rememberPreference(key = ShowLikedAndDownloadedPlaylist, defaultValue = true)
     val (swipe2Queue, onSwipe2QueueChange) = rememberPreference(SwipeToQueueKey, defaultValue = true)
@@ -176,6 +189,98 @@ fun AppearanceSettings(
 
     LaunchedEffect(showTabArrangement) {
         updateTabs()
+    }
+
+    var showSliderOptionDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (showSliderOptionDialog) {
+        DefaultDialog(
+            buttons = {
+                TextButton(
+                    onClick = { showSliderOptionDialog = false }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+            },
+            onDismiss = {
+                showSliderOptionDialog = false
+            }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, if (sliderStyle == SliderStyle.DEFAULT) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                        .clickable {
+                            onSliderStyleChange(SliderStyle.DEFAULT)
+                            showSliderOptionDialog = false
+                        }
+                        .padding(16.dp)
+                ) {
+                    var sliderValue by remember {
+                        mutableFloatStateOf(0.5f)
+                    }
+                    Slider(
+                        value = sliderValue,
+                        valueRange = 0f..1f,
+                        onValueChange = {
+                            sliderValue = it
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {}
+                                )
+                            }
+                    )
+
+                    Text(
+                        text = stringResource(R.string.default_),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, if (sliderStyle == SliderStyle.SQUIGGLY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                        .clickable {
+                            onSliderStyleChange(SliderStyle.SQUIGGLY)
+                            showSliderOptionDialog = false
+                        }
+                        .padding(16.dp)
+                ) {
+                    var sliderValue by remember {
+                        mutableFloatStateOf(0.5f)
+                    }
+                    SquigglySlider(
+                        value = sliderValue,
+                        valueRange = 0f..1f,
+                        onValueChange = {
+                            sliderValue = it
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        text = stringResource(R.string.squiggly),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
     }
 
     Column(
@@ -392,8 +497,36 @@ fun AppearanceSettings(
             checked = flatSubfolders,
             onCheckedChange = onFlatSubfoldersChange
         )
-    }
 
+        PreferenceGroupTitle(
+            title = stringResource(R.string.misc)
+        )
+
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.player_slider_style)) },
+            description = when (sliderStyle) {
+                SliderStyle.DEFAULT -> stringResource(R.string.default_)
+                SliderStyle.SQUIGGLY -> stringResource(R.string.squiggly)
+            },
+            icon = { Icon(painterResource(R.drawable.sliders), null) },
+            onClick = {
+                showSliderOptionDialog = true
+            }
+        )
+//        EnumListPreference(
+//            title = { Text(stringResource(R.string.slider_style)) },
+//            icon = { Icon(painterResource(R.drawable.sliders), null) },
+//            selectedValue = sliderStyle,
+//            onValueSelected = onSliderStyleChange,
+//            valueText = {
+//                when (it) {
+//                    SliderStyle.DEFAULT -> stringResource(R.string.default_)
+//                    SliderStyle.SQUIGGLY -> stringResource(R.string.squiggly)
+//                }
+//            }
+//        )
+    }
+    
     TopAppBar(
         title = { Text(stringResource(R.string.appearance)) },
         navigationIcon = {

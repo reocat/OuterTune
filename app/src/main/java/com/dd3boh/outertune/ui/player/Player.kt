@@ -107,6 +107,8 @@ import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.QueuePeekHeight
 import com.dd3boh.outertune.constants.ShowLyricsKey
+import com.dd3boh.outertune.constants.SliderStyle
+import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
@@ -131,6 +133,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import me.saket.squiggles.SquigglySlider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,6 +146,8 @@ fun BottomSheetPlayer(
     val playerConnection = LocalPlayerConnection.current ?: return
     val menuState = LocalMenuState.current
     val context = LocalContext.current
+
+    val sliderStyle by rememberEnumPreference(SliderStyleKey, SliderStyle.DEFAULT)
 
     val playbackState by playerConnection.playbackState.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -308,7 +313,11 @@ fun BottomSheetPlayer(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = PlayerHorizontalPadding, end = PlayerHorizontalPadding, bottom = 16.dp)
+                        .padding(
+                            start = PlayerHorizontalPadding,
+                            end = PlayerHorizontalPadding,
+                            bottom = 16.dp
+                        )
                 ) {
                     actionButtons()
                 }
@@ -353,9 +362,9 @@ fun BottomSheetPlayer(
                                             initialDelayMillis = 5000
                                         )
                                         .clickable(enabled = artist.id != null) {
-                                        navController.navigate("artist/${artist.id}")
-                                        state.collapseSoft()
-                                    }
+                                            navController.navigate("artist/${artist.id}")
+                                            state.collapseSoft()
+                                        }
                                 )
 
                                 if (index != mediaMetadata.artists.lastIndex) {
@@ -376,31 +385,59 @@ fun BottomSheetPlayer(
                 }
             }
 
-            Slider(
-                value = (sliderPosition ?: position).toFloat(),
-                valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                onValueChange = {
-                    sliderPosition = it.toLong()
-                    // slider too granular for this haptic to feel right
+            when (sliderStyle) {
+                SliderStyle.DEFAULT -> {
+                    Slider(
+                        value = (sliderPosition ?: position).toFloat(),
+                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                        onValueChange = {
+                            sliderPosition = it.toLong()
+                            // slider too granular for this haptic to feel right
 //                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-                },
-                onValueChangeFinished = {
-                    sliderPosition?.let {
-                        playerConnection.player.seekTo(it)
-                        position = it
-                    }
-                    sliderPosition = null
-                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                },
-                thumb = { Spacer(modifier = Modifier.size(0.dp)) },
-                track = { sliderState ->
-                    PlayerSliderTrack(
-                        sliderState = sliderState,
-                        colors = SliderDefaults.colors()
+                        },
+                        onValueChangeFinished = {
+                            sliderPosition?.let {
+                                playerConnection.player.seekTo(it)
+                                position = it
+                            }
+                            sliderPosition = null
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        },
+                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                        track = { sliderState ->
+                            PlayerSliderTrack(
+                                sliderState = sliderState,
+                                colors = SliderDefaults.colors()
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
                     )
-                },
-                modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
-            )
+                }
+                SliderStyle.SQUIGGLY -> {
+                    SquigglySlider(
+                        value = (sliderPosition ?: position).toFloat(),
+                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                        onValueChange = {
+                            sliderPosition = it.toLong()
+                            // slider too granular for this haptic to feel right
+//                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        },
+                        onValueChangeFinished = {
+                            sliderPosition?.let {
+                                playerConnection.player.seekTo(it)
+                                position = it
+                            }
+                            sliderPosition = null
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        },
+                        squigglesSpec = SquigglySlider.SquigglesSpec(
+                            amplitude = if (isPlaying) 2.dp else 0.dp,
+                            strokeWidth = 4.dp,
+                        ),
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                    )
+                }
+            }
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
