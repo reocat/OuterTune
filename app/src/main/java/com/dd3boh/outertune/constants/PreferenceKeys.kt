@@ -37,7 +37,7 @@ val ProxyTypeKey = stringPreferencesKey("proxyType")
  * Discord Integration
  */
 val DiscordTokenKey = stringPreferencesKey("discordToken")
-val DiscordInfoDismissedKey = booleanPreferencesKey("discordInfoDismissed")
+val DiscordInfoDismissedKey = booleanPreferencesKey("discordInfoDismissed_v2")
 val DiscordUsernameKey = stringPreferencesKey("discordUsername")
 val DiscordNameKey = stringPreferencesKey("discordName")
 val EnableDiscordRPCKey = booleanPreferencesKey("discordRPCEnable")

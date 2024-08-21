@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material.icons.Icons
@@ -125,7 +126,7 @@ fun DiscordSettings(
                     textAlign = TextAlign.Start,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
-                OutlinedButton(
+                TextButton(
                     onClick = {
                         infoDismissed = true
                     },
