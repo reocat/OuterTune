@@ -70,16 +70,16 @@ interface AlbumsDao : ArtistsDao {
 
     @Transaction
     @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount
+        SELECT *, count(song.dateDownload) downloadCount
         FROM album
             JOIN song ON album.id = song.albumId
             JOIN event ON song.id = event.songId
         WHERE event.timestamp > :fromTimeStamp
         GROUP BY album.id
         ORDER BY SUM(event.playTime) DESC
-        LIMIT :limit;
+        LIMIT :limit OFFSET :offset;
     """)
-    fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6): Flow<List<Album>>
+    fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Album>>
 
     @Transaction
     @RawQuery(observedEntities = [AlbumEntity::class])
@@ -121,6 +121,51 @@ interface AlbumsDao : ArtistsDao {
 
     fun albumsInLibraryAsc() = albums(AlbumFilter.LIBRARY, AlbumSortType.CREATE_DATE, false)
     fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
+   
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM (SELECT n.songId      AS eid,
+                     SUM(playTime) AS oldPlayTime,
+                     newPlayTime
+              FROM event
+                       JOIN
+                   (SELECT songId, SUM(playTime) AS newPlayTime
+                    FROM event
+                    WHERE timestamp > (:now - 86400000 * 30 * 1)
+                    GROUP BY songId
+                    ORDER BY newPlayTime) as n
+                   ON event.songId = n.songId
+              WHERE timestamp < (:now - 86400000 * 30 * 1)
+              GROUP BY n.songId
+              ORDER BY oldPlayTime) AS t
+                 JOIN song on song.id = t.eid
+        WHERE 0.2 * t.oldPlayTime > t.newPlayTime
+        LIMIT 100
+    """
+    )
+    fun forgottenFavorites(now: Long = System.currentTimeMillis()): Flow<List<Song>>
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM event
+                 JOIN
+             song ON event.songId = song.id
+        WHERE event.timestamp > (:now - 86400000 * 7 * 2)
+        GROUP BY song.albumId
+        HAVING song.albumId IS NOT NULL
+        ORDER BY sum(event.playTime) DESC
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun recommendedAlbum(
+        now: Long = System.currentTimeMillis(),
+        limit: Int = 5,
+        offset: Int = 0,
+    ): Flow<List<Song>>
     // endregion
 
     // region Inserts

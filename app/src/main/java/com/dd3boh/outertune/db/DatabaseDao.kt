@@ -95,6 +95,21 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
     @Query("SELECT COUNT(1) FROM related_song_map WHERE songId = :songId LIMIT 1")
     fun hasRelatedSongs(songId: String): Boolean
 
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM (SELECT *
+              FROM related_song_map
+              GROUP BY relatedSongId) map
+                 JOIN
+             song
+             ON song.id = map.relatedSongId
+        WHERE songId = :songId
+        """
+    )
+    fun relatedSongs(songId: String): List<Song>
+
     @Query("SELECT * FROM genre WHERE title = :name")
     fun genreByName(name: String): GenreEntity?
 

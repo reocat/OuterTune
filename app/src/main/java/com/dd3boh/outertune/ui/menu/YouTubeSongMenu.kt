@@ -230,7 +230,7 @@ fun YouTubeSongMenu(
             icon = Icons.Rounded.Radio,
             title = R.string.start_radio
         ) {
-            playerConnection.playQueue(YouTubeQueue(WatchEndpoint(videoId = song.id), song.toMediaMetadata()))
+            playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
             onDismiss()
         }
         GridMenuItem(

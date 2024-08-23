@@ -63,7 +63,6 @@ import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
-import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.flow.drop
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -234,10 +233,7 @@ fun OnlineSearchScreen(
                                         )
                                     } else {
                                         playerConnection.playQueue(
-                                            YouTubeQueue(
-                                                WatchEndpoint(videoId = item.id),
-                                                item.toMediaMetadata(),
-                                            ),
+                                            YouTubeQueue.radio(item.toMediaMetadata(),),
                                             replace = true,
                                             title = "Search: $query",
                                         )
