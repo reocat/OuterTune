@@ -21,6 +21,12 @@ val FlatSubfoldersKey = booleanPreferencesKey("flatSubfolders")
 val EnabledTabsKey = stringPreferencesKey("enabledTabs")
 val DefaultOpenTabKey = stringPreferencesKey("defaultOpenTab")
 val DefaultOpenTabNewKey = stringPreferencesKey("defaultOpenTabNew")
+
+val GridCellSizeKey = stringPreferencesKey("gridCellSize")
+enum class GridCellSize {
+    SMALL, BIG
+}
+
 val SlimNavBarKey = booleanPreferencesKey("slimNavBar")
 
 val PlayerTextAlignmentKey = stringPreferencesKey("playerTextAlignment")

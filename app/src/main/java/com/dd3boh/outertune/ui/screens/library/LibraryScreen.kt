@@ -59,6 +59,8 @@ import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.CONTENT_TYPE_LIST
 import com.dd3boh.outertune.constants.CONTENT_TYPE_PLAYLIST
 import com.dd3boh.outertune.constants.EnabledTabsKey
+import com.dd3boh.outertune.constants.GridCellSize
+import com.dd3boh.outertune.constants.GridCellSizeKey
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.LibraryFilter
 import com.dd3boh.outertune.constants.LibraryFilterKey
@@ -68,6 +70,7 @@ import com.dd3boh.outertune.constants.LibrarySortTypeKey
 import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
+import com.dd3boh.outertune.constants.SmallGridThumbnailHeight
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.Playlist
@@ -108,6 +111,7 @@ fun LibraryScreen(
     var viewType by rememberEnumPreference(LibraryViewTypeKey, LibraryViewType.GRID)
     val enabledTabs by rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     var filter by rememberEnumPreference(LibraryFilterKey, LibraryFilter.ALL)
+    val gridCellSize by rememberEnumPreference(GridCellSizeKey, GridCellSize.SMALL)
 
     val (sortType, onSortTypeChange) = rememberEnumPreference(LibrarySortTypeKey, LibrarySortType.CREATE_DATE)
     val (sortDescending, onSortDescendingChange) = rememberPreference(LibrarySortDescendingKey, true)
@@ -340,46 +344,44 @@ fun LibraryScreen(
                                 }
                             }
 
-                            allItems.let { allItems ->
-                                items(
-                                    items = allItems.distinctBy { it.hashCode() },
-                                    key = { it.hashCode() },
-                                    contentType = { CONTENT_TYPE_LIST }
-                                ) { item ->
-                                    when (item) {
-                                        is Album -> {
-                                            LibraryAlbumListItem(
-                                                navController = navController,
-                                                menuState = menuState,
-                                                album = item,
-                                                isActive = item.id == mediaMetadata?.album?.id,
-                                                isPlaying = isPlaying,
-                                                modifier = Modifier.animateItem()
-                                            )
-                                        }
-
-                                        is Artist -> {
-                                            LibraryArtistListItem(
-                                                navController = navController,
-                                                menuState = menuState,
-                                                coroutineScope = coroutineScope,
-                                                modifier = Modifier.animateItem(),
-                                                artist = item
-                                            )
-                                        }
-
-                                        is Playlist -> {
-                                            LibraryPlaylistListItem(
-                                                navController = navController,
-                                                menuState = menuState,
-                                                coroutineScope = coroutineScope,
-                                                playlist = item,
-                                                modifier = Modifier.animateItem()
-                                            )
-                                        }
-
-                                        else -> {}
+                            items(
+                                items = allItems.distinctBy { it.hashCode() },
+                                key = { it.hashCode() },
+                                contentType = { CONTENT_TYPE_LIST }
+                            ) { item ->
+                                when (item) {
+                                    is Album -> {
+                                        LibraryAlbumListItem(
+                                            navController = navController,
+                                            menuState = menuState,
+                                            album = item,
+                                            isActive = item.id == mediaMetadata?.album?.id,
+                                            isPlaying = isPlaying,
+                                            modifier = Modifier.animateItem()
+                                        )
                                     }
+
+                                    is Artist -> {
+                                        LibraryArtistListItem(
+                                            navController = navController,
+                                            menuState = menuState,
+                                            coroutineScope = coroutineScope,
+                                            modifier = Modifier.animateItem(),
+                                            artist = item
+                                        )
+                                    }
+
+                                    is Playlist -> {
+                                        LibraryPlaylistListItem(
+                                            navController = navController,
+                                            menuState = menuState,
+                                            coroutineScope = coroutineScope,
+                                            playlist = item,
+                                            modifier = Modifier.animateItem()
+                                        )
+                                    }
+
+                                    else -> {}
                                 }
                             }
                         }
@@ -388,7 +390,12 @@ fun LibraryScreen(
                     LibraryViewType.GRID -> {
                         LazyVerticalGrid(
                             state = lazyGridState,
-                            columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
+                            columns = GridCells.Adaptive(
+                                minSize = when (gridCellSize) {
+                                    GridCellSize.SMALL -> SmallGridThumbnailHeight
+                                    GridCellSize.BIG -> GridThumbnailHeight
+                                } + 24.dp
+                            ),
                             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
                         ) {
                             item(
@@ -443,47 +450,45 @@ fun LibraryScreen(
                                 }
                             }
 
-                            allItems.let { allItems ->
-                                items(
-                                    items = allItems.distinctBy { it.hashCode() },
-                                    key = { it.hashCode() },
-                                    contentType = { CONTENT_TYPE_LIST }
-                                ) { item ->
-                                    when (item) {
-                                        is Album -> {
-                                            LibraryAlbumGridItem(
-                                                navController = navController,
-                                                menuState = menuState,
-                                                coroutineScope = coroutineScope,
-                                                album = item,
-                                                isActive = item.id == mediaMetadata?.album?.id,
-                                                isPlaying = isPlaying,
-                                                modifier = Modifier.animateItem()
-                                            )
-                                        }
-
-                                        is Artist -> {
-                                            LibraryArtistGridItem(
-                                                navController = navController,
-                                                menuState = menuState,
-                                                coroutineScope = coroutineScope,
-                                                modifier = Modifier.animateItem(),
-                                                artist = item
-                                            )
-                                        }
-
-                                        is Playlist -> {
-                                            LibraryPlaylistGridItem(
-                                                navController = navController,
-                                                menuState = menuState,
-                                                coroutineScope = coroutineScope,
-                                                playlist = item,
-                                                modifier = Modifier.animateItem()
-                                            )
-                                        }
-
-                                        else -> {}
+                            items(
+                                items = allItems.distinctBy { it.hashCode() },
+                                key = { it.hashCode() },
+                                contentType = { CONTENT_TYPE_LIST }
+                            ) { item ->
+                                when (item) {
+                                    is Album -> {
+                                        LibraryAlbumGridItem(
+                                            navController = navController,
+                                            menuState = menuState,
+                                            coroutineScope = coroutineScope,
+                                            album = item,
+                                            isActive = item.id == mediaMetadata?.album?.id,
+                                            isPlaying = isPlaying,
+                                            modifier = Modifier.animateItem()
+                                        )
                                     }
+
+                                    is Artist -> {
+                                        LibraryArtistGridItem(
+                                            navController = navController,
+                                            menuState = menuState,
+                                            coroutineScope = coroutineScope,
+                                            modifier = Modifier.animateItem(),
+                                            artist = item
+                                        )
+                                    }
+
+                                    is Playlist -> {
+                                        LibraryPlaylistGridItem(
+                                            navController = navController,
+                                            menuState = menuState,
+                                            coroutineScope = coroutineScope,
+                                            playlist = item,
+                                            modifier = Modifier.animateItem()
+                                        )
+                                    }
+
+                                    else -> {}
                                 }
                             }
                         }
