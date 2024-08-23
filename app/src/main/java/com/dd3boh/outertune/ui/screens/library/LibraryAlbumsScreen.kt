@@ -49,9 +49,12 @@ import com.dd3boh.outertune.constants.AlbumSortTypeKey
 import com.dd3boh.outertune.constants.AlbumViewTypeKey
 import com.dd3boh.outertune.constants.CONTENT_TYPE_ALBUM
 import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
+import com.dd3boh.outertune.constants.GridCellSize
+import com.dd3boh.outertune.constants.GridCellSizeKey
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
+import com.dd3boh.outertune.constants.SmallGridThumbnailHeight
 import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
@@ -78,6 +81,7 @@ fun LibraryAlbumsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val gridCellSize by rememberEnumPreference(GridCellSizeKey, GridCellSize.SMALL)
     var filter by rememberEnumPreference(AlbumFilterKey, AlbumFilter.LIKED)
     libraryFilterContent?.let { filter = AlbumFilter.LIKED }
 
@@ -233,7 +237,12 @@ fun LibraryAlbumsScreen(
             LibraryViewType.GRID ->
                 LazyVerticalGrid(
                     state = lazyGridState,
-                    columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
+                    columns = GridCells.Adaptive(
+                        minSize = when (gridCellSize) {
+                            GridCellSize.SMALL -> SmallGridThumbnailHeight
+                            GridCellSize.BIG -> GridThumbnailHeight
+                        } + 24.dp
+                    ),
                     contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
                 ) {
                     item(
