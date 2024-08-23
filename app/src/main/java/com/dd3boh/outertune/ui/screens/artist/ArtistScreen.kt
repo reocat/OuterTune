@@ -105,7 +105,6 @@ import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
-import com.zionhuang.innertube.models.WatchEndpoint
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -386,10 +385,7 @@ fun ArtistScreen(
                                                 onClick = {
                                                     when (item) {
                                                         is SongItem -> playerConnection.playQueue(
-                                                            YouTubeQueue(
-                                                                WatchEndpoint(videoId = item.id),
-                                                                item.toMediaMetadata()
-                                                            ),
+                                                            YouTubeQueue.radio(item.toMediaMetadata()),
                                                             title = artistPage.artist.title
                                                         )
 
