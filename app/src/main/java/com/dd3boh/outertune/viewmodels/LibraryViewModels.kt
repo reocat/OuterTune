@@ -110,14 +110,14 @@ class LibrarySongsViewModel @Inject constructor(
         }
     }
 
-    private fun getSyncedSongs(context: Context, database: MusicDatabase): StateFlow<List<Song>> {
+    private fun getSyncedSongs(context: Context, database: MusicDatabase): StateFlow<List<Song>?> {
 
         return context.dataStore.data
                 .map {
                     Triple(
                             it[SongFilterKey].toEnum(SongFilter.LIKED),
                             it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE),
-                            (it[SongSortDescendingKey] ?: true)
+                            (it[SongSortDescendingKey] != false)
                     )
                 }
                 .distinctUntilChanged()
@@ -127,7 +127,7 @@ class LibrarySongsViewModel @Inject constructor(
                         SongFilter.LIKED -> database.likedSongs(sortType, descending)
                         SongFilter.DOWNLOADED -> database.downloadSongs(sortType, descending)
                     }
-                }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+                }.stateIn(viewModelScope, SharingStarted.Lazily, null)
     }
 }
 
@@ -151,7 +151,7 @@ class LibraryArtistsViewModel @Inject constructor(
         .flatMapLatest { (filter, sortType, descending) ->
             database.artists(filter, sortType, descending)
         }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     fun sync() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteArtists() } }
 
@@ -159,11 +159,11 @@ class LibraryArtistsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             allArtists.collect { artists ->
                 artists
-                    .map { it.artist }
-                    .filter {
+                    ?.map { it.artist }
+                    ?.filter {
                         it.thumbnailUrl == null || Duration.between(it.lastUpdateTime, LocalDateTime.now()) > Duration.ofDays(10)
                     }
-                    .forEach { artist ->
+                    ?.forEach { artist ->
                         YouTube.artist(artist.id).onSuccess { artistPage ->
                             database.query {
                                 update(artist, artistPage)
@@ -195,16 +195,17 @@ class LibraryAlbumsViewModel @Inject constructor(
         .flatMapLatest { (filter, sortType, descending) ->
             database.albums(filter, sortType, descending)
         }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     fun sync() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteAlbums() } }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             allAlbums.collect { albums ->
-                albums.filter {
+                albums
+                    ?.filter {
                     it.album.songCount == 0
-                }.forEach { album ->
+                }?.forEach { album ->
                     YouTube.album(album.id).onSuccess { albumPage ->
                         database.query {
                             update(album.album, albumPage)
@@ -243,7 +244,7 @@ class LibraryPlaylistsViewModel @Inject constructor(
         .flatMapLatest { (filter, sortType, descending) ->
             database.playlists(filter, sortType, descending)
         }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     fun sync() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemotePlaylists() } }
 }
@@ -262,19 +263,19 @@ class LibraryViewModel @Inject constructor(
     val isSyncingRemoteArtists = syncUtils.isSyncingRemoteArtists
     val isSyncingRemotePlaylists = syncUtils.isSyncingRemotePlaylists
 
-    var artists = database.artistsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    var albums = database.albumsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    var playlists = database.playlistInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    var artists = database.artistsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
+    var albums = database.albumsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
+    var playlists = database.playlistInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val allItems = context.dataStore.data
         .map {
-            it[LibrarySortTypeKey].toEnum(LibrarySortType.CREATE_DATE) to (it[LibrarySortDescendingKey]?: true)
+            it[LibrarySortTypeKey].toEnum(LibrarySortType.CREATE_DATE) to (it[LibrarySortDescendingKey] != false)
         }
         .distinctUntilChanged()
         .flatMapLatest { (sortType, descending) ->
             combine(artists, albums, playlists) { artists, albums, playlists ->
-                val items = artists + albums + playlists
-                items.sortedBy { item ->
+                val items = artists?.plus(albums)?.plus(playlists)
+                items?.sortedBy { item ->
                     when (sortType) {
                         LibrarySortType.CREATE_DATE -> when (item) {
                             is Album -> item.album.bookmarkedAt
@@ -290,10 +291,10 @@ class LibraryViewModel @Inject constructor(
                             else -> ""
                         }
                     }.toString()
-                }.let { if (descending) it.reversed() else it }
+                }.let { if (descending) it?.reversed() else it }
             }
         }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 }
 
 @HiltViewModel
