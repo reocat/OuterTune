@@ -372,7 +372,8 @@ fun LocalPlaylistScreen(
                     item {
                         EmptyPlaceholder(
                             icon = Icons.Rounded.MusicNote,
-                            text = stringResource(R.string.playlist_is_empty)
+                            text = stringResource(R.string.playlist_is_empty),
+                            modifier = Modifier.animateItem()
                         )
                     }
                 } else {
