@@ -50,7 +50,9 @@ import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
+import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.ChipsRow
+import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.LibraryArtistGridItem
 import com.dd3boh.outertune.ui.component.LibraryArtistListItem
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -58,7 +60,6 @@ import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryArtistsViewModel
-import com.dd3boh.outertune.extensions.isSyncEnabled
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -155,11 +156,13 @@ fun LibraryArtistsScreen(
 
             Spacer(Modifier.weight(1f))
 
-            Text(
-                text = pluralStringResource(R.plurals.n_artist, artists.size, artists.size),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
+            artists?.let { artists ->
+                Text(
+                    text = pluralStringResource(R.plurals.n_artist, artists.size, artists.size),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 
@@ -186,18 +189,30 @@ fun LibraryArtistsScreen(
                         headerContent()
                     }
 
-                    items(
-                        items = artists,
-                        key = { it.id },
-                        contentType = { CONTENT_TYPE_ARTIST }
-                    ) { artist ->
-                        LibraryArtistListItem(
-                            navController = navController,
-                            menuState = menuState,
-                            coroutineScope = coroutineScope,
-                            modifier = Modifier.animateItem(),
-                            artist = artist
-                        )
+                    artists?.let { artists ->
+                        if (artists.isEmpty()) {
+                            item {
+                                EmptyPlaceholder(
+                                    icon = R.drawable.artist,
+                                    text = stringResource(R.string.library_artist_empty),
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        }
+
+                        items(
+                            items = artists,
+                            key = { it.id },
+                            contentType = { CONTENT_TYPE_ARTIST }
+                        ) { artist ->
+                            LibraryArtistListItem(
+                                navController = navController,
+                                menuState = menuState,
+                                coroutineScope = coroutineScope,
+                                modifier = Modifier.animateItem(),
+                                artist = artist
+                            )
+                        }
                     }
                 }
 
@@ -223,18 +238,29 @@ fun LibraryArtistsScreen(
                         headerContent()
                     }
 
-                    items(
-                        items = artists,
-                        key = { it.id },
-                        contentType = { CONTENT_TYPE_ARTIST }
-                    ) { artist ->
-                        LibraryArtistGridItem(
-                            navController = navController,
-                            menuState = menuState,
-                            coroutineScope = coroutineScope,
-                            modifier = Modifier.animateItem(),
-                            artist = artist
-                        )
+                    artists?.let { artists ->
+                        if (artists.isEmpty()) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                EmptyPlaceholder(
+                                    icon = R.drawable.artist,
+                                    text = stringResource(R.string.library_artist_empty),
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        }
+                        items(
+                            items = artists,
+                            key = { it.id },
+                            contentType = { CONTENT_TYPE_ARTIST }
+                        ) { artist ->
+                            LibraryArtistGridItem(
+                                navController = navController,
+                                menuState = menuState,
+                                coroutineScope = coroutineScope,
+                                modifier = Modifier.animateItem(),
+                                artist = artist
+                            )
+                        }
                     }
                 }
         }
