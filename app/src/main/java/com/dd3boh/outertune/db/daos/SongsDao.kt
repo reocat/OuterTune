@@ -287,7 +287,7 @@ interface SongsDao {
         }
     }
 
-    @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId")
+    @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId AND inLibrary IS NULL")
     fun inLibrary(songId: String, inLibrary: LocalDateTime?)
 
     @Query("UPDATE song SET liked = 0, likedDate = null WHERE id = :songId")
