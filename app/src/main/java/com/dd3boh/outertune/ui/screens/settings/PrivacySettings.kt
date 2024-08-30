@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
+import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.rounded.ClearAll
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Person
@@ -33,6 +34,7 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.DisableScreenshotKey
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.constants.UseLoginForBrowse
@@ -55,6 +57,7 @@ fun PrivacySettings(
     val (pauseListenHistory, onPauseListenHistoryChange) = rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(key = PauseSearchHistoryKey, defaultValue = false)
     val (useLoginForBrowse, onUseLoginForBrowseChange) = rememberPreference(key = UseLoginForBrowse, defaultValue = false)
+    val (disableScreenshot, onDisableScreenshotChange) = rememberPreference(key = DisableScreenshotKey, defaultValue = false)
 
     var showClearListenHistoryDialog by remember {
         mutableStateOf(false)
@@ -133,6 +136,10 @@ fun PrivacySettings(
     ) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
+        PreferenceGroupTitle(
+            title = stringResource(R.string.listen_history)
+        )
+        
         SwitchPreference(
             title = { Text(stringResource(R.string.pause_listen_history)) },
             icon = { Icon(Icons.Rounded.History, null) },
@@ -156,6 +163,17 @@ fun PrivacySettings(
             onClick = { showClearSearchHistoryDialog = true }
         )
 
+        PreferenceGroupTitle(
+            title = stringResource(R.string.misc)
+        )
+        SwitchPreference(
+            title = { Text(stringResource(R.string.disable_screenshot)) },
+            description = stringResource(R.string.disable_screenshot_desc),
+            icon = { Icon(Icons.Default.Screenshot, null) },
+            checked = disableScreenshot,
+            onCheckedChange = onDisableScreenshotChange
+        )
+        
         PreferenceGroupTitle(
             title = stringResource(R.string.account)
         )
