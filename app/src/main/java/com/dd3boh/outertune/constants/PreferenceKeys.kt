@@ -87,6 +87,7 @@ val PauseSearchHistoryKey = booleanPreferencesKey("pauseSearchHistory")
 val EnableKugouKey = booleanPreferencesKey("enableKugou")
 val EnableLrcLibKey = booleanPreferencesKey("enableLrcLib")
 val UseLoginForBrowse = booleanPreferencesKey("useLoginForBrowse")
+val DisableScreenshotKey = booleanPreferencesKey("disableScreenshot")
 
 /**
  * Local media scanner
