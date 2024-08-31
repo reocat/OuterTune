@@ -114,11 +114,8 @@ import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorder
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -209,24 +206,45 @@ fun Queue(
         val detachedQueueListState = rememberLazyListState()
 
         // for main songs list
+        val lazySongsListState = rememberLazyListState()
+        var dragInfo by remember {
+            mutableStateOf<Pair<Int, Int>?>(null)
+        }
         val reorderableState = rememberReorderableLazyListState(
-            onMove = { from, to ->
-                mutableQueueWindows.move(from.index, to.index)
-            },
-            onDragEnd = { fromIndex, toIndex ->
-                if (fromIndex == toIndex) {
-                    return@rememberReorderableLazyListState
-                }
-
-                queueBoard.moveSong(
-                    fromIndex,
-                    toIndex,
-                    playerConnection.player.currentMediaItemIndex,
-                    playerConnection.service
+            lazyListState = lazySongsListState,
+            scrollThresholdPadding = WindowInsets.systemBars.add(
+                WindowInsets(
+                    top = ListItemHeight,
+                    bottom = ListItemHeight
                 )
-                playerConnection.player.moveMediaItem(fromIndex, toIndex)
+            ).asPaddingValues()
+        ) { from, to ->
+            val currentDragInfo = dragInfo
+            dragInfo = if (currentDragInfo == null) {
+                from.index to to.index
+            } else {
+                currentDragInfo.first to to.index
             }
-        )
+            mutableQueueWindows.move(from.index, to.index)
+        }
+        LaunchedEffect(reorderableState.isAnyItemDragging) {
+            if (!reorderableState.isAnyItemDragging) {
+                dragInfo?.let { (from, to) ->
+                    if (from == to) {
+                        return@LaunchedEffect
+                    }
+
+                    queueBoard.moveSong(
+                        from,
+                        to,
+                        playerConnection.player.currentMediaItemIndex,
+                        playerConnection.service
+                    )
+                    playerConnection.player.moveMediaItem(from, to)
+                    dragInfo = null
+                }
+            }
+        }
 
         /**
          * This reloads the queue in the UI. This exists because for some stupid reason reassigning a remember-ed var
@@ -248,22 +266,43 @@ fun Queue(
             playingQueue = queueBoard.getMasterIndex()
             coroutineScope.launch {
                 delay(300) // needed for scrolling to queue when switching to new queue
-                reorderableState.listState.animateScrollToItem(playerConnection.player.currentMediaItemIndex)
+                lazySongsListState.animateScrollToItem(playerConnection.player.currentMediaItemIndex)
             }
         }
 
         // for multiqueue
+        val lazyQueuesListState = rememberLazyListState()
+        var dragInfoEx by remember {
+            mutableStateOf<Pair<Int, Int>?>(null)
+        }
         val reorderableStateEx = rememberReorderableLazyListState(
-            onMove = { from, to ->
-                mutableQueues.move(from.index, to.index)
-            },
-            onDragEnd = { fromIndex, toIndex ->
-                queueBoard.move(fromIndex, toIndex, playerConnection.service)
+            lazyListState = lazyQueuesListState,
+            scrollThresholdPadding = WindowInsets.systemBars.add(
+                WindowInsets(
+                    top = ListItemHeight,
+                    bottom = ListItemHeight
+                )
+            ).asPaddingValues()
+        ) { from, to ->
+            val currentDragInfo = dragInfoEx
+            dragInfoEx = if (currentDragInfo == null) {
+                from.index to to.index
+            } else {
+                currentDragInfo.first to to.index
+            }
+            mutableQueues.move(from.index, to.index)
+        }
+        LaunchedEffect(reorderableStateEx.isAnyItemDragging) {
+            if (!reorderableStateEx.isAnyItemDragging) {
+                dragInfoEx?.let { (from, to) ->
+                    queueBoard.move(from, to, playerConnection.service)
                 coroutineScope.launch {
                     updateQueues()
                 }
+                    dragInfoEx = null
+                }
             }
-        )
+        }
 
         LaunchedEffect(queueWindows) { // add to queue windows
             mutableQueueWindows.apply {
@@ -280,12 +319,12 @@ fun Queue(
 
         LaunchedEffect(mutableQueueWindows) { // scroll to song
             if (currentWindowIndex != -1)
-                reorderableState.listState.scrollToItem(currentWindowIndex)
+                lazySongsListState.scrollToItem(currentWindowIndex)
         }
 
         LaunchedEffect(mutableQueues) { // scroll to queue
             if (currentWindowIndex != -1)
-                reorderableStateEx.listState.scrollToItem(playingQueue)
+                lazyQueuesListState.scrollToItem(playingQueue)
         }
 
         LaunchedEffect(Unit) {
@@ -340,17 +379,15 @@ fun Queue(
             }
 
             LazyColumn(
-                state = reorderableStateEx.listState,
-                modifier = Modifier
-                    .reorderable(reorderableStateEx)
-                    .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                state = lazyQueuesListState,
+                modifier = Modifier.nestedScroll(state.preUpPostDownNestedScrollConnection)
             ) {
                 itemsIndexed(
                     items = mutableQueues,
                     key = { _, item -> item.hashCode() }
                 ) { index, mq ->
                     ReorderableItem(
-                        reorderableState = reorderableStateEx,
+                        state = reorderableStateEx,
                         key = mq.hashCode()
                     ) {
                         Row( // wrapper
@@ -375,7 +412,7 @@ fun Queue(
                                             detachedQueue.addAll(mq.getCurrentQueueShuffled())
                                             detachedQueueIndex = index
                                             detachedQueuePos = mq.queuePos
-                                            detachedQueueTitle = mq.title ?: ""
+                                            detachedQueueTitle = mq.title
                                         }
 
                                         updateQueues()
@@ -416,7 +453,7 @@ fun Queue(
                                                     onTerminate.invoke()
                                                 } else {
                                                     coroutineScope.launch {
-                                                        reorderableState.listState.animateScrollToItem(
+                                                        lazyQueuesListState.animateScrollToItem(
                                                             playerConnection.player.currentMediaItemIndex
                                                         )
                                                     }
@@ -436,7 +473,7 @@ fun Queue(
                                     Icon(
                                         imageVector = Icons.Rounded.DragHandle,
                                         contentDescription = null,
-                                        modifier = Modifier.detectReorder(reorderableStateEx)
+                                        modifier = Modifier.draggableHandle()
                                     )
                                 }
                             }
@@ -534,11 +571,10 @@ fun Queue(
                 }
             } else { // actual playing queue
                 LazyColumn(
-                    state = reorderableState.listState,
+                    state = lazySongsListState,
                     contentPadding = if (multiqueueExpand && !landscape) PaddingValues(0.dp)
                                      else PaddingValues(0.dp, 16.dp), // header may cut off first song
                     modifier = Modifier
-                        .reorderable(reorderableState)
                         .nestedScroll(state.preUpPostDownNestedScrollConnection)
                 ) {
                     itemsIndexed(
@@ -546,7 +582,7 @@ fun Queue(
                         key = { _, item -> item.uid.hashCode() }
                     ) { index, window ->
                         ReorderableItem(
-                            reorderableState = reorderableState,
+                            state = reorderableState,
                             key = window.uid.hashCode()
                         ) {
                             val currentItem by rememberUpdatedState(window)
@@ -616,7 +652,7 @@ fun Queue(
                                             if (!lockQueue) {
                                                 IconButton(
                                                     onClick = { },
-                                                    modifier = Modifier.detectReorder(reorderableState)
+                                                    modifier = Modifier.draggableHandle()
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Rounded.DragHandle,
@@ -653,7 +689,7 @@ fun Queue(
                                                 }
                                             }
                                         )
-                                        .detectReorderAfterLongPress(reorderableState)
+                                        .longPressDraggableHandle()
                                 )
                             }
 
