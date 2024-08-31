@@ -19,6 +19,7 @@ import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.models.YTItem
 import com.zionhuang.innertube.pages.ExplorePage
 import com.zionhuang.innertube.pages.HomePage
+import com.zionhuang.innertube.utils.completedLibraryPage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +43,7 @@ class HomeViewModel @Inject constructor(
     val forgottenFavorites = MutableStateFlow<List<Song>?>(null)
     val keepListening = MutableStateFlow<List<LocalItem>?>(null)
     val similarRecommendations = MutableStateFlow<List<SimilarRecommendation>?>(null)
+    val accountPlaylists = MutableStateFlow<List<PlaylistItem>?>(null)
     val homePage = MutableStateFlow<HomePage?>(null)
     val explorePage = MutableStateFlow<ExplorePage?>(null)
     val recentActivity = MutableStateFlow<List<YTItem>?>(null)
@@ -71,6 +73,16 @@ class HomeViewModel @Inject constructor(
         allLocalItems.value =
             (quickPicks.value.orEmpty() + forgottenFavorites.value.orEmpty() + keepListening.value.orEmpty())
                 .filter { it is Song || it is Album }
+
+        if (YouTube.cookie != null) { // if logged in
+            // InnerTune way is YouTube.likedPlaylists().onSuccess { ... }
+            // OuterTune uses YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess { ... }
+            YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess {
+                accountPlaylists.value = it.items.filterIsInstance<PlaylistItem>()
+            }.onFailure {
+                reportException(it)
+            }
+        }
 
         // Similar to artists
         val artistRecommendations =
