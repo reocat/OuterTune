@@ -56,6 +56,7 @@ import com.dd3boh.outertune.constants.AudioNormalizationKey
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.AudioOffload
+import com.dd3boh.outertune.constants.AutoLoadMoreKey
 import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
@@ -88,6 +89,7 @@ import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.setOffloadEnabled
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.lyrics.LyricsHelper
+import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.QueueBoard
 import com.dd3boh.outertune.models.isShuffleEnabled
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -109,6 +111,7 @@ import com.zionhuang.innertube.models.response.PlayerResponse
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -130,6 +133,7 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import timber.log.Timber
 import java.io.File
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -170,7 +174,7 @@ class MusicService : MediaLibraryService(),
     private var lastMediaItemIndex = -1
 
     private lateinit var networkConnectivityObserver: NetworkConnectivityObserver
-    val currentMediaMetadata = MutableStateFlow<com.dd3boh.outertune.models.MediaMetadata?>(null)
+    val currentMediaMetadata = MutableStateFlow<MediaMetadata?>(null)
     val waitingForNetworkConnection = MutableStateFlow(false)
     private val isNetworkConnected = MutableStateFlow(false)
 
@@ -304,12 +308,39 @@ class MusicService : MediaLibraryService(),
                         }
                     }
 
-                    // start playback again on seek
                     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                         super.onMediaItemTransition(mediaItem, reason)
                         // +2 when and error happens, and -1 when transition. Thus when error, number increments by 1, else doesn't change
                         if (consecutivePlaybackErr > 0) {
-                            consecutivePlaybackErr --
+                            consecutivePlaybackErr--
+                        }
+
+                        // Auto load more songs
+                        if (dataStore.get(AutoLoadMoreKey, true) &&
+                            reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
+                            player.playbackState != STATE_IDLE &&
+                            player.mediaItemCount - player.currentMediaItemIndex <= 5
+                        ) {
+                            // Get current queue and check if it's a YouTube playlist/radio
+                            queueBoard.getCurrentQueue()?.let { currentQueue ->
+                                currentQueue.playlistId?.let { playlistId ->
+                                    // Create YouTubeQueue instance if we're near the end and there might be more songs
+                                    val currentSong = mediaItem?.mediaMetadata
+                                    if (currentSong != null) {
+                                        // Convert using the metadata we already have in the queue
+                                        val currentMediaMetadata = currentQueue.getCurrentQueueShuffled()
+                                            .getOrNull(player.currentMediaItemIndex)
+
+                                        if (currentMediaMetadata != null) {
+                                            loadMoreSongsFromYouTube(
+                                                playlistId = playlistId,
+                                                currentSong = currentMediaMetadata,
+                                                queueTitle = currentQueue.title
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
@@ -321,7 +352,8 @@ class MusicService : MediaLibraryService(),
                         // no, when repeat mode is on, player does not "STATE_ENDED"
                         if (player.currentMediaItemIndex == 0 && lastMediaItemIndex == player.mediaItemCount - 1 &&
                             (reason == MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) &&
-                            isShuffleEnabled.value && player.repeatMode == REPEAT_MODE_ALL) {
+                            isShuffleEnabled.value && player.repeatMode == REPEAT_MODE_ALL
+                        ) {
                             queueBoard.shuffleCurrent(this@MusicService, false) // reshuffle queue
                             queueBoard.setCurrQueue(this@MusicService)
                         }
@@ -331,6 +363,44 @@ class MusicService : MediaLibraryService(),
 
                         queueBoard.setCurrQueuePosIndex(player.currentMediaItemIndex, this@MusicService)
                         queueTitle = queueBoard.getCurrentQueue()?.title
+                    }
+
+                    private fun loadMoreSongsFromYouTube(
+                        playlistId: String,
+                        currentSong: MediaMetadata,
+                        queueTitle: String
+                    ) {
+                        CoroutineScope(IO).launch {
+                            try {
+                                // Create YouTubeQueue instance
+                                val youTubeQueue = if (playlistId.isNotEmpty()) {
+                                    YouTubeQueue(WatchEndpoint(playlistId = playlistId))
+                                } else {
+                                    // If no playlist ID, create a radio based on current song
+                                    YouTubeQueue.radio(currentSong)
+                                }
+
+                                // Check if there are more songs to load
+                                if (youTubeQueue.hasNextPage()) {
+                                    // Get next page of songs
+                                    val newSongs = youTubeQueue.nextPage()
+
+                                    if (newSongs.isNotEmpty()) {
+                                        // Add new songs to the queue
+                                        queueBoard.add(
+                                            title = queueTitle,
+                                            mediaList = newSongs,
+                                            player = this@MusicService,
+                                            forceInsert = false,
+                                            replace = false,
+                                            delta = true
+                                        )
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Timber.e(e, "Failed to load more songs from YouTube")
+                            }
+                        }
                     }
                 })
                 sleepTimer = SleepTimer(scope, this)
@@ -565,7 +635,7 @@ class MusicService : MediaLibraryService(),
         queuePlaylistId = queue.playlistId
 
         CoroutineScope(Dispatchers.Main).launch {
-            val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
+            val initialStatus = withContext(IO) { queue.getInitialStatus() }
             if (queueTitle == null && initialStatus.title != null) { // do not find a title if an override is provided
                 queueTitle = initialStatus.title
             }
@@ -722,7 +792,7 @@ class MusicService : MediaLibraryService(),
 
             // find a better way to detect local files later...
             if (mediaId.startsWith("LA")) {
-                val songPath = runBlocking(Dispatchers.IO) {
+                val songPath = runBlocking(IO) {
                     database.song(mediaId).firstOrNull()?.song?.localPath
                 }
                 if (songPath == null) {
@@ -733,19 +803,19 @@ class MusicService : MediaLibraryService(),
             }
 
             if (downloadCache.isCached(mediaId, dataSpec.position, if (dataSpec.length >= 0) dataSpec.length else 1)) {
-                scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
+                scope.launch(IO) { recoverSong(mediaId) }
                 return@Factory dataSpec
             }
 
             songUrlCache[mediaId]?.takeIf { it.second < System.currentTimeMillis() }?.let {
-                scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
+                scope.launch(IO) { recoverSong(mediaId) }
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
 
             // Check whether format exists so that users from older version can view format details
             // There may be inconsistent between the downloaded file and the displayed info if user change audio quality frequently
-            val playedFormat = runBlocking(Dispatchers.IO) { database.format(mediaId).first() }
-            val playerResponse = runBlocking(Dispatchers.IO) {
+            val playedFormat = runBlocking(IO) { database.format(mediaId).first() }
+            val playerResponse = runBlocking(IO) {
                 YouTube.player(mediaId, registerPlayback = false)
             }.getOrElse { throwable ->
                 when (throwable) {
@@ -797,7 +867,7 @@ class MusicService : MediaLibraryService(),
                     )
                 )
             }
-            scope.launch(Dispatchers.IO) { recoverSong(mediaId, playerResponse) }
+            scope.launch(IO) { recoverSong(mediaId, playerResponse) }
 
             val streamUrl = format.findUrl()
 
@@ -895,7 +965,7 @@ class MusicService : MediaLibraryService(),
     private fun saveQueueToDisk() {
         val allQueues = queueBoard.getAllQueues()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(IO).launch {
             // No need to convert IDs since they're already Long
             val savedQueueIds = database.getAllQueueIds()
 
@@ -903,7 +973,7 @@ class MusicService : MediaLibraryService(),
             val allQueueEntities = allQueues.map { queue ->
                 QueueEntity(
                     id = try {
-                        queue.id.toLong()
+                        queue.id
                     } catch (e: NumberFormatException) {
                         QueueEntity.generateQueueId()
                     },
