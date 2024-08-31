@@ -250,6 +250,7 @@ fun HomeScreen(
             isActive = item.id in listOf(mediaMetadata?.album?.id, mediaMetadata?.id),
             isPlaying = isPlaying,
             coroutineScope = scope,
+            thumbnailRatio = 1f,
             modifier = Modifier
                 .combinedClickable(
                     onClick = {
@@ -713,7 +714,7 @@ fun HomeScreen(
                         },
                         onClick = {
                             when (it.title) {
-                                is Song -> navController.navigate("album/${it.title.song.albumId!!}")
+                                is Song -> navController.navigate("album/${it.title.album!!.id}")
                                 is Album -> navController.navigate("album/${it.title.id}")
                                 is Artist -> navController.navigate("artist/${it.title.id}")
                                 is Playlist -> {}
