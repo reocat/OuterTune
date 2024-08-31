@@ -107,6 +107,7 @@ import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.math.min
 import kotlin.random.Random
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -630,16 +631,18 @@ fun HomeScreen(
                         title = stringResource(R.string.forgotten_favorites)
                     )
 
+                    // take min in case list size is less than 4
+                    val rows = min(4, forgottenFavorites.size)
                     LazyHorizontalGrid(
                         state = forgottenFavoritesLazyGridState,
-                        rows = GridCells.Fixed(4),
+                        rows = GridCells.Fixed(rows),
                         flingBehavior = rememberSnapFlingBehavior(forgottenFavoritesSnapLayoutInfoProvider),
                         contentPadding = WindowInsets.systemBars
                             .only(WindowInsetsSides.Horizontal)
                             .asPaddingValues(),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(ListItemHeight * 4)
+                            .height(ListItemHeight * rows)
                     ) {
                         items(
                             items = forgottenFavorites,
