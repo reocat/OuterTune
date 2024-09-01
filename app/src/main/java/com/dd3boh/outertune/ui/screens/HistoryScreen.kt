@@ -69,7 +69,6 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.DateAgo
 import com.dd3boh.outertune.viewmodels.HistoryViewModel
-import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.utils.parseCookieString
 import java.time.format.DateTimeFormatter
 
