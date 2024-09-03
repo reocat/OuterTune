@@ -53,7 +53,6 @@ import com.zionhuang.innertube.pages.SearchResult
 import com.zionhuang.innertube.pages.SearchSuggestionPage
 import com.zionhuang.innertube.pages.SearchSummary
 import com.zionhuang.innertube.pages.SearchSummaryPage
-import com.zionhuang.innertube.utils.isPrivateId
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.json.Json
@@ -720,33 +719,34 @@ object YouTube {
             ?: response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer
                 .watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content?.musicQueueRenderer
                 ?.content?.playlistPanelRenderer!!
-        val watchEndpointResponse = response.currentVideoEndpoint?.watchEndpoint
         val title = response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer
                 .watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content?.musicQueueRenderer
                 ?.header?.musicQueueHeaderRenderer?.subtitle?.runs?.firstOrNull()?.text
+        val items = playlistPanelRenderer.contents.mapNotNull { content ->
+            content.playlistPanelVideoRenderer
+                ?.let(NextPage::fromPlaylistPanelVideoRenderer)
+                ?.let { it to content.playlistPanelVideoRenderer.selected }
+        }
+        val songs = items.map { it.first }
+                val currentIndex = items.indexOfFirst { it.second }.takeIf { it != -1 }
+
         // load automix items
         playlistPanelRenderer.contents.lastOrNull()?.automixPreviewVideoRenderer?.content?.automixPlaylistVideoRenderer?.navigationEndpoint?.watchPlaylistEndpoint?.let { watchPlaylistEndpoint ->
             return@runCatching next(watchPlaylistEndpoint).getOrThrow().let { result ->
                 result.copy(
                     title = title,
-                    items = playlistPanelRenderer.contents.mapNotNull {
-                        it.playlistPanelVideoRenderer?.let { renderer ->
-                            NextPage.fromPlaylistPanelVideoRenderer(renderer)
-                        }
-                    } + result.items,
+                    items = songs + result.items,
                     lyricsEndpoint = response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.getOrNull(1)?.tabRenderer?.endpoint?.browseEndpoint,
                     relatedEndpoint = response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.getOrNull(2)?.tabRenderer?.endpoint?.browseEndpoint,
-                    currentIndex = playlistPanelRenderer.currentIndex,
+                    currentIndex = currentIndex,
                     endpoint = watchPlaylistEndpoint
                 )
             }
         }
         NextResult(
             title = title,
-            items = playlistPanelRenderer.contents.mapNotNull {
-                it.playlistPanelVideoRenderer?.let(NextPage::fromPlaylistPanelVideoRenderer)
-            },
-            currentIndex = watchEndpointResponse?.index,
+            items = songs,
+            currentIndex = currentIndex,
             lyricsEndpoint = response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.getOrNull(1)?.tabRenderer?.endpoint?.browseEndpoint,
             relatedEndpoint = response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.getOrNull(2)?.tabRenderer?.endpoint?.browseEndpoint,
             continuation = playlistPanelRenderer.continuations?.getContinuation(),
