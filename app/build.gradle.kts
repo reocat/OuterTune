@@ -114,6 +114,8 @@ android {
 
     lint {
         disable += "MissingTranslation"
+        disable += "MissingQuantity"
+        disable += "ImpliedQuantity"
     }
 
 }
