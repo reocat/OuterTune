@@ -1,6 +1,5 @@
 package com.dd3boh.outertune
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
@@ -114,9 +113,11 @@ import com.dd3boh.outertune.constants.DefaultOpenTabNewKey
 import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
+import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.LibraryFilter
 import com.dd3boh.outertune.constants.LibraryFilterKey
+import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
 import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
@@ -155,6 +156,7 @@ import com.dd3boh.outertune.ui.screens.LoginScreen
 import com.dd3boh.outertune.ui.screens.MoodAndGenresScreen
 import com.dd3boh.outertune.ui.screens.NewReleaseScreen
 import com.dd3boh.outertune.ui.screens.Screens
+import com.dd3boh.outertune.ui.screens.SetupWizard
 import com.dd3boh.outertune.ui.screens.StatsScreen
 import com.dd3boh.outertune.ui.screens.YouTubeBrowseScreen
 import com.dd3boh.outertune.ui.screens.artist.ArtistItemsScreen
@@ -181,6 +183,7 @@ import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
+import com.dd3boh.outertune.ui.screens.settings.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.screens.settings.NavigationTab
 import com.dd3boh.outertune.ui.screens.settings.NavigationTabNew
 import com.dd3boh.outertune.ui.screens.settings.PlayerBackgroundStyle
@@ -247,9 +250,6 @@ class MainActivity : ComponentActivity() {
     }
 
     // storage permission helpers
-    private val mediaPermissionLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
-    else Manifest.permission.READ_EXTERNAL_STORAGE
-
     val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -350,6 +350,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            val (firstSetupPassed) = rememberPreference(FirstSetupPassed, defaultValue = false)
+            val (localLibEnable) = rememberPreference(LocalLibraryEnableKey, defaultValue = true)
+
             // auto scanner
             val (scannerSensitivity) = rememberEnumPreference(
                 key = ScannerSensitivityKey,
@@ -363,7 +366,8 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(Unit) {
                 CoroutineScope(Dispatchers.IO).launch {
                     // Check if the permissions for local media access
-                    if (autoScan && checkSelfPermission(mediaPermissionLevel) == PackageManager.PERMISSION_GRANTED) {
+                    if (firstSetupPassed && localLibEnable && autoScan
+                        && checkSelfPermission(MEDIA_PERMISSION_LEVEL) == PackageManager.PERMISSION_GRANTED) {
                         val scanner = LocalMediaScanner.getScanner()
 
                         // equivalent to (quick scan)
@@ -406,9 +410,9 @@ class MainActivity : ComponentActivity() {
                         }
                         purgeCache() // juuuust to be sure
                         cacheDirectoryTree(null)
-                    } else if (checkSelfPermission(mediaPermissionLevel) == PackageManager.PERMISSION_DENIED) {
+                    } else if (checkSelfPermission(MEDIA_PERMISSION_LEVEL) == PackageManager.PERMISSION_DENIED) {
                         // Request the permission using the permission launcher
-                        permissionLauncher.launch(mediaPermissionLevel)
+                        permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                     }
                 }
             }
@@ -807,10 +811,12 @@ class MainActivity : ComponentActivity() {
                             },
                             bottomBar = {
                                 Box() {
-                                    BottomSheetPlayer(
-                                        state = playerBottomSheetState,
-                                        navController = navController
-                                    )
+                                    if (firstSetupPassed) {
+                                        BottomSheetPlayer(
+                                            state = playerBottomSheetState,
+                                            navController = navController
+                                        )
+                                    }
                                     LaunchedEffect(playerBottomSheetState.isExpanded) {
                                         setSystemBarAppearance(
                                             (playerBottomSheetState.isExpanded
@@ -1129,6 +1135,10 @@ class MainActivity : ComponentActivity() {
                                 composable("login") {
                                     LoginScreen(navController)
                                 }
+
+                                composable("setup_wizard",) {
+                                    SetupWizard(navController)
+                                }
                             }
                         }
 
@@ -1136,6 +1146,13 @@ class MainActivity : ComponentActivity() {
                             state = LocalMenuState.current,
                             modifier = Modifier.align(Alignment.BottomCenter)
                         )
+
+                        // Setup wizard
+                        LaunchedEffect(Unit) {
+                            if (!firstSetupPassed) {
+                                navController.navigate("setup_wizard")
+                            }
+                        }
 
                         sharedSong?.let { song ->
                             playerConnection?.let {
