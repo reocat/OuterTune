@@ -20,6 +20,7 @@ val FlatSubfoldersKey = booleanPreferencesKey("flatSubfolders")
 val EnabledTabsKey = stringPreferencesKey("enabledTabs")
 val DefaultOpenTabKey = stringPreferencesKey("defaultOpenTab")
 val DefaultOpenTabNewKey = stringPreferencesKey("defaultOpenTabNew")
+val SlimNavBarKey = booleanPreferencesKey("slimNavBar")
 
 /**
  * Content
