@@ -399,6 +399,8 @@
     <string name="lyrics_trim_title">Remove spaces around lyrics</string>
 
 <!-- Local player settings -->
+    <string name="local_library_enable_title">Enable Local Media</string>
+    <string name="local_library_enable_description">Disabling will hide local library from the app</string>
     <string name="local_player_settings_title">Local Media</string>
     <string name="flat_subfolders_title">Flatten subfolders</string>
     <string name="flat_subfolders_description">Disable to preserve the file structure as on disk</string>
