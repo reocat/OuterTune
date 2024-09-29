@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Backup
+import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,6 +30,7 @@ import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
+import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
@@ -37,7 +39,9 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +56,7 @@ fun ExperimentalSettings(
 
     // state variables and such
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
+    val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
 
     Column(
         Modifier
@@ -94,6 +99,20 @@ fun ExperimentalSettings(
                     }
                 }
             )
+
+
+            PreferenceEntry(
+                title = { Text("Enter configurator") },
+                icon = { Icon(Icons.Rounded.ConfirmationNumber, null) },
+                onClick = {
+                    onFirstSetupPassedChange(false)
+                    runBlocking { // hax. page loads before pref updates
+                        delay(500)
+                    }
+                    navController.navigate("setup_wizard")
+                }
+            )
+
 
 
             Text("Material colours test")

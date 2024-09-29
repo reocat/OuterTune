@@ -91,6 +91,12 @@ val UseLoginForBrowse = booleanPreferencesKey("useLoginForBrowse")
 val DisableScreenshotKey = booleanPreferencesKey("disableScreenshot")
 
 /**
+ * Local library
+ */
+val LocalLibraryEnableKey = booleanPreferencesKey("localLibraryEnable")
+
+
+/**
  * Local media scanner
  */
 val AutomaticScannerKey = booleanPreferencesKey("autoLocalScanner")
@@ -117,6 +123,7 @@ enum class ScannerMatchCriteria {
  * Experimental settings
  */
 val DevSettingsKey = booleanPreferencesKey("devSettings")
+val FirstSetupPassed = booleanPreferencesKey("firstSetupPassed")
 
 
 /**

@@ -89,19 +89,19 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+val MEDIA_PERMISSION_LEVEL =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
+    else Manifest.permission.READ_EXTERNAL_STORAGE
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalPlayerSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
-
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
-    val mediaPermissionLevel =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
-        else Manifest.permission.READ_EXTERNAL_STORAGE
 
     // scanner vars
     val isScannerActive by scannerActive.collectAsState()
@@ -297,7 +297,7 @@ fun LocalPlayerSettings(
                     }
 
                     // check permission
-                    if (context.checkSelfPermission(mediaPermissionLevel)
+                    if (context.checkSelfPermission(MEDIA_PERMISSION_LEVEL)
                         != PackageManager.PERMISSION_GRANTED
                     ) {
 
@@ -309,12 +309,12 @@ fun LocalPlayerSettings(
 
                         requestPermissions(
                             context as Activity,
-                            arrayOf(mediaPermissionLevel), PackageManager.PERMISSION_GRANTED
+                            arrayOf(MEDIA_PERMISSION_LEVEL), PackageManager.PERMISSION_GRANTED
                         )
 
                         mediaPermission = false
                         return@Button
-                    } else if (context.checkSelfPermission(mediaPermissionLevel)
+                    } else if (context.checkSelfPermission(MEDIA_PERMISSION_LEVEL)
                         == PackageManager.PERMISSION_GRANTED
                     ) {
                         mediaPermission = true
