@@ -298,7 +298,7 @@ fun LibraryFoldersScreen(
                             // navigate to next page
                             currDir = folderStack.push(folder)
                         }
-                        .animateItemPlacement(),
+                        .animateItem(),
                     menuState = menuState,
                     navController = navController
                 )
@@ -390,7 +390,7 @@ fun LibraryFoldersScreen(
                                         }
                                     }
                                 )
-                                .animateItemPlacement()
+                                .animateItem()
                         )
                     },
                     snackbarHostState = snackbarHostState

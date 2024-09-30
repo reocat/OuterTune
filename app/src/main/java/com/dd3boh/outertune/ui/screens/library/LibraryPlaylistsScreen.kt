@@ -293,7 +293,7 @@ fun LibraryPlaylistsScreen(
                                     .clickable {
                                         navController.navigate("auto_playlist/${likedPlaylist.id}")
                                     }
-                                    .animateItemPlacement()
+                                    .animateItem()
                             )
                         }
 
@@ -309,7 +309,7 @@ fun LibraryPlaylistsScreen(
                                     .clickable {
                                         navController.navigate("auto_playlist/${downloadedPlaylist.id}")
                                     }
-                                    .animateItemPlacement()
+                                    .animateItem()
                             )
                         }
                     }
@@ -324,7 +324,7 @@ fun LibraryPlaylistsScreen(
                             menuState = menuState,
                             coroutineScope = coroutineScope,
                             playlist = playlist,
-                            modifier = Modifier.animateItemPlacement()
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }
@@ -374,7 +374,7 @@ fun LibraryPlaylistsScreen(
                                     .clickable {
                                         navController.navigate("auto_playlist/${likedPlaylist.id}")
                                     }
-                                    .animateItemPlacement()
+                                    .animateItem()
                             )
                         }
 
@@ -391,7 +391,7 @@ fun LibraryPlaylistsScreen(
                                     .clickable {
                                         navController.navigate("auto_playlist/${downloadedPlaylist.id}")
                                     }
-                                    .animateItemPlacement()
+                                    .animateItem()
                             )
                         }
                     }
@@ -406,7 +406,7 @@ fun LibraryPlaylistsScreen(
                             menuState = menuState,
                             coroutineScope = coroutineScope,
                             playlist = playlist,
-                            modifier = Modifier.animateItemPlacement()
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }

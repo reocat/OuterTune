@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -69,7 +68,7 @@ fun <E> ChipsLazyRow(
     selected: ((E) -> Boolean)? = null,
     isLoading: (E) -> Boolean = { false }
 ) {
-    val tween: FiniteAnimationSpec<IntOffset> = tween(
+    val tween: FiniteAnimationSpec<Float> = tween(
         durationMillis = 200,
         easing = LinearOutSlowInEasing
     )
@@ -93,7 +92,11 @@ fun <E> ChipsLazyRow(
                 selected = selected?.let { it(value) } ?: (currentValue == value),
                 colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
                 onClick = { onValueUpdate(value) },
-                modifier = Modifier.animateItemPlacement(tween),
+                modifier = Modifier
+                    .animateItem(
+                        fadeInSpec =  tween,
+                        fadeOutSpec = tween
+                    ),
                 trailingIcon = {
                     if (isLoading(value)) {
                         CircularProgressIndicator(

@@ -254,7 +254,7 @@ fun ArtistItemsScreen(
 
             if (itemsPage?.continuation != null) {
                 item(key = "loading") {
-                    ShimmerHost(modifier = Modifier.animateItemPlacement()) {
+                    ShimmerHost(modifier = Modifier.animateItem()) {
                         repeat(3) {
                             ListItemPlaceHolder()
                         }
@@ -327,7 +327,7 @@ fun ArtistItemsScreen(
                                     }
                                 }
                             }
-                        ).animateItemPlacement()
+                        ).animateItem()
                 )
             }
             if (itemsPage?.continuation != null) {

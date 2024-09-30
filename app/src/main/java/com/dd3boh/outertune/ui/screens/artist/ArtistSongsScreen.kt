@@ -256,7 +256,7 @@ fun ArtistSongsScreen(
                                         }
                                     }
                                 )
-                                .animateItemPlacement()
+                                .animateItem()
                         )
                     },
                     snackbarHostState = snackbarHostState

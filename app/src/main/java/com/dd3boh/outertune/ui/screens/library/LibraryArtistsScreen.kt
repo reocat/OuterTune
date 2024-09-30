@@ -195,7 +195,7 @@ fun LibraryArtistsScreen(
                             navController = navController,
                             menuState = menuState,
                             coroutineScope = coroutineScope,
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItem(),
                             artist = artist
                         )
                     }
@@ -232,7 +232,7 @@ fun LibraryArtistsScreen(
                             navController = navController,
                             menuState = menuState,
                             coroutineScope = coroutineScope,
-                            modifier = Modifier.animateItemPlacement(),
+                            modifier = Modifier.animateItem(),
                             artist = artist
                         )
                     }

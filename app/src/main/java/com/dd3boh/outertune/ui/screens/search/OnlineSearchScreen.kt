@@ -130,7 +130,7 @@ fun OnlineSearchScreen(
                         )
                     )
                 },
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -153,7 +153,7 @@ fun OnlineSearchScreen(
                         )
                     )
                 },
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
 
@@ -261,7 +261,7 @@ fun OnlineSearchScreen(
                                 }
                             }
                         }
-                        .animateItemPlacement()
+                        .animateItem()
                 )
             }
 

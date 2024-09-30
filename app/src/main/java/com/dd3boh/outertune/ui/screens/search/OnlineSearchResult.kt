@@ -190,7 +190,7 @@ fun OnlineSearchResult(
                             }
                         }
                     )
-                    .animateItemPlacement()
+                    .animateItem()
             )
         }
 
