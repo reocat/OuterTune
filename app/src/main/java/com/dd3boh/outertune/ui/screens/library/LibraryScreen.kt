@@ -339,7 +339,7 @@ fun LibraryScreen(
                                             .clickable {
                                                 navController.navigate("auto_playlist/${likedPlaylist.id}")
                                             }
-                                            .animateItemPlacement()
+                                            .animateItem()
                                     )
                                 }
 
@@ -355,7 +355,7 @@ fun LibraryScreen(
                                             .clickable {
                                                 navController.navigate("auto_playlist/${downloadedPlaylist.id}")
                                             }
-                                            .animateItemPlacement()
+                                            .animateItem()
                                     )
                                 }
                             }
@@ -373,7 +373,7 @@ fun LibraryScreen(
                                             album = item,
                                             isActive = item.id == mediaMetadata?.album?.id,
                                             isPlaying = isPlaying,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItem()
                                         )
                                     }
 
@@ -382,7 +382,7 @@ fun LibraryScreen(
                                             navController = navController,
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
-                                            modifier = Modifier.animateItemPlacement(),
+                                            modifier = Modifier.animateItem(),
                                             artist = item
                                         )
                                     }
@@ -393,7 +393,7 @@ fun LibraryScreen(
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
                                             playlist = item,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItem()
                                         )
                                     }
 
@@ -439,7 +439,7 @@ fun LibraryScreen(
                                             .clickable {
                                                 navController.navigate("auto_playlist/${likedPlaylist.id}")
                                             }
-                                            .animateItemPlacement()
+                                            .animateItem()
                                     )
                                 }
 
@@ -456,7 +456,7 @@ fun LibraryScreen(
                                             .clickable {
                                                 navController.navigate("auto_playlist/${downloadedPlaylist.id}")
                                             }
-                                            .animateItemPlacement()
+                                            .animateItem()
                                     )
                                 }
                             }
@@ -475,7 +475,7 @@ fun LibraryScreen(
                                             album = item,
                                             isActive = item.id == mediaMetadata?.album?.id,
                                             isPlaying = isPlaying,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItem()
                                         )
                                     }
 
@@ -484,7 +484,7 @@ fun LibraryScreen(
                                             navController = navController,
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
-                                            modifier = Modifier.animateItemPlacement(),
+                                            modifier = Modifier.animateItem(),
                                             artist = item
                                         )
                                     }
@@ -495,7 +495,7 @@ fun LibraryScreen(
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
                                             playlist = item,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItem()
                                         )
                                     }
 
