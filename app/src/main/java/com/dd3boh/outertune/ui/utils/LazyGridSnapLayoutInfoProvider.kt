@@ -22,11 +22,11 @@ fun SnapLayoutInfoProvider(
     private val layoutInfo: LazyGridLayoutInfo
         get() = lazyGridState.layoutInfo
 
-    override fun calculateApproachOffset(initialVelocity: Float): Float {
+    override fun calculateApproachOffset(velocity: Float, decayOffset: Float): Float {
         return 0f
     }
 
-    override fun calculateSnappingOffset(currentVelocity: Float): Float {
+    override fun calculateSnapOffset(velocity: Float): Float {
         var closestItemOffset = Float.MAX_VALUE
 
         layoutInfo.visibleItemsInfo.fastForEach { item ->
@@ -39,7 +39,7 @@ fun SnapLayoutInfoProvider(
         }
 
         // Adjust the offset based on the velocity
-        return closestItemOffset + currentVelocity
+        return closestItemOffset + velocity
     }
 }
 
@@ -47,11 +47,11 @@ fun SnapLayoutInfoProvider(
 fun SnapLayoutInfoProvider(
     layoutInfo: LazyListLayoutInfo,
 ): SnapLayoutInfoProvider = object : SnapLayoutInfoProvider {
-    override fun calculateApproachOffset(initialVelocity: Float): Float {
+    override fun calculateApproachOffset(velocity: Float, decayOffset: Float): Float {
         return 0f
     }
 
-    override fun calculateSnappingOffset(currentVelocity: Float): Float {
+    override fun calculateSnapOffset(velocity: Float): Float {
         var closestItemOffset = Float.MAX_VALUE
 
         layoutInfo.visibleItemsInfo.fastForEach { item ->
@@ -64,7 +64,7 @@ fun SnapLayoutInfoProvider(
         }
 
         // Adjust the offset based on the velocity
-        return closestItemOffset + currentVelocity
+        return closestItemOffset + velocity
     }
 }
 
