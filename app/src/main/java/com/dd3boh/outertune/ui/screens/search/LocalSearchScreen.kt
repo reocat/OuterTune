@@ -199,7 +199,7 @@ fun LocalSearchScreen(
                                                 ))
                                             }
                                         }
-                                        .animateItemPlacement()
+                                        .animateItem()
                                 )
                             },
                             snackbarHostState = snackbarHostState
@@ -214,7 +214,7 @@ fun LocalSearchScreen(
                                     onDismiss()
                                     navController.navigate("album/${item.id}")
                                 }
-                                .animateItemPlacement()
+                                .animateItem()
                         )
 
                         is Artist -> ArtistListItem(
@@ -224,7 +224,7 @@ fun LocalSearchScreen(
                                     onDismiss()
                                     navController.navigate("artist/${item.id}")
                                 }
-                                .animateItemPlacement()
+                                .animateItem()
                         )
 
                         is Playlist -> PlaylistListItem(
@@ -234,7 +234,7 @@ fun LocalSearchScreen(
                                     onDismiss()
                                     navController.navigate("local_playlist/${item.id}")
                                 }
-                                .animateItemPlacement()
+                                .animateItem()
                         )
                     }
                 }

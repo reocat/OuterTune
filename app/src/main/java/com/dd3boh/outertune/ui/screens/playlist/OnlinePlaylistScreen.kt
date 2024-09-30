@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Download
@@ -65,9 +64,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -280,19 +281,17 @@ fun OnlinePlaylistScreen(
                                                 ).toSpanStyle()
                                             ) {
                                                 if (artist.id != null) {
-                                                    pushStringAnnotation(artist.id!!, artist.name)
-                                                    append(artist.name)
-                                                    pop()
-                                                } else {
-                                                    append(artist.name)
-                                                }
+                                                    withLink(
+                                                        LinkAnnotation.Clickable(artist.id!!) {
+                                                            println("artist id: ${artist.id}")
+                                                            navController.navigate("artist/${artist.id}")
+                                                        }
+                                                    ) { append(artist.name) }
+                                                } else append(artist.name)
                                             }
                                         }
-                                        ClickableText(annotatedString) { offset ->
-                                            annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let { range ->
-                                                navController.navigate("artist/${range.tag}")
-                                            }
-                                        }
+
+                                        Text(annotatedString)
                                     }
 
                                     playlist.songCountText?.let { songCountText ->
@@ -588,7 +587,7 @@ fun OnlinePlaylistScreen(
                                                 }
                                             }
                                         )
-                                        .animateItemPlacement()
+                                        .animateItem()
                                 )
                             },
                             snackbarHostState = snackbarHostState

@@ -142,7 +142,7 @@ fun YouTubeBrowseScreen(
                                 is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
                             }
                         }
-                        .animateItemPlacement()
+                        .animateItem()
                 )
             }
         }
