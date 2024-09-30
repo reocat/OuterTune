@@ -264,7 +264,7 @@ fun BottomSheetPlayer(
                             modifier = Modifier
                                 .basicMarquee(
                                     iterations = 1,
-                                    delayMillis = 3000
+                                    initialDelayMillis = 3000
                                 )
                                 .clickable(enabled = mediaMetadata.album != null) {
                                     navController.navigate("album/${mediaMetadata.album!!.id}")

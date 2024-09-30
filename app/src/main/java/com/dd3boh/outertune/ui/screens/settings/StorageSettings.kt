@@ -142,7 +142,7 @@ fun StorageSettings(
             values = listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192),
             valueText = {
                 when (it) {
-                    0 -> stringResource(androidx.compose.ui.R.string.off)
+                    0 -> stringResource(androidx.compose.ui.R.string.state_off)
                     else -> formatFileSize(it * 1024 * 1024L)
                 }
             },
