@@ -5,6 +5,7 @@ package com.dd3boh.outertune.ui.component
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -33,19 +34,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Decoration
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Strings
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.getString
 import androidx.compose.material3.tokens.MotionTokens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -160,7 +158,8 @@ fun SearchBar(
         modifier = modifier
             .offset {
                 IntOffset(x = 0, y = scrollBehavior.state.heightOffset.roundToInt())
-            },
+            }
+            .background(MaterialTheme.colorScheme.background),
         propagateMinConstraints = true
     ) {
         val height: Dp
@@ -243,8 +242,8 @@ private fun SearchBarInputField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
-    val searchSemantics = getString(Strings.SearchBarSearch)
-    val suggestionsAvailableSemantics = getString(Strings.SuggestionsAvailable)
+    val searchSemantics = "Search" // getString(Strings.SearchBarSearch) R.string.m3c_search_bar_search
+    val suggestionsAvailableSemantics = "Suggestions below" // getString(Strings.SuggestionsAvailable) R.string.m3c_suggestions_available
     val textColor = LocalTextStyle.current.color.takeOrElse {
         colors.focusedTextColor
     }
@@ -293,7 +292,7 @@ private fun SearchBarInputField(
             enabled = enabled,
             singleLine = true,
             textStyle = LocalTextStyle.current.merge(TextStyle(color = textColor)),
-            cursorBrush = SolidColor(colors.cursorColor(isError = false).value),
+            cursorBrush = SolidColor(colors.cursorColor(isError = false)),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSearch(query.text) }),
             interactionSource = interactionSource,
@@ -304,11 +303,7 @@ private fun SearchBarInputField(
                 ) {
                     if (placeholder != null && query.text.isEmpty()) {
                         Box(Modifier.alpha(0.8f)) {
-                            Decoration(
-                                contentColor = colors.focusedPlaceholderColor,
-                                typography = MaterialTheme.typography.bodyLarge,
-                                content = placeholder
-                            )
+                            placeholder()
                         }
                     }
                     innerTextField()
