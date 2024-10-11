@@ -57,7 +57,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -88,6 +87,19 @@ interface DatabaseDao {
     fun songsByNameAsc(): Flow<List<Song>>
 
     @Transaction
+    @Query("""
+        SELECT * FROM song 
+        WHERE inLibrary IS NOT NULL 
+        ORDER BY (
+            SELECT LOWER(GROUP_CONCAT(name, ''))
+            FROM artist
+            WHERE id IN (SELECT artistId FROM song_artist_map WHERE songId = song.id)
+            ORDER BY name
+        ) COLLATE NOCASE
+    """)
+    fun songsByArtistAsc(): Flow<List<Song>>
+
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY totalPlayTime")
     fun songsByPlayTimeAsc(): Flow<List<Song>>
 
@@ -107,21 +119,9 @@ interface DatabaseDao {
         when (sortType) {
             SongSortType.CREATE_DATE -> songsByCreateDateAsc()
             SongSortType.MODIFIED_DATE -> songsByDateModifiedAsc()
-            SongSortType.RELEASE_DATE -> {
-                val songs = songsByReleaseDateAsc()
-                runBlocking {
-                    flowOf(songs.first().sortedBy {
-                        it.song.getDateLong()
-                    })
-                }
-            }
+            SongSortType.RELEASE_DATE -> songsByReleaseDateAsc()
             SongSortType.NAME -> songsByNameAsc()
-            SongSortType.ARTIST -> songsByRowIdAsc().map { songs ->
-                songs.sortedBy { song ->
-                    song.artists.joinToString(separator = "") { it.name }.lowercase()
-                }
-            }
-
+            SongSortType.ARTIST -> songsByArtistAsc()
             SongSortType.PLAY_TIME -> songsByPlayTimeAsc()
         }.map { it.reversed(descending) }
 
@@ -146,6 +146,19 @@ interface DatabaseDao {
     fun likedSongsByNameAsc(): Flow<List<Song>>
 
     @Transaction
+    @Query("""
+        SELECT * FROM song 
+        WHERE liked 
+        ORDER BY (
+            SELECT LOWER(GROUP_CONCAT(name, ''))
+            FROM artist
+            WHERE id IN (SELECT artistId FROM song_artist_map WHERE songId = song.id)
+            ORDER BY name
+        ) COLLATE NOCASE
+    """)
+    fun likedSongsByArtistAsc(): Flow<List<Song>>
+
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY totalPlayTime")
     fun likedSongsByPlayTimeAsc(): Flow<List<Song>>
 
@@ -165,21 +178,9 @@ interface DatabaseDao {
         when (sortType) {
             SongSortType.CREATE_DATE -> likedSongsByCreateDateAsc()
             SongSortType.MODIFIED_DATE -> likedSongsByDateModifiedAsc()
-            SongSortType.RELEASE_DATE -> {
-                val songs = likedSongsByReleaseDateAsc()
-                runBlocking {
-                    flowOf(songs.first().sortedBy {
-                        it.song.getDateLong()
-                    })
-                }
-            }
+            SongSortType.RELEASE_DATE -> ikedSongsByReleaseDateAsc()
             SongSortType.NAME -> likedSongsByNameAsc()
-            SongSortType.ARTIST -> likedSongsByRowIdAsc().map { songs ->
-                songs.sortedBy { song ->
-                    song.artists.joinToString(separator = "") { it.name }.lowercase()
-                }
-            }
-
+            SongSortType.ARTIST -> likedSongsByArtistAsc()
             SongSortType.PLAY_TIME -> likedSongsByPlayTimeAsc()
         }.map { it.reversed(descending) }
 
@@ -324,53 +325,50 @@ interface DatabaseDao {
     fun song(songId: String?): Flow<Song?>
 
     @Transaction
-    @Query("SELECT * FROM song ORDER BY rowId")
-    fun allSongsByRowIdAsc(): Flow<List<Song>>
+    @Query("SELECT * FROM song WHERE dateDownload IS NOT NULL ORDER BY dateDownload")
+    fun downloadNoLocalSongs(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song ORDER BY inLibrary")
-    fun allSongsByCreateDateAsc(): Flow<List<Song>>
+    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY inLibrary")
+    fun downloadSongsByCreateDateAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song ORDER BY date")
-    fun allSongsByReleaseDateAsc(): Flow<List<Song>>
+    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY date")
+    fun downloadSongsByReleaseDateAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song ORDER BY dateModified")
-    fun allSongsByDateModifiedAsc(): Flow<List<Song>>
+    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY dateModified")
+    fun downloadSongsByDateModifiedAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song ORDER BY title COLLATE NOCASE ASC")
-    fun allSongsByNameAsc(): Flow<List<Song>>
+    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
+    fun downloadSongsByNameAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song ORDER BY totalPlayTime")
-    fun allSongsByPlayTimeAsc(): Flow<List<Song>>
+    @Query("""
+        SELECT * FROM song
+        WHERE isLocal OR dateDownload IS NOT NULL
+        ORDER BY (
+            SELECT LOWER(GROUP_CONCAT(name, ''))
+            FROM artist
+            WHERE id IN (SELECT artistId FROM song_artist_map WHERE songId = song.id)
+            ORDER BY name
+        ) COLLATE NOCASE
+    """)
+    fun downloadSongsByArtistAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song")
-    fun allSongs(): Flow<List<Song>>
+    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY totalPlayTime")
+    fun downloadSongsByPlayTimeAsc(): Flow<List<Song>>
 
-    fun allSongs(
-        downloads: Set<String>,
-        sortType: SongSortType,
-        descending: Boolean
-    ) = when (sortType) {
-            SongSortType.CREATE_DATE -> allSongsByCreateDateAsc()
-            SongSortType.MODIFIED_DATE -> allSongsByDateModifiedAsc()
-            SongSortType.RELEASE_DATE -> allSongsByReleaseDateAsc()
-            SongSortType.NAME -> allSongsByNameAsc()
-            SongSortType.ARTIST -> allSongsByRowIdAsc().map { songs ->
-                songs.sortedBy { song ->
-                    song.artists.joinToString(separator = "") { it.name }.lowercase()
-                }
-            }
-            SongSortType.PLAY_TIME -> allSongsByPlayTimeAsc()
-        }.map { songs ->
-            songs.filter { song ->
-                // show local songs as under downloaded for now
-                song.song.isLocal || downloads.any { it == song.song.id }
-            }
+    fun downloadSongs(sortType: SongSortType, descending: Boolean) =
+        when (sortType) {
+            SongSortType.CREATE_DATE -> downloadSongsByCreateDateAsc()
+            SongSortType.MODIFIED_DATE -> downloadSongsByDateModifiedAsc()
+            SongSortType.RELEASE_DATE -> downloadSongsByReleaseDateAsc()
+            SongSortType.NAME -> downloadSongsByNameAsc()
+            SongSortType.ARTIST -> downloadSongsByArtistAsc()
+            SongSortType.PLAY_TIME -> downloadSongsByPlayTimeAsc()
         }.map { it.reversed(descending) }
 
     @Transaction
@@ -495,6 +493,19 @@ interface DatabaseDao {
     fun albumsByNameAsc(): Flow<List<Album>>
 
     @Transaction
+    @Query("""
+        SELECT * FROM album
+        WHERE EXISTS(SELECT * FROM song WHERE song.albumId = album.id AND song.inLibrary IS NOT NULL)
+        ORDER BY (
+            SELECT LOWER(GROUP_CONCAT(name, ''))
+            FROM artist
+            WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
+            ORDER BY name
+        ) COLLATE NOCASE
+    """)
+    fun albumByArtistAsc(): Flow<List<Album>>
+
+    @Transaction
     @Query("SELECT * FROM album WHERE EXISTS(SELECT * FROM song WHERE song.albumId = album.id AND song.inLibrary IS NOT NULL) ORDER BY year")
     fun albumsByYearAsc(): Flow<List<Album>>
 
@@ -529,6 +540,19 @@ interface DatabaseDao {
     fun albumsLikedByNameAsc(): Flow<List<Album>>
 
     @Transaction
+    @Query("""
+        SELECT * FROM album
+        WHERE bookmarkedAt IS NOT NULL
+        ORDER BY (
+            SELECT LOWER(GROUP_CONCAT(name, ''))
+            FROM artist
+            WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
+            ORDER BY name
+        ) COLLATE NOCASE
+    """)
+    fun albumLikeByArtistAsc(): Flow<List<Album>>
+
+    @Transaction
     @Query("SELECT * FROM album WHERE bookmarkedAt IS NOT NULL ORDER BY year")
     fun albumsLikedByYearAsc(): Flow<List<Album>>
 
@@ -558,12 +582,7 @@ interface DatabaseDao {
         when (sortType) {
             AlbumSortType.CREATE_DATE -> albumsByCreateDateAsc()
             AlbumSortType.NAME -> albumsByNameAsc()
-            AlbumSortType.ARTIST -> albumsByCreateDateAsc().map { albums ->
-                albums.sortedBy { album ->
-                    album.artists.joinToString(separator = "") { it.name }.lowercase()
-                }
-            }
-
+            AlbumSortType.ARTIST -> albumByArtistAsc()
             AlbumSortType.YEAR -> albumsByYearAsc()
             AlbumSortType.SONG_COUNT -> albumsBySongCountAsc()
             AlbumSortType.LENGTH -> albumsByLengthAsc()
@@ -574,12 +593,7 @@ interface DatabaseDao {
         when (sortType) {
             AlbumSortType.CREATE_DATE -> albumsLikedByCreateDateAsc()
             AlbumSortType.NAME -> albumsLikedByNameAsc()
-            AlbumSortType.ARTIST -> albumsLikedByCreateDateAsc().map { albums ->
-                albums.sortedBy { album ->
-                    album.artists.joinToString(separator = "") { it.name }.lowercase()
-                }
-            }
-
+            AlbumSortType.ARTIST -> albumLikeByArtistAsc()
             AlbumSortType.YEAR -> albumsLikedByYearAsc()
             AlbumSortType.SONG_COUNT -> albumsLikedBySongCountAsc()
             AlbumSortType.LENGTH -> albumsLikedByLengthAsc()
@@ -1032,6 +1046,9 @@ interface DatabaseDao {
     @Transaction
     @Query("UPDATE album_artist_map SET artistId = :newId WHERE artistId = :oldId")
     fun updateAlbumArtistMap(oldId: String, newId: String)
+
+    @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
+    suspend fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
 
     @Upsert
     fun upsert(map: SongAlbumMap)
