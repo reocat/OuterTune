@@ -63,6 +63,10 @@ class App : Application(), ImageLoaderFactory {
             }
         }
 
+        if (dataStore[UseLoginOnArtistPage] == true) {
+            YouTube.useLoginOnArtistPage = true
+        }
+
         GlobalScope.launch {
             dataStore.data
                 .map { it[VisitorDataKey] }
