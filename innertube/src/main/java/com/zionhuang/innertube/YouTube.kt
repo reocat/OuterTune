@@ -90,6 +90,8 @@ object YouTube {
             innerTube.proxy = value
         }
 
+    var useLoginOnArtistPage: Boolean = false
+
     suspend fun searchSuggestions(query: String): Result<SearchSuggestions> = runCatching {
         val response = innerTube.getSearchSuggestions(WEB_REMIX, query).body<GetSearchSuggestionsResponse>()
         SearchSuggestions(
@@ -202,7 +204,7 @@ object YouTube {
     }
 
     suspend fun artist(browseId: String): Result<ArtistPage> = runCatching {
-        val response = innerTube.browse(WEB_REMIX, browseId, setLogin = true).body<BrowseResponse>()
+        val response = innerTube.browse(WEB_REMIX, browseId, setLogin = useLoginOnArtistPage).body<BrowseResponse>()
 
         ArtistPage(
             artist = ArtistItem(
@@ -227,7 +229,7 @@ object YouTube {
     }
 
     suspend fun artistItems(endpoint: BrowseEndpoint): Result<ArtistItemsPage> = runCatching {
-        val response = innerTube.browse(WEB_REMIX, endpoint.browseId, endpoint.params, setLogin = true).body<BrowseResponse>()
+        val response = innerTube.browse(WEB_REMIX, endpoint.browseId, endpoint.params, setLogin = useLoginOnArtistPage).body<BrowseResponse>()
         val gridRenderer = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
             ?.gridRenderer
@@ -257,7 +259,7 @@ object YouTube {
     }
 
     suspend fun artistItemsContinuation(continuation: String): Result<ArtistItemsContinuationPage> = runCatching {
-        val response = innerTube.browse(WEB_REMIX, continuation = continuation, setLogin = true).body<BrowseResponse>()
+        val response = innerTube.browse(WEB_REMIX, continuation = continuation, setLogin = useLoginOnArtistPage).body<BrowseResponse>()
         val gridContinuation = response.continuationContents?.gridContinuation
         if (gridContinuation != null) {
             ArtistItemsContinuationPage(

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.ClearAll
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,12 +32,15 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
+import com.dd3boh.outertune.constants.UseLoginOnArtistPage
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
+import com.zionhuang.innertube.YouTube
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +51,7 @@ fun PrivacySettings(
     val database = LocalDatabase.current
     val (pauseListenHistory, onPauseListenHistoryChange) = rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(key = PauseSearchHistoryKey, defaultValue = false)
+    val (useLoginOnArtistPage, onUseLoginOnArtistPageChange) = rememberPreference(key = UseLoginOnArtistPage, defaultValue = false)
 
     var showClearListenHistoryDialog by remember {
         mutableStateOf(false)
@@ -144,6 +149,21 @@ fun PrivacySettings(
             title = { Text(stringResource(R.string.clear_search_history)) },
             icon = { Icon(Icons.Rounded.ClearAll, null) },
             onClick = { showClearSearchHistoryDialog = true }
+        )
+
+        PreferenceGroupTitle(
+            title = stringResource(R.string.account)
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.use_login_on_artist_page)) },
+            description = stringResource(R.string.use_login_on_artist_page_desc),
+            icon = { Icon(Icons.Rounded.Person, null) },
+            checked = useLoginOnArtistPage,
+            onCheckedChange = {
+                YouTube.useLoginOnArtistPage = it
+                onUseLoginOnArtistPageChange(it)
+            }
         )
     }
 
