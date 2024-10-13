@@ -32,7 +32,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
-import com.dd3boh.outertune.constants.UseLoginOnArtistPage
+import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -51,7 +51,7 @@ fun PrivacySettings(
     val database = LocalDatabase.current
     val (pauseListenHistory, onPauseListenHistoryChange) = rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(key = PauseSearchHistoryKey, defaultValue = false)
-    val (useLoginOnArtistPage, onUseLoginOnArtistPageChange) = rememberPreference(key = UseLoginOnArtistPage, defaultValue = false)
+    val (useLoginForBrowse, onUseLoginForBrowseChange) = rememberPreference(key = UseLoginForBrowse, defaultValue = false)
 
     var showClearListenHistoryDialog by remember {
         mutableStateOf(false)
@@ -156,13 +156,13 @@ fun PrivacySettings(
         )
 
         SwitchPreference(
-            title = { Text(stringResource(R.string.use_login_on_artist_page)) },
-            description = stringResource(R.string.use_login_on_artist_page_desc),
+            title = { Text(stringResource(R.string.use_login_for_browse)) },
+            description = stringResource(R.string.use_login_for_browse_desc),
             icon = { Icon(Icons.Rounded.Person, null) },
-            checked = useLoginOnArtistPage,
+            checked = useLoginForBrowse,
             onCheckedChange = {
-                YouTube.useLoginOnArtistPage = it
-                onUseLoginOnArtistPageChange(it)
+                YouTube.useLoginForBrowse = it
+                onUseLoginForBrowseChange(it)
             }
         )
     }

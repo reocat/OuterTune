@@ -54,6 +54,8 @@ class InnerTube {
             httpClient = createClient()
         }
 
+    var useLoginForBrowse: Boolean = false
+
     @OptIn(ExperimentalSerializationApi::class)
     private fun createClient() = HttpClient(OkHttp) {
         expectSuccess = true
@@ -114,7 +116,7 @@ class InnerTube {
         params: String? = null,
         continuation: String? = null,
     ) = httpClient.post("search") {
-        ytClient(client)
+        ytClient(client, setLogin = useLoginForBrowse)
         setBody(
             SearchBody(
                 context = client.toContext(locale, visitorData),
