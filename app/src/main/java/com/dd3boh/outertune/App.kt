@@ -61,8 +61,8 @@ class App : Application(), ImageLoaderFactory {
             }
         }
 
-        if (dataStore[UseLoginOnArtistPage] == true) {
-            YouTube.useLoginOnArtistPage = true
+        if (dataStore[UseLoginForBrowse] == true) {
+            YouTube.useLoginForBrowse = true
         }
 
         GlobalScope.launch {
