@@ -105,6 +105,7 @@ import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.SwipeToQueueBox
 import com.dd3boh.outertune.ui.menu.SongMenu
+import com.dd3boh.outertune.ui.utils.getNSongsString
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -182,6 +183,9 @@ fun AutoPlaylistScreen(
 
     val playlistLength = remember(songs) {
         songs.fastSumBy { it.song.duration }
+    }
+    val downloadCount = remember(songs) {
+        songs.count { it.song.dateDownload != null }
     }
 
     val downloadUtil = LocalDownloadUtil.current
@@ -314,8 +318,21 @@ fun AutoPlaylistScreen(
                                     Spacer(modifier = Modifier.width(8.dp))
                                 }
 
+                                if (playlistType == PlaylistType.LIKE && downloadCount > 0){
+                                    Icon(
+                                        imageVector = Icons.Rounded.OfflinePin,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .padding(end = 2.dp)
+                                    )
+                                }
+
                                 Text(
-                                    text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
+                                    text = if (playlistType == PlaylistType.LIKE && downloadCount > 0)
+                                            getNSongsString(songs.size, downloadCount)
+                                        else
+                                            getNSongsString(songs.size),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Normal
                                 )
