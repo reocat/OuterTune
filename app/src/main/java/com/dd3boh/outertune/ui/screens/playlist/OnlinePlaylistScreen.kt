@@ -71,11 +71,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -389,33 +387,13 @@ fun OnlinePlaylistScreen(
                                                         onClick = {
                                                             if (!isSyncing) {
                                                                 isSyncing = true
-                                                                viewModel.viewModelScope.launch(
-                                                                    Dispatchers.IO
-                                                                ) {
-                                                                    syncUtils.syncPlaylist(
-                                                                        playlist.id,
-                                                                        dbPlaylist!!.id
-                                                                    )
-                                                                }
-
-                                                                songs.forEach { song ->
-                                                                    val downloadRequest =
-                                                                        DownloadRequest.Builder(
-                                                                            song.id,
-                                                                            song.id.toUri()
-                                                                        )
-                                                                            .setCustomCacheKey(song.id)
-                                                                            .setData(song.title.toByteArray())
-                                                                            .build()
-                                                                    DownloadService.sendAddDownload(
-                                                                        context,
-                                                                        ExoDownloadService::class.java,
-                                                                        downloadRequest,
-                                                                        false
-                                                                    )
+                                                                viewModel.viewModelScope.launch(Dispatchers.IO) {
+	                                                                syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id) 
+								}        
+								val _songs = songs.map{ it.toMediaMetadata() }
+                                                                downloadUtil.download(_songs, context)
                                                                 }
                                                                 isSyncing = false
-                                                            }
                                                         },
                                                         enabled = !isSyncing
                                                     ) {
