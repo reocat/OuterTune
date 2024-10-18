@@ -1202,6 +1202,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        downloadUtil.ResumeDownloadsOnStart(this@MainActivity)
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {
