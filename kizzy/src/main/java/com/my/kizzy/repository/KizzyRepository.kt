@@ -22,9 +22,9 @@ import java.io.File
 class KizzyRepository {
     private val api = ApiService()
     suspend fun getImage(url: String): String? {
-        return api.getImage(url).toImageAsset()
+        return api.getImage(url).getOrNull()?.toImageAsset()
     }
     suspend fun uploadImage(file: File): String? {
-        return api.uploadImage(file).toImageAsset()
+        return api.uploadImage(file).getOrNull()?.toImageAsset()
     }
 }
