@@ -26,7 +26,7 @@ interface AlbumsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
-            JOIN song ON song.albumId = album.id
+            LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :id
         GROUP BY album.id
     """)
@@ -35,7 +35,7 @@ interface AlbumsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
-            JOIN song ON song.albumId = album.id
+            LEFT JOIN song ON song.albumId = album.id
         WHERE album.title LIKE '%' || :query || '%' AND song.inLibrary IS NOT NULL
         GROUP BY album.id
         LIMIT :previewSize
@@ -45,7 +45,7 @@ interface AlbumsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
-            JOIN song ON song.albumId = album.id
+            LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :albumId
     """)
     fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?>
@@ -73,7 +73,7 @@ interface AlbumsDao {
         return SimpleSQLiteQuery("""
             SELECT album.*, count(song.dateDownload) downloadCount
             FROM album
-                JOIN song ON song.albumId = album.id
+                LEFT JOIN song ON song.albumId = album.id
             WHERE song.inLibrary IS NOT NULL 
             GROUP BY album.id
             ORDER BY $orderBy
@@ -90,7 +90,7 @@ interface AlbumsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
-            JOIN song ON song.albumId = album.id
+            LEFT JOIN song ON song.albumId = album.id
         WHERE song.inLibrary IS NOT NULL 
         GROUP BY album.id
         ORDER BY (
@@ -119,7 +119,7 @@ interface AlbumsDao {
         return SimpleSQLiteQuery("""
             SELECT album.*, count(song.dateDownload) downloadCount
             FROM album
-                INNER JOIN song ON song.albumId = album.id
+                LEFT JOIN song ON song.albumId = album.id
             WHERE bookmarkedAt IS NOT NULL
             GROUP BY album.id
             ORDER BY $orderBy
@@ -135,7 +135,7 @@ interface AlbumsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount 
         FROM album
-            INNER JOIN song ON song.albumId = album.id
+            LEFT JOIN song ON song.albumId = album.id
         WHERE bookmarkedAt IS NOT NULL
         GROUP BY album.id
         ORDER BY (
@@ -150,7 +150,7 @@ interface AlbumsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount 
         FROM album
-            INNER JOIN song ON song.albumId = album.id
+            LEFT JOIN song ON song.albumId = album.id
         WHERE bookmarkedAt IS NOT NULL
         GROUP BY album.id
         ORDER BY SUM(song.totalPlayTime)
