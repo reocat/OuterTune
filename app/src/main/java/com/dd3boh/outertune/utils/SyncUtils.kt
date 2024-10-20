@@ -121,27 +121,11 @@ class SyncUtils @Inject constructor(
             return // Synchronization already in progress
         }
 
-        val browseIds = mapOf(
-            "FEmusic_liked_videos" to 0,
-            "FEmusic_library_privately_owned_tracks" to 1
-        )
-
         try {
             Timber.tag(_TAG).d("Library songs synchronization started")
 
             // Get remote songs (from library and uploads)
-            val remoteSongs = mutableListOf<SongItem>()
-            coroutineScope {
-                val fetchJobs = browseIds.map { (browseId, tab) ->
-                    async {
-                        YouTube.library(browseId, tab).completedLibraryPage().onSuccess{ page ->
-                            val songs = page.items.filterIsInstance<SongItem>().reversed()
-                            synchronized(remoteSongs) { remoteSongs.addAll(songs) }
-                        }
-                    }
-                }
-                fetchJobs.awaitAll()
-            }
+            val remoteSongs = GetRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
 
             // Identify local songs to remove
             val songsToRemoveFromLibrary = database.songsByNameAsc().first()
@@ -191,43 +175,39 @@ class SyncUtils @Inject constructor(
         try {
             Timber.tag(_TAG).d("Library albums synchronization started")
 
-            // Get remote albums
-            YouTube.library("FEmusic_liked_albums").completedLibraryPage().onSuccess { page ->
-                val remoteAlbums =  page.items.filterIsInstance<AlbumItem>().reversed()
+            // Get remote albums (from library and uploads)
+            val remoteAlbums = GetRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
 
-                // Identify local albums to remove
-                val albumsToRemoveFromLibrary = database.albumsLikedByNameAsc().first()
-                    .filterNot { it.album.isLocal }
-                    .filterNot { localAlbum -> remoteAlbums.any { it.id == localAlbum.id } }
+            // Identify local albums to remove
+            val albumsToRemoveFromLibrary = database.albumsLikedByNameAsc().first()
+                .filterNot { it.album.isLocal }
+                .filterNot { localAlbum -> remoteAlbums.any { it.id == localAlbum.id } }
 
-                // Remove albums from local database
-                coroutineScope {
-                    albumsToRemoveFromLibrary.forEach { album ->
-                        launch(Dispatchers.IO) {
-                            database.update(album.album.localToggleLike())
-                        }
-                    }
-                }
-
-                // Add or mark albums in local database
-                coroutineScope {
-                    remoteAlbums.forEach { remoteAlbum ->
-                        launch(Dispatchers.IO) {
-                            val localAlbum = database.album(remoteAlbum.id).firstOrNull()
-                            if (localAlbum == null) {
-                                database.insert(remoteAlbum)
-                                database.album(remoteAlbum.id).firstOrNull()?.let {
-                                    database.update(it.album.localToggleLike())
-                                }
-                            } else if (localAlbum.album.bookmarkedAt == null) {
-                                database.update(localAlbum.album.localToggleLike())
-                            }
-                        }
+            // Remove albums from local database
+            coroutineScope {
+                albumsToRemoveFromLibrary.forEach { album ->
+                    launch(Dispatchers.IO) {
+                        database.update(album.album.localToggleLike())
                     }
                 }
             }
 
-
+            // Add or mark albums in local database
+            coroutineScope {
+                remoteAlbums.forEach { remoteAlbum ->
+                    launch(Dispatchers.IO) {
+                        val localAlbum = database.album(remoteAlbum.id).firstOrNull()
+                        if (localAlbum == null) {
+                            database.insert(remoteAlbum)
+                            database.album(remoteAlbum.id).firstOrNull()?.let {
+                                database.update(it.album.localToggleLike())
+                            }
+                        } else if (localAlbum.album.bookmarkedAt == null) {
+                            database.update(localAlbum.album.localToggleLike())
+                        }
+                    }
+                }
+            }
         } finally {
             Timber.tag(_TAG).d("Library albums synchronization ended")
             _isSyncingRemoteAlbums.value = false // Use the correct AtomicBoolean
@@ -246,49 +226,46 @@ class SyncUtils @Inject constructor(
         try {
             Timber.tag(_TAG).d("Artist subscriptions synchronization started")
 
-            // Get remote artists
-            YouTube.library("FEmusic_library_corpus_artists").completedLibraryPage().onSuccess { page ->
-                val remoteArtists = page.items.filterIsInstance<ArtistItem>()
+            // Get remote artists (from library and uploads)
+            val remoteArtists = GetRemoteData<ArtistItem>("FEmusic_library_corpus_artists", "FEmusic_library_privately_owned_artists")
 
-                // Get local artists
-                val artistsToRemoveFromSubscriptions = database.artistsBookmarkedByNameAsc().first()
-                    .filterNot { it.artist.isLocal }
-                    .filterNot { localArtist -> remoteArtists.any { it.id == localArtist.id } }
+            // Get local artists
+            val artistsToRemoveFromSubscriptions = database.artistsBookmarkedByNameAsc().first()
+                .filterNot { it.artist.isLocal }
+                .filterNot { localArtist -> remoteArtists.any { it.id == localArtist.id } }
 
-                // Remove local artists from the database
-                coroutineScope {
-                    artistsToRemoveFromSubscriptions.forEach { artist ->
-                        launch(Dispatchers.IO) {
-                            database.update(artist.artist.localToggleLike())
-                        }
+            // Remove local artists from the database
+            coroutineScope {
+                artistsToRemoveFromSubscriptions.forEach { artist ->
+                    launch(Dispatchers.IO) {
+                        database.update(artist.artist.localToggleLike())
                     }
                 }
+            }
 
-                // Add or mark artists in the database
-                coroutineScope {
-                    remoteArtists.forEach { remoteArtist ->
-                        launch(Dispatchers.IO) {
-                            val localArtist = database.artist(remoteArtist.id).firstOrNull()
-                            database.transaction {
-                                if (localArtist == null) {
-                                    insert(
-                                        ArtistEntity(
-                                            id = remoteArtist.id,
-                                            name = remoteArtist.title,
-                                            thumbnailUrl = remoteArtist.thumbnail,
-                                            channelId = remoteArtist.channelId,
-                                            bookmarkedAt = LocalDateTime.now()
-                                        )
+            // Add or mark artists in the database
+            coroutineScope {
+                remoteArtists.forEach { remoteArtist ->
+                    launch(Dispatchers.IO) {
+                        val localArtist = database.artist(remoteArtist.id).firstOrNull()
+                        database.transaction {
+                            if (localArtist == null) {
+                                insert(
+                                    ArtistEntity(
+                                        id = remoteArtist.id,
+                                        name = remoteArtist.title,
+                                        thumbnailUrl = remoteArtist.thumbnail,
+                                        channelId = remoteArtist.channelId,
+                                        bookmarkedAt = LocalDateTime.now()
                                     )
-                                } else if (localArtist.artist.bookmarkedAt == null) {
-                                    update(localArtist.artist.localToggleLike())
-                                }
+                                )
+                            } else if (localArtist.artist.bookmarkedAt == null) {
+                                update(localArtist.artist.localToggleLike())
                             }
                         }
                     }
                 }
             }
-
         } finally {
             Timber.tag(_TAG).d("Artist subscriptions synchronization ended")
             _isSyncingRemoteArtists.value = false
@@ -396,5 +373,27 @@ class SyncUtils @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend inline fun <reified T> GetRemoteData(libraryId: String, uploadsId: String): MutableList<T> {
+        val browseIds = mapOf(
+            libraryId to 0,
+            uploadsId to 1
+        )
+
+        val remote = mutableListOf<T>()
+        coroutineScope {
+            val fetchJobs = browseIds.map { (browseId, tab) ->
+                async {
+                    YouTube.library(browseId, tab).completedLibraryPage().onSuccess { page ->
+                        val data = page.items.filterIsInstance<T>().reversed()
+                        synchronized(remote) { remote.addAll(data) }
+                    }
+                }
+            }
+            fetchJobs.awaitAll()
+        }
+
+        return remote
     }
 }
