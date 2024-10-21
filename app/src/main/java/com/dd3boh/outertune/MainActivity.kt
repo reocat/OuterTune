@@ -1203,7 +1203,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        downloadUtil.ResumeDownloadsOnStart(this@MainActivity)
+        downloadUtil.resumeDownloadsOnStart(this@MainActivity)
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {
