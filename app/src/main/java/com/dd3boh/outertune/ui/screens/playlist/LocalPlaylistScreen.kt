@@ -152,7 +152,6 @@ fun LocalPlaylistScreen(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
     val playlist by viewModel.playlist.collectAsState()
-    val liked = playlist?.playlist?.bookmarkedAt != null
 
     val songs by viewModel.playlistSongs.collectAsState()
     val mutableSongs = remember { mutableStateListOf<PlaylistSong>() }
@@ -685,7 +684,7 @@ fun LocalPlaylistHeader(
                     fontSizeRange = FontSizeRange(16.sp, 22.sp)
                 )
 
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     if (playlist.downloadCount > 0){
                         Icon(
                             imageVector = Icons.Rounded.OfflinePin,
