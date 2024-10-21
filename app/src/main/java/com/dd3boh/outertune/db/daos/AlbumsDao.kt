@@ -8,19 +8,28 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.dd3boh.outertune.constants.AlbumSortType
 import com.dd3boh.outertune.db.entities.Album
+import com.dd3boh.outertune.db.entities.AlbumArtistMap
 import com.dd3boh.outertune.db.entities.AlbumEntity
 import com.dd3boh.outertune.db.entities.AlbumWithSongs
+import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
+import com.dd3boh.outertune.db.entities.SongAlbumMap
 import com.dd3boh.outertune.extensions.reversed
+import com.zionhuang.innertube.models.AlbumItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/*
+ * Logic related to albums entities and their mapping
+ */
+
 @Dao
-interface AlbumsDao {
+interface AlbumsDao : ArtistsDao {
 
     // region Gets
     @Query("""
@@ -227,11 +236,58 @@ interface AlbumsDao {
     // region Inserts
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(album: AlbumEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: SongAlbumMap)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: AlbumArtistMap)
+
+    @Transaction
+    fun insert(albumItem: AlbumItem) {
+        if (insert(AlbumEntity(
+                id = albumItem.browseId,
+                playlistId = albumItem.playlistId,
+                title = albumItem.title,
+                year = albumItem.year,
+                thumbnailUrl = albumItem.thumbnail,
+                songCount = 0,
+                duration = 0
+            )) == -1L
+        ) return
+        albumItem.artists
+            ?.map { artist ->
+                ArtistEntity(
+                    id = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId(),
+                    name = artist.name
+                )
+            }
+            ?.onEach(::insert)
+            ?.mapIndexed { index, artist ->
+                AlbumArtistMap(
+                    albumId = albumItem.browseId,
+                    artistId = artist.id,
+                    order = index
+                )
+            }
+            ?.forEach(::insert)
+    }
     // endregion
 
     // region Updates
     @Update
     fun update(album: AlbumEntity)
+
+    @Upsert
+    fun upsert(map: SongAlbumMap)
+
+    @Transaction
+    @Query("UPDATE album_artist_map SET artistId = :newId WHERE artistId = :oldId")
+    fun updateAlbumArtistMap(oldId: String, newId: String)
+
+    @Transaction
+    @Query("DELETE FROM song_artist_map WHERE songId = :songID")
+    fun unlinkSongArtists(songID: String)
     // endregion
 
     // region Deletes

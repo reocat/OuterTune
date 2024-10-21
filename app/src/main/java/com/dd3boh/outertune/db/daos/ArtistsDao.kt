@@ -15,12 +15,17 @@ import com.dd3boh.outertune.constants.ArtistSortType
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
+import com.dd3boh.outertune.db.entities.SongArtistMap
 import com.dd3boh.outertune.extensions.reversed
 import com.dd3boh.outertune.ui.utils.resize
 import com.zionhuang.innertube.pages.ArtistPage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
+
+/*
+ * Logic related to artists entities and their mapping
+ */
 
 @Dao
 interface ArtistsDao {
@@ -225,6 +230,9 @@ interface ArtistsDao {
     // region Inserts
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(artist: ArtistEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: SongArtistMap)
     // endregion
 
     // region Updates
@@ -241,6 +249,10 @@ interface ArtistsDao {
             )
         )
     }
+
+    @Transaction
+    @Query("UPDATE song_artist_map SET artistId = :newId WHERE artistId = :oldId")
+    fun updateSongArtistMap(oldId: String, newId: String)
     // endregion
 
     // region Deletes

@@ -312,7 +312,7 @@ fun LocalPlaylistScreen(
                 return@rememberReorderableLazyListState
             }
             viewModel.viewModelScope.launch(Dispatchers.IO) {
-                val playlistSongMap = database.playlistSongMaps(viewModel.playlistId, 0)
+                val playlistSongMap = database.songMapsToPlaylist(viewModel.playlistId, 0)
 
                 var fromIndex = initialFromIndex - headerItems
                 val toIndex = initialToIndex - headerItems

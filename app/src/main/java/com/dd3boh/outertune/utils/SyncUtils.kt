@@ -335,7 +335,7 @@ class SyncUtils @Inject constructor(
                             val updatedPlaylist =
                                 database.playlistByBrowseId(remotePlaylist.id).firstOrNull()
                             updatedPlaylist?.let {
-                                val playlistSongMaps = database.playlistSongMaps(updatedPlaylist.id)
+                                val playlistSongMaps = database.songMapsToPlaylist(updatedPlaylist.id)
                                 if (updatedPlaylist.playlist.isEditable || playlistSongMaps.isNotEmpty()) {
                                     syncPlaylist(remotePlaylist.id, updatedPlaylist.id)
                                 }

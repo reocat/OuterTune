@@ -14,10 +14,16 @@ import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSong
+import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.extensions.reversed
 import com.zionhuang.innertube.models.PlaylistItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+
+/*
+ * Logic related to playlists entities and their mapping
+ */
 
 @Dao
 interface PlaylistsDao {
@@ -68,6 +74,12 @@ interface PlaylistsDao {
 
     @Query("SELECT songId from playlist_song_map WHERE playlistId = :playlistId AND songId IN (:songIds)")
     fun playlistDuplicates(playlistId: String, songIds: List<String>,): List<String>
+
+    @Query("SELECT * FROM playlist_song_map WHERE songId = :songId")
+    fun songMapsToPlaylist(songId: String): List<PlaylistSongMap>
+
+    @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId AND position >= :from ORDER BY position")
+    fun songMapsToPlaylist(playlistId: String, from: Int): List<PlaylistSongMap>
 
     @RawQuery(observedEntities = [PlaylistEntity::class])
     fun _getPlaylists(query: SupportSQLiteQuery): Flow<List<Playlist>>
@@ -134,11 +146,17 @@ interface PlaylistsDao {
     // region Inserts
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(playlist: PlaylistEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: PlaylistSongMap)
     // endregion
 
     // region Updates
     @Update
     fun update(playlist: PlaylistEntity)
+
+    @Update
+    fun update(map: PlaylistSongMap)
 
     @Update
     fun update(playlistEntity: PlaylistEntity, playlistItem: PlaylistItem) {
@@ -152,6 +170,20 @@ interface PlaylistsDao {
             shuffleEndpointParams = playlistItem.shuffleEndpoint?.params,
             radioEndpointParams = playlistItem.radioEndpoint?.params
         ))
+    }
+
+    @Transaction
+    fun addSongToPlaylist(playlist: Playlist, songIds: List<String>) {
+        var position = playlist.songCount
+        songIds.forEach { id ->
+            insert(
+                PlaylistSongMap(
+                    songId = id,
+                    playlistId = playlist.id,
+                    position = position++
+                )
+            )
+        }
     }
 
     @Transaction
@@ -179,5 +211,8 @@ interface PlaylistsDao {
 
     @Query("DELETE FROM playlist_song_map WHERE playlistId = :playlistId")
     fun clearPlaylist(playlistId: String)
+
+    @Delete
+    fun delete(playlistSongMap: PlaylistSongMap)
     // endregion
 }
