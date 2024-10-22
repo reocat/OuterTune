@@ -74,8 +74,6 @@ class LibrarySongsViewModel @Inject constructor(
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
 
-    val databaseLink = database
-
     val allSongs = getSyncedSongs(context, database)
     val isSyncingRemoteLikedSongs = syncUtils.isSyncingRemoteLikedSongs
     val isSyncingRemoteSongs = syncUtils.isSyncingRemoteSongs
@@ -151,11 +149,7 @@ class LibraryArtistsViewModel @Inject constructor(
         }
         .distinctUntilChanged()
         .flatMapLatest { (filter, sortType, descending) ->
-            when (filter) {
-                ArtistFilter.LIBRARY -> database.artists(sortType, descending)
-                ArtistFilter.LIKED -> database.artistsBookmarked(sortType, descending)
-                ArtistFilter.DOWNLOADED -> database.artistsWithDonwloads(sortType, descending)
-            }
+            database.artists(filter, sortType, descending)
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -199,11 +193,7 @@ class LibraryAlbumsViewModel @Inject constructor(
         }
         .distinctUntilChanged()
         .flatMapLatest { (filter, sortType, descending) ->
-            when (filter) {
-                AlbumFilter.LIBRARY -> database.albums(sortType, descending)
-                AlbumFilter.LIKED -> database.albumsLiked(sortType, descending)
-                AlbumFilter.DOWNLOADED -> database.albumsWithDonwloads(sortType, descending)
-            }
+            database.albums(filter, sortType, descending)
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -251,10 +241,7 @@ class LibraryPlaylistsViewModel @Inject constructor(
         }
         .distinctUntilChanged()
         .flatMapLatest { (filter, sortType, descending) ->
-            when (filter) {
-                PlaylistFilter.LIBRARY -> database.playlists(sortType, descending)
-                PlaylistFilter.DOWNLOADED -> database.playlistsWithDownloads(sortType, descending)
-            }
+            database.playlists(filter, sortType, descending)
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -275,12 +262,9 @@ class LibraryViewModel @Inject constructor(
     val isSyncingRemoteArtists = syncUtils.isSyncingRemoteArtists
     val isSyncingRemotePlaylists = syncUtils.isSyncingRemotePlaylists
 
-    var artists = database.artistsBookmarked(ArtistSortType.CREATE_DATE, true)
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    var albums = database.albumsLiked(AlbumSortType.CREATE_DATE, true)
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    var playlists = database.playlists(PlaylistSortType.CREATE_DATE, true)
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    var artists = database.artistsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    var albums = database.albumsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    var playlists = database.playlistInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val allItems = context.dataStore.data
         .map {

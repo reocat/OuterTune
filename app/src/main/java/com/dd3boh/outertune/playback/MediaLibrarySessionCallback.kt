@@ -112,11 +112,11 @@ class MediaLibrarySessionCallback @Inject constructor(
                 )
 
                 MusicService.SONG -> database.songsByCreateDateAsc().first().map { it.toMediaItem(parentId) }
-                MusicService.ARTIST -> database.artistsByCreateDateAsc().first().map { artist ->
+                MusicService.ARTIST -> database.artistsInLibraryAsc().first().map { artist ->
                     browsableMediaItem("${MusicService.ARTIST}/${artist.id}", artist.artist.name, context.resources.getQuantityString(R.plurals.n_song, artist.songCount, artist.songCount), artist.artist.thumbnailUrl?.toUri(), MediaMetadata.MEDIA_TYPE_ARTIST)
                 }
 
-                MusicService.ALBUM -> database.albumsByCreateDateAsc().first().map { album ->
+                MusicService.ALBUM -> database.albumsInLibraryAsc().first().map { album ->
                     browsableMediaItem("${MusicService.ALBUM}/${album.id}", album.album.title, album.artists.joinToString { it.name }, album.album.thumbnailUrl?.toUri(), MediaMetadata.MEDIA_TYPE_ALBUM)
                 }
 
@@ -126,7 +126,7 @@ class MediaLibrarySessionCallback @Inject constructor(
                     listOf(
                         browsableMediaItem("${MusicService.PLAYLIST}/${PlaylistEntity.LIKED_PLAYLIST_ID}", context.getString(R.string.liked_songs), context.resources.getQuantityString(R.plurals.n_song, likedSongCount, likedSongCount), drawableUri(R.drawable.favorite), MediaMetadata.MEDIA_TYPE_PLAYLIST),
                         browsableMediaItem("${MusicService.PLAYLIST}/${PlaylistEntity.DOWNLOADED_PLAYLIST_ID}", context.getString(R.string.downloaded_songs), context.resources.getQuantityString(R.plurals.n_song, downloadedSongCount, downloadedSongCount), drawableUri(R.drawable.download), MediaMetadata.MEDIA_TYPE_PLAYLIST)
-                    ) + database.playlistsByCreateDateAsc().first().map { playlist ->
+                    ) + database.playlistInLibraryAsc().first().map { playlist ->
                         browsableMediaItem("${MusicService.PLAYLIST}/${playlist.id}", playlist.playlist.name, context.resources.getQuantityString(R.plurals.n_song, playlist.songCount, playlist.songCount), playlist.thumbnails.firstOrNull()?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST)
                     }
                 }

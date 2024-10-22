@@ -11,6 +11,7 @@ import androidx.room.Update
 import androidx.room.Upsert
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.dd3boh.outertune.constants.AlbumFilter
 import com.dd3boh.outertune.constants.AlbumSortType
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.AlbumArtistMap
@@ -78,160 +79,42 @@ interface AlbumsDao : ArtistsDao {
     @RawQuery(observedEntities = [AlbumEntity::class])
     fun _getAlbum(query: SupportSQLiteQuery): Flow<List<Album>>
 
-    // region Albums Sort
-    private fun queryAlbums(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
+    fun albums(filter: AlbumFilter, sortType: AlbumSortType, descending: Boolean): Flow<List<Album>> {
+        val orderBy = when (sortType) {
+            AlbumSortType.CREATE_DATE -> "album.rowId ASC"
+            AlbumSortType.NAME -> "album.title COLLATE NOCASE ASC"
+            AlbumSortType.ARTIST -> """ORDER BY (
+                                        SELECT LOWER(GROUP_CONCAT(name, ''))
+                                        FROM artist
+                                        WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
+                                        ORDER BY name
+                                    ) COLLATE NOCASE ASC"""
+            AlbumSortType.YEAR -> "album.year ASC"
+            AlbumSortType.SONG_COUNT -> "album.songCount ASC"
+            AlbumSortType.LENGTH -> "album.duration ASC"
+            AlbumSortType.PLAY_TIME -> "SUM(song.totalPlayTime) ASC"
+        }
+
+        val where = when (filter) {
+            AlbumFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
+            AlbumFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
+            AlbumFilter.LIKED -> "album.bookmarkedAt IS NOT NULL"
+        }
+
+        val query = SimpleSQLiteQuery("""
             SELECT album.*, count(song.dateDownload) downloadCount
             FROM album
                 LEFT JOIN song ON song.albumId = album.id
-            WHERE song.inLibrary IS NOT NULL 
+            WHERE $where
             GROUP BY album.id
             ORDER BY $orderBy
         """)
+
+        return _getAlbum(query).map { it.reversed(descending) }
     }
 
-    fun albumsByCreateDateAsc(): Flow<List<Album>> = _getAlbum(queryAlbums("album.rowId ASC"))
-    fun albumsByNameAsc(): Flow<List<Album>> = _getAlbum(queryAlbums("album.title COLLATE NOCASE ASC"))
-    fun albumsByYearAsc(): Flow<List<Album>> = _getAlbum(queryAlbums("album.year ASC"))
-    fun albumsBySongCountAsc(): Flow<List<Album>> = _getAlbum(queryAlbums("album.songCount ASC"))
-    fun albumsByLengthAsc(): Flow<List<Album>> = _getAlbum(queryAlbums("album.duration ASC"))
-    fun albumsByPlayTimeAsc(): Flow<List<Album>> = _getAlbum(queryAlbums("SUM(song.totalPlayTime) ASC"))
-
-    @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount
-        FROM album
-            LEFT JOIN song ON song.albumId = album.id
-        WHERE song.inLibrary IS NOT NULL 
-        GROUP BY album.id
-        ORDER BY (
-            SELECT LOWER(GROUP_CONCAT(name, ''))
-            FROM artist
-            WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
-            ORDER BY name
-        ) COLLATE NOCASE
-    """)
-    fun albumByArtistAsc(): Flow<List<Album>>
-
-    fun albums(sortType: AlbumSortType, descending: Boolean) =
-        when (sortType) {
-            AlbumSortType.CREATE_DATE -> albumsByCreateDateAsc()
-            AlbumSortType.NAME -> albumsByNameAsc()
-            AlbumSortType.ARTIST -> albumByArtistAsc()
-            AlbumSortType.YEAR -> albumsByYearAsc()
-            AlbumSortType.SONG_COUNT -> albumsBySongCountAsc()
-            AlbumSortType.LENGTH -> albumsByLengthAsc()
-            AlbumSortType.PLAY_TIME -> albumsByPlayTimeAsc()
-        }.map { it.reversed(descending) }
-    // endregion
-
-    // region Liked Albums Sort
-    private fun queryAlbumsLiked(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
-            SELECT album.*, count(song.dateDownload) downloadCount
-            FROM album
-                LEFT JOIN song ON song.albumId = album.id
-            WHERE bookmarkedAt IS NOT NULL
-            GROUP BY album.id
-            ORDER BY $orderBy
-        """)
-    }
-
-    fun albumsLikedByCreateDateAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsLiked("album.rowId ASC"))
-    fun albumsLikedByNameAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsLiked("album.title COLLATE NOCASE ASC"))
-    fun albumsLikedByYearAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsLiked("album.year ASC"))
-    fun albumsLikedBySongCountAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsLiked("album.songCount ASC"))
-    fun albumsLikedByLengthAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsLiked("album.duration ASC"))
-
-    @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount 
-        FROM album
-            LEFT JOIN song ON song.albumId = album.id
-        WHERE bookmarkedAt IS NOT NULL
-        GROUP BY album.id
-        ORDER BY (
-            SELECT LOWER(GROUP_CONCAT(name, ''))
-            FROM artist
-            WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
-            ORDER BY name
-        ) COLLATE NOCASE
-    """)
-    fun albumLikeByArtistAsc(): Flow<List<Album>>
-
-    @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount 
-        FROM album
-            LEFT JOIN song ON song.albumId = album.id
-        WHERE bookmarkedAt IS NOT NULL
-        GROUP BY album.id
-        ORDER BY SUM(song.totalPlayTime)
-    """)
-    fun albumsLikedByPlayTimeAsc(): Flow<List<Album>>
-
-    fun albumsLiked(sortType: AlbumSortType, descending: Boolean) =
-        when (sortType) {
-            AlbumSortType.CREATE_DATE -> albumsLikedByCreateDateAsc()
-            AlbumSortType.NAME -> albumsLikedByNameAsc()
-            AlbumSortType.ARTIST -> albumLikeByArtistAsc()
-            AlbumSortType.YEAR -> albumsLikedByYearAsc()
-            AlbumSortType.SONG_COUNT -> albumsLikedBySongCountAsc()
-            AlbumSortType.LENGTH -> albumsLikedByLengthAsc()
-            AlbumSortType.PLAY_TIME -> albumsLikedByPlayTimeAsc()
-        }.map { it.reversed(descending) }
-    // endregion
-
-    // region Downloaded Albums Sort
-    private fun queryAlbumsWithDonwloads(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
-            SELECT album.*, count(song.dateDownload) downloadCount
-            FROM album
-                INNER JOIN song ON song.albumId = album.id AND song.dateDownload IS NOT NULL
-            GROUP BY album.id
-            ORDER BY $orderBy
-        """)
-    }
-
-    fun albumsWithDonwloadsByCreateDateAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsWithDonwloads("album.rowId ASC"))
-    fun albumsWithDonwloadsByNameAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsWithDonwloads("album.title COLLATE NOCASE ASC"))
-    fun albumsWithDonwloadsByYearAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsWithDonwloads("album.year ASC"))
-    fun albumsWithDonwloadsBySongCountAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsWithDonwloads("album.songCount ASC"))
-    fun albumsWithDonwloadsByLengthAsc(): Flow<List<Album>> = _getAlbum(queryAlbumsWithDonwloads("album.duration ASC"))
-
-    @Query("""
-        SELECT *, count(song.dateDownload) downloadCount
-        FROM album
-            INNER JOIN song ON song.albumId = album.id
-        WHERE song.dateDownload IS NOT NULL
-        GROUP BY album.id
-        ORDER BY (
-            SELECT LOWER(GROUP_CONCAT(name, ''))
-            FROM artist
-            WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
-            ORDER BY name
-        ) COLLATE NOCASE
-    """)
-    fun albumWithDonwloadsByArtistAsc(): Flow<List<Album>>
-
-    @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount
-        FROM album
-            INNER JOIN song ON song.albumId = album.id
-        WHERE song.dateDownload IS NOT NULL
-        GROUP BY album.id
-        ORDER BY SUM(song.totalPlayTime)
-    """)
-    fun albumsWithDonwloadsByPlayTimeAsc(): Flow<List<Album>>
-
-    fun albumsWithDonwloads(sortType: AlbumSortType, descending: Boolean) =
-        when (sortType) {
-            AlbumSortType.CREATE_DATE -> albumsWithDonwloadsByCreateDateAsc()
-            AlbumSortType.NAME -> albumsWithDonwloadsByNameAsc()
-            AlbumSortType.ARTIST -> albumWithDonwloadsByArtistAsc()
-            AlbumSortType.YEAR -> albumsWithDonwloadsByYearAsc()
-            AlbumSortType.SONG_COUNT -> albumsWithDonwloadsBySongCountAsc()
-            AlbumSortType.LENGTH -> albumsWithDonwloadsByLengthAsc()
-            AlbumSortType.PLAY_TIME -> albumsWithDonwloadsByPlayTimeAsc()
-        }.map { it.reversed(descending) }
-    // endregion
+    fun albumsInLibraryAsc() = albums(AlbumFilter.LIBRARY, AlbumSortType.CREATE_DATE, false)
+    fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
     // endregion
 
     // region Inserts

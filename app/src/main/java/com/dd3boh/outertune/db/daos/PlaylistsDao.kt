@@ -10,6 +10,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.dd3boh.outertune.constants.PlaylistFilter
 import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
@@ -81,12 +82,36 @@ interface PlaylistsDao {
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId AND position >= :from ORDER BY position")
     fun songMapsToPlaylist(playlistId: String, from: Int): List<PlaylistSongMap>
 
+    @Query("""
+        SELECT 
+            p.*, 
+            COUNT(psm.playlistId) AS songCount,
+            SUM(CASE WHEN s.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
+        FROM playlist p
+            LEFT JOIN playlist_song_map psm ON p.id = psm.playlistId
+            LEFT JOIN song s ON psm.songId = s.id
+        WHERE p.isEditable AND p.bookmarkedAt IS NOT NULL 
+        GROUP BY p.id
+        ORDER BY p.rowId
+    """)
+    fun editablePlaylistsByCreateDateAsc(): Flow<List<Playlist>>
+
     @RawQuery(observedEntities = [PlaylistEntity::class])
     fun _getPlaylists(query: SupportSQLiteQuery): Flow<List<Playlist>>
 
-    // region Playlist Sort
-    private fun queryPlaylists(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
+    fun playlists(filter: PlaylistFilter, sortType: PlaylistSortType, descending: Boolean): Flow<List<Playlist>> {
+        val orderBy = when (sortType) {
+            PlaylistSortType.CREATE_DATE -> "p.rowId ASC"
+            PlaylistSortType.NAME -> "p.name COLLATE NOCASE ASC"
+            PlaylistSortType.SONG_COUNT -> "songCount ASC"
+        }
+
+        val having = when (filter) {
+            PlaylistFilter.DOWNLOADED -> "HAVING SUM(CASE WHEN s.dateDownload IS NOT NULL THEN 1 ELSE 0 END) > 0"
+            else -> ""
+        }
+
+        val query = SimpleSQLiteQuery("""
             SELECT 
                 p.*, 
                 COUNT(psm.playlistId) AS songCount,
@@ -96,51 +121,14 @@ interface PlaylistsDao {
                 LEFT JOIN song s ON psm.songId = s.id
             WHERE p.bookmarkedAt IS NOT NULL OR p.isLocal = 1
             GROUP BY p.id
+            $having
             ORDER BY $orderBy
         """)
+
+        return _getPlaylists(query).map{ it.reversed(descending) }
     }
 
-    fun playlistsByCreateDateAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylists("p.rowId ASC"))
-    fun playlistsByNameAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylists("p.name COLLATE NOCASE ASC"))
-    fun playlistsBySongCountAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylists("songCount ASC"))
-    fun editablePlaylistsByCreateDateAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylists("p.rowId ASC"))
-
-    fun playlists(sortType: PlaylistSortType, descending: Boolean) =
-        when (sortType) {
-            PlaylistSortType.CREATE_DATE -> playlistsByCreateDateAsc()
-            PlaylistSortType.NAME -> playlistsByNameAsc()
-            PlaylistSortType.SONG_COUNT -> playlistsBySongCountAsc()
-        }.map { it.reversed(descending) }
-    // endregion
-
-    // region Playlist Sort with Downloads Sort
-    private fun queryPlaylistsWithDownloads(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
-            SELECT 
-                p.*, 
-                COUNT(psm.playlistId) AS songCount,
-                SUM(CASE WHEN s.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
-            FROM playlist p
-                LEFT JOIN playlist_song_map psm ON p.id = psm.playlistId
-                LEFT JOIN song s ON psm.songId = s.id
-            WHERE p.bookmarkedAt IS NOT NULL OR p.isLocal = 1
-            GROUP BY p.id
-            HAVING SUM(CASE WHEN s.dateDownload IS NOT NULL THEN 1 ELSE 0 END) > 0
-            ORDER BY $orderBy
-        """)
-    }
-
-    fun playlistsWithDownloadsByCreateDateAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylistsWithDownloads("p.rowId ASC"))
-    fun playlistsWithDownloadsByNameAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylistsWithDownloads("p.name COLLATE NOCASE ASC"))
-    fun playlistsWithDownloadsBySongCountAsc(): Flow<List<Playlist>> = _getPlaylists(queryPlaylistsWithDownloads("songCount ASC"))
-
-    fun playlistsWithDownloads(sortType: PlaylistSortType, descending: Boolean) =
-        when (sortType) {
-            PlaylistSortType.CREATE_DATE -> playlistsWithDownloadsByCreateDateAsc()
-            PlaylistSortType.NAME -> playlistsWithDownloadsByNameAsc()
-            PlaylistSortType.SONG_COUNT -> playlistsWithDownloadsBySongCountAsc()
-        }.map { it.reversed(descending) }
-    // endregion
+    fun playlistInLibraryAsc() = playlists(PlaylistFilter.LIBRARY, PlaylistSortType.CREATE_DATE, false)
     // endregion
 
     // region Inserts

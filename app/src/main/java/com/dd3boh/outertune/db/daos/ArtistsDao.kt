@@ -10,6 +10,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.dd3boh.outertune.constants.ArtistFilter
 import com.dd3boh.outertune.constants.ArtistSongSortType
 import com.dd3boh.outertune.constants.ArtistSortType
 import com.dd3boh.outertune.db.entities.Artist
@@ -103,9 +104,26 @@ interface ArtistsDao {
     @RawQuery(observedEntities = [ArtistEntity::class])
     fun _getArtists(query: SupportSQLiteQuery): Flow<List<Artist>>
 
-    // region Artists Sort
-    private fun queryArtists(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
+    fun artists(filter: ArtistFilter, sortType: ArtistSortType, descending: Boolean): Flow<List<Artist>> {
+        val orderBy = when (sortType) {
+            ArtistSortType.CREATE_DATE -> "artist.rowId ASC"
+            ArtistSortType.NAME -> "artist.name COLLATE NOCASE ASC"
+            ArtistSortType.SONG_COUNT -> "songCount ASC"
+            ArtistSortType.PLAY_TIME -> "SUM(totalPlayTime) ASC"
+        }
+
+        val where = when (filter){
+            ArtistFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
+            ArtistFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
+            ArtistFilter.LIKED -> "artist.bookmarkedAt IS NOT NULL"
+        }
+
+        val having = when (filter) {
+            ArtistFilter.DOWNLOADED -> "AND downloadCount > 0"
+            else -> ""
+        }
+
+        val query = SimpleSQLiteQuery("""
             SELECT 
                 artist.*,
                 COUNT(song.id) AS songCount,
@@ -113,99 +131,21 @@ interface ArtistsDao {
             FROM artist
                 LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
                 LEFT JOIN song ON sam.songId = song.id
-            WHERE song.inLibrary IS NOT NULL
+            WHERE $where
             GROUP BY artist.id
-            HAVING songCount > 0
+            HAVING songCount > 0 $having
             ORDER BY $orderBy
         """)
-    }
 
-    fun artistsByCreateDateAsc(): Flow<List<Artist>> = _getArtists(queryArtists("artist.rowId ASC"))
-    fun artistsByNameAsc(): Flow<List<Artist>> = _getArtists(queryArtists("artist.name COLLATE NOCASE ASC"))
-    fun artistsBySongCountAsc(): Flow<List<Artist>> = _getArtists(queryArtists("songCount ASC"))
-    fun artistsByPlayTimeAsc(): Flow<List<Artist>> = _getArtists(queryArtists("SUM(totalPlayTime) ASC"))
-
-    fun artists(sortType: ArtistSortType, descending: Boolean) =
-        when (sortType) {
-            ArtistSortType.CREATE_DATE -> artistsByCreateDateAsc()
-            ArtistSortType.NAME -> artistsByNameAsc()
-            ArtistSortType.SONG_COUNT -> artistsBySongCountAsc()
-            ArtistSortType.PLAY_TIME -> artistsByPlayTimeAsc()
-        }.map { artists ->
+        return _getArtists(query).map { artists ->
             artists
-                .filter { it.artist.isYouTubeArtist || it.artist.isLocalArtist } // temp: add ui to filter by local or remote or something idk
+                .filter { it.artist.isYouTubeArtist || it.artist.isLocalArtist } // TODO: add ui to filter by local or remote or something idk
                 .reversed(descending)
         }
-    // endregion
-
-    // region Bookmarked Artists Sort
-    private fun queryArtistsBookmarked(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
-            SELECT 
-                artist.*, 
-                COUNT(song.id) AS songCount,
-                SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
-            FROM artist
-                LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
-                LEFT JOIN song ON sam.songId = song.id
-            WHERE artist.bookmarkedAt IS NOT NULL
-            GROUP BY artist.id
-            HAVING songCount > 0
-            ORDER BY $orderBy
-        """)
     }
 
-    fun artistsBookmarkedByCreateDateAsc(): Flow<List<Artist>> = _getArtists(queryArtistsBookmarked("artist.bookmarkedAt ASC"))
-    fun artistsBookmarkedByNameAsc(): Flow<List<Artist>> = _getArtists(queryArtistsBookmarked("artist.name COLLATE NOCASE ASC"))
-    fun artistsBookmarkedBySongCountAsc(): Flow<List<Artist>> = _getArtists(queryArtistsBookmarked("songCount ASC"))
-    fun artistsBookmarkedByPlayTimeAsc(): Flow<List<Artist>> = _getArtists(queryArtistsBookmarked("SUM(totalPlayTime) ASC"))
-
-    fun artistsBookmarked(sortType: ArtistSortType, descending: Boolean) =
-        when (sortType) {
-            ArtistSortType.CREATE_DATE -> artistsBookmarkedByCreateDateAsc()
-            ArtistSortType.NAME -> artistsBookmarkedByNameAsc()
-            ArtistSortType.SONG_COUNT -> artistsBookmarkedBySongCountAsc()
-            ArtistSortType.PLAY_TIME -> artistsBookmarkedByPlayTimeAsc()
-        }.map { artists ->
-            artists
-                .filter { it.artist.isYouTubeArtist }
-                .reversed(descending)
-        }
-    // endregion
-
-    // region Downloaded Artists Sort
-    private fun queryArtistsWithDonwloads(orderBy: String): SimpleSQLiteQuery {
-        return SimpleSQLiteQuery("""
-            SELECT 
-                artist.*, 
-                COUNT(song.id) AS songCount,
-                SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
-            FROM artist
-                LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
-                LEFT JOIN song ON sam.songId = song.id
-            WHERE song.inLibrary IS NOT NULL
-            GROUP BY artist.id
-            HAVING downloadCount > 0
-            ORDER BY $orderBy
-        """)
-    }
-
-    fun artistsWithDonwloadsByCreateDateAsc(): Flow<List<Artist>> = _getArtists(queryArtistsWithDonwloads("artist.bookmarkedAt ASC"))
-    fun artistsWithDonwloadsByNameAsc(): Flow<List<Artist>> = _getArtists(queryArtistsWithDonwloads("artist.name COLLATE NOCASE ASC"))
-    fun artistsWithDonwloadsBySongCountAsc(): Flow<List<Artist>> = _getArtists(queryArtistsWithDonwloads("songCount ASC"))
-    fun artistsWithDonwloadsByPlayTimeAsc(): Flow<List<Artist>> = _getArtists(queryArtistsWithDonwloads("SUM(totalPlayTime) ASC"))
-
-    fun artistsWithDonwloads(sortType: ArtistSortType, descending: Boolean) =
-        when (sortType) {
-            ArtistSortType.CREATE_DATE -> artistsWithDonwloadsByCreateDateAsc()
-            ArtistSortType.NAME -> artistsWithDonwloadsByNameAsc()
-            ArtistSortType.SONG_COUNT -> artistsWithDonwloadsBySongCountAsc()
-            ArtistSortType.PLAY_TIME -> artistsWithDonwloadsByPlayTimeAsc()
-        }.map { artists ->
-            artists
-                .filter { it.artist.isYouTubeArtist }
-                .reversed(descending)
-        }
+    fun artistsInLibraryAsc() = artists(ArtistFilter.LIBRARY, ArtistSortType.CREATE_DATE, false)
+    fun artistsBookmarkedAsc() = artists(ArtistFilter.LIKED, ArtistSortType.CREATE_DATE, false)
     // endregion
 
     // region Artist Songs Sort

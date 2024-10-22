@@ -179,7 +179,7 @@ class SyncUtils @Inject constructor(
             val remoteAlbums = GetRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
 
             // Identify local albums to remove
-            val albumsToRemoveFromLibrary = database.albumsLikedByNameAsc().first()
+            val albumsToRemoveFromLibrary = database.albumsLikedAsc().first()
                 .filterNot { it.album.isLocal }
                 .filterNot { localAlbum -> remoteAlbums.any { it.id == localAlbum.id } }
 
@@ -230,7 +230,7 @@ class SyncUtils @Inject constructor(
             val remoteArtists = GetRemoteData<ArtistItem>("FEmusic_library_corpus_artists", "FEmusic_library_privately_owned_artists")
 
             // Get local artists
-            val artistsToRemoveFromSubscriptions = database.artistsBookmarkedByNameAsc().first()
+            val artistsToRemoveFromSubscriptions = database.artistsBookmarkedAsc().first()
                 .filterNot { it.artist.isLocal }
                 .filterNot { localArtist -> remoteArtists.any { it.id == localArtist.id } }
 
@@ -289,7 +289,7 @@ class SyncUtils @Inject constructor(
                 val remotePlaylists = page.items.filterIsInstance<PlaylistItem>().drop(1).reversed()
                     .filterNot { it.id == "SE" }
 
-                val localPlaylists = database.playlistsByNameAsc().first()
+                val localPlaylists = database.playlistInLibraryAsc().first()
 
                 // Identify playlists to remove
                 val playlistsToRemove = localPlaylists

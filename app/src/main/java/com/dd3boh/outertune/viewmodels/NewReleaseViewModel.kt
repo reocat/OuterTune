@@ -26,7 +26,7 @@ class NewReleaseViewModel @Inject constructor(
             YouTube.newReleaseAlbums().onSuccess { albums ->
                 val artists: Set<String>
                 val favouriteArtists: Set<String>
-                database.artistsByCreateDateAsc().first().let { list ->
+                database.artistsInLibraryAsc().first().let { list ->
                     artists = list.map(Artist::id).toHashSet()
                     favouriteArtists = list
                         .filter { it.artist.bookmarkedAt != null }
