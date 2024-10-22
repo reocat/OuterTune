@@ -56,6 +56,7 @@ interface AlbumsDao : ArtistsDao {
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :albumId
+        GROUP BY album.id
     """)
     fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?>
 
