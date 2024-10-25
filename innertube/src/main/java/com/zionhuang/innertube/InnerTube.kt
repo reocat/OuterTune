@@ -148,7 +148,7 @@ class InnerTube {
                         }
                     },
                 videoId = videoId,
-                playlistId = playlistId,
+                playlistId = playlistId
             ),
         )
     }
