@@ -8,12 +8,14 @@ data class YouTubeClient(
     val clientVersion: String,
     val api_key: String,
     val userAgent: String,
+    val osVersion: String? = null,
     val referer: String? = null,
 ) {
     fun toContext(locale: YouTubeLocale, visitorData: String?) = Context(
         client = Context.Client(
             clientName = clientName,
             clientVersion = clientVersion,
+            osVersion = osVersion,
             gl = locale.gl,
             hl = locale.hl,
             visitorData = visitorData
@@ -62,12 +64,13 @@ data class YouTubeClient(
             api_key = "AIzaSyDCU8hByM-4DrUqRUYnGn-3llEO78bcxq8",
             userAgent = "Mozilla/5.0 (PlayStation 4 5.55) AppleWebKit/601.2 (KHTML, like Gecko)"
         )
-        
+
         val IOS = YouTubeClient(
-            clientName = "IOS",
-            clientVersion = "19.29.1",
-            api_key = "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc",
-            userAgent = USER_AGENT_IOS,
+                clientName = "IOS",
+                clientVersion = "19.29.1",
+                api_key = "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc",
+                userAgent = USER_AGENT_IOS,
+                osVersion = "17.5.1.21F90",
         )
     }
 }
