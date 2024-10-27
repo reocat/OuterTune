@@ -18,26 +18,32 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OnlinePlaylistViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    database: MusicDatabase
-) : ViewModel() {
-    private val playlistId = savedStateHandle.get<String>("playlistId")!!
+class OnlinePlaylistViewModel
+    @Inject
+    constructor(
+        savedStateHandle: SavedStateHandle,
+        database: MusicDatabase,
+    ) : ViewModel() {
+        private val playlistId = savedStateHandle.get<String>("playlistId")!!
 
-    val playlist = MutableStateFlow<PlaylistItem?>(null)
-    val playlistSongs = MutableStateFlow<List<SongItem>>(emptyList())
-    val dbPlaylist = database.playlistByBrowseId(playlistId)
-        .stateIn(viewModelScope, SharingStarted.Lazily, null)
+        val playlist = MutableStateFlow<PlaylistItem?>(null)
+        val playlistSongs = MutableStateFlow<List<SongItem>>(emptyList())
+        val dbPlaylist =
+            database
+                .playlistByBrowseId(playlistId)
+                .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            YouTube.playlist(playlistId).completed()
-                .onSuccess { playlistPage ->
-                    playlist.value = playlistPage.playlist
-                    playlistSongs.value = playlistPage.songs
-                }.onFailure {
-                    reportException(it)
-                }
+        init {
+            viewModelScope.launch(Dispatchers.IO) {
+                YouTube
+                    .playlist(playlistId)
+                    .completed()
+                    .onSuccess { playlistPage ->
+                        playlist.value = playlistPage.playlist
+                        playlistSongs.value = playlistPage.songs
+                    }.onFailure {
+                        reportException(it)
+                    }
+            }
         }
     }
-}

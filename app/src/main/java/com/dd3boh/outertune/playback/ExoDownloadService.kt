@@ -14,15 +14,15 @@ import com.dd3boh.outertune.R
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
-class ExoDownloadService : DownloadService(
-    NOTIFICATION_ID,
-    1000L,
-    CHANNEL_ID,
-    R.string.download,
-    0
-) {
+class ExoDownloadService :
+    DownloadService(
+        NOTIFICATION_ID,
+        1000L,
+        CHANNEL_ID,
+        R.string.download,
+        0,
+    ) {
     @Inject
     lateinit var downloadUtil: DownloadUtil
 
@@ -30,22 +30,29 @@ class ExoDownloadService : DownloadService(
 
     override fun getScheduler(): Scheduler = PlatformScheduler(this, JOB_ID)
 
-    override fun getForegroundNotification(downloads: MutableList<Download>, notMetRequirements: Int): Notification =
+    override fun getForegroundNotification(
+        downloads: MutableList<Download>,
+        notMetRequirements: Int,
+    ): Notification =
         if (downloads.size == 0) {
-            downloadUtil.downloadNotificationHelper.buildDownloadCompletedNotification(this,
+            downloadUtil.downloadNotificationHelper.buildDownloadCompletedNotification(
+                this,
                 R.drawable.download,
                 null,
-                null
+                null,
             )
         } else {
             downloadUtil.downloadNotificationHelper.buildProgressNotification(
                 this,
                 R.drawable.download,
                 null,
-                if (downloads.size == 1) Util.fromUtf8Bytes(downloads[0].request.data)
-                else resources.getQuantityString(R.plurals.n_song, downloads.size, downloads.size),
+                if (downloads.size == 1) {
+                    Util.fromUtf8Bytes(downloads[0].request.data)
+                } else {
+                    resources.getQuantityString(R.plurals.n_song, downloads.size, downloads.size)
+                },
                 downloads,
-                notMetRequirements
+                notMetRequirements,
             )
         }
 
@@ -63,12 +70,13 @@ class ExoDownloadService : DownloadService(
             finalException: Exception?,
         ) {
             if (download.state == Download.STATE_FAILED) {
-                val notification = notificationHelper.buildDownloadFailedNotification(
-                    context,
-                    R.drawable.error,
-                    null,
-                    Util.fromUtf8Bytes(download.request.data)
-                )
+                val notification =
+                    notificationHelper.buildDownloadFailedNotification(
+                        context,
+                        R.drawable.error,
+                        null,
+                        Util.fromUtf8Bytes(download.request.data),
+                    )
                 NotificationUtil.setNotification(context, nextNotificationId++, notification)
             }
         }

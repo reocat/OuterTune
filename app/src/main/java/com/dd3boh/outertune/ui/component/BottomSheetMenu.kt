@@ -49,21 +49,21 @@ fun BottomSheetMenu(
     AnimatedVisibility(
         visible = state.isVisible,
         enter = fadeIn(),
-        exit = fadeOut()
+        exit = fadeOut(),
     ) {
         BackHandler {
             state.dismiss()
         }
 
         Spacer(
-            modifier = Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures {
-                        state.dismiss()
-                    }
-                }
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
-                .fillMaxSize()
+            modifier =
+                Modifier
+                    .pointerInput(Unit) {
+                        detectTapGestures {
+                            state.dismiss()
+                        }
+                    }.background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
+                    .fillMaxSize(),
         )
     }
 
@@ -71,15 +71,16 @@ fun BottomSheetMenu(
         visible = state.isVisible,
         enter = slideInVertically { it },
         exit = slideOutVertically { it },
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                .padding(top = 48.dp)
-                .clip(ShapeDefaults.Large.top())
-                .background(background)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                    .padding(top = 48.dp)
+                    .clip(ShapeDefaults.Large.top())
+                    .background(background),
         ) {
             state.content(this)
         }

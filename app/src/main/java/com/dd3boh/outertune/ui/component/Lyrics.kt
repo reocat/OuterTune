@@ -99,28 +99,37 @@ fun Lyrics(
 
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val isSystemInDarkTheme = isSystemInDarkTheme()
-    val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-    }
+    val useDarkTheme =
+        remember(darkTheme, isSystemInDarkTheme) {
+            if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
+        }
 
-    val lines = remember(lyrics) {
-        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
-        else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
-                parseLyrics(lyrics, lyricTrim.value, multilineLrc.value)
-        else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
-    }
-    val isSynced = remember(lyrics) {
-        !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
-    }
+    val lines =
+        remember(lyrics) {
+            if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
+                emptyList()
+            } else if (lyrics.startsWith("[")) {
+                listOf(HEAD_LYRICS_ENTRY) +
+                    parseLyrics(lyrics, lyricTrim.value, multilineLrc.value)
+            } else {
+                lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
+            }
+        }
+    val isSynced =
+        remember(lyrics) {
+            !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
+        }
 
-    val textColor = when (playerBackground) {
-        PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.secondary
-        else ->
-            if (useDarkTheme)
-                MaterialTheme.colorScheme.onSurface
-            else
-                MaterialTheme.colorScheme.onPrimary
-    }
+    val textColor =
+        when (playerBackground) {
+            PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.secondary
+            else ->
+                if (useDarkTheme) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onPrimary
+                }
+        }
 
     var currentLineIndex by remember {
         mutableIntStateOf(-1)
@@ -171,24 +180,29 @@ fun Lyrics(
         /**
          * Calculate the lyric offset Based on how many lines (\n chars)
          */
-        fun calculateOffset() = with(density) {
-            if (landscapeOffset) {
-                16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].text) // landscape sits higher by default
-            } else {
-                20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].text)
+        fun calculateOffset() =
+            with(density) {
+                if (landscapeOffset) {
+                    16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].text) // landscape sits higher by default
+                } else {
+                    20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].text)
+                }
             }
-        }
 
         if (!isSynced) return@LaunchedEffect
         if (currentLineIndex != -1) {
             deferredCurrentLineIndex = currentLineIndex
             if (lastPreviewTime == 0L) {
                 if (isSeeking) {
-                    lazyListState.scrollToItem(currentLineIndex,
-                        with(density) { 36.dp.toPx().toInt() } + calculateOffset())
+                    lazyListState.scrollToItem(
+                        currentLineIndex,
+                        with(density) { 36.dp.toPx().toInt() } + calculateOffset(),
+                    )
                 } else {
-                    lazyListState.animateScrollToItem(currentLineIndex,
-                        with(density) { 36.dp.toPx().toInt() } + calculateOffset())
+                    lazyListState.animateScrollToItem(
+                        currentLineIndex,
+                        with(density) { 36.dp.toPx().toInt() } + calculateOffset(),
+                    )
                 }
             }
         }
@@ -196,31 +210,43 @@ fun Lyrics(
 
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(bottom = 12.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(bottom = 12.dp),
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = WindowInsets.systemBars
-                .only(WindowInsetsSides.Top)
-                .add(WindowInsets(top = maxHeight / 2, bottom = maxHeight / 2))
-                .asPaddingValues(),
-            modifier = Modifier
-                .fadingEdge(vertical = 64.dp)
-                .nestedScroll(remember {
-                    object : NestedScrollConnection {
-                        override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                            lastPreviewTime = System.currentTimeMillis()
-                            return super.onPostScroll(consumed, available, source)
-                        }
+            contentPadding =
+                WindowInsets.systemBars
+                    .only(WindowInsetsSides.Top)
+                    .add(WindowInsets(top = maxHeight / 2, bottom = maxHeight / 2))
+                    .asPaddingValues(),
+            modifier =
+                Modifier
+                    .fadingEdge(vertical = 64.dp)
+                    .nestedScroll(
+                        remember {
+                            object : NestedScrollConnection {
+                                override fun onPostScroll(
+                                    consumed: Offset,
+                                    available: Offset,
+                                    source: NestedScrollSource,
+                                ): Offset {
+                                    lastPreviewTime = System.currentTimeMillis()
+                                    return super.onPostScroll(consumed, available, source)
+                                }
 
-                        override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                            lastPreviewTime = System.currentTimeMillis()
-                            return super.onPostFling(consumed, available)
-                        }
-                    }
-                })
+                                override suspend fun onPostFling(
+                                    consumed: Velocity,
+                                    available: Velocity,
+                                ): Velocity {
+                                    lastPreviewTime = System.currentTimeMillis()
+                                    return super.onPostFling(consumed, available)
+                                }
+                            }
+                        },
+                    ),
         ) {
             val displayedCurrentLineIndex = if (isSeeking) deferredCurrentLineIndex else currentLineIndex
 
@@ -229,14 +255,16 @@ fun Lyrics(
                     ShimmerHost {
                         repeat(10) {
                             Box(
-                                contentAlignment = when (lyricsTextPosition) {
-                                    LyricsPosition.LEFT -> Alignment.CenterStart
-                                    LyricsPosition.CENTER -> Alignment.Center
-                                    LyricsPosition.RIGHT -> Alignment.CenterEnd
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 4.dp)
+                                contentAlignment =
+                                    when (lyricsTextPosition) {
+                                        LyricsPosition.LEFT -> Alignment.CenterStart
+                                        LyricsPosition.CENTER -> Alignment.Center
+                                        LyricsPosition.RIGHT -> Alignment.CenterEnd
+                                    },
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp, vertical = 4.dp),
                             ) {
                                 TextPlaceholder()
                             }
@@ -245,26 +273,27 @@ fun Lyrics(
                 }
             } else {
                 itemsIndexed(
-                    items = lines
+                    items = lines,
                 ) { index, item ->
                     Text(
                         text = item.text,
                         fontSize = 20.sp,
                         color = textColor,
-                        textAlign = when (lyricsTextPosition) {
-                            LyricsPosition.LEFT -> TextAlign.Left
-                            LyricsPosition.CENTER -> TextAlign.Center
-                            LyricsPosition.RIGHT -> TextAlign.Right
-                        },
+                        textAlign =
+                            when (lyricsTextPosition) {
+                                LyricsPosition.LEFT -> TextAlign.Left
+                                LyricsPosition.CENTER -> TextAlign.Center
+                                LyricsPosition.RIGHT -> TextAlign.Right
+                            },
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = isSynced) {
-                                playerConnection.player.seekTo(item.time)
-                                lastPreviewTime = 0L
-                            }
-                            .padding(horizontal = 24.dp, vertical = 8.dp)
-                            .alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = isSynced) {
+                                    playerConnection.player.seekTo(item.time)
+                                    lastPreviewTime = 0L
+                                }.padding(horizontal = 24.dp, vertical = 8.dp)
+                                .alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f),
                     )
                 }
             }
@@ -275,32 +304,35 @@ fun Lyrics(
                 text = stringResource(R.string.lyrics_not_found),
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.secondary,
-                textAlign = when (lyricsTextPosition) {
-                    LyricsPosition.LEFT -> TextAlign.Left
-                    LyricsPosition.CENTER -> TextAlign.Center
-                    LyricsPosition.RIGHT -> TextAlign.Right
-                },
+                textAlign =
+                    when (lyricsTextPosition) {
+                        LyricsPosition.LEFT -> TextAlign.Left
+                        LyricsPosition.CENTER -> TextAlign.Center
+                        LyricsPosition.RIGHT -> TextAlign.Right
+                    },
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp)
-                    .alpha(0.5f)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                        .alpha(0.5f),
             )
         }
 
         mediaMetadata?.let { mediaMetadata ->
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 12.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 12.dp),
             ) {
                 IconButton(
-                    onClick = { showLyrics = false }
+                    onClick = { showLyrics = false },
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = null,
-                        tint = textColor
+                        tint = textColor,
                     )
                 }
                 IconButton(
@@ -309,15 +341,15 @@ fun Lyrics(
                             LyricsMenu(
                                 lyricsProvider = { lyricsEntity },
                                 mediaMetadataProvider = { mediaMetadata },
-                                onDismiss = menuState::dismiss
+                                onDismiss = menuState::dismiss,
                             )
                         }
-                    }
+                    },
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.MoreHoriz,
                         contentDescription = null,
-                        tint = textColor
+                        tint = textColor,
                     )
                 }
             }

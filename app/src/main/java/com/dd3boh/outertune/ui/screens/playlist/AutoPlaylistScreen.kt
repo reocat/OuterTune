@@ -112,7 +112,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 enum class PlaylistType {
-    LIKE, DOWNLOAD, OTHER
+    LIKE,
+    DOWNLOAD,
+    OTHER,
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -135,12 +137,14 @@ fun AutoPlaylistScreen(
 
     // multiselect
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<Int>, Int>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<Int>, Int>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -153,23 +157,27 @@ fun AutoPlaylistScreen(
     val (sortDescending, onSortDescendingChange) = rememberPreference(SongSortDescendingKey, true)
 
     val playlistId = viewModel.playlistId
-    val playlistType = when (playlistId) {
+    val playlistType =
+        when (playlistId) {
             "liked" -> PlaylistType.LIKE
             "downloaded" -> PlaylistType.DOWNLOAD
             else -> PlaylistType.OTHER
-    }
-    val playlist = PlaylistEntity(
-        id = playlistId,
-        name = when (playlistType) {
-            PlaylistType.LIKE -> stringResource(id = R.string.liked_songs)
-            PlaylistType.DOWNLOAD -> stringResource(id = R.string.downloaded_songs)
-            else -> ""
-        },
-        browseId = when (playlistType) {
-            PlaylistType.LIKE -> "LM"
-            else -> null
-        },
-    )
+        }
+    val playlist =
+        PlaylistEntity(
+            id = playlistId,
+            name =
+                when (playlistType) {
+                    PlaylistType.LIKE -> stringResource(id = R.string.liked_songs)
+                    PlaylistType.DOWNLOAD -> stringResource(id = R.string.downloaded_songs)
+                    else -> ""
+                },
+            browseId =
+                when (playlistType) {
+                    PlaylistType.LIKE -> "LM"
+                    else -> null
+                },
+        )
 
     val isSyncingRemoteLikedSongs by syncUtils.isSyncingRemoteLikedSongs.collectAsState()
 
@@ -179,12 +187,14 @@ fun AutoPlaylistScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val lazyListState = rememberLazyListState()
 
-    val playlistLength = remember(songs) {
-        songs.fastSumBy { it.song.duration }
-    }
-    val downloadCount = remember(songs) {
-        songs.count { it.song.dateDownload != null }
-    }
+    val playlistLength =
+        remember(songs) {
+            songs.fastSumBy { it.song.duration }
+        }
+    val downloadCount =
+        remember(songs) {
+            songs.count { it.song.dateDownload != null }
+        }
 
     val downloadUtil = LocalDownloadUtil.current
     var downloadState by remember {
@@ -199,16 +209,18 @@ fun AutoPlaylistScreen(
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it.song.id]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it.song.id]?.state == Download.STATE_COMPLETED }) {
                     Download.STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it.song.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.song.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.song.id]?.state == Download.STATE_COMPLETED
-                    })
+                } else if (songs.all {
+                        downloads[it.song.id]?.state == Download.STATE_QUEUED ||
+                            downloads[it.song.id]?.state == Download.STATE_DOWNLOADING ||
+                            downloads[it.song.id]?.state == Download.STATE_COMPLETED
+                    }
+                ) {
                     Download.STATE_DOWNLOADING
-                else
+                } else {
                     Download.STATE_STOPPED
+                }
         }
     }
 
@@ -229,12 +241,12 @@ fun AutoPlaylistScreen(
                 Text(
                     text = stringResource(R.string.remove_download_playlist_confirm, playlist.name),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
-                    onClick = { showRemoveDownloadDialog = false }
+                    onClick = { showRemoveDownloadDialog = false },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -251,19 +263,19 @@ fun AutoPlaylistScreen(
                                 context,
                                 ExoDownloadService::class.java,
                                 song.song.id,
-                                false
+                                false,
                             )
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         LazyColumn(
             state = lazyListState,
@@ -272,27 +284,29 @@ fun AutoPlaylistScreen(
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(12.dp),
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(AlbumThumbnailSize)
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
-                                    shape = RoundedCornerShape(ThumbnailCornerRadius)
-                                )
+                            modifier =
+                                Modifier
+                                    .size(AlbumThumbnailSize)
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+                                        shape = RoundedCornerShape(ThumbnailCornerRadius),
+                                    ),
                         ) {
                             Icon(
                                 imageVector = thumbnail,
                                 contentDescription = null,
                                 tint = LocalContentColor.current.copy(alpha = 0.8f),
-                                modifier = Modifier
-                                    .size(AlbumThumbnailSize / 2 + 16.dp)
-                                    .align(Alignment.Center)
+                                modifier =
+                                    Modifier
+                                        .size(AlbumThumbnailSize / 2 + 16.dp)
+                                        .align(Alignment.Center),
                             )
                         }
 
@@ -304,42 +318,45 @@ fun AutoPlaylistScreen(
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
-                                fontSizeRange = FontSizeRange(16.sp, 22.sp)
+                                fontSizeRange = FontSizeRange(16.sp, 22.sp),
                             )
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (playlistType == PlaylistType.LIKE && isSyncingRemoteLikedSongs) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp
+                                        strokeWidth = 2.dp,
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                 }
 
-                                if (playlistType == PlaylistType.LIKE && downloadCount > 0){
+                                if (playlistType == PlaylistType.LIKE && downloadCount > 0) {
                                     Icon(
                                         imageVector = Icons.Rounded.OfflinePin,
                                         contentDescription = null,
-                                        modifier = Modifier
-                                            .size(18.dp)
-                                            .padding(end = 2.dp)
+                                        modifier =
+                                            Modifier
+                                                .size(18.dp)
+                                                .padding(end = 2.dp),
                                     )
                                 }
 
                                 Text(
-                                    text = if (playlistType == PlaylistType.LIKE && downloadCount > 0)
+                                    text =
+                                        if (playlistType == PlaylistType.LIKE && downloadCount > 0) {
                                             getNSongsString(songs.size, downloadCount)
-                                        else
-                                            getNSongsString(songs.size),
+                                        } else {
+                                            getNSongsString(songs.size)
+                                        },
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Normal
+                                    fontWeight = FontWeight.Normal,
                                 )
                             }
 
                             Text(
                                 text = makeTimeString(playlistLength * 1000L),
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Normal
+                                fontWeight = FontWeight.Normal,
                             )
 
                             Row {
@@ -349,11 +366,11 @@ fun AutoPlaylistScreen(
                                             IconButton(
                                                 onClick = {
                                                     showRemoveDownloadDialog = true
-                                                }
+                                                },
                                             ) {
                                                 Icon(
                                                     Icons.Rounded.OfflinePin,
-                                                    contentDescription = null
+                                                    contentDescription = null,
                                                 )
                                             }
                                         }
@@ -366,14 +383,14 @@ fun AutoPlaylistScreen(
                                                             context,
                                                             ExoDownloadService::class.java,
                                                             song.song.id,
-                                                            false
+                                                            false,
                                                         )
                                                     }
-                                                }
+                                                },
                                             ) {
                                                 CircularProgressIndicator(
                                                     strokeWidth = 2.dp,
-                                                    modifier = Modifier.size(24.dp)
+                                                    modifier = Modifier.size(24.dp),
                                                 )
                                             }
                                         }
@@ -381,13 +398,13 @@ fun AutoPlaylistScreen(
                                         else -> {
                                             IconButton(
                                                 onClick = {
-                                                    val _songs = songs.map{ it.toMediaMetadata() }
+                                                    val _songs = songs.map { it.toMediaMetadata() }
                                                     downloadUtil.download(_songs, context)
-                                                }
+                                                },
                                             ) {
                                                 Icon(
                                                     Icons.Rounded.Download,
-                                                    contentDescription = null
+                                                    contentDescription = null,
                                                 )
                                             }
                                         }
@@ -396,13 +413,13 @@ fun AutoPlaylistScreen(
                                     IconButton(
                                         onClick = {
                                             playerConnection.addToQueue(
-                                                items = songs.map { it.toMediaItem() }
+                                                items = songs.map { it.toMediaItem() },
                                             )
-                                        }
+                                        },
                                     ) {
                                         Icon(
                                             Icons.AutoMirrored.Rounded.QueueMusic,
-                                            contentDescription = null
+                                            contentDescription = null,
                                         )
                                     }
                                 }
@@ -418,17 +435,17 @@ fun AutoPlaylistScreen(
                                         ListQueue(
                                             title = playlist.name,
                                             items = songs.map { it.toMediaMetadata() },
-                                            playlistId = playlist.browseId
-                                        )
+                                            playlistId = playlist.browseId,
+                                        ),
                                     )
                                 },
                                 contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.PlayArrow,
                                     contentDescription = null,
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                    modifier = Modifier.size(ButtonDefaults.IconSize),
                                 )
                                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                                 Text(stringResource(R.string.play))
@@ -439,19 +456,21 @@ fun AutoPlaylistScreen(
                                     playerConnection.playQueue(
                                         ListQueue(
                                             title = playlist.name,
-                                            items = songs.shuffled()
-                                                .map { it.toMediaMetadata() },
-                                            playlistId = playlist.browseId
-                                        )
+                                            items =
+                                                songs
+                                                    .shuffled()
+                                                    .map { it.toMediaMetadata() },
+                                            playlistId = playlist.browseId,
+                                        ),
                                     )
                                 },
                                 contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             ) {
                                 Icon(
                                     Icons.Rounded.Shuffle,
                                     contentDescription = null,
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                    modifier = Modifier.size(ButtonDefaults.IconSize),
                                 )
                                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                                 Text(stringResource(R.string.shuffle))
@@ -464,16 +483,16 @@ fun AutoPlaylistScreen(
             if (songs.isNotEmpty()) {
                 stickyHeader(
                     key = "header",
-                    contentType = CONTENT_TYPE_HEADER
+                    contentType = CONTENT_TYPE_HEADER,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp),
                     ) {
                         if (inSelectMode) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp),
                             ) {
                                 SelectHeader(
                                     selectedItems = selection.map { songs[it] }.map { it.toMediaMetadata() },
@@ -484,7 +503,7 @@ fun AutoPlaylistScreen(
                                     },
                                     onDeselectAll = { selection.clear() },
                                     menuState = menuState,
-                                    onDismiss = onExitSelectionMode
+                                    onDismiss = onExitSelectionMode,
                                 )
                             }
                         } else {
@@ -502,7 +521,7 @@ fun AutoPlaylistScreen(
                                         SongSortType.ARTIST -> R.string.sort_by_artist
                                         SongSortType.PLAY_TIME -> R.string.sort_by_play_time
                                     }
-                                }
+                                },
                             )
                         }
                         Spacer(Modifier.weight(1f))
@@ -510,7 +529,7 @@ fun AutoPlaylistScreen(
                         Text(
                             text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.secondary,
                         )
                     }
                 }
@@ -518,16 +537,14 @@ fun AutoPlaylistScreen(
                 item {
                     EmptyPlaceholder(
                         icon = Icons.Rounded.MusicNote,
-                        text = stringResource(R.string.playlist_is_empty)
+                        text = stringResource(R.string.playlist_is_empty),
                     )
                 }
             }
 
-
-
             itemsIndexed(
                 items = songs,
-                key = { _, song -> song.id }
+                key = { _, song -> song.id },
             ) { index, song ->
                 val onCheckedChange: (Boolean) -> Unit = {
                     if (it) {
@@ -554,49 +571,50 @@ fun AutoPlaylistScreen(
                                                 originalSong = song,
                                                 playlistBrowseId = playlist.browseId,
                                                 navController = navController,
-                                                onDismiss = menuState::dismiss
+                                                onDismiss = menuState::dismiss,
                                             )
                                         }
-                                    }
+                                    },
                                 ) {
                                     Icon(
                                         Icons.Rounded.MoreVert,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 }
                             },
                             isSelected = inSelectMode && index in selection,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
-                                .combinedClickable(
-                                    onClick = {
-                                        if (inSelectMode) {
-                                            onCheckedChange(index !in selection)
-                                        } else if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = playlist.name,
-                                                    items = songs.map { it.toMediaMetadata()},
-                                                    startIndex = index,
-                                                    playlistId = playlist.browseId
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (inSelectMode) {
+                                                onCheckedChange(index !in selection)
+                                            } else if (song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else {
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = playlist.name,
+                                                        items = songs.map { it.toMediaMetadata() },
+                                                        startIndex = index,
+                                                        playlistId = playlist.browseId,
+                                                    ),
                                                 )
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        if (!inSelectMode) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            inSelectMode = true
-                                            onCheckedChange(true)
-                                        }
-                                    }
-                                )
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!inSelectMode) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                inSelectMode = true
+                                                onCheckedChange(true)
+                                            }
+                                        },
+                                    ),
                         )
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
                 )
             }
         }
@@ -605,22 +623,23 @@ fun AutoPlaylistScreen(
             title = { },
             navigationIcon = {
                 IconButton(
-                    onClick = navController::navigateUp
+                    onClick = navController::navigateUp,
                 ) {
                     Icon(
                         Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
             },
-            scrollBehavior = scrollBehavior
+            scrollBehavior = scrollBehavior,
         )
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 }

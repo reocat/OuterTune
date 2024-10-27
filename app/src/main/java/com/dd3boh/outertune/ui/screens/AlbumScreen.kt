@@ -127,12 +127,14 @@ fun AlbumScreen(
 
     // multiselect
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<Int>, Int>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<Int>, Int>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -153,38 +155,41 @@ fun AlbumScreen(
         if (songs.isNullOrEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it]?.state == Download.STATE_COMPLETED }) {
                     Download.STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it]?.state == Download.STATE_QUEUED
-                                || downloads[it]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it]?.state == Download.STATE_COMPLETED
-                    })
+                } else if (songs.all {
+                        downloads[it]?.state == Download.STATE_QUEUED ||
+                            downloads[it]?.state == Download.STATE_DOWNLOADING ||
+                            downloads[it]?.state == Download.STATE_COMPLETED
+                    }
+                ) {
                     Download.STATE_DOWNLOADING
-                else
+                } else {
                     Download.STATE_STOPPED
+                }
         }
     }
 
     LazyColumn(
         state = state,
-        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
     ) {
         val albumWithSongsLocal = albumWithSongs
         if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
             item {
                 Column(
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(12.dp),
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         AsyncImage(
                             model = albumWithSongsLocal.album.thumbnailUrl,
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(AlbumThumbnailSize)
-                                .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                            modifier =
+                                Modifier
+                                    .size(AlbumThumbnailSize)
+                                    .clip(RoundedCornerShape(ThumbnailCornerRadius)),
                         )
 
                         Spacer(Modifier.width(16.dp))
@@ -197,26 +202,29 @@ fun AlbumScreen(
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
-                                fontSizeRange = FontSizeRange(16.sp, 22.sp)
+                                fontSizeRange = FontSizeRange(16.sp, 22.sp),
                             )
 
-                            val annotatedString = buildAnnotatedString {
-                                withStyle(
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Normal,
-                                        color = MaterialTheme.colorScheme.onBackground
-                                    ).toSpanStyle()
-                                ) {
-                                    albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
-                                        pushStringAnnotation(artist.id, artist.name)
-                                        append(artist.name)
-                                        pop()
-                                        if (index != albumWithSongsLocal.artists.lastIndex) {
-                                            append(", ")
+                            val annotatedString =
+                                buildAnnotatedString {
+                                    withStyle(
+                                        style =
+                                            MaterialTheme.typography.titleMedium
+                                                .copy(
+                                                    fontWeight = FontWeight.Normal,
+                                                    color = MaterialTheme.colorScheme.onBackground,
+                                                ).toSpanStyle(),
+                                    ) {
+                                        albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
+                                            pushStringAnnotation(artist.id, artist.name)
+                                            append(artist.name)
+                                            pop()
+                                            if (index != albumWithSongsLocal.artists.lastIndex) {
+                                                append(", ")
+                                            }
                                         }
                                     }
                                 }
-                            }
 
                             ClickableText(annotatedString) { offset ->
                                 annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let { range ->
@@ -225,12 +233,13 @@ fun AlbumScreen(
                             }
 
                             Text(
-                                text = joinByBullet(
-                                    getNSongsString(albumWithSongsLocal.album.songCount, albumWithSongsLocal.downloadCount),
-                                    albumWithSongsLocal.album.year.toString()
-                                ),
+                                text =
+                                    joinByBullet(
+                                        getNSongsString(albumWithSongsLocal.album.songCount, albumWithSongsLocal.downloadCount),
+                                        albumWithSongsLocal.album.year.toString(),
+                                    ),
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Normal
+                                fontWeight = FontWeight.Normal,
                             )
 
                             Row {
@@ -239,12 +248,28 @@ fun AlbumScreen(
                                         database.query {
                                             update(albumWithSongsLocal.album.toggleLike())
                                         }
-                                    }
+                                    },
                                 ) {
                                     Icon(
-                                        painter = painterResource(if (albumWithSongsLocal.album.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
+                                        painter =
+                                            painterResource(
+                                                if (albumWithSongsLocal.album.bookmarkedAt !=
+                                                    null
+                                                ) {
+                                                    R.drawable.favorite
+                                                } else {
+                                                    R.drawable.favorite_border
+                                                },
+                                            ),
                                         contentDescription = null,
-                                        tint = if (albumWithSongsLocal.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
+                                        tint =
+                                            if (albumWithSongsLocal.album.bookmarkedAt !=
+                                                null
+                                            ) {
+                                                MaterialTheme.colorScheme.error
+                                            } else {
+                                                LocalContentColor.current
+                                            },
                                     )
                                 }
 
@@ -257,14 +282,14 @@ fun AlbumScreen(
                                                         context,
                                                         ExoDownloadService::class.java,
                                                         song.id,
-                                                        false
+                                                        false,
                                                     )
                                                 }
-                                            }
+                                            },
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.OfflinePin,
-                                                contentDescription = null
+                                                contentDescription = null,
                                             )
                                         }
                                     }
@@ -277,14 +302,14 @@ fun AlbumScreen(
                                                         context,
                                                         ExoDownloadService::class.java,
                                                         song.id,
-                                                        false
+                                                        false,
                                                     )
                                                 }
-                                            }
+                                            },
                                         ) {
                                             CircularProgressIndicator(
                                                 strokeWidth = 2.dp,
-                                                modifier = Modifier.size(24.dp)
+                                                modifier = Modifier.size(24.dp),
                                             )
                                         }
                                     }
@@ -292,13 +317,13 @@ fun AlbumScreen(
                                     else -> {
                                         IconButton(
                                             onClick = {
-                                                val songs = albumWithSongsLocal.songs.map{ it.toMediaMetadata() }
+                                                val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
                                                 downloadUtil.download(songs, context)
-                                            }
+                                            },
                                         ) {
                                             Icon(
                                                 Icons.Rounded.Download,
-                                                contentDescription = null
+                                                contentDescription = null,
                                             )
                                         }
                                     }
@@ -308,16 +333,21 @@ fun AlbumScreen(
                                     onClick = {
                                         menuState.show {
                                             AlbumMenu(
-                                                originalAlbum = Album(albumWithSongsLocal.album, albumWithSongsLocal.downloadCount, albumWithSongsLocal.artists),
+                                                originalAlbum =
+                                                    Album(
+                                                        albumWithSongsLocal.album,
+                                                        albumWithSongsLocal.downloadCount,
+                                                        albumWithSongsLocal.artists,
+                                                    ),
                                                 navController = navController,
                                                 onDismiss = menuState::dismiss,
                                             )
                                         }
-                                    }
+                                    },
                                 ) {
                                     Icon(
                                         Icons.Rounded.MoreVert,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 }
                             }
@@ -333,21 +363,21 @@ fun AlbumScreen(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
                                         items = albumWithSongsLocal.songs.map(Song::toMediaMetadata),
-                                        playlistId = albumWithSongsLocal.album.playlistId
-                                    )
+                                        playlistId = albumWithSongsLocal.album.playlistId,
+                                    ),
                                 )
                             },
                             contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.play),
                                 contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                                modifier = Modifier.size(ButtonDefaults.IconSize),
                             )
                             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                             Text(
-                                text = stringResource(R.string.play)
+                                text = stringResource(R.string.play),
                             )
                         }
 
@@ -357,17 +387,17 @@ fun AlbumScreen(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
                                         items = albumWithSongsLocal.songs.shuffled().map(Song::toMediaMetadata),
-                                        playlistId = albumWithSongsLocal.album.playlistId
-                                    )
+                                        playlistId = albumWithSongsLocal.album.playlistId,
+                                    ),
                                 )
                             },
                             contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.shuffle),
                                 contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                                modifier = Modifier.size(ButtonDefaults.IconSize),
                             )
                             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                             Text(stringResource(R.string.shuffle))
@@ -378,17 +408,19 @@ fun AlbumScreen(
 
             stickyHeader(
                 key = "header",
-                contentType = CONTENT_TYPE_HEADER
+                contentType = CONTENT_TYPE_HEADER,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 16.dp)
+                    modifier = Modifier.padding(start = 16.dp),
                 ) {
                     if (inSelectMode && albumWithSongs?.songs != null) {
                         SelectHeader(
-                            selectedItems = selection.mapNotNull { index ->
-                                albumWithSongs?.songs?.getOrNull(index)
-                            }.map { it.toMediaMetadata()},
+                            selectedItems =
+                                selection
+                                    .mapNotNull { index ->
+                                        albumWithSongs?.songs?.getOrNull(index)
+                                    }.map { it.toMediaMetadata() },
                             totalItemCount = albumWithSongs!!.songs.size,
                             onSelectAll = {
                                 selection.clear()
@@ -396,17 +428,16 @@ fun AlbumScreen(
                             },
                             onDeselectAll = { selection.clear() },
                             menuState = menuState,
-                            onDismiss = onExitSelectionMode
+                            onDismiss = onExitSelectionMode,
                         )
                     }
                 }
             }
 
-
             if (albumWithSongs?.songs != null) {
                 itemsIndexed(
                     items = albumWithSongs!!.songs,
-                    key = { _, song -> song.id }
+                    key = { _, song -> song.id },
                 ) { index, song ->
                     val onCheckedChange: (Boolean) -> Unit = {
                         if (it) {
@@ -429,7 +460,7 @@ fun AlbumScreen(
                                     if (inSelectMode) {
                                         Checkbox(
                                             checked = index in selection,
-                                            onCheckedChange = onCheckedChange
+                                            onCheckedChange = onCheckedChange,
                                         )
                                     } else {
                                         IconButton(
@@ -438,49 +469,50 @@ fun AlbumScreen(
                                                     SongMenu(
                                                         originalSong = song,
                                                         navController = navController,
-                                                        onDismiss = menuState::dismiss
+                                                        onDismiss = menuState::dismiss,
                                                     )
                                                 }
-                                            }
+                                            },
                                         ) {
                                             Icon(
                                                 Icons.Rounded.MoreVert,
-                                                contentDescription = null
+                                                contentDescription = null,
                                             )
                                         }
                                     }
                                 },
                                 isSelected = inSelectMode && index in selection,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .combinedClickable(
-                                        onClick = {
-                                            if (inSelectMode) {
-                                                onCheckedChange(index !in selection)
-                                            } else if (song.id == mediaMetadata?.id) {
-                                                playerConnection.player.togglePlayPause()
-                                            } else {
-                                                playerConnection.playQueue(
-                                                    ListQueue(
-                                                        title = albumWithSongsLocal.album.title,
-                                                        items = albumWithSongsLocal.songs.map { it.toMediaMetadata() },
-                                                        startIndex = index,
-                                                        playlistId = albumWithSongsLocal.album.playlistId
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .combinedClickable(
+                                            onClick = {
+                                                if (inSelectMode) {
+                                                    onCheckedChange(index !in selection)
+                                                } else if (song.id == mediaMetadata?.id) {
+                                                    playerConnection.player.togglePlayPause()
+                                                } else {
+                                                    playerConnection.playQueue(
+                                                        ListQueue(
+                                                            title = albumWithSongsLocal.album.title,
+                                                            items = albumWithSongsLocal.songs.map { it.toMediaMetadata() },
+                                                            startIndex = index,
+                                                            playlistId = albumWithSongsLocal.album.playlistId,
+                                                        ),
                                                     )
-                                                )
-                                            }
-                                        },
-                                        onLongClick = {
-                                            if (!inSelectMode) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                inSelectMode = true
-                                                onCheckedChange(true)
-                                            }
-                                        }
-                                    )
+                                                }
+                                            },
+                                            onLongClick = {
+                                                if (!inSelectMode) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    inSelectMode = true
+                                                    onCheckedChange(true)
+                                                }
+                                            },
+                                        ),
                             )
                         },
-                        snackbarHostState = snackbarHostState
+                        snackbarHostState = snackbarHostState,
                     )
                 }
             }
@@ -490,10 +522,11 @@ fun AlbumScreen(
                     Column(Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Spacer(
-                                modifier = Modifier
-                                    .size(AlbumThumbnailSize)
-                                    .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                                    .background(MaterialTheme.colorScheme.onSurface)
+                                modifier =
+                                    Modifier
+                                        .size(AlbumThumbnailSize)
+                                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                                        .background(MaterialTheme.colorScheme.onSurface),
                             )
 
                             Spacer(Modifier.width(16.dp))
@@ -531,25 +564,26 @@ fun AlbumScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 }

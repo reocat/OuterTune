@@ -41,22 +41,25 @@ data class PlaylistEntity(
 
     val shareLink: String?
         get() {
-            return if (browseId != null)
+            return if (browseId != null) {
                 "https://music.youtube.com/playlist?list=$browseId"
-            else null
+            } else {
+                null
+            }
         }
 
-    fun localToggleLike() = copy(
-        bookmarkedAt = if (bookmarkedAt != null) null else LocalDateTime.now()
-    )
+    fun localToggleLike() =
+        copy(
+            bookmarkedAt = if (bookmarkedAt != null) null else LocalDateTime.now(),
+        )
 
-    fun toggleLike() = localToggleLike().also {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (browseId != null)
-                YouTube.likePlaylist(browseId, bookmarkedAt == null)
-            this.cancel()
+    fun toggleLike() =
+        localToggleLike().also {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (browseId != null) {
+                    YouTube.likePlaylist(browseId, bookmarkedAt == null)
+                }
+                this.cancel()
+            }
         }
-    }
-
-
 }

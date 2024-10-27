@@ -27,7 +27,7 @@ fun LibraryArtistListItem(
     menuState: MenuState,
     coroutineScope: CoroutineScope,
     artist: Artist,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = ArtistListItem(
     artist = artist,
     trailingContent = {
@@ -37,22 +37,23 @@ fun LibraryArtistListItem(
                     ArtistMenu(
                         originalArtist = artist,
                         coroutineScope = coroutineScope,
-                        onDismiss = menuState::dismiss
+                        onDismiss = menuState::dismiss,
                     )
                 }
-            }
+            },
         ) {
             Icon(
                 Icons.Rounded.MoreVert,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     },
-    modifier = modifier
-        .fillMaxWidth()
-        .clickable {
-            navController.navigate("artist/${artist.id}")
-        }
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("artist/${artist.id}")
+            },
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -62,26 +63,27 @@ fun LibraryArtistGridItem(
     menuState: MenuState,
     coroutineScope: CoroutineScope,
     artist: Artist,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = ArtistGridItem(
     artist = artist,
     fillMaxWidth = true,
-    modifier = modifier
-        .fillMaxWidth()
-        .combinedClickable(
-            onClick = {
-                navController.navigate("artist/${artist.id}")
-            },
-            onLongClick = {
-                menuState.show {
-                    ArtistMenu(
-                        originalArtist = artist,
-                        coroutineScope = coroutineScope,
-                        onDismiss = menuState::dismiss
-                    )
-                }
-            }
-        )
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    navController.navigate("artist/${artist.id}")
+                },
+                onLongClick = {
+                    menuState.show {
+                        ArtistMenu(
+                            originalArtist = artist,
+                            coroutineScope = coroutineScope,
+                            onDismiss = menuState::dismiss,
+                        )
+                    }
+                },
+            ),
 )
 
 @Composable
@@ -91,7 +93,7 @@ fun LibraryAlbumListItem(
     menuState: MenuState,
     album: Album,
     isActive: Boolean = false,
-    isPlaying: Boolean = false
+    isPlaying: Boolean = false,
 ) = AlbumListItem(
     album = album,
     isActive = isActive,
@@ -103,22 +105,23 @@ fun LibraryAlbumListItem(
                     AlbumMenu(
                         originalAlbum = album,
                         navController = navController,
-                        onDismiss = menuState::dismiss
+                        onDismiss = menuState::dismiss,
                     )
                 }
-            }
+            },
         ) {
             Icon(
                 Icons.Rounded.MoreVert,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     },
-    modifier = modifier
-        .fillMaxWidth()
-        .clickable {
-            navController.navigate("album/${album.id}")
-        }
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("album/${album.id}")
+            },
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -130,29 +133,30 @@ fun LibraryAlbumGridItem(
     coroutineScope: CoroutineScope,
     album: Album,
     isActive: Boolean = false,
-    isPlaying: Boolean = false
+    isPlaying: Boolean = false,
 ) = AlbumGridItem(
     album = album,
     isActive = isActive,
     isPlaying = isPlaying,
     coroutineScope = coroutineScope,
     fillMaxWidth = true,
-    modifier = modifier
-        .fillMaxWidth()
-        .combinedClickable(
-            onClick = {
-                navController.navigate("album/${album.id}")
-            },
-            onLongClick = {
-                menuState.show {
-                    AlbumMenu(
-                        originalAlbum = album,
-                        navController = navController,
-                        onDismiss = menuState::dismiss
-                    )
-                }
-            }
-        )
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    navController.navigate("album/${album.id}")
+                },
+                onLongClick = {
+                    menuState.show {
+                        AlbumMenu(
+                            originalAlbum = album,
+                            navController = navController,
+                            onDismiss = menuState::dismiss,
+                        )
+                    }
+                },
+            ),
 )
 
 @Composable
@@ -161,7 +165,7 @@ fun LibraryPlaylistListItem(
     menuState: MenuState,
     coroutineScope: CoroutineScope,
     playlist: Playlist,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = PlaylistListItem(
     playlist = playlist,
     trailingContent = {
@@ -172,53 +176,59 @@ fun LibraryPlaylistListItem(
                         PlaylistMenu(
                             playlist = playlist,
                             coroutineScope = coroutineScope,
-                            onDismiss = menuState::dismiss
+                            onDismiss = menuState::dismiss,
                         )
                     } else {
                         playlist.playlist.browseId?.let { browseId ->
                             YouTubePlaylistMenu(
-                                playlist = PlaylistItem(
-                                    id = browseId,
-                                    title = playlist.playlist.name,
-                                    author = null,
-                                    songCountText = null,
-                                    thumbnail = playlist.thumbnails[0],
-                                    playEndpoint = WatchEndpoint(
-                                        playlistId = browseId,
-                                        params = playlist.playlist.playEndpointParams
+                                playlist =
+                                    PlaylistItem(
+                                        id = browseId,
+                                        title = playlist.playlist.name,
+                                        author = null,
+                                        songCountText = null,
+                                        thumbnail = playlist.thumbnails[0],
+                                        playEndpoint =
+                                            WatchEndpoint(
+                                                playlistId = browseId,
+                                                params = playlist.playlist.playEndpointParams,
+                                            ),
+                                        shuffleEndpoint =
+                                            WatchEndpoint(
+                                                playlistId = browseId,
+                                                params = playlist.playlist.shuffleEndpointParams,
+                                            ),
+                                        radioEndpoint =
+                                            WatchEndpoint(
+                                                playlistId = "RDAMPL$browseId",
+                                                params = playlist.playlist.radioEndpointParams,
+                                            ),
+                                        isEditable = false,
                                     ),
-                                    shuffleEndpoint = WatchEndpoint(
-                                        playlistId = browseId,
-                                        params = playlist.playlist.shuffleEndpointParams
-                                    ),
-                                    radioEndpoint = WatchEndpoint(
-                                        playlistId = "RDAMPL$browseId",
-                                        params = playlist.playlist.radioEndpointParams
-                                    ),
-                                    isEditable = false
-                                ),
                                 coroutineScope = coroutineScope,
-                                onDismiss = menuState::dismiss
+                                onDismiss = menuState::dismiss,
                             )
                         }
                     }
                 }
-            }
+            },
         ) {
             Icon(
                 Icons.Rounded.MoreVert,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     },
-    modifier = modifier
-        .fillMaxWidth()
-        .clickable {
-            if (!playlist.playlist.isEditable && playlist.songCount == 0 && playlist.playlist.remoteSongCount != 0)
-                navController.navigate("online_playlist/${playlist.playlist.browseId}")
-            else
-                navController.navigate("local_playlist/${playlist.id}")
-        }
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .clickable {
+                if (!playlist.playlist.isEditable && playlist.songCount == 0 && playlist.playlist.remoteSongCount != 0) {
+                    navController.navigate("online_playlist/${playlist.playlist.browseId}")
+                } else {
+                    navController.navigate("local_playlist/${playlist.id}")
+                }
+            },
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -228,56 +238,62 @@ fun LibraryPlaylistGridItem(
     menuState: MenuState,
     coroutineScope: CoroutineScope,
     playlist: Playlist,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) = PlaylistGridItem(
     playlist = playlist,
     fillMaxWidth = true,
-    modifier = modifier
-        .fillMaxWidth()
-        .combinedClickable(
-            onClick = {
-                if (!playlist.playlist.isEditable && playlist.songCount == 0 && playlist.playlist.remoteSongCount != 0)
-                    navController.navigate("online_playlist/${playlist.playlist.browseId}")
-                else
-                    navController.navigate("local_playlist/${playlist.id}")
-            },
-            onLongClick = {
-                menuState.show {
-                    if (playlist.playlist.isEditable || playlist.songCount != 0) {
-                        PlaylistMenu(
-                            playlist = playlist,
-                            coroutineScope = coroutineScope,
-                            onDismiss = menuState::dismiss
-                        )
+    modifier =
+        modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    if (!playlist.playlist.isEditable && playlist.songCount == 0 && playlist.playlist.remoteSongCount != 0) {
+                        navController.navigate("online_playlist/${playlist.playlist.browseId}")
                     } else {
-                        playlist.playlist.browseId?.let { browseId ->
-                            YouTubePlaylistMenu(
-                                playlist = PlaylistItem(
-                                    id = browseId,
-                                    title = playlist.playlist.name,
-                                    author = null,
-                                    songCountText = null,
-                                    thumbnail = playlist.thumbnails[0],
-                                    playEndpoint = WatchEndpoint(
-                                        playlistId = browseId,
-                                        params = playlist.playlist.playEndpointParams
-                                    ),
-                                    shuffleEndpoint = WatchEndpoint(
-                                        playlistId = browseId,
-                                        params = playlist.playlist.shuffleEndpointParams
-                                    ),
-                                    radioEndpoint = WatchEndpoint(
-                                        playlistId = "RDAMPL$browseId",
-                                        params = playlist.playlist.radioEndpointParams
-                                    ),
-                                    isEditable = false
-                                ),
+                        navController.navigate("local_playlist/${playlist.id}")
+                    }
+                },
+                onLongClick = {
+                    menuState.show {
+                        if (playlist.playlist.isEditable || playlist.songCount != 0) {
+                            PlaylistMenu(
+                                playlist = playlist,
                                 coroutineScope = coroutineScope,
-                                onDismiss = menuState::dismiss
+                                onDismiss = menuState::dismiss,
                             )
+                        } else {
+                            playlist.playlist.browseId?.let { browseId ->
+                                YouTubePlaylistMenu(
+                                    playlist =
+                                        PlaylistItem(
+                                            id = browseId,
+                                            title = playlist.playlist.name,
+                                            author = null,
+                                            songCountText = null,
+                                            thumbnail = playlist.thumbnails[0],
+                                            playEndpoint =
+                                                WatchEndpoint(
+                                                    playlistId = browseId,
+                                                    params = playlist.playlist.playEndpointParams,
+                                                ),
+                                            shuffleEndpoint =
+                                                WatchEndpoint(
+                                                    playlistId = browseId,
+                                                    params = playlist.playlist.shuffleEndpointParams,
+                                                ),
+                                            radioEndpoint =
+                                                WatchEndpoint(
+                                                    playlistId = "RDAMPL$browseId",
+                                                    params = playlist.playlist.radioEndpointParams,
+                                                ),
+                                            isEditable = false,
+                                        ),
+                                    coroutineScope = coroutineScope,
+                                    onDismiss = menuState::dismiss,
+                                )
+                            }
                         }
                     }
-                }
-            }
-        )
+                },
+            ),
 )

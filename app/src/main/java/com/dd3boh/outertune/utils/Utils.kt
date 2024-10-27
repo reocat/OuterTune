@@ -12,8 +12,8 @@ fun reportException(throwable: Throwable) {
  *
  * @param str Encoded string
  */
-fun decodeTabString(str: String): List<NavigationTab> {
-    return str.toCharArray().map {
+fun decodeTabString(str: String): List<NavigationTab> =
+    str.toCharArray().map {
         when (it) {
             'H' -> NavigationTab.HOME
             'S' -> NavigationTab.SONG
@@ -26,7 +26,6 @@ fun decodeTabString(str: String): List<NavigationTab> {
             }
         }
     }
-}
 
 /**
  * Converts the NavigationTab tabs list to string
@@ -36,15 +35,18 @@ fun decodeTabString(str: String): List<NavigationTab> {
 fun encodeTabString(list: List<NavigationTab>): String {
     var encoded = ""
     list.subList(0, list.indexOf(NavigationTab.NULL)).forEach {
-        encoded += when (it) {
-            NavigationTab.HOME -> "H"
-            NavigationTab.SONG -> "S"
-            NavigationTab.FOLDERS -> "F"
-            NavigationTab.ARTIST -> "A"
-            NavigationTab.ALBUM -> "B"
-            NavigationTab.PLAYLIST -> "L"
-            else -> { "" }
-        }
+        encoded +=
+            when (it) {
+                NavigationTab.HOME -> "H"
+                NavigationTab.SONG -> "S"
+                NavigationTab.FOLDERS -> "F"
+                NavigationTab.ARTIST -> "A"
+                NavigationTab.ALBUM -> "B"
+                NavigationTab.PLAYLIST -> "L"
+                else -> {
+                    ""
+                }
+            }
     }
 
     return encoded
@@ -53,7 +55,10 @@ fun encodeTabString(list: List<NavigationTab>): String {
 /**
  * Find the matching string, if not found the closest super string
  */
-fun closestMatch(query: String, stringList: List<Artist>): Artist? {
+fun closestMatch(
+    query: String,
+    stringList: List<Artist>,
+): Artist? {
     // Check for exact match first
 
     val exactMatch = stringList.find { query.lowercase() == it.artist.name.lowercase() }

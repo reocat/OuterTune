@@ -94,16 +94,16 @@ fun StorageSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         PreferenceGroupTitle(
-            title = stringResource(R.string.downloaded_songs)
+            title = stringResource(R.string.downloaded_songs),
         )
 
         Text(
             text = stringResource(R.string.size_used, formatFileSize(downloadCacheSize)),
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         )
 
         PreferenceEntry(
@@ -118,21 +118,22 @@ fun StorageSettings(
         )
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.image_cache)
+            title = stringResource(R.string.image_cache),
         )
 
         if (maxImageCacheSize > 0) {
             LinearProgressIndicator(
                 progress = { (imageCacheSize.toFloat() / imageDiskCache.maxSize).coerceIn(0f, 1f) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
             )
 
             Text(
                 text = stringResource(R.string.size_used, "${formatFileSize(imageCacheSize)} / ${formatFileSize(imageDiskCache.maxSize)}"),
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
 
@@ -146,7 +147,7 @@ fun StorageSettings(
                     else -> formatFileSize(it * 1024 * 1024L)
                 }
             },
-            onValueSelected = onMaxImageCacheSizeChange
+            onValueSelected = onMaxImageCacheSizeChange,
         )
 
         PreferenceEntry(
@@ -164,14 +165,14 @@ fun StorageSettings(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

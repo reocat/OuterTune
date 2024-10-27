@@ -21,16 +21,15 @@ import com.zionhuang.innertube.models.PlaylistItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-
 /*
  * Logic related to playlists entities and their mapping
  */
 
 @Dao
 interface PlaylistsDao {
-
     // region Gets
-    @Query("""
+    @Query(
+        """
         SELECT 
             p.*, 
             COUNT(psm.playlistId) AS songCount,
@@ -40,10 +39,12 @@ interface PlaylistsDao {
             LEFT JOIN song s ON psm.songId = s.id
         WHERE p.id = :playlistId
         GROUP BY p.id
-    """)
+    """,
+    )
     fun playlist(playlistId: String): Flow<Playlist?>
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             p.*, 
             COUNT(psm.playlistId) AS songCount,
@@ -53,10 +54,12 @@ interface PlaylistsDao {
             LEFT JOIN song s ON psm.songId = s.id
         WHERE p.browseId = :browseId
         GROUP BY p.id
-    """)
+    """,
+    )
     fun playlistByBrowseId(browseId: String): Flow<Playlist?>
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             p.*, 
             COUNT(psm.playlistId) AS songCount,
@@ -67,22 +70,33 @@ interface PlaylistsDao {
         WHERE name LIKE '%' || :query || '%'
         GROUP BY p.id
         LIMIT :previewSize
-    """)
-    fun searchPlaylists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Playlist>>
+    """,
+    )
+    fun searchPlaylists(
+        query: String,
+        previewSize: Int = Int.MAX_VALUE,
+    ): Flow<List<Playlist>>
 
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId ORDER BY position")
     fun playlistSongs(playlistId: String): Flow<List<PlaylistSong>>
 
     @Query("SELECT songId from playlist_song_map WHERE playlistId = :playlistId AND songId IN (:songIds)")
-    fun playlistDuplicates(playlistId: String, songIds: List<String>,): List<String>
+    fun playlistDuplicates(
+        playlistId: String,
+        songIds: List<String>,
+    ): List<String>
 
     @Query("SELECT * FROM playlist_song_map WHERE songId = :songId")
     fun songMapsToPlaylist(songId: String): List<PlaylistSongMap>
 
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId AND position >= :from ORDER BY position")
-    fun songMapsToPlaylist(playlistId: String, from: Int): List<PlaylistSongMap>
+    fun songMapsToPlaylist(
+        playlistId: String,
+        from: Int,
+    ): List<PlaylistSongMap>
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             p.*, 
             COUNT(psm.playlistId) AS songCount,
@@ -93,25 +107,34 @@ interface PlaylistsDao {
         WHERE p.isEditable AND p.bookmarkedAt IS NOT NULL 
         GROUP BY p.id
         ORDER BY p.rowId
-    """)
+    """,
+    )
     fun editablePlaylistsByCreateDateAsc(): Flow<List<Playlist>>
 
     @RawQuery(observedEntities = [PlaylistEntity::class])
     fun _getPlaylists(query: SupportSQLiteQuery): Flow<List<Playlist>>
 
-    fun playlists(filter: PlaylistFilter, sortType: PlaylistSortType, descending: Boolean): Flow<List<Playlist>> {
-        val orderBy = when (sortType) {
-            PlaylistSortType.CREATE_DATE -> "p.rowId ASC"
-            PlaylistSortType.NAME -> "p.name COLLATE NOCASE ASC"
-            PlaylistSortType.SONG_COUNT -> "songCount ASC"
-        }
+    fun playlists(
+        filter: PlaylistFilter,
+        sortType: PlaylistSortType,
+        descending: Boolean,
+    ): Flow<List<Playlist>> {
+        val orderBy =
+            when (sortType) {
+                PlaylistSortType.CREATE_DATE -> "p.rowId ASC"
+                PlaylistSortType.NAME -> "p.name COLLATE NOCASE ASC"
+                PlaylistSortType.SONG_COUNT -> "songCount ASC"
+            }
 
-        val having = when (filter) {
-            PlaylistFilter.DOWNLOADED -> "HAVING SUM(CASE WHEN s.dateDownload IS NOT NULL THEN 1 ELSE 0 END) > 0"
-            else -> ""
-        }
+        val having =
+            when (filter) {
+                PlaylistFilter.DOWNLOADED -> "HAVING SUM(CASE WHEN s.dateDownload IS NOT NULL THEN 1 ELSE 0 END) > 0"
+                else -> ""
+            }
 
-        val query = SimpleSQLiteQuery("""
+        val query =
+            SimpleSQLiteQuery(
+                """
             SELECT 
                 p.*, 
                 COUNT(psm.playlistId) AS songCount,
@@ -123,9 +146,10 @@ interface PlaylistsDao {
             GROUP BY p.id
             $having
             ORDER BY $orderBy
-        """)
+        """,
+            )
 
-        return _getPlaylists(query).map{ it.reversed(descending) }
+        return _getPlaylists(query).map { it.reversed(descending) }
     }
 
     fun playlistInLibraryAsc() = playlists(PlaylistFilter.LIBRARY, PlaylistSortType.CREATE_DATE, false)
@@ -147,29 +171,37 @@ interface PlaylistsDao {
     fun update(map: PlaylistSongMap)
 
     @Update
-    fun update(playlistEntity: PlaylistEntity, playlistItem: PlaylistItem) {
-        update(playlistEntity.copy(
-            name = playlistItem.title,
-            browseId = playlistItem.id,
-            isEditable = playlistItem.isEditable,
-            thumbnailUrl = playlistItem.thumbnail,
-            remoteSongCount = playlistItem.songCountText?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() },
-            playEndpointParams = playlistItem.playEndpoint?.params,
-            shuffleEndpointParams = playlistItem.shuffleEndpoint?.params,
-            radioEndpointParams = playlistItem.radioEndpoint?.params
-        ))
+    fun update(
+        playlistEntity: PlaylistEntity,
+        playlistItem: PlaylistItem,
+    ) {
+        update(
+            playlistEntity.copy(
+                name = playlistItem.title,
+                browseId = playlistItem.id,
+                isEditable = playlistItem.isEditable,
+                thumbnailUrl = playlistItem.thumbnail,
+                remoteSongCount = playlistItem.songCountText?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() },
+                playEndpointParams = playlistItem.playEndpoint?.params,
+                shuffleEndpointParams = playlistItem.shuffleEndpoint?.params,
+                radioEndpointParams = playlistItem.radioEndpoint?.params,
+            ),
+        )
     }
 
     @Transaction
-    fun addSongToPlaylist(playlist: Playlist, songIds: List<String>) {
+    fun addSongToPlaylist(
+        playlist: Playlist,
+        songIds: List<String>,
+    ) {
         var position = playlist.songCount
         songIds.forEach { id ->
             insert(
                 PlaylistSongMap(
                     songId = id,
                     playlistId = playlist.id,
-                    position = position++
-                )
+                    position = position++,
+                ),
             )
         }
     }
@@ -188,9 +220,13 @@ interface PlaylistsDao {
                 ELSE :toPosition
             END 
         WHERE playlistId = :playlistId AND position BETWEEN MIN(:fromPosition, :toPosition) AND MAX(:fromPosition, :toPosition)
-    """
+    """,
     )
-    fun move(playlistId: String, fromPosition: Int, toPosition: Int)
+    fun move(
+        playlistId: String,
+        fromPosition: Int,
+        toPosition: Int,
+    )
     // endregion
 
     // region Deletes

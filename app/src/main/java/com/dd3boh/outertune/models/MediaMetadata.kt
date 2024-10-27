@@ -24,7 +24,7 @@ data class MediaMetadata(
     val setVideoId: String? = null,
     val isLocal: Boolean = false,
     val localPath: String? = null,
-    val liked: Boolean = false
+    val liked: Boolean = false,
 ) : Serializable {
     data class Artist(
         val id: String?,
@@ -44,21 +44,22 @@ data class MediaMetadata(
         val isLocal: Boolean = false,
     ) : Serializable
 
-    fun toSongEntity() = SongEntity(
-        id = id,
-        title = title,
-        duration = duration,
-        thumbnailUrl = thumbnailUrl,
-        albumId = album?.id,
-        albumName = album?.title,
-        year = year,
-        date = date,
-        dateModified = dateModified,
-        liked = liked,
-        isLocal = isLocal,
-        inLibrary = if (isLocal) LocalDateTime.now() else null,
-        localPath = localPath
-    )
+    fun toSongEntity() =
+        SongEntity(
+            id = id,
+            title = title,
+            duration = duration,
+            thumbnailUrl = thumbnailUrl,
+            albumId = album?.id,
+            albumName = album?.title,
+            year = year,
+            date = date,
+            dateModified = dateModified,
+            liked = liked,
+            isLocal = isLocal,
+            inLibrary = if (isLocal) LocalDateTime.now() else null,
+            localPath = localPath,
+        )
 
     /**
      * Returns a full date string. If no full date is present, returns the year.
@@ -76,9 +77,7 @@ data class MediaMetadata(
     /**
      * Returns a full date modified string
      */
-    fun getDateModifiedString(): String? {
-        return dateModified?.toLocalDate()?.toString()
-    }
+    fun getDateModifiedString(): String? = dateModified?.toLocalDate()?.toString()
 
     /**
      * Get the value of the date released in Epoch Seconds
@@ -91,64 +90,71 @@ data class MediaMetadata(
     fun getDateModifiedLong(): Long? = dateModified?.toEpochSecond(ZoneOffset.UTC)
 }
 
-fun Song.toMediaMetadata() = MediaMetadata(
-    id = song.id,
-    title = song.title,
-    artists = artists.map {
-        MediaMetadata.Artist(
-            id = it.id,
-            name = it.name,
-            isLocal = it.isLocal
-        )
-    },
-    duration = song.duration,
-    thumbnailUrl = song.thumbnailUrl,
-    album = album?.let {
-        MediaMetadata.Album(
-            id = it.id,
-            title = it.title,
-            isLocal = it.isLocal
-        )
-    } ?: song.albumId?.let { albumId ->
-        MediaMetadata.Album(
-            id = albumId,
-            title = song.albumName.orEmpty(),
-            // no possible local albums somehow
-        )
-    },
-    genre = genre?.map {
-        MediaMetadata.Genre(
-            id = it.id,
-            title = it.title,
-            isLocal = it.isLocal
-        )
-    },
-    year = song.year,
-    date = song.date,
-    dateModified = song.dateModified,
-    inLibrary = song.inLibrary,
-    liked = song.liked,
-    isLocal = song.isLocal,
-    localPath = song.localPath
-)
+fun Song.toMediaMetadata() =
+    MediaMetadata(
+        id = song.id,
+        title = song.title,
+        artists =
+            artists.map {
+                MediaMetadata.Artist(
+                    id = it.id,
+                    name = it.name,
+                    isLocal = it.isLocal,
+                )
+            },
+        duration = song.duration,
+        thumbnailUrl = song.thumbnailUrl,
+        album =
+            album?.let {
+                MediaMetadata.Album(
+                    id = it.id,
+                    title = it.title,
+                    isLocal = it.isLocal,
+                )
+            } ?: song.albumId?.let { albumId ->
+                MediaMetadata.Album(
+                    id = albumId,
+                    title = song.albumName.orEmpty(),
+                    // no possible local albums somehow
+                )
+            },
+        genre =
+            genre?.map {
+                MediaMetadata.Genre(
+                    id = it.id,
+                    title = it.title,
+                    isLocal = it.isLocal,
+                )
+            },
+        year = song.year,
+        date = song.date,
+        dateModified = song.dateModified,
+        inLibrary = song.inLibrary,
+        liked = song.liked,
+        isLocal = song.isLocal,
+        localPath = song.localPath,
+    )
 
-fun SongItem.toMediaMetadata() = MediaMetadata(
-    id = id,
-    title = title,
-    artists = artists.map {
-        MediaMetadata.Artist(
-            id = it.id,
-            name = it.name
-        )
-    },
-    duration = duration ?: -1,
-    thumbnailUrl = thumbnail.resize(544, 544),
-    album = album?.let {
-        MediaMetadata.Album(
-            id = it.id,
-            title = it.name
-        )
-    },
-    genre = null,
-    setVideoId = setVideoId
-)
+fun SongItem.toMediaMetadata() =
+    MediaMetadata(
+        id = id,
+        title = title,
+        artists =
+            artists.map {
+                MediaMetadata.Artist(
+                    id = it.id,
+                    name = it.name,
+                )
+            },
+        duration = duration ?: -1,
+        thumbnailUrl = thumbnail.resize(544, 544),
+        album =
+            album?.let {
+                MediaMetadata.Album(
+                    id = it.id,
+                    title = it.name,
+                )
+            },
+        genre = null,
+        setVideoId = setVideoId,
+    )

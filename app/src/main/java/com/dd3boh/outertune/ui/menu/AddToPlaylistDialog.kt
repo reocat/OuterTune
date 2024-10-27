@@ -90,7 +90,7 @@ fun AddToPlaylistDialog(
 
     if (isVisible) {
         ListDialog(
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
         ) {
             item {
                 ListItem(
@@ -100,33 +100,35 @@ fun AddToPlaylistDialog(
                             imageVector = Icons.Rounded.Add,
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
-                            modifier = Modifier.size(ListThumbnailSize)
+                            modifier = Modifier.size(ListThumbnailSize),
                         )
                     },
-                    modifier = Modifier.clickable {
-                        showCreatePlaylistDialog = true
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            showCreatePlaylistDialog = true
+                        },
                 )
             }
 
             items(playlists) { playlist ->
                 PlaylistListItem(
                     playlist = playlist,
-                    modifier = Modifier.clickable {
-                        selectedPlaylist = playlist
-                        coroutineScope.launch(Dispatchers.IO) {
-                            if (songIds == null) {
-                                songIds = onGetSong(playlist)
+                    modifier =
+                        Modifier.clickable {
+                            selectedPlaylist = playlist
+                            coroutineScope.launch(Dispatchers.IO) {
+                                if (songIds == null) {
+                                    songIds = onGetSong(playlist)
+                                }
+                                duplicates = database.playlistDuplicates(playlist.id, songIds!!)
+                                if (duplicates.isNotEmpty()) {
+                                    showDuplicateDialog = true
+                                } else {
+                                    onDismiss()
+                                    database.addSongToPlaylist(playlist, songIds!!)
+                                }
                             }
-                            duplicates = database.playlistDuplicates(playlist.id, songIds!!)
-                            if (duplicates.isNotEmpty()) {
-                                showDuplicateDialog = true
-                            } else {
-                                onDismiss()
-                                database.addSongToPlaylist(playlist, songIds!!)
-                            }
-                        }
-                    }
+                        },
                 )
             }
 
@@ -134,7 +136,7 @@ fun AddToPlaylistDialog(
                 Text(
                     text = "Note: Adding local songs to synced/remote playlists is unsupported. Any other combination is valid.",
                     fontSize = TextUnit(12F, TextUnitType.Sp),
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                    modifier = Modifier.padding(horizontal = 20.dp),
                 )
             }
         }
@@ -144,13 +146,16 @@ fun AddToPlaylistDialog(
         TextFieldDialog(
             icon = { Icon(imageVector = Icons.Rounded.Add, contentDescription = null) },
             title = { Text(text = stringResource(R.string.create_playlist)) },
-            initialTextFieldValue = TextFieldValue(initialTextFieldValue?: ""),
+            initialTextFieldValue = TextFieldValue(initialTextFieldValue ?: ""),
             onDismiss = { showCreatePlaylistDialog = false },
             onDone = { playlistName ->
                 coroutineScope.launch(Dispatchers.IO) {
-                    val browseId = if (syncedPlaylist)
-                        YouTube.createPlaylist(playlistName).getOrNull()
-                    else null
+                    val browseId =
+                        if (syncedPlaylist) {
+                            YouTube.createPlaylist(playlistName).getOrNull()
+                        } else {
+                            null
+                        }
 
                     database.query {
                         insert(
@@ -159,8 +164,8 @@ fun AddToPlaylistDialog(
                                 browseId = browseId,
                                 bookmarkedAt = LocalDateTime.now(),
                                 isEditable = !syncedPlaylist,
-                                isLocal = !syncedPlaylist // && check that all songs are non-local
-                            )
+                                isLocal = !syncedPlaylist, // && check that all songs are non-local
+                            ),
                         )
                     }
                 }
@@ -168,9 +173,9 @@ fun AddToPlaylistDialog(
             extraContent = {
                 // synced/unsynced toggle
                 Row(
-                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 40.dp)
+                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 40.dp),
                 ) {
-                    Column() {
+                    Column {
                         Text(
                             text = "Sync Playlist",
                             style = MaterialTheme.typography.titleLarge,
@@ -179,12 +184,12 @@ fun AddToPlaylistDialog(
                         Text(
                             text = "Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.",
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.fillMaxWidth(0.7f)
+                            modifier = Modifier.fillMaxWidth(0.7f),
                         )
                     }
                     Row(
                         modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.End
+                        horizontalArrangement = Arrangement.End,
                     ) {
                         Switch(
                             enabled = !noSyncing,
@@ -195,8 +200,7 @@ fun AddToPlaylistDialog(
                         )
                     }
                 }
-
-            }
+            },
         )
     }
 
@@ -214,10 +218,10 @@ fun AddToPlaylistDialog(
                                 selectedPlaylist!!,
                                 songIds!!.filter {
                                     !duplicates.contains(it)
-                                }
+                                },
                             )
                         }
-                    }
+                    },
                 ) {
                     Text(stringResource(R.string.skip_duplicates))
                 }
@@ -229,7 +233,7 @@ fun AddToPlaylistDialog(
                         database.transaction {
                             addSongToPlaylist(selectedPlaylist!!, songIds!!)
                         }
-                    }
+                    },
                 ) {
                     Text(stringResource(R.string.add_anyway))
                 }
@@ -237,23 +241,24 @@ fun AddToPlaylistDialog(
                 TextButton(
                     onClick = {
                         showDuplicateDialog = false
-                    }
+                    },
                 ) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
             onDismiss = {
                 showDuplicateDialog = false
-            }
+            },
         ) {
             Text(
-                text = if (duplicates.size == 1) {
-                    stringResource(R.string.duplicates_description_single)
-                } else {
-                    stringResource(R.string.duplicates_description_multiple, duplicates.size)
-                },
+                text =
+                    if (duplicates.size == 1) {
+                        stringResource(R.string.duplicates_description_single)
+                    } else {
+                        stringResource(R.string.duplicates_description_multiple, duplicates.size)
+                    },
                 textAlign = TextAlign.Start,
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier.align(Alignment.Start),
             )
         }
     }

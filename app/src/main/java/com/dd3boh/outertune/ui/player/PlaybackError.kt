@@ -25,21 +25,22 @@ fun PlaybackError(
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(
-                onTap = { retry() }
-            )
-        }
+        modifier =
+            Modifier.pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { retry() },
+                )
+            },
     ) {
         Icon(
             imageVector = Icons.Rounded.Info,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.error
+            tint = MaterialTheme.colorScheme.error,
         )
 
         Text(
             text = error.cause?.cause?.message ?: stringResource(R.string.error_unknown),
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

@@ -94,18 +94,21 @@ fun PlayerSettings(
 
     fun toggleKeepAlive(newValue: Boolean) {
         // disable and request if disabled
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
             onKeepAliveChange(false)
-            Toast.makeText(
-                context,
-                "Notification permission is required",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast
+                .makeText(
+                    context,
+                    "Notification permission is required",
+                    Toast.LENGTH_SHORT,
+                ).show()
 
             ActivityCompat.requestPermissions(
                 context as Activity,
-                arrayOf( Manifest.permission.POST_NOTIFICATIONS), PackageManager.PERMISSION_GRANTED
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                PackageManager.PERMISSION_GRANTED,
             )
             return
         }
@@ -131,12 +134,12 @@ fun PlayerSettings(
 
     // reset if no permission
     LaunchedEffect(keepAlive) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
             onKeepAliveChange(false)
         }
     }
-
 
     if (showMinPlaybackDur) {
         ActionPromptDialog(
@@ -149,26 +152,26 @@ fun PlayerSettings(
             onCancel = {
                 showMinPlaybackDur = false
                 tempminPlaybackDur = minPlaybackDur
-            }
+            },
         ) {
             Text(
                 text = "The minimum amount of a song that must be played before it is considered \"played\"",
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 4.dp)
+                modifier = Modifier.padding(horizontal = 4.dp),
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    text = "${tempminPlaybackDur}%",
+                    text = "$tempminPlaybackDur%",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp),
                 )
                 Slider(
                     value = tempminPlaybackDur.toFloat(),
                     onValueChange = { tempminPlaybackDur = it.toInt() },
-                    valueRange = 0f..100f
+                    valueRange = 0f..100f,
                 )
             }
         }
@@ -177,32 +180,32 @@ fun PlayerSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         PreferenceGroupTitle(
-            title = "Interface"
+            title = "Interface",
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.persistent_queue)) },
             description = stringResource(R.string.persistent_queue_desc),
             icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
             checked = persistentQueue,
-            onCheckedChange = onPersistentQueueChange
+            onCheckedChange = onPersistentQueueChange,
         )
         // lyrics settings
         PreferenceEntry(
             title = { Text(stringResource(R.string.lyrics_settings_title)) },
             icon = { Icon(Icons.Rounded.Lyrics, null) },
-            onClick = { navController.navigate("settings/player/lyrics") }
+            onClick = { navController.navigate("settings/player/lyrics") },
         )
         PreferenceEntry(
             title = { Text("Minimum playback duration") },
             icon = { Icon(Icons.Rounded.Sync, null) },
-            onClick = { showMinPlaybackDur = true }
+            onClick = { showMinPlaybackDur = true },
         )
 
         PreferenceGroupTitle(
-            title = "Audio"
+            title = "Audio",
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
@@ -215,43 +218,43 @@ fun PlayerSettings(
                     AudioQuality.HIGH -> stringResource(R.string.audio_quality_high)
                     AudioQuality.LOW -> stringResource(R.string.audio_quality_low)
                 }
-            }
+            },
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.audio_normalization)) },
             icon = { Icon(Icons.AutoMirrored.Rounded.VolumeUp, null) },
             checked = audioNormalization,
-            onCheckedChange = onAudioNormalizationChange
+            onCheckedChange = onAudioNormalizationChange,
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.skip_silence)) },
             icon = { Icon(painterResource(R.drawable.skip_next), null) },
             checked = skipSilence,
-            onCheckedChange = onSkipSilenceChange
+            onCheckedChange = onSkipSilenceChange,
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.auto_skip_next_on_error)) },
             description = stringResource(R.string.auto_skip_next_on_error_desc),
             icon = { Icon(Icons.Rounded.FastForward, null) },
             checked = skipOnErrorKey,
-            onCheckedChange = onSkipOnErrorChange
+            onCheckedChange = onSkipOnErrorChange,
         )
 
         PreferenceGroupTitle(
-            title = "Advanced"
+            title = "Advanced",
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
             icon = { Icon(Icons.Rounded.ClearAll, null) },
             checked = stopMusicOnTaskClear,
-            onCheckedChange = onStopMusicOnTaskClearChange
+            onCheckedChange = onStopMusicOnTaskClearChange,
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.keep_alive_title)) },
             description = stringResource(R.string.keep_alive_description),
             icon = { Icon(Icons.Rounded.NoCell, null) },
             checked = keepAlive,
-            onCheckedChange = { toggleKeepAlive(it) }
+            onCheckedChange = { toggleKeepAlive(it) },
         )
     }
 
@@ -260,14 +263,14 @@ fun PlayerSettings(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

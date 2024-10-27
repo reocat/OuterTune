@@ -30,9 +30,9 @@ import java.time.LocalDateTime
 
 @Dao
 interface ArtistsDao {
-
     // region Gets
-    @Query("""
+    @Query(
+        """
         SELECT 
             artist.*,
             COUNT(song.id) AS songCount,
@@ -42,13 +42,15 @@ interface ArtistsDao {
             LEFT JOIN song ON sam.songId = song.id
         WHERE artist.id = :id AND song.inLibrary IS NOT NULL
         GROUP BY artist.id
-    """)
+    """,
+    )
     fun artist(id: String): Flow<Artist?>
 
     @Query("SELECT * FROM artist WHERE name = :name")
     fun artistByName(name: String): ArtistEntity?
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             artist.*,
             COUNT(song.id) AS songCount,
@@ -60,14 +62,26 @@ interface ArtistsDao {
         GROUP BY artist.id
         HAVING songCount > 0
         LIMIT :previewSize
-    """)
-    fun searchArtists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Artist>>
+    """,
+    )
+    fun searchArtists(
+        query: String,
+        previewSize: Int = Int.MAX_VALUE,
+    ): Flow<List<Artist>>
 
-    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE song_artist_map.artistId IN (SELECT id FROM artist WHERE name LIKE '%' || :query || '%') LIMIT :previewSize")
-    fun searchArtistSongs(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
+    @Query(
+        "SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE song_artist_map.artistId IN (SELECT id FROM artist WHERE name LIKE '%' || :query || '%') LIMIT :previewSize",
+    )
+    fun searchArtistSongs(
+        query: String,
+        previewSize: Int = Int.MAX_VALUE,
+    ): Flow<List<Song>>
 
     @Query("SELECT * FROM artist WHERE name LIKE '%' || :query || '%' LIMIT :previewSize")
-    fun fuzzySearchArtists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<ArtistEntity>>
+    fun fuzzySearchArtists(
+        query: String,
+        previewSize: Int = Int.MAX_VALUE,
+    ): Flow<List<ArtistEntity>>
 
     @Query("SELECT * FROM artist WHERE isLocal != 1")
     fun allRemoteArtists(): Flow<List<ArtistEntity>>
@@ -75,10 +89,16 @@ interface ArtistsDao {
     @Query("SELECT * FROM artist WHERE isLocal = 1")
     fun allLocalArtists(): Flow<List<ArtistEntity>>
 
-    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL LIMIT :previewSize")
-    fun artistSongsPreview(artistId: String, previewSize: Int = 3): Flow<List<Song>>
+    @Query(
+        "SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL LIMIT :previewSize",
+    )
+    fun artistSongsPreview(
+        artistId: String,
+        previewSize: Int = 3,
+    ): Flow<List<Song>>
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             artist.*,
             COUNT(song.id) AS songCount,
@@ -98,32 +118,45 @@ interface ArtistsDao {
         GROUP BY artist.id
         ORDER BY SUM(e.songTotalPlayTime) DESC
         LIMIT :limit
-    """)
-    fun mostPlayedArtists(fromTimeStamp: Long, limit: Int = 6): Flow<List<Artist>>
+    """,
+    )
+    fun mostPlayedArtists(
+        fromTimeStamp: Long,
+        limit: Int = 6,
+    ): Flow<List<Artist>>
 
     @RawQuery(observedEntities = [ArtistEntity::class])
     fun _getArtists(query: SupportSQLiteQuery): Flow<List<Artist>>
 
-    fun artists(filter: ArtistFilter, sortType: ArtistSortType, descending: Boolean): Flow<List<Artist>> {
-        val orderBy = when (sortType) {
-            ArtistSortType.CREATE_DATE -> "artist.rowId ASC"
-            ArtistSortType.NAME -> "artist.name COLLATE NOCASE ASC"
-            ArtistSortType.SONG_COUNT -> "songCount ASC"
-            ArtistSortType.PLAY_TIME -> "SUM(totalPlayTime) ASC"
-        }
+    fun artists(
+        filter: ArtistFilter,
+        sortType: ArtistSortType,
+        descending: Boolean,
+    ): Flow<List<Artist>> {
+        val orderBy =
+            when (sortType) {
+                ArtistSortType.CREATE_DATE -> "artist.rowId ASC"
+                ArtistSortType.NAME -> "artist.name COLLATE NOCASE ASC"
+                ArtistSortType.SONG_COUNT -> "songCount ASC"
+                ArtistSortType.PLAY_TIME -> "SUM(totalPlayTime) ASC"
+            }
 
-        val where = when (filter){
-            ArtistFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
-            ArtistFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
-            ArtistFilter.LIKED -> "artist.bookmarkedAt IS NOT NULL"
-        }
+        val where =
+            when (filter) {
+                ArtistFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
+                ArtistFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
+                ArtistFilter.LIKED -> "artist.bookmarkedAt IS NOT NULL"
+            }
 
-        val having = when (filter) {
-            ArtistFilter.DOWNLOADED -> "AND downloadCount > 0"
-            else -> ""
-        }
+        val having =
+            when (filter) {
+                ArtistFilter.DOWNLOADED -> "AND downloadCount > 0"
+                else -> ""
+            }
 
-        val query = SimpleSQLiteQuery("""
+        val query =
+            SimpleSQLiteQuery(
+                """
             SELECT 
                 artist.*,
                 COUNT(song.id) AS songCount,
@@ -135,7 +168,8 @@ interface ArtistsDao {
             GROUP BY artist.id
             HAVING songCount > 0 $having
             ORDER BY $orderBy
-        """)
+        """,
+            )
 
         return _getArtists(query).map { artists ->
             artists
@@ -145,25 +179,35 @@ interface ArtistsDao {
     }
 
     fun artistsInLibraryAsc() = artists(ArtistFilter.LIBRARY, ArtistSortType.CREATE_DATE, false)
+
     fun artistsBookmarkedAsc() = artists(ArtistFilter.LIKED, ArtistSortType.CREATE_DATE, false)
     // endregion
 
     // region Artist Songs Sort
-    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY inLibrary")
+    @Query(
+        "SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY inLibrary",
+    )
     fun artistSongsByCreateDateAsc(artistId: String): Flow<List<Song>>
 
-    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
+    @Query(
+        "SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY title COLLATE NOCASE ASC",
+    )
     fun artistSongsByNameAsc(artistId: String): Flow<List<Song>>
 
-    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY totalPlayTime")
+    @Query(
+        "SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY totalPlayTime",
+    )
     fun artistSongsByPlayTimeAsc(artistId: String): Flow<List<Song>>
 
-    fun artistSongs(artistId: String, sortType: ArtistSongSortType, descending: Boolean) =
-        when (sortType) {
-            ArtistSongSortType.CREATE_DATE -> artistSongsByCreateDateAsc(artistId)
-            ArtistSongSortType.NAME -> artistSongsByNameAsc(artistId)
-            ArtistSongSortType.PLAY_TIME -> artistSongsByPlayTimeAsc(artistId)
-        }.map { it.reversed(descending) }
+    fun artistSongs(
+        artistId: String,
+        sortType: ArtistSongSortType,
+        descending: Boolean,
+    ) = when (sortType) {
+        ArtistSongSortType.CREATE_DATE -> artistSongsByCreateDateAsc(artistId)
+        ArtistSongSortType.NAME -> artistSongsByNameAsc(artistId)
+        ArtistSongSortType.PLAY_TIME -> artistSongsByPlayTimeAsc(artistId)
+    }.map { it.reversed(descending) }
     // endregion
     // endregion
 
@@ -180,19 +224,25 @@ interface ArtistsDao {
     fun update(artist: ArtistEntity)
 
     @Transaction
-    fun update(artist: ArtistEntity, artistPage: ArtistPage) {
+    fun update(
+        artist: ArtistEntity,
+        artistPage: ArtistPage,
+    ) {
         update(
             artist.copy(
                 name = artistPage.artist.title,
                 thumbnailUrl = artistPage.artist.thumbnail.resize(544, 544),
-                lastUpdateTime = LocalDateTime.now()
-            )
+                lastUpdateTime = LocalDateTime.now(),
+            ),
         )
     }
 
     @Transaction
     @Query("UPDATE song_artist_map SET artistId = :newId WHERE artistId = :oldId")
-    fun updateSongArtistMap(oldId: String, newId: String)
+    fun updateSongArtistMap(
+        oldId: String,
+        newId: String,
+    )
     // endregion
 
     // region Deletes

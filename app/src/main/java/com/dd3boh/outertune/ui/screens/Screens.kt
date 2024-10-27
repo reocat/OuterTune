@@ -20,11 +20,17 @@ sealed class Screens(
     val route: String,
 ) {
     data object Home : Screens(R.string.home, Icons.Rounded.Home, "home")
+
     data object Songs : Screens(R.string.songs, Icons.Rounded.MusicNote, "songs")
+
     data object Folders : Screens(R.string.folders, Icons.Rounded.Folder, "folders")
+
     data object Artists : Screens(R.string.artists, Icons.Rounded.Person, "artists")
+
     data object Albums : Screens(R.string.albums, Icons.Rounded.Album, "albums")
+
     data object Playlists : Screens(R.string.playlists, Icons.AutoMirrored.Rounded.QueueMusic, "playlists")
+
     data object Library : Screens(R.string.library, Icons.Rounded.LibraryMusic, "library")
 
     companion object {
@@ -36,15 +42,16 @@ sealed class Screens(
 
             screens.toCharArray().forEach {
                 result.add(
-                when (it) {
-                    'H' -> Home
-                    'S' -> Songs
-                    'F' -> Folders
-                    'A' -> Artists
-                    'B' -> Albums
-                    'L' -> Playlists
-                    else -> Home
-                })
+                    when (it) {
+                        'H' -> Home
+                        'S' -> Songs
+                        'F' -> Folders
+                        'A' -> Artists
+                        'B' -> Albums
+                        'L' -> Playlists
+                        else -> Home
+                    },
+                )
             }
 
             return result

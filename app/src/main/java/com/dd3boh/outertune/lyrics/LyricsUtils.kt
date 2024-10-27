@@ -6,7 +6,6 @@ import kotlin.math.pow
 object LyricsUtils {
     private val timeMarksRegex = "\\[(\\d{2}:\\d{2})([.:]\\d+)?]".toRegex()
 
-
     /**
      * Give lyrics in LRC format, parse and return a list of LyricEntry.
      *
@@ -35,11 +34,15 @@ object LyricsUtils {
      *  - [offset:] tag in header (ref Wikipedia)
      * We completely ignore all ID3 tags from the header as MediaStore is our source of truth.
      */
-    fun parseLyrics(lyrics: String, trim: Boolean, multilineEnable: Boolean): List<LyricsEntry> {
+    fun parseLyrics(
+        lyrics: String,
+        trim: Boolean,
+        multilineEnable: Boolean,
+    ): List<LyricsEntry> {
         val list = mutableListOf<LyricsEntry>()
         var foundNonNull = false
         var lyricsText: StringBuilder? = StringBuilder()
-        //val measureTime = measureTimeMillis {
+        // val measureTime = measureTimeMillis {
         // Add all lines found on LRC (probably will be unordered because of "compression" or translation type)
         lyrics.lines().forEach { line ->
             timeMarksRegex.findAll(line).let { sequence ->
@@ -48,8 +51,10 @@ object LyricsUtils {
                 }
                 var lyricLine: String
                 sequence.forEach { match ->
-                    val firstSync = match.groupValues.subList(1, match.groupValues.size)
-                        .joinToString("")
+                    val firstSync =
+                        match.groupValues
+                            .subList(1, match.groupValues.size)
+                            .joinToString("")
 
                     val ts = parseTime(firstSync)
                     if (!foundNonNull && ts > 0) {
@@ -70,15 +75,21 @@ object LyricsUtils {
 
                         // read as single line *IF* this is a single line lyric
                         if (nextSync == "[$firstSync]") {
-                            lyricLine = line.substring(sequence.last().range.last + 1)
-                                .let { if (trim) it.trim() else it }
+                            lyricLine =
+                                line
+                                    .substring(sequence.last().range.last + 1)
+                                    .let { if (trim) it.trim() else it }
                         } else {
-                            lyricLine = lyrics.substring(startIndex + 1, endIndex)
-                                .let { if (trim) it.trim() else it }
+                            lyricLine =
+                                lyrics
+                                    .substring(startIndex + 1, endIndex)
+                                    .let { if (trim) it.trim() else it }
                         }
                     } else {
-                        lyricLine = line.substring(sequence.last().range.last + 1)
-                            .let { if (trim) it.trim() else it }
+                        lyricLine =
+                            line
+                                .substring(sequence.last().range.last + 1)
+                                .let { if (trim) it.trim() else it }
                     }
 
                     lyricsText?.append(lyricLine + "\n")
@@ -118,13 +129,22 @@ object LyricsUtils {
         val millisecondsString = matchResult?.groupValues?.get(3)
         // if one specifies micro/pico/nano/whatever seconds for some insane reason,
         // scrap the extra information
-        val milliseconds = (millisecondsString?.substring(0, millisecondsString.length.coerceAtMost(3)
-        )?.toLongOrNull() ?: 0) * 10f.pow(3 - (millisecondsString?.length ?: 0)).toLong()
+        val milliseconds =
+            (
+                millisecondsString
+                    ?.substring(
+                        0,
+                        millisecondsString.length.coerceAtMost(3),
+                    )?.toLongOrNull() ?: 0
+            ) * 10f.pow(3 - (millisecondsString?.length ?: 0)).toLong()
 
         return minutes * 60000 + seconds * 1000 + milliseconds
     }
 
-    fun findCurrentLineIndex(lines: List<LyricsEntry>, position: Long): Int {
+    fun findCurrentLineIndex(
+        lines: List<LyricsEntry>,
+        position: Long,
+    ): Int {
         for (index in lines.indices) {
             if (lines[index].time >= position + animateScrollDuration) {
                 return index - 1

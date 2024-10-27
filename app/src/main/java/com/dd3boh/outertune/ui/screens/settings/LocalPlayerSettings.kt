@@ -94,14 +94,16 @@ import java.time.ZoneOffset
 fun LocalPlayerSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
-
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
     val mediaPermissionLevel =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
-        else Manifest.permission.READ_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
     // scanner vars
     val isScannerActive by scannerActive.collectAsState()
@@ -119,10 +121,11 @@ fun LocalPlayerSettings(
     }
 
     // scanner prefs
-    val (scannerSensitivity, onScannerSensitivityChange) = rememberEnumPreference(
-        key = ScannerSensitivityKey,
-        defaultValue = ScannerMatchCriteria.LEVEL_2
-    )
+    val (scannerSensitivity, onScannerSensitivityChange) =
+        rememberEnumPreference(
+            key = ScannerSensitivityKey,
+            defaultValue = ScannerMatchCriteria.LEVEL_2,
+        )
     val (strictExtensions, onStrictExtensionsChange) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
     val (autoScan, onAutoScanChange) = rememberPreference(AutomaticScannerKey, defaultValue = true)
     val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = DEFAULT_SCAN_PATH)
@@ -133,12 +136,16 @@ fun LocalPlayerSettings(
 
     // other vars
     var tempScanPaths by remember { mutableStateOf("") }
-    val (lastLocalScan, onLastLocalScanChange) = rememberPreference(LastLocalScanKey, LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond())
+    val (lastLocalScan, onLastLocalScanChange) =
+        rememberPreference(
+            LastLocalScanKey,
+            LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond(),
+        )
 
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         // automatic scanner
         SwitchPreference(
@@ -146,7 +153,7 @@ fun LocalPlayerSettings(
             description = stringResource(R.string.auto_scanner_description),
             icon = { Icon(Icons.Rounded.Autorenew, null) },
             checked = autoScan,
-            onCheckedChange = onAutoScanChange
+            onCheckedChange = onAutoScanChange,
         )
         // file path selector
         PreferenceEntry(
@@ -164,17 +171,21 @@ fun LocalPlayerSettings(
             ActionPromptDialog(
                 titleBar = {
                     Text(
-                        text = stringResource(
-                            if (showAddFolderDialog as Boolean) R.string.scan_paths_incl
-                            else R.string.scan_paths_excl
-                        ),
+                        text =
+                            stringResource(
+                                if (showAddFolderDialog as Boolean) {
+                                    R.string.scan_paths_incl
+                                } else {
+                                    R.string.scan_paths_excl
+                                },
+                            ),
                         style = MaterialTheme.typography.titleLarge,
                     )
 
                     // switch between include and exclude
                     Row(
                         modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.End
+                        horizontalArrangement = Arrangement.End,
                     ) {
                         Switch(
                             checked = showAddFolderDialog!!,
@@ -207,54 +218,62 @@ fun LocalPlayerSettings(
                 onCancel = {
                     showAddFolderDialog = null
                     tempScanPaths = ""
-                }
+                },
             ) {
-                val dirPickerLauncher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.OpenDocumentTree()
-                ) { uri ->
-                    if (uri?.path != null && !tempScanPaths.contains(uri.path!!)) {
-                        if (tempScanPaths.isBlank()) {
-                            tempScanPaths = "${uri.path}\n"
-                        } else {
-                            tempScanPaths += "${uri.path}\n"
+                val dirPickerLauncher =
+                    rememberLauncherForActivityResult(
+                        ActivityResultContracts.OpenDocumentTree(),
+                    ) { uri ->
+                        if (uri?.path != null && !tempScanPaths.contains(uri.path!!)) {
+                            if (tempScanPaths.isBlank()) {
+                                tempScanPaths = "${uri.path}\n"
+                            } else {
+                                tempScanPaths += "${uri.path}\n"
+                            }
                         }
                     }
-                }
 
                 // folders list
                 Column(
-                    modifier = Modifier
-                        .padding(vertical = 12.dp)
-                        .border(
-                            2.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            RoundedCornerShape(ThumbnailCornerRadius)
-                        )
+                    modifier =
+                        Modifier
+                            .padding(vertical = 12.dp)
+                            .border(
+                                2.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                RoundedCornerShape(ThumbnailCornerRadius),
+                            ),
                 ) {
                     tempScanPaths.split('\n').forEach {
-                        if (it.isNotBlank())
-                            Row(modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .clickable { }) {
+                        if (it.isNotBlank()) {
+                            Row(
+                                modifier =
+                                    Modifier
+                                        .padding(horizontal = 8.dp)
+                                        .clickable { },
+                            ) {
                                 Text(
                                     // I hate this but I'll do it properly... eventually
-                                    text = if (it.substringAfter("tree/")
-                                            .substringBefore(':') == "primary"
-                                    ) {
-                                        "Internal Storage/${it.substringAfter(':')}"
-                                    } else {
-                                        "External (${
-                                            it.substringAfter("tree/").substringBefore(':')
-                                        })/${it.substringAfter(':')}"
-                                    },
+                                    text =
+                                        if (it
+                                                .substringAfter("tree/")
+                                                .substringBefore(':') == "primary"
+                                        ) {
+                                            "Internal Storage/${it.substringAfter(':')}"
+                                        } else {
+                                            "External (${
+                                                it.substringAfter("tree/").substringBefore(':')
+                                            })/${it.substringAfter(':')}"
+                                        },
                                     style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .align(Alignment.CenterVertically)
+                                    modifier =
+                                        Modifier
+                                            .weight(1f)
+                                            .align(Alignment.CenterVertically),
                                 )
                                 IconButton(
                                     onClick = { tempScanPaths = tempScanPaths.replace("$it\n", "") },
-                                    onLongClick = {}
+                                    onLongClick = {},
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
@@ -262,12 +281,13 @@ fun LocalPlayerSettings(
                                     )
                                 }
                             }
+                        }
                     }
                 }
 
                 // add folder button
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Button(onClick = { dirPickerLauncher.launch(null) }) {
                         Text(stringResource(R.string.scan_paths_add_folder))
@@ -279,15 +299,15 @@ fun LocalPlayerSettings(
         }
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.manual_scanner_title)
+            title = stringResource(R.string.manual_scanner_title),
         )
         // scanner
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically, // WHY WON'T YOU CENTER
-
         ) {
             Button(
                 onClick = {
@@ -300,16 +320,17 @@ fun LocalPlayerSettings(
                     if (context.checkSelfPermission(mediaPermissionLevel)
                         != PackageManager.PERMISSION_GRANTED
                     ) {
-
-                        Toast.makeText(
-                            context,
-                            "The scanner requires storage permissions",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast
+                            .makeText(
+                                context,
+                                "The scanner requires storage permissions",
+                                Toast.LENGTH_SHORT,
+                            ).show()
 
                         requestPermissions(
                             context as Activity,
-                            arrayOf(mediaPermissionLevel), PackageManager.PERMISSION_GRANTED
+                            arrayOf(mediaPermissionLevel),
+                            PackageManager.PERMISSION_GRANTED,
                         )
 
                         mediaPermission = false
@@ -330,11 +351,12 @@ fun LocalPlayerSettings(
                         if (fullRescan) {
                             try {
                                 val directoryStructure =
-                                    scanner.scanLocal(
-                                        database,
-                                        scanPaths.split('\n'),
-                                        excludedScanPaths.split('\n')
-                                    ).value
+                                    scanner
+                                        .scanLocal(
+                                            database,
+                                            scanPaths.split('\n'),
+                                            excludedScanPaths.split('\n'),
+                                        ).value
                                 scanner.syncDB(
                                     database,
                                     directoryStructure.toList(),
@@ -350,11 +372,12 @@ fun LocalPlayerSettings(
                                             scanner.localToRemoteArtist(database)
                                         } catch (e: ScannerAbortException) {
                                             Looper.prepare()
-                                            Toast.makeText(
-                                                context,
-                                                "Scanner (background task) failed: ${e.message}",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "Scanner (background task) failed: ${e.message}",
+                                                    Toast.LENGTH_LONG,
+                                                ).show()
                                         }
                                     }
                                 }
@@ -362,26 +385,31 @@ fun LocalPlayerSettings(
                                 scannerFailure = true
 
                                 Looper.prepare()
-                                Toast.makeText(
-                                    context,
-                                    "Scanner failed: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                Toast
+                                    .makeText(
+                                        context,
+                                        "Scanner failed: ${e.message}",
+                                        Toast.LENGTH_LONG,
+                                    ).show()
                             } finally {
                                 unloadAdvancedScanner()
                             }
                         } else {
                             // quick scan
                             try {
-                                val directoryStructure = scanner.scanLocal(
-                                    database,
-                                    scanPaths.split('\n'),
-                                    excludedScanPaths.split('\n'),
-                                    pathsOnly = true
-                                ).value
+                                val directoryStructure =
+                                    scanner
+                                        .scanLocal(
+                                            database,
+                                            scanPaths.split('\n'),
+                                            excludedScanPaths.split('\n'),
+                                            pathsOnly = true,
+                                        ).value
                                 scanner.quickSync(
-                                    database, directoryStructure.toList(), scannerSensitivity,
-                                    strictExtensions
+                                    database,
+                                    directoryStructure.toList(),
+                                    scannerSensitivity,
+                                    strictExtensions,
                                 )
 
                                 // start artist linking job
@@ -391,11 +419,12 @@ fun LocalPlayerSettings(
                                             scanner.localToRemoteArtist(database)
                                         } catch (e: ScannerAbortException) {
                                             Looper.prepare()
-                                            Toast.makeText(
-                                                context,
-                                                "Scanner (background task) failed: ${e.message}",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "Scanner (background task) failed: ${e.message}",
+                                                    Toast.LENGTH_LONG,
+                                                ).show()
                                         }
                                     }
                                 }
@@ -403,11 +432,12 @@ fun LocalPlayerSettings(
                                 scannerFailure = true
 
                                 Looper.prepare()
-                                Toast.makeText(
-                                    context,
-                                    "Scanner failed: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                Toast
+                                    .makeText(
+                                        context,
+                                        "Scanner failed: ${e.message}",
+                                        Toast.LENGTH_LONG,
+                                    ).show()
                             } finally {
                                 unloadAdvancedScanner()
                             }
@@ -420,23 +450,23 @@ fun LocalPlayerSettings(
                         onLastLocalScanChange(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond())
                         scannerFinished.value = true
                     }
-                }
+                },
             ) {
                 Text(
-                    text = if (isScannerActive) {
-                        "Cancel"
-                    } else if (scannerFailure) {
-                        "An Error Occurred"
-                    } else if (isScanFinished) {
-                        "Scan complete"
-                    } else if (!mediaPermission) {
-                        "No Permission"
-                    } else {
-                        "Scan"
-                    }
+                    text =
+                        if (isScannerActive) {
+                            "Cancel"
+                        } else if (scannerFailure) {
+                            "An Error Occurred"
+                        } else if (isScanFinished) {
+                            "Scan complete"
+                        } else if (!mediaPermission) {
+                            "No Permission"
+                        } else {
+                            "Scan"
+                        },
                 )
             }
-
 
             // progress indicator
             if (!isScannerActive) {
@@ -445,32 +475,35 @@ fun LocalPlayerSettings(
 
             // padding hax
             VerticalDivider(
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.padding(5.dp),
             )
 
             CircularProgressIndicator(
-                modifier = Modifier
-                    .size(32.dp),
+                modifier =
+                    Modifier
+                        .size(32.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
         }
         // scanner checkboxes
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 10.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
                     checked = fullRescan,
-                    onCheckedChange = { fullRescan = it }
+                    onCheckedChange = { fullRescan = it },
                 )
                 Text(
-                    stringResource(R.string.scanner_variant_rescan), color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 14.sp
+                    stringResource(R.string.scanner_variant_rescan),
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontSize = 14.sp,
                 )
             }
 
@@ -482,14 +515,15 @@ fun LocalPlayerSettings(
                     onCheckedChange = onlookupYtmArtistsChange,
                 )
                 Text(
-                    stringResource(R.string.scanner_online_artist_linking), color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 14.sp
+                    stringResource(R.string.scanner_online_artist_linking),
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontSize = 14.sp,
                 )
             }
         }
         Row(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 Icons.Rounded.WarningAmber,
@@ -501,12 +535,12 @@ fun LocalPlayerSettings(
                 stringResource(R.string.scanner_warning),
                 color = MaterialTheme.colorScheme.secondary,
                 fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.scanner_settings_title)
+            title = stringResource(R.string.scanner_settings_title),
         )
         // scanner sensitivity
         EnumListPreference(
@@ -520,7 +554,7 @@ fun LocalPlayerSettings(
                     ScannerMatchCriteria.LEVEL_2 -> stringResource(R.string.scanner_sensitivity_L2)
                     ScannerMatchCriteria.LEVEL_3 -> stringResource(R.string.scanner_sensitivity_L3)
                 }
-            }
+            },
         )
         // strict file ext
         SwitchPreference(
@@ -528,26 +562,23 @@ fun LocalPlayerSettings(
             description = stringResource(R.string.scanner_strict_file_name_description),
             icon = { Icon(Icons.Rounded.TextFields, null) },
             checked = strictExtensions,
-            onCheckedChange = onStrictExtensionsChange
+            onCheckedChange = onStrictExtensionsChange,
         )
     }
-
-
-
 
     TopAppBar(
         title = { Text(stringResource(R.string.local_player_settings_title)) },
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

@@ -25,8 +25,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 
 const val MAX_IMAGE_JOBS = 4
+
 @OptIn(DelicateCoroutinesApi::class)
-val imageSession = newFixedThreadPoolContext(MAX_IMAGE_JOBS , "ImageExtractor")
+val imageSession = newFixedThreadPoolContext(MAX_IMAGE_JOBS, "ImageExtractor")
 
 /**
  * Non-blocking image
@@ -57,8 +58,9 @@ fun AsyncLocalImage(
                 Icons.Rounded.MusicNote,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
-                modifier = modifier
-                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
+                modifier =
+                    modifier
+                        .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)),
             )
         } else {
             Image(

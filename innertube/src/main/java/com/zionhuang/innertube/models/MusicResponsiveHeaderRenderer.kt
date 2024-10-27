@@ -9,12 +9,12 @@ data class MusicResponsiveHeaderRenderer(
     val title: Runs,
     val subtitle: Runs,
     val secondSubtitle: Runs?,
-    val straplineTextOne: Runs?
+    val straplineTextOne: Runs?,
 ) {
     @Serializable
     data class Button(
         val musicPlayButtonRenderer: MusicPlayButtonRenderer?,
-        val menuRenderer: Menu.MenuRenderer?
+        val menuRenderer: Menu.MenuRenderer?,
     ) {
         @Serializable
         data class MusicPlayButtonRenderer(

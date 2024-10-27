@@ -55,7 +55,7 @@ fun MoodAndGenresScreen(
     val moodAndGenresList by viewModel.moodAndGenres.collectAsState()
 
     LazyColumn(
-        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
     ) {
         if (moodAndGenresList == null) {
             item {
@@ -70,11 +70,11 @@ fun MoodAndGenresScreen(
         moodAndGenresList?.forEach { moodAndGenres ->
             item {
                 NavigationTitle(
-                    title = moodAndGenres.title
+                    title = moodAndGenres.title,
                 )
 
                 Column(
-                    modifier = Modifier.padding(horizontal = 6.dp)
+                    modifier = Modifier.padding(horizontal = 6.dp),
                 ) {
                     moodAndGenres.items.chunked(itemsPerRow).forEach { row ->
                         Row {
@@ -84,9 +84,10 @@ fun MoodAndGenresScreen(
                                     onClick = {
                                         navController.navigate("youtube_browse/${it.endpoint.browseId}?params=${it.endpoint.params}")
                                     },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(6.dp)
+                                    modifier =
+                                        Modifier
+                                            .weight(1f)
+                                            .padding(6.dp),
                                 )
                             }
 
@@ -105,15 +106,15 @@ fun MoodAndGenresScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }
 
@@ -125,18 +126,19 @@ fun MoodAndGenresButton(
 ) {
     Box(
         contentAlignment = Alignment.CenterStart,
-        modifier = modifier
-            .height(MoodAndGenresButtonHeight)
-            .clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp)
+        modifier =
+            modifier
+                .height(MoodAndGenresButtonHeight)
+                .clip(RoundedCornerShape(6.dp))
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp),
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

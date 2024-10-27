@@ -58,9 +58,10 @@ fun ContentSettings(
     val accountEmail by rememberPreference(AccountEmailKey, "")
     val accountChannelHandle by rememberPreference(AccountChannelHandleKey, "")
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
-    val isLoggedIn = remember(innerTubeCookie) {
-        "SAPISID" in parseCookieString(innerTubeCookie)
-    }
+    val isLoggedIn =
+        remember(innerTubeCookie) {
+            "SAPISID" in parseCookieString(innerTubeCookie)
+        }
     val (ytmSync, onYtmSyncChange) = rememberPreference(YtmSyncKey, defaultValue = true)
     val (contentLanguage, onContentLanguageChange) = rememberPreference(key = ContentLanguageKey, defaultValue = "system")
     val (contentCountry, onContentCountryChange) = rememberPreference(key = ContentCountryKey, defaultValue = "system")
@@ -69,34 +70,36 @@ fun ContentSettings(
     val (proxyType, onProxyTypeChange) = rememberEnumPreference(key = ProxyTypeKey, defaultValue = Proxy.Type.HTTP)
     val (proxyUrl, onProxyUrlChange) = rememberPreference(key = ProxyUrlKey, defaultValue = "host:port")
 
-
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         PreferenceGroupTitle(
-            title = "ACCOUNT"
+            title = "ACCOUNT",
         )
         PreferenceEntry(
             title = { Text(if (isLoggedIn) accountName else stringResource(R.string.login)) },
-            description = if (isLoggedIn) {
-                accountEmail.takeIf { it.isNotEmpty() }
-                    ?: accountChannelHandle.takeIf { it.isNotEmpty() }
-            } else null,
+            description =
+                if (isLoggedIn) {
+                    accountEmail.takeIf { it.isNotEmpty() }
+                        ?: accountChannelHandle.takeIf { it.isNotEmpty() }
+                } else {
+                    null
+                },
             icon = { Icon(Icons.Rounded.Person, null) },
-            onClick = { navController.navigate("login") }
+            onClick = { navController.navigate("login") },
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.ytm_sync)) },
             icon = { Icon(Icons.Rounded.Sync, null) },
             checked = ytmSync,
             onCheckedChange = onYtmSyncChange,
-            isEnabled = isLoggedIn
+            isEnabled = isLoggedIn,
         )
 
         PreferenceGroupTitle(
-            title = "LOCALIZATION"
+            title = "LOCALIZATION",
         )
         ListPreference(
             title = { Text(stringResource(R.string.content_language)) },
@@ -108,7 +111,7 @@ fun ContentSettings(
                     stringResource(R.string.system_default)
                 }
             },
-            onValueSelected = onContentLanguageChange
+            onValueSelected = onContentLanguageChange,
         )
         ListPreference(
             title = { Text(stringResource(R.string.content_country)) },
@@ -120,17 +123,17 @@ fun ContentSettings(
                     stringResource(R.string.system_default)
                 }
             },
-            onValueSelected = onContentCountryChange
+            onValueSelected = onContentCountryChange,
         )
 
         PreferenceGroupTitle(
-            title = "PROXY"
+            title = "PROXY",
         )
 
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_proxy)) },
             checked = proxyEnabled,
-            onCheckedChange = onProxyEnabledChange
+            onCheckedChange = onProxyEnabledChange,
         )
 
         if (proxyEnabled) {
@@ -139,12 +142,12 @@ fun ContentSettings(
                 selectedValue = proxyType,
                 values = listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS),
                 valueText = { it.name },
-                onValueSelected = onProxyTypeChange
+                onValueSelected = onProxyTypeChange,
             )
             EditTextPreference(
                 title = { Text(stringResource(R.string.proxy_url)) },
                 value = proxyUrl,
-                onValueChange = onProxyUrlChange
+                onValueChange = onProxyUrlChange,
             )
         }
     }
@@ -154,14 +157,14 @@ fun ContentSettings(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

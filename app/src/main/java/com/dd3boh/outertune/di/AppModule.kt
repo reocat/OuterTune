@@ -15,7 +15,6 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
-
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class DownloadCache
@@ -25,18 +24,23 @@ annotation class DownloadCache
 object AppModule {
     @Singleton
     @Provides
-    fun provideDatabase(@ApplicationContext context: Context): MusicDatabase =
-        InternalDatabase.newInstance(context)
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+    ): MusicDatabase = InternalDatabase.newInstance(context)
 
     @Singleton
     @Provides
-    fun provideDatabaseProvider(@ApplicationContext context: Context): DatabaseProvider =
-        StandaloneDatabaseProvider(context)
+    fun provideDatabaseProvider(
+        @ApplicationContext context: Context,
+    ): DatabaseProvider = StandaloneDatabaseProvider(context)
 
     @Singleton
     @Provides
     @DownloadCache
-    fun provideDownloadCache(@ApplicationContext context: Context, databaseProvider: DatabaseProvider): SimpleCache {
+    fun provideDownloadCache(
+        @ApplicationContext context: Context,
+        databaseProvider: DatabaseProvider,
+    ): SimpleCache {
         val constructor = {
             SimpleCache(context.filesDir.resolve("download"), NoOpCacheEvictor(), databaseProvider)
         }

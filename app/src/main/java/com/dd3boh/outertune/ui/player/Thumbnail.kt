@@ -57,27 +57,31 @@ fun Thumbnail(
             visible = !showLyrics && error == null,
             enter = fadeIn(),
             exit = fadeOut(),
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding(),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = PlayerHorizontalPadding)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = PlayerHorizontalPadding),
             ) {
                 if (mediaMetadata?.isLocal == true) {
                     // local thumbnail arts
-                    mediaMetadata?.let { // required to re render when song changes
+                    mediaMetadata?.let {
+                        // required to re render when song changes
                         AsyncLocalImage(
                             image = { getLocalThumbnail(it.localPath) },
                             contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
-                                .aspectRatio(ratio = 1f)
-                                .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics }
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                                    .aspectRatio(ratio = 1f)
+                                    .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics },
                         )
                     }
                 } else {
@@ -86,11 +90,12 @@ fun Thumbnail(
                         model = mediaMetadata?.thumbnailUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
-                            .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics }
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                                .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics },
                     )
                 }
             }
@@ -99,7 +104,7 @@ fun Thumbnail(
         AnimatedVisibility(
             visible = showLyrics && error == null,
             enter = fadeIn(),
-            exit = fadeOut()
+            exit = fadeOut(),
         ) {
             Lyrics(sliderPositionProvider = sliderPositionProvider)
         }
@@ -108,14 +113,15 @@ fun Thumbnail(
             visible = error != null,
             enter = fadeIn(),
             exit = fadeOut(),
-            modifier = Modifier
-                .padding(32.dp)
-                .align(Alignment.Center)
+            modifier =
+                Modifier
+                    .padding(32.dp)
+                    .align(Alignment.Center),
         ) {
             error?.let { error ->
                 PlaybackError(
                     error = error,
-                    retry = playerConnection.player::prepare
+                    retry = playerConnection.player::prepare,
                 )
             }
         }

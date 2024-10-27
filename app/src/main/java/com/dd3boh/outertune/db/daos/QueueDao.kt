@@ -24,7 +24,6 @@ import kotlinx.coroutines.sync.withLock
 
 @Dao
 interface QueueDao {
-
     // region Gets
     @Query("SELECT * from queue ORDER BY `index`")
     fun getAllQueues(): Flow<List<QueueEntity>>
@@ -55,8 +54,8 @@ interface QueueDao {
                     unShuffled = unshuffledSongs.map { it.toMediaMetadata() }.toMutableList(),
                     shuffled = queue.shuffled,
                     queuePos = queue.queuePos,
-                    index = queue.index
-                )
+                    index = queue.index,
+                ),
             )
         }
 
@@ -85,15 +84,16 @@ interface QueueDao {
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
                 index = mq.index,
-                playlistId = mq.playlistId
-            )
+                playlistId = mq.playlistId,
+            ),
         )
     }
 
     @Transaction
     fun updateAllQueues(mqs: List<MultiQueueObject>) {
         CoroutineScope(Dispatchers.IO).launch {
-            QueueBoard.mutex.withLock { // possible ConcurrentModificationException
+            QueueBoard.mutex.withLock {
+                // possible ConcurrentModificationException
                 mqs.forEach { updateQueue(it) }
             }
         }

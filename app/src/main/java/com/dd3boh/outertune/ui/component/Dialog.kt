@@ -61,23 +61,24 @@ fun DefaultDialog(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
             modifier = Modifier.padding(24.dp),
             shape = AlertDialogDefaults.shape,
             color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation
+            tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier
-                    .padding(24.dp)
+                modifier =
+                    modifier
+                        .padding(24.dp),
             ) {
                 if (icon != null) {
                     CompositionLocalProvider(LocalContentColor provides AlertDialogDefaults.iconContentColor) {
                         Box(
-                            Modifier.align(Alignment.CenterHorizontally)
+                            Modifier.align(Alignment.CenterHorizontally),
                         ) {
                             icon()
                         }
@@ -90,7 +91,7 @@ fun DefaultDialog(
                         ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
                             Box(
                                 // Align the title to the center when an icon is present.
-                                Modifier.align(if (icon == null) Alignment.Start else Alignment.CenterHorizontally)
+                                Modifier.align(if (icon == null) Alignment.Start else Alignment.CenterHorizontally),
                             ) {
                                 title()
                             }
@@ -106,11 +107,11 @@ fun DefaultDialog(
                     Spacer(Modifier.height(24.dp))
 
                     Row(
-                        modifier = Modifier.align(Alignment.End)
+                        modifier = Modifier.align(Alignment.End),
                     ) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
                             ProvideTextStyle(
-                                value = MaterialTheme.typography.labelLarge
+                                value = MaterialTheme.typography.labelLarge,
                             ) {
                                 buttons()
                             }
@@ -130,17 +131,17 @@ fun ListDialog(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
             modifier = Modifier.padding(24.dp),
             shape = AlertDialogDefaults.shape,
             color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation
+            tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier.padding(vertical = 24.dp)
+                modifier = modifier.padding(vertical = 24.dp),
             ) {
                 LazyColumn(content = content)
             }
@@ -162,13 +163,15 @@ fun TextFieldDialog(
     onDismiss: () -> Unit,
     extraContent: (@Composable () -> Unit)? = null,
 ) {
-    val (textFieldValue, onTextFieldValueChange) = remember {
-        mutableStateOf(initialTextFieldValue)
-    }
+    val (textFieldValue, onTextFieldValueChange) =
+        remember {
+            mutableStateOf(initialTextFieldValue)
+        }
 
-    val focusRequester = remember {
-        FocusRequester()
-    }
+    val focusRequester =
+        remember {
+            FocusRequester()
+        }
 
     LaunchedEffect(Unit) {
         delay(300)
@@ -190,11 +193,11 @@ fun TextFieldDialog(
                 onClick = {
                     onDismiss()
                     onDone(textFieldValue.text)
-                }
+                },
             ) {
                 Text(text = stringResource(android.R.string.ok))
             }
-        }
+        },
     ) {
         TextField(
             value = textFieldValue,
@@ -204,15 +207,17 @@ fun TextFieldDialog(
             maxLines = maxLines,
             colors = OutlinedTextFieldDefaults.colors(),
             keyboardOptions = KeyboardOptions(imeAction = if (singleLine) ImeAction.Done else ImeAction.None),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    onDone(textFieldValue.text)
-                    onDismiss()
-                }
-            ),
-            modifier = Modifier
-                .weight(weight = 1f, fill = false)
-                .focusRequester(focusRequester)
+            keyboardActions =
+                KeyboardActions(
+                    onDone = {
+                        onDone(textFieldValue.text)
+                        onDismiss()
+                    },
+                ),
+            modifier =
+                Modifier
+                    .weight(weight = 1f, fill = false)
+                    .focusRequester(focusRequester),
         )
 
         extraContent?.invoke()
@@ -239,18 +244,18 @@ fun ActionPromptDialog(
     onConfirm: () -> Unit,
     onReset: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit = {}
+    content: @Composable ColumnScope.() -> Unit = {},
 ) = BasicAlertDialog(
     onDismissRequest = { onDismiss() },
     content = {
         Column(
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.background,
-                    RoundedCornerShape(DialogCornerRadius)
-                )
-                .fillMaxWidth(0.8f)
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .background(
+                        MaterialTheme.colorScheme.background,
+                        RoundedCornerShape(DialogCornerRadius),
+                    ).fillMaxWidth(0.8f)
+                    .padding(16.dp),
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 // title
@@ -274,9 +279,9 @@ fun ActionPromptDialog(
             // always have an ok, but explicit cancel/reset is optional
             Row(
                 horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                if (onReset != null)
+                if (onReset != null) {
                     Row(modifier = Modifier.weight(1f)) {
                         TextButton(
                             onClick = { onReset() },
@@ -284,40 +289,41 @@ fun ActionPromptDialog(
                             Text(stringResource(R.string.reset))
                         }
                     }
+                }
 
                 TextButton(
-                    onClick = { onConfirm() }
+                    onClick = { onConfirm() },
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
 
-                if (onCancel != null)
+                if (onCancel != null) {
                     TextButton(
-                        onClick = { onCancel() }
+                        onClick = { onCancel() },
                     ) {
                         Text(stringResource(android.R.string.cancel))
                     }
+                }
             }
         }
-    }
+    },
 )
 
 @Composable
-fun InfoLabel(
-    text: String
-) = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    modifier = Modifier.padding(horizontal = 8.dp)
-) {
-    Icon(
-        Icons.Outlined.Info,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.secondary,
-        modifier = Modifier.padding(4.dp)
-    )
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(horizontal = 4.dp)
-    )
-}
+fun InfoLabel(text: String) =
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = 8.dp),
+    ) {
+        Icon(
+            Icons.Outlined.Info,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(4.dp),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+    }

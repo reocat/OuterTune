@@ -21,9 +21,7 @@ class CoilBitmapLoader(
 ) : androidx.media3.common.util.BitmapLoader {
     private val placeholderImage = Bitmap.createBitmap(1280, 720, Bitmap.Config.ARGB_8888)
 
-    override fun supportsMimeType(mimeType: String): Boolean {
-        return mimeType.startsWith("image/")
-    }
+    override fun supportsMimeType(mimeType: String): Boolean = mimeType.startsWith("image/")
 
     override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> =
         scope.future(Dispatchers.IO) {
@@ -35,14 +33,16 @@ class CoilBitmapLoader(
         scope.future(Dispatchers.IO) {
             // local images
             if (uri.toString().startsWith("/storage/")) {
-                return@future getLocalThumbnail(uri.toString(), false)?: placeholderImage
+                return@future getLocalThumbnail(uri.toString(), false) ?: placeholderImage
             }
-            val result = context.imageLoader.execute(
-                ImageRequest.Builder(context)
-                    .data(uri)
-                    .allowHardware(false)
-                    .build()
-            )
+            val result =
+                context.imageLoader.execute(
+                    ImageRequest
+                        .Builder(context)
+                        .data(uri)
+                        .allowHardware(false)
+                        .build(),
+                )
             if (result is ErrorResult) {
                 throw ExecutionException(result.throwable)
             }

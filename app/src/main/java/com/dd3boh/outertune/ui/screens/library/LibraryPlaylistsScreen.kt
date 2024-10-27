@@ -66,6 +66,7 @@ import com.dd3boh.outertune.constants.PlaylistSortTypeKey
 import com.dd3boh.outertune.constants.PlaylistViewTypeKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsRow
@@ -79,7 +80,6 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryPlaylistsViewModel
 import com.zionhuang.innertube.YouTube
-import com.dd3boh.outertune.extensions.isSyncEnabled
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -89,7 +89,9 @@ import java.time.LocalDateTime
 fun LibraryPlaylistsScreen(
     navController: NavController,
     viewModel: LibraryPlaylistsViewModel = hiltViewModel(),
-    libraryFilterContent: @Composable() (() -> Unit)? = null,
+    libraryFilterContent:
+        @Composable()
+        (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -140,17 +142,20 @@ fun LibraryPlaylistsScreen(
             onDismiss = { showAddPlaylistDialog = false },
             onDone = { playlistName ->
                 viewModel.viewModelScope.launch(Dispatchers.IO) {
-                    val browseId = if (syncedPlaylist)
-                        YouTube.createPlaylist(playlistName).getOrNull()
-                    else null
+                    val browseId =
+                        if (syncedPlaylist) {
+                            YouTube.createPlaylist(playlistName).getOrNull()
+                        } else {
+                            null
+                        }
 
                     database.query {
                         insert(
                             PlaylistEntity(
                                 name = playlistName,
                                 browseId = browseId,
-                                bookmarkedAt = LocalDateTime.now()
-                            )
+                                bookmarkedAt = LocalDateTime.now(),
+                            ),
                         )
                     }
                 }
@@ -158,9 +163,9 @@ fun LibraryPlaylistsScreen(
             extraContent = {
                 // synced/unsynced toggle
                 Row(
-                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 40.dp)
+                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 40.dp),
                 ) {
-                    Column() {
+                    Column {
                         Text(
                             text = "Sync Playlist",
                             style = MaterialTheme.typography.titleLarge,
@@ -169,12 +174,12 @@ fun LibraryPlaylistsScreen(
                         Text(
                             text = "Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.",
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.fillMaxWidth(0.7f)
+                            modifier = Modifier.fillMaxWidth(0.7f),
                         )
                     }
                     Row(
                         modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.End
+                        horizontalArrangement = Arrangement.End,
                     ) {
                         Switch(
                             checked = syncedPlaylist,
@@ -184,34 +189,34 @@ fun LibraryPlaylistsScreen(
                         )
                     }
                 }
-
-            }
+            },
         )
     }
 
     val filterContent = @Composable {
         ChipsRow(
-            chips = listOf(
-                PlaylistFilter.LIBRARY to stringResource(R.string.filter_library),
-                PlaylistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
-            ),
+            chips =
+                listOf(
+                    PlaylistFilter.LIBRARY to stringResource(R.string.filter_library),
+                    PlaylistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded),
+                ),
             currentValue = filter,
             onValueUpdate = {
                 filter = it
-                if (context.isSyncEnabled()){
+                if (context.isSyncEnabled()) {
                     if (it == PlaylistFilter.LIBRARY) viewModel.sync()
                 }
             },
             isLoading = { filter ->
                 filter == PlaylistFilter.LIBRARY && isSyncingRemotePlaylists
-            }
+            },
         )
     }
 
     val headerContent = @Composable {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier.padding(start = 16.dp),
         ) {
             SortHeader(
                 sortType = sortType,
@@ -224,7 +229,7 @@ fun LibraryPlaylistsScreen(
                         PlaylistSortType.NAME -> R.string.sort_by_name
                         PlaylistSortType.SONG_COUNT -> R.string.sort_by_song_count
                     }
-                }
+                },
             )
 
             Spacer(Modifier.weight(1f))
@@ -232,7 +237,7 @@ fun LibraryPlaylistsScreen(
             Text(
                 text = pluralStringResource(R.plurals.n_playlist, playlists.size, playlists.size),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
 
             if (libraryFilterContent == null) {
@@ -240,15 +245,15 @@ fun LibraryPlaylistsScreen(
                     onClick = {
                         playlistViewType = playlistViewType.toggle()
                     },
-                    modifier = Modifier.padding(start = 6.dp, end = 6.dp)
+                    modifier = Modifier.padding(start = 6.dp, end = 6.dp),
                 ) {
                     Icon(
                         imageVector =
-                        when (playlistViewType) {
-                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                            LibraryViewType.GRID -> Icons.Rounded.GridView
-                        },
-                        contentDescription = null
+                            when (playlistViewType) {
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                            },
+                        contentDescription = null,
                     )
                 }
             } else {
@@ -258,24 +263,24 @@ fun LibraryPlaylistsScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         when (viewType) {
             LibraryViewType.LIST -> {
                 LazyColumn(
                     state = lazyListState,
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 ) {
                     item(
                         key = "filter",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         libraryFilterContent?.let { it() } ?: filterContent()
                     }
 
                     item(
                         key = "header",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         headerContent()
                     }
@@ -283,33 +288,33 @@ fun LibraryPlaylistsScreen(
                     if (showLikedAndDownloadedPlaylist) {
                         item(
                             key = likedPlaylist.id,
-                            contentType = { CONTENT_TYPE_PLAYLIST }
+                            contentType = { CONTENT_TYPE_PLAYLIST },
                         ) {
                             AutoPlaylistListItem(
                                 playlist = likedPlaylist,
                                 thumbnail = Icons.Rounded.Favorite,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate("auto_playlist/${likedPlaylist.id}")
-                                    }
-                                    .animateItemPlacement()
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navController.navigate("auto_playlist/${likedPlaylist.id}")
+                                        }.animateItemPlacement(),
                             )
                         }
 
                         item(
                             key = downloadedPlaylist.id,
-                            contentType = { CONTENT_TYPE_PLAYLIST }
+                            contentType = { CONTENT_TYPE_PLAYLIST },
                         ) {
                             AutoPlaylistListItem(
                                 playlist = downloadedPlaylist,
                                 thumbnail = Icons.Rounded.CloudDownload,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate("auto_playlist/${downloadedPlaylist.id}")
-                                    }
-                                    .animateItemPlacement()
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navController.navigate("auto_playlist/${downloadedPlaylist.id}")
+                                        }.animateItemPlacement(),
                             )
                         }
                     }
@@ -317,14 +322,14 @@ fun LibraryPlaylistsScreen(
                     items(
                         items = playlists,
                         key = { it.id },
-                        contentType = { CONTENT_TYPE_PLAYLIST }
+                        contentType = { CONTENT_TYPE_PLAYLIST },
                     ) { playlist ->
                         LibraryPlaylistListItem(
                             navController = navController,
                             menuState = menuState,
                             coroutineScope = coroutineScope,
                             playlist = playlist,
-                            modifier = Modifier.animateItemPlacement()
+                            modifier = Modifier.animateItemPlacement(),
                         )
                     }
                 }
@@ -334,7 +339,7 @@ fun LibraryPlaylistsScreen(
                     icon = Icons.Rounded.Add,
                     onClick = {
                         showAddPlaylistDialog = true
-                    }
+                    },
                 )
             }
 
@@ -342,12 +347,12 @@ fun LibraryPlaylistsScreen(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 ) {
                     item(
                         key = "filter",
                         span = { GridItemSpan(maxLineSpan) },
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         libraryFilterContent?.let { it() } ?: filterContent()
                     }
@@ -355,7 +360,7 @@ fun LibraryPlaylistsScreen(
                     item(
                         key = "header",
                         span = { GridItemSpan(maxLineSpan) },
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         headerContent()
                     }
@@ -363,35 +368,35 @@ fun LibraryPlaylistsScreen(
                     if (showLikedAndDownloadedPlaylist) {
                         item(
                             key = likedPlaylist.id,
-                            contentType = { CONTENT_TYPE_PLAYLIST }
+                            contentType = { CONTENT_TYPE_PLAYLIST },
                         ) {
                             AutoPlaylistGridItem(
                                 playlist = likedPlaylist,
                                 thumbnail = Icons.Rounded.Favorite,
                                 fillMaxWidth = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate("auto_playlist/${likedPlaylist.id}")
-                                    }
-                                    .animateItemPlacement()
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navController.navigate("auto_playlist/${likedPlaylist.id}")
+                                        }.animateItemPlacement(),
                             )
                         }
 
                         item(
                             key = downloadedPlaylist.id,
-                            contentType = { CONTENT_TYPE_PLAYLIST }
+                            contentType = { CONTENT_TYPE_PLAYLIST },
                         ) {
                             AutoPlaylistGridItem(
                                 playlist = downloadedPlaylist,
                                 thumbnail = Icons.Rounded.CloudDownload,
                                 fillMaxWidth = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate("auto_playlist/${downloadedPlaylist.id}")
-                                    }
-                                    .animateItemPlacement()
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            navController.navigate("auto_playlist/${downloadedPlaylist.id}")
+                                        }.animateItemPlacement(),
                             )
                         }
                     }
@@ -399,14 +404,14 @@ fun LibraryPlaylistsScreen(
                     items(
                         items = playlists,
                         key = { it.id },
-                        contentType = { CONTENT_TYPE_PLAYLIST }
+                        contentType = { CONTENT_TYPE_PLAYLIST },
                     ) { playlist ->
                         LibraryPlaylistGridItem(
                             navController = navController,
                             menuState = menuState,
                             coroutineScope = coroutineScope,
                             playlist = playlist,
-                            modifier = Modifier.animateItemPlacement()
+                            modifier = Modifier.animateItemPlacement(),
                         )
                     }
                 }
@@ -416,10 +421,9 @@ fun LibraryPlaylistsScreen(
                     icon = Icons.Rounded.Add,
                     onClick = {
                         showAddPlaylistDialog = true
-                    }
+                    },
                 )
             }
         }
-
     }
 }

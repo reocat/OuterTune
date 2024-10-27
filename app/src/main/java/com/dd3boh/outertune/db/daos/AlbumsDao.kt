@@ -31,40 +31,49 @@ import kotlinx.coroutines.flow.map
 
 @Dao
 interface AlbumsDao : ArtistsDao {
-
     // region Gets
-    @Query("""
+    @Query(
+        """
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :id
         GROUP BY album.id
-    """)
+    """,
+    )
     fun album(id: String): Flow<Album?>
 
-    @Query("""
+    @Query(
+        """
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.title LIKE '%' || :query || '%' AND song.inLibrary IS NOT NULL
         GROUP BY album.id
         LIMIT :previewSize
-    """)
-    fun searchAlbums(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Album>>
+    """,
+    )
+    fun searchAlbums(
+        query: String,
+        previewSize: Int = Int.MAX_VALUE,
+    ): Flow<List<Album>>
 
-    @Query("""
+    @Query(
+        """
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :albumId
         GROUP BY album.id
-    """)
+    """,
+    )
     fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?>
 
     @Query("SELECT song.* FROM song JOIN song_album_map ON song.id = song_album_map.songId WHERE song_album_map.albumId = :albumId")
     fun albumSongs(albumId: String): Flow<List<Song>>
 
-    @Query("""
+    @Query(
+        """
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
             JOIN song ON album.id = song.albumId
@@ -73,47 +82,62 @@ interface AlbumsDao : ArtistsDao {
         GROUP BY album.id
         ORDER BY SUM(event.playTime) DESC
         LIMIT :limit;
-    """)
-    fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6): Flow<List<Album>>
+    """,
+    )
+    fun mostPlayedAlbums(
+        fromTimeStamp: Long,
+        limit: Int = 6,
+    ): Flow<List<Album>>
 
     @RawQuery(observedEntities = [AlbumEntity::class])
     fun _getAlbum(query: SupportSQLiteQuery): Flow<List<Album>>
 
-    fun albums(filter: AlbumFilter, sortType: AlbumSortType, descending: Boolean): Flow<List<Album>> {
-        val orderBy = when (sortType) {
-            AlbumSortType.CREATE_DATE -> "album.rowId ASC"
-            AlbumSortType.NAME -> "album.title COLLATE NOCASE ASC"
-            AlbumSortType.ARTIST -> """ORDER BY (
+    fun albums(
+        filter: AlbumFilter,
+        sortType: AlbumSortType,
+        descending: Boolean,
+    ): Flow<List<Album>> {
+        val orderBy =
+            when (sortType) {
+                AlbumSortType.CREATE_DATE -> "album.rowId ASC"
+                AlbumSortType.NAME -> "album.title COLLATE NOCASE ASC"
+                AlbumSortType.ARTIST ->
+                    """ORDER BY (
                                         SELECT LOWER(GROUP_CONCAT(name, ''))
                                         FROM artist
                                         WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
                                         ORDER BY name
                                     ) COLLATE NOCASE ASC"""
-            AlbumSortType.YEAR -> "album.year ASC"
-            AlbumSortType.SONG_COUNT -> "album.songCount ASC"
-            AlbumSortType.LENGTH -> "album.duration ASC"
-            AlbumSortType.PLAY_TIME -> "SUM(song.totalPlayTime) ASC"
-        }
+                AlbumSortType.YEAR -> "album.year ASC"
+                AlbumSortType.SONG_COUNT -> "album.songCount ASC"
+                AlbumSortType.LENGTH -> "album.duration ASC"
+                AlbumSortType.PLAY_TIME -> "SUM(song.totalPlayTime) ASC"
+            }
 
-        val where = when (filter) {
-            AlbumFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
-            AlbumFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
-            AlbumFilter.LIKED -> "album.bookmarkedAt IS NOT NULL"
-        }
+        val where =
+            when (filter) {
+                AlbumFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
+                AlbumFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
+                AlbumFilter.LIKED -> "album.bookmarkedAt IS NOT NULL"
+            }
 
-        val query = SimpleSQLiteQuery("""
+        val query =
+            SimpleSQLiteQuery(
+                """
             SELECT album.*, count(song.dateDownload) downloadCount
             FROM album
                 LEFT JOIN song ON song.albumId = album.id
             WHERE $where
             GROUP BY album.id
             ORDER BY $orderBy
-        """)
+        """,
+            )
 
         return _getAlbum(query).map { it.reversed(descending) }
     }
 
     fun albumsInLibraryAsc() = albums(AlbumFilter.LIBRARY, AlbumSortType.CREATE_DATE, false)
+
     fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
     // endregion
 
@@ -129,32 +153,34 @@ interface AlbumsDao : ArtistsDao {
 
     @Transaction
     fun insert(albumItem: AlbumItem) {
-        if (insert(AlbumEntity(
-                id = albumItem.browseId,
-                playlistId = albumItem.playlistId,
-                title = albumItem.title,
-                year = albumItem.year,
-                thumbnailUrl = albumItem.thumbnail,
-                songCount = 0,
-                duration = 0
-            )) == -1L
-        ) return
+        if (insert(
+                AlbumEntity(
+                    id = albumItem.browseId,
+                    playlistId = albumItem.playlistId,
+                    title = albumItem.title,
+                    year = albumItem.year,
+                    thumbnailUrl = albumItem.thumbnail,
+                    songCount = 0,
+                    duration = 0,
+                ),
+            ) == -1L
+        ) {
+            return
+        }
         albumItem.artists
             ?.map { artist ->
                 ArtistEntity(
                     id = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId(),
-                    name = artist.name
+                    name = artist.name,
                 )
-            }
-            ?.onEach(::insert)
+            }?.onEach(::insert)
             ?.mapIndexed { index, artist ->
                 AlbumArtistMap(
                     albumId = albumItem.browseId,
                     artistId = artist.id,
-                    order = index
+                    order = index,
                 )
-            }
-            ?.forEach(::insert)
+            }?.forEach(::insert)
     }
     // endregion
 
@@ -167,7 +193,10 @@ interface AlbumsDao : ArtistsDao {
 
     @Transaction
     @Query("UPDATE album_artist_map SET artistId = :newId WHERE artistId = :oldId")
-    fun updateAlbumArtistMap(oldId: String, newId: String)
+    fun updateAlbumArtistMap(
+        oldId: String,
+        newId: String,
+    )
 
     @Transaction
     @Query("DELETE FROM song_artist_map WHERE songId = :songID")

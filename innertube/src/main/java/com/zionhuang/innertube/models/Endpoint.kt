@@ -17,7 +17,6 @@ data class WatchEndpoint(
     val index: Int? = null,
     val watchEndpointMusicSupportedConfigs: WatchEndpointMusicSupportedConfigs? = null,
 ) : Endpoint() {
-
     @Serializable
     data class WatchEndpointMusicSupportedConfigs(
         val watchEndpointMusicConfig: WatchEndpointMusicConfig,
@@ -94,7 +93,7 @@ data class ShareEntityEndpoint(
 
 @Serializable
 data class DefaultServiceEndpoint(
-    var subscribeEndpoint: SubscribeEndpoint?
+    var subscribeEndpoint: SubscribeEndpoint?,
 ) : Endpoint() {
     @Serializable
     data class SubscribeEndpoint(

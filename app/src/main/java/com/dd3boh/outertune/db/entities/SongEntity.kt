@@ -20,9 +20,9 @@ import java.time.ZoneOffset
     tableName = "song",
     indices = [
         Index(
-            value = ["albumId"]
-        )
-    ]
+            value = ["albumId"],
+        ),
+    ],
 )
 data class SongEntity(
     @PrimaryKey val id: String,
@@ -46,27 +46,30 @@ data class SongEntity(
     val isLocalSong: Boolean
         get() = id.startsWith("LA")
 
-    fun localToggleLike() = copy(
-        liked = !liked,
-        likedDate = if (!liked) LocalDateTime.now() else null,
-    )
+    fun localToggleLike() =
+        copy(
+            liked = !liked,
+            likedDate = if (!liked) LocalDateTime.now() else null,
+        )
 
-    fun toggleLike() = copy(
-        liked = !liked,
-        likedDate = if (!liked) LocalDateTime.now() else null,
-        inLibrary = if (!liked) inLibrary ?: LocalDateTime.now() else inLibrary
-    ).also {
-        CoroutineScope(Dispatchers.IO).launch {
-            YouTube.likeVideo(id, !liked)
-            this.cancel()
+    fun toggleLike() =
+        copy(
+            liked = !liked,
+            likedDate = if (!liked) LocalDateTime.now() else null,
+            inLibrary = if (!liked) inLibrary ?: LocalDateTime.now() else inLibrary,
+        ).also {
+            CoroutineScope(Dispatchers.IO).launch {
+                YouTube.likeVideo(id, !liked)
+                this.cancel()
+            }
         }
-    }
 
-    fun toggleLibrary() = copy(
-        inLibrary = if (inLibrary == null) LocalDateTime.now() else null,
-        liked = if (inLibrary == null) liked else false,
-        likedDate = if (inLibrary == null) likedDate else null
-    )
+    fun toggleLibrary() =
+        copy(
+            inLibrary = if (inLibrary == null) LocalDateTime.now() else null,
+            liked = if (inLibrary == null) liked else false,
+            likedDate = if (inLibrary == null) likedDate else null,
+        )
 
     /**
      * Returns a full date string. If no full date is present, returns the year.
@@ -84,14 +87,13 @@ data class SongEntity(
     /**
      * Get the value of the date released in Epoch Seconds
      */
-    fun getDateLong(): Long? {
-        return date?.toEpochSecond(ZoneOffset.UTC)
+    fun getDateLong(): Long? =
+        date?.toEpochSecond(ZoneOffset.UTC)
             ?: if (year != null) {
                 LocalDateTime.of(year, Month.JANUARY, 1, 0, 0).toEpochSecond(ZoneOffset.UTC)
             } else {
                 null
             }
-    }
 
     /**
      * Get the value of the date modified in Epoch Seconds

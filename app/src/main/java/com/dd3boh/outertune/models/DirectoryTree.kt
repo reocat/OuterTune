@@ -12,7 +12,9 @@ import java.time.ZoneOffset
  *
  * @param path root directory start
  */
-class DirectoryTree(path: String) {
+class DirectoryTree(
+    path: String,
+) {
     companion object {
         const val TAG = "DirectoryTree"
         var directoryUID = 0
@@ -54,14 +56,18 @@ class DirectoryTree(path: String) {
         this.files = files
     }
 
-    fun insert(path: String, song: Song) {
+    fun insert(
+        path: String,
+        song: Song,
+    ) {
 //        println("curr path =" + path)
 
         // add a file
         if (path.indexOf('/') == -1) {
             files.add(song)
-            if (SCANNER_DEBUG)
+            if (SCANNER_DEBUG) {
                 Timber.tag(TAG).d("Adding song with path: $path")
+            }
             return
         }
 
@@ -88,12 +94,10 @@ class DirectoryTree(path: String) {
             tree.parent = "$parent/$currentDir"
             tree.insert(tmpPath.substringAfter('/'), song)
             subdirs.add(tree)
-
         } else {
             existingSubdir!!.insert(tmpPath.substringAfter('/'), song)
         }
     }
-
 
     /**
      * Get the name of the file from full path, without any extensions
@@ -146,14 +150,16 @@ class DirectoryTree(path: String) {
         }
     }
 
-
     /**
      * Retrieve a list of all the songs
      */
     fun toList(): List<Song> {
         val songs = ArrayList<Song>()
 
-        fun traverseTree(tree: DirectoryTree, result: ArrayList<Song>) {
+        fun traverseTree(
+            tree: DirectoryTree,
+            result: ArrayList<Song>,
+        ) {
             result.addAll(tree.files)
             tree.subdirs.forEach { traverseTree(it, result) }
         }
@@ -165,10 +171,16 @@ class DirectoryTree(path: String) {
     /**
      * Retrieve a list of all the songs, adhering to sort preferences. Subfolder structure will be completely ignored.
      */
-    fun toSortedList(sortType: SongSortType, sortDescending: Boolean): List<Song> {
+    fun toSortedList(
+        sortType: SongSortType,
+        sortDescending: Boolean,
+    ): List<Song> {
         val songs = ArrayList<Song>()
 
-        fun traverseTree(tree: DirectoryTree, result: ArrayList<Song>) {
+        fun traverseTree(
+            tree: DirectoryTree,
+            result: ArrayList<Song>,
+        ) {
             result.addAll(tree.files)
             tree.subdirs.forEach { traverseTree(it, result) }
         }
@@ -178,7 +190,10 @@ class DirectoryTree(path: String) {
         // sort songs. Ignore any subfolder structure
         songs.sortBy {
             when (sortType) {
-                SongSortType.CREATE_DATE -> it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC).toString()
+                SongSortType.CREATE_DATE ->
+                    it.song.inLibrary
+                        ?.toEpochSecond(ZoneOffset.UTC)
+                        .toString()
                 SongSortType.MODIFIED_DATE -> it.song.getDateModifiedLong().toString()
                 SongSortType.RELEASE_DATE -> it.song.getDateLong().toString()
                 SongSortType.NAME -> it.song.title
@@ -234,8 +249,8 @@ class DirectoryTree(path: String) {
         // replace the emulated/0 path with "Internal"
         if (emulated != null && zero != null) {
             val newInternalStorage = DirectoryTree("Internal", zero!!.subdirs, zero!!.files)
-            subdirs = ArrayList(subdirs.filterNot { it.currentDir == "emulated"})
-           subdirs.add(newInternalStorage)
+            subdirs = ArrayList(subdirs.filterNot { it.currentDir == "emulated" })
+            subdirs.add(newInternalStorage)
         }
 
         return this
@@ -263,7 +278,10 @@ class DirectoryTree(path: String) {
      * @param it
      * @param result
      */
-    private fun getSubdirsRecursive(it: DirectoryTree, result: ArrayList<DirectoryTree>) {
+    private fun getSubdirsRecursive(
+        it: DirectoryTree,
+        result: ArrayList<DirectoryTree>,
+    ) {
         if (it.files.size > 0) {
             result.add(DirectoryTree(it.currentDir, it.files))
         }

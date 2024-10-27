@@ -22,7 +22,7 @@ data class ArtistEntity(
     val lastUpdateTime: LocalDateTime = LocalDateTime.now(),
     val bookmarkedAt: LocalDateTime? = null,
     @ColumnInfo(name = "isLocal", defaultValue = false.toString())
-    val isLocal: Boolean = false
+    val isLocal: Boolean = false,
 ) {
     val isYouTubeArtist: Boolean
         get() = id.startsWith("UC")
@@ -30,19 +30,22 @@ data class ArtistEntity(
     val isLocalArtist: Boolean
         get() = id.startsWith("LA")
 
-    fun localToggleLike() = copy(
-        bookmarkedAt = if (bookmarkedAt != null) null else LocalDateTime.now(),
-    )
+    fun localToggleLike() =
+        copy(
+            bookmarkedAt = if (bookmarkedAt != null) null else LocalDateTime.now(),
+        )
 
-    fun toggleLike() = localToggleLike().also {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (channelId == null)
-                YouTube.subscribeChannel(YouTube.getChannelId(id), bookmarkedAt == null)
-            else
-                YouTube.subscribeChannel(channelId, bookmarkedAt == null)
-            this.cancel()
+    fun toggleLike() =
+        localToggleLike().also {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (channelId == null) {
+                    YouTube.subscribeChannel(YouTube.getChannelId(id), bookmarkedAt == null)
+                } else {
+                    YouTube.subscribeChannel(channelId, bookmarkedAt == null)
+                }
+                this.cancel()
+            }
         }
-    }
 
     companion object {
         fun generateArtistId() = "LA" + RandomStringUtils.random(8, true, false)

@@ -52,19 +52,24 @@ fun FolderMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, allFolderSongs.map { it.toMediaMetadata() }, playerConnection,
-                forceInsert = true, delta = false)
+            queueBoard.add(
+                queueName,
+                allFolderSongs.map { it.toMediaMetadata() },
+                playerConnection,
+                forceInsert = true,
+                delta = false,
+            )
             queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
             showChooseQueueDialog = false
-        }
+        },
     )
 
     AddToPlaylistDialog(
         isVisible = showChoosePlaylistDialog,
         onGetSong = { allFolderSongs.map { it.id } },
-        onDismiss = { showChoosePlaylistDialog = false }
+        onDismiss = { showChoosePlaylistDialog = false },
     )
 
     // folder info
@@ -78,16 +83,17 @@ fun FolderMenu(
 
     // options
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
-            title = R.string.play_next
+            title = R.string.play_next,
         ) {
             onDismiss()
             allFolderSongs.forEach {
@@ -96,13 +102,13 @@ fun FolderMenu(
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }

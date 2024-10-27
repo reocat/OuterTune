@@ -53,11 +53,12 @@ fun AboutScreen(
     val uriHandler = LocalUriHandler.current
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(4.dp))
 
@@ -65,10 +66,11 @@ fun AboutScreen(
             painter = painterResource(R.drawable.launcher_monochrome),
             contentDescription = null,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground, BlendMode.SrcIn),
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
-                .clickable { }
+            modifier =
+                Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
+                    .clickable { },
         )
 
         Row(
@@ -78,7 +80,7 @@ fun AboutScreen(
                 text = "OuterTune",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
             )
         }
 
@@ -86,7 +88,7 @@ fun AboutScreen(
             Text(
                 text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
 
             Spacer(Modifier.width(4.dp))
@@ -98,16 +100,16 @@ fun AboutScreen(
                     text = "DEBUG",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.secondary,
-                            shape = CircleShape
-                        )
-                        .padding(
-                            horizontal = 6.dp,
-                            vertical = 2.dp
-                        )
+                    modifier =
+                        Modifier
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                shape = CircleShape,
+                            ).padding(
+                                horizontal = 6.dp,
+                                vertical = 2.dp,
+                            ),
                 )
             }
         }
@@ -117,18 +119,18 @@ fun AboutScreen(
         Text(
             text = "By Davide Garberi & Michael Zh.",
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
 
         Spacer(Modifier.height(8.dp))
 
         Row {
             IconButton(
-                onClick = { uriHandler.openUri("https://github.com/DD3Boh/OuterTune") }
+                onClick = { uriHandler.openUri("https://github.com/DD3Boh/OuterTune") },
             ) {
                 Icon(
                     painter = painterResource(R.drawable.github),
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         }
@@ -142,16 +144,15 @@ fun AboutScreen(
                 text = "Special Thanks",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
             )
         }
 
         Text(
             text = "Zion Huang for InnerTune",
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
-
     }
 
     TopAppBar(
@@ -159,14 +160,14 @@ fun AboutScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

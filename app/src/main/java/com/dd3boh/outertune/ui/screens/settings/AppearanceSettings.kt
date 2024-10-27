@@ -97,30 +97,40 @@ fun AppearanceSettings(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val (dynamicTheme, onDynamicThemeChange) = rememberPreference(DynamicThemeKey, defaultValue = true)
-    val (playerBackground, onPlayerBackgroundChange) = rememberEnumPreference(key = PlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
+    val (playerBackground, onPlayerBackgroundChange) =
+        rememberEnumPreference(
+            key = PlayerBackgroundStyleKey,
+            defaultValue = PlayerBackgroundStyle.DEFAULT,
+        )
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
     val (enabledTabs, onEnabledTabsChange) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME)
     val (defaultOpenTabNew, onDefaultOpenTabNewChange) = rememberEnumPreference(DefaultOpenTabNewKey, defaultValue = NavigationTabNew.HOME)
     val (newInterfaceStyle, onNewInterfaceStyleChange) = rememberPreference(key = NewInterfaceKey, defaultValue = true)
-    val (showLikedAndDownloadedPlaylist, onShowLikedAndDownloadedPlaylistChange) = rememberPreference(key = ShowLikedAndDownloadedPlaylist, defaultValue = true)
+    val (showLikedAndDownloadedPlaylist, onShowLikedAndDownloadedPlaylistChange) =
+        rememberPreference(
+            key = ShowLikedAndDownloadedPlaylist,
+            defaultValue = true,
+        )
     val (flatSubfolders, onFlatSubfoldersChange) = rememberPreference(FlatSubfoldersKey, defaultValue = true)
 
-    val availableBackgroundStyles = PlayerBackgroundStyle.entries.filter {
-        it != PlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    }
+    val availableBackgroundStyles =
+        PlayerBackgroundStyle.entries.filter {
+            it != PlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        }
 
     // configurable tabs
     var showTabArrangement by rememberSaveable {
         mutableStateOf(false)
     }
     val mutableTabs = remember { mutableStateListOf<NavigationTab>() }
-    val reorderableState = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            mutableTabs.move(from.index, to.index)
-        }
-    )
+    val reorderableState =
+        rememberReorderableLazyListState(
+            onMove = { from, to ->
+                mutableTabs.move(from.index, to.index)
+            },
+        )
 
     fun updateTabs() {
         mutableTabs.apply {
@@ -140,17 +150,17 @@ fun AppearanceSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         PreferenceGroupTitle(
-            title = "Theme"
+            title = "Theme",
         )
 
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_dynamic_theme)) },
             icon = { Icon(Icons.Rounded.Palette, null) },
             checked = dynamicTheme,
-            onCheckedChange = onDynamicThemeChange
+            onCheckedChange = onDynamicThemeChange,
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.player_background_style)) },
@@ -164,7 +174,7 @@ fun AppearanceSettings(
                     PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
                 }
             },
-            values = availableBackgroundStyles
+            values = availableBackgroundStyles,
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.dark_theme)) },
@@ -177,31 +187,31 @@ fun AppearanceSettings(
                     DarkMode.OFF -> stringResource(R.string.dark_theme_off)
                     DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
                 }
-            }
+            },
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.pure_black)) },
             icon = { Icon(Icons.Rounded.Contrast, null) },
             checked = pureBlack,
-            onCheckedChange = onPureBlackChange
+            onCheckedChange = onPureBlackChange,
         )
 
         PreferenceGroupTitle(
-            title = "Layout"
+            title = "Layout",
         )
 
         SwitchPreference(
             title = { Text(stringResource(R.string.new_interface)) },
             icon = { Icon(Icons.Rounded.Palette, null) },
             checked = newInterfaceStyle,
-            onCheckedChange = onNewInterfaceStyleChange
+            onCheckedChange = onNewInterfaceStyleChange,
         )
 
         SwitchPreference(
             title = { Text(stringResource(R.string.show_liked_and_downloaded_playlist)) },
             icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistPlay, null) },
             checked = showLikedAndDownloadedPlaylist,
-            onCheckedChange = onShowLikedAndDownloadedPlaylistChange
+            onCheckedChange = onShowLikedAndDownloadedPlaylistChange,
         )
 
         PreferenceEntry(
@@ -209,10 +219,10 @@ fun AppearanceSettings(
             icon = { Icon(Icons.Rounded.Reorder, null) },
             onClick = {
                 showTabArrangement = true
-            }
+            },
         )
 
-        if (showTabArrangement)
+        if (showTabArrangement) {
             ActionPromptDialog(
                 title = "Arrange tabs",
                 onDismiss = { showTabArrangement = false },
@@ -238,52 +248,54 @@ fun AppearanceSettings(
                 },
                 onCancel = {
                     showTabArrangement = false
-                }
+                },
             ) {
                 // tabs list
                 LazyColumn(
                     state = reorderableState.listState,
-                    modifier = Modifier
-                        .padding(vertical = 12.dp)
-                        .border(
-                            2.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            RoundedCornerShape(ThumbnailCornerRadius)
-                        )
-                        .reorderable(reorderableState)
+                    modifier =
+                        Modifier
+                            .padding(vertical = 12.dp)
+                            .border(
+                                2.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                RoundedCornerShape(ThumbnailCornerRadius),
+                            ).reorderable(reorderableState),
                 ) {
                     itemsIndexed(
                         items = mutableTabs,
-                        key = { _, item -> item.hashCode() }
+                        key = { _, item -> item.hashCode() },
                     ) { index, tab ->
                         ReorderableItem(
                             reorderableState = reorderableState,
-                            key = tab.hashCode()
+                            key = tab.hashCode(),
                         ) {
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .padding(horizontal = 24.dp, vertical = 8.dp)
-                                    .fillMaxWidth()
+                                modifier =
+                                    Modifier
+                                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                                        .fillMaxWidth(),
                             ) {
                                 Text(
-                                    text = when (tab) {
-                                        NavigationTab.HOME -> stringResource(R.string.home)
-                                        NavigationTab.SONG -> stringResource(R.string.songs)
-                                        NavigationTab.FOLDERS -> stringResource(R.string.folders)
-                                        NavigationTab.ARTIST -> stringResource(R.string.artists)
-                                        NavigationTab.ALBUM -> stringResource(R.string.albums)
-                                        NavigationTab.PLAYLIST -> stringResource(R.string.playlists)
-                                        else -> {
-                                            "--- Drag below here to disable ---"
-                                        }
-                                    }
+                                    text =
+                                        when (tab) {
+                                            NavigationTab.HOME -> stringResource(R.string.home)
+                                            NavigationTab.SONG -> stringResource(R.string.songs)
+                                            NavigationTab.FOLDERS -> stringResource(R.string.folders)
+                                            NavigationTab.ARTIST -> stringResource(R.string.artists)
+                                            NavigationTab.ALBUM -> stringResource(R.string.albums)
+                                            NavigationTab.PLAYLIST -> stringResource(R.string.playlists)
+                                            else -> {
+                                                "--- Drag below here to disable ---"
+                                            }
+                                        },
                                 )
                                 Icon(
                                     imageVector = Icons.Rounded.DragHandle,
                                     contentDescription = null,
-                                    modifier = Modifier.detectReorder(reorderableState)
+                                    modifier = Modifier.detectReorder(reorderableState),
                                 )
                             }
                         }
@@ -292,6 +304,7 @@ fun AppearanceSettings(
 
                 InfoLabel(text = "The Home tab is required.")
             }
+        }
 
         if (newInterfaceStyle) {
             EnumListPreference(
@@ -304,7 +317,7 @@ fun AppearanceSettings(
                         NavigationTabNew.HOME -> stringResource(R.string.home)
                         NavigationTabNew.LIBRARY -> stringResource(R.string.library)
                     }
-                }
+                },
             )
         } else {
             EnumListPreference(
@@ -323,7 +336,7 @@ fun AppearanceSettings(
                         NavigationTab.PLAYLIST -> stringResource(R.string.playlists)
                         else -> ""
                     }
-                }
+                },
             )
         }
 
@@ -333,7 +346,7 @@ fun AppearanceSettings(
             description = stringResource(R.string.flat_subfolders_description),
             icon = { Icon(Icons.Rounded.FolderCopy, null) },
             checked = flatSubfolders,
-            onCheckedChange = onFlatSubfoldersChange
+            onCheckedChange = onFlatSubfoldersChange,
         )
     }
 
@@ -342,36 +355,50 @@ fun AppearanceSettings(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }
 
 enum class DarkMode {
-    ON, OFF, AUTO
+    ON,
+    OFF,
+    AUTO,
 }
 
 enum class PlayerBackgroundStyle {
-    DEFAULT, GRADIENT, BLUR
+    DEFAULT,
+    GRADIENT,
+    BLUR,
 }
 
 /**
  * NULL is used to separate enabled and disabled tabs. It should be ignored in regular use
  */
 enum class NavigationTab {
-    HOME, SONG, FOLDERS, ARTIST, ALBUM, PLAYLIST, NULL
+    HOME,
+    SONG,
+    FOLDERS,
+    ARTIST,
+    ALBUM,
+    PLAYLIST,
+    NULL,
 }
+
 enum class NavigationTabNew {
-    HOME, LIBRARY
+    HOME,
+    LIBRARY,
 }
 
 enum class LyricsPosition {
-    LEFT, CENTER, RIGHT
+    LEFT,
+    CENTER,
+    RIGHT,
 }

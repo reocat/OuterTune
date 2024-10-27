@@ -59,12 +59,12 @@ fun PrivacySettings(
                 Text(
                     text = stringResource(R.string.clear_listen_history_confirm),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
-                    onClick = { showClearListenHistoryDialog = false }
+                    onClick = { showClearListenHistoryDialog = false },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -75,11 +75,11 @@ fun PrivacySettings(
                         database.query {
                             clearListenHistory()
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
@@ -94,12 +94,12 @@ fun PrivacySettings(
                 Text(
                     text = stringResource(R.string.clear_search_history_confirm),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
-                    onClick = { showClearSearchHistoryDialog = false }
+                    onClick = { showClearSearchHistoryDialog = false },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -110,40 +110,40 @@ fun PrivacySettings(
                         database.query {
                             clearSearchHistory()
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         SwitchPreference(
             title = { Text(stringResource(R.string.pause_listen_history)) },
             icon = { Icon(Icons.Rounded.History, null) },
             checked = pauseListenHistory,
-            onCheckedChange = onPauseListenHistoryChange
+            onCheckedChange = onPauseListenHistoryChange,
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.clear_listen_history)) },
             icon = { Icon(Icons.Rounded.ClearAll, null) },
-            onClick = { showClearListenHistoryDialog = true }
+            onClick = { showClearListenHistoryDialog = true },
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.pause_search_history)) },
             icon = { Icon(Icons.AutoMirrored.Rounded.ManageSearch, null) },
             checked = pauseSearchHistory,
-            onCheckedChange = onPauseSearchHistoryChange
+            onCheckedChange = onPauseSearchHistoryChange,
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.clear_search_history)) },
             icon = { Icon(Icons.Rounded.ClearAll, null) },
-            onClick = { showClearSearchHistoryDialog = true }
+            onClick = { showClearSearchHistoryDialog = true },
         )
     }
 
@@ -152,14 +152,14 @@ fun PrivacySettings(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

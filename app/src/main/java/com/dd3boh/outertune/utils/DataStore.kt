@@ -23,7 +23,10 @@ operator fun <T> DataStore<Preferences>.get(key: Preferences.Key<T>): T? =
         data.first()[key]
     }
 
-fun <T> DataStore<Preferences>.get(key: Preferences.Key<T>, defaultValue: T): T =
+fun <T> DataStore<Preferences>.get(
+    key: Preferences.Key<T>,
+    defaultValue: T,
+): T =
     runBlocking(Dispatchers.IO) {
         data.first()[key] ?: defaultValue
     }
@@ -48,11 +51,12 @@ fun <T> rememberPreference(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val state = remember {
-        context.dataStore.data
-            .map { it[key] ?: defaultValue }
-            .distinctUntilChanged()
-    }.collectAsState(context.dataStore[key] ?: defaultValue)
+    val state =
+        remember {
+            context.dataStore.data
+                .map { it[key] ?: defaultValue }
+                .distinctUntilChanged()
+        }.collectAsState(context.dataStore[key] ?: defaultValue)
 
     return remember {
         object : MutableState<T> {
@@ -67,6 +71,7 @@ fun <T> rememberPreference(
                 }
 
             override fun component1() = value
+
             override fun component2(): (T) -> Unit = { value = it }
         }
     }
@@ -81,11 +86,12 @@ inline fun <reified T : Enum<T>> rememberEnumPreference(
     val coroutineScope = rememberCoroutineScope()
 
     val initialValue = context.dataStore[key].toEnum(defaultValue = defaultValue)
-    val state = remember {
-        context.dataStore.data
-            .map { it[key].toEnum(defaultValue = defaultValue) }
-            .distinctUntilChanged()
-    }.collectAsState(initialValue)
+    val state =
+        remember {
+            context.dataStore.data
+                .map { it[key].toEnum(defaultValue = defaultValue) }
+                .distinctUntilChanged()
+        }.collectAsState(initialValue)
 
     return remember {
         object : MutableState<T> {
@@ -100,6 +106,7 @@ inline fun <reified T : Enum<T>> rememberEnumPreference(
                 }
 
             override fun component1() = value
+
             override fun component2(): (T) -> Unit = { value = it }
         }
     }

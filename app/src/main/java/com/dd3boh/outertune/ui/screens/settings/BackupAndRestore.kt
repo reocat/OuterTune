@@ -61,22 +61,25 @@ fun BackupAndRestore(
     scrollBehavior: TopAppBarScrollBehavior,
     viewModel: BackupRestoreViewModel = hiltViewModel(),
 ) {
-    val (scannerSensitivity) = rememberEnumPreference(
-        key = ScannerSensitivityKey,
-        defaultValue = ScannerMatchCriteria.LEVEL_2
-    )
+    val (scannerSensitivity) =
+        rememberEnumPreference(
+            key = ScannerSensitivityKey,
+            defaultValue = ScannerMatchCriteria.LEVEL_2,
+        )
 
     val context = LocalContext.current
-    val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
-        if (uri != null) {
-            viewModel.backup(context, uri)
+    val backupLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+            if (uri != null) {
+                viewModel.backup(context, uri)
+            }
         }
-    }
-    val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) {
-            viewModel.restore(context, uri)
+    val restoreLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                viewModel.restore(context, uri)
+            }
         }
-    }
 
     // import m3u
     var showChoosePlaylistDialog by rememberSaveable {
@@ -85,25 +88,26 @@ fun BackupAndRestore(
     var importedTitle by remember { mutableStateOf("") }
     val importedSongs = remember { mutableStateListOf<Song>() }
     val rejectedSongs = remember { mutableStateListOf<String>() }
-    val importM3uLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) {
-            val result = viewModel.loadM3u(context, uri, matchStrength = scannerSensitivity)
-            importedSongs.clear()
-            importedSongs.addAll(result.first)
-            rejectedSongs.clear()
-            rejectedSongs.addAll(result.second)
-            importedTitle = result.third
+    val importM3uLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                val result = viewModel.loadM3u(context, uri, matchStrength = scannerSensitivity)
+                importedSongs.clear()
+                importedSongs.addAll(result.first)
+                rejectedSongs.clear()
+                rejectedSongs.addAll(result.second)
+                importedTitle = result.third
 
-            if (importedSongs.isNotEmpty()) {
-                showChoosePlaylistDialog = true
+                if (importedSongs.isNotEmpty()) {
+                    showChoosePlaylistDialog = true
+                }
             }
         }
-    }
 
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         PreferenceEntry(
             title = { Text(stringResource(R.string.backup)) },
@@ -111,14 +115,14 @@ fun BackupAndRestore(
             onClick = {
                 val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                 backupLauncher.launch("${context.getString(R.string.app_name)}_${LocalDateTime.now().format(formatter)}.backup")
-            }
+            },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.restore)) },
             icon = { Icon(Icons.Rounded.Restore, null) },
             onClick = {
                 restoreLauncher.launch(arrayOf("application/octet-stream"))
-            }
+            },
         )
 
         // import m3u playlist
@@ -127,21 +131,22 @@ fun BackupAndRestore(
             icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistAdd, null) },
             onClick = {
                 importM3uLauncher.launch(arrayOf("audio/*"))
-            }
+            },
         )
         AddToPlaylistDialog(
             isVisible = showChoosePlaylistDialog,
             noSyncing = true,
             initialTextFieldValue = importedTitle,
             onGetSong = { importedSongs.map { it.id } },
-            onDismiss = { showChoosePlaylistDialog = false }
+            onDismiss = { showChoosePlaylistDialog = false },
         )
 
         if (rejectedSongs.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier
-                    .heightIn(max = 250.dp)
-                    .padding(20.dp)
+                modifier =
+                    Modifier
+                        .heightIn(max = 250.dp)
+                        .padding(20.dp),
             ) {
                 item {
                     Text(
@@ -155,14 +160,15 @@ fun BackupAndRestore(
 
                 itemsIndexed(
                     items = rejectedSongs,
-                    key = { _, song -> song.hashCode() }
+                    key = { _, song -> song.hashCode() },
                 ) { index, item ->
                     Text(
                         text = item,
                         fontSize = 14.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
                     )
                 }
             }
@@ -173,13 +179,13 @@ fun BackupAndRestore(
                 Icons.Outlined.Info,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(4.dp),
             )
 
             Text(
                 stringResource(R.string.import_innertune_tooltip),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 4.dp)
+                modifier = Modifier.padding(horizontal = 4.dp),
             )
         }
     }
@@ -189,14 +195,14 @@ fun BackupAndRestore(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

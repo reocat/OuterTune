@@ -8,10 +8,9 @@ import com.dd3boh.outertune.utils.get
 import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.runBlocking
 
-fun Context.isSyncEnabled(): Boolean {
-    return runBlocking {
+fun Context.isSyncEnabled(): Boolean =
+    runBlocking {
         val ytmSync = dataStore[YtmSyncKey] ?: true
         val cookie = dataStore[InnerTubeCookieKey] ?: ""
         ytmSync && "SAPISID" in parseCookieString(cookie)
     }
-}

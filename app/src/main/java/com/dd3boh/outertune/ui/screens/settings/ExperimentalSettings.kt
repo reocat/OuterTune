@@ -51,21 +51,20 @@ fun ExperimentalSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
-
         // dev settings
         SwitchPreference(
             title = { Text(stringResource(R.string.dev_settings_title)) },
             description = stringResource(R.string.dev_settings_description),
             icon = { Icon(Icons.Rounded.DeveloperMode, null) },
             checked = devSettings,
-            onCheckedChange = onDevSettingsChange
+            onCheckedChange = onDevSettingsChange,
         )
 
         if (devSettings) {
             PreferenceGroupTitle(
-                title = stringResource(R.string.settings_debug)
+                title = stringResource(R.string.settings_debug),
             )
             PreferenceEntry(
                 title = { Text("DEBUG: Nuke local lib") },
@@ -75,7 +74,7 @@ fun ExperimentalSettings(
                     coroutineScope.launch(Dispatchers.IO) {
                         Timber.tag("Settings").d("Nuke database status:  ${database.nukeLocalData()}")
                     }
-                }
+                },
             )
             PreferenceEntry(
                 title = { Text("DEBUG: Force local to remote artist migration NOW") },
@@ -87,27 +86,24 @@ fun ExperimentalSettings(
                         Timber.tag("Settings").d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
                         scanner.localToRemoteArtist(database)
                     }
-                }
+                },
             )
         }
     }
-
-
-
 
     TopAppBar(
         title = { Text(stringResource(R.string.experimental_settings_title)) },
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

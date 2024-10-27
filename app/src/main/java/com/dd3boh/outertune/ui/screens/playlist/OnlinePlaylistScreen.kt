@@ -134,12 +134,14 @@ fun OnlinePlaylistScreen(
 
     // multiselect
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<Int>, Int>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<Int>, Int>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -177,16 +179,18 @@ fun OnlinePlaylistScreen(
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED }) {
                     Download.STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.id]?.state == Download.STATE_COMPLETED
-                    })
+                } else if (songs.all {
+                        downloads[it.id]?.state == Download.STATE_QUEUED ||
+                            downloads[it.id]?.state == Download.STATE_DOWNLOADING ||
+                            downloads[it.id]?.state == Download.STATE_COMPLETED
+                    }
+                ) {
                     Download.STATE_DOWNLOADING
-                else
+                } else {
                     Download.STATE_STOPPED
+                }
         }
     }
 
@@ -201,12 +205,12 @@ fun OnlinePlaylistScreen(
                 Text(
                     text = stringResource(R.string.remove_download_playlist_confirm, playlist?.title!!),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
-                    onClick = { showRemoveDownloadDialog = false }
+                    onClick = { showRemoveDownloadDialog = false },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -223,39 +227,40 @@ fun OnlinePlaylistScreen(
                                 context,
                                 ExoDownloadService::class.java,
                                 song.id,
-                                false
+                                false,
                             )
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
         ) {
             playlist.let { playlist ->
                 if (playlist != null) {
                     item {
                         Column(
-                            modifier = Modifier.padding(12.dp)
+                            modifier = Modifier.padding(12.dp),
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 AsyncImage(
                                     model = playlist.thumbnail,
                                     contentDescription = null,
-                                    modifier = Modifier
-                                        .size(AlbumThumbnailSize)
-                                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                                    modifier =
+                                        Modifier
+                                            .size(AlbumThumbnailSize)
+                                            .clip(RoundedCornerShape(ThumbnailCornerRadius)),
                                 )
 
                                 Spacer(Modifier.width(16.dp))
@@ -268,26 +273,29 @@ fun OnlinePlaylistScreen(
                                         fontWeight = FontWeight.Bold,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis,
-                                        fontSizeRange = FontSizeRange(16.sp, 22.sp)
+                                        fontSizeRange = FontSizeRange(16.sp, 22.sp),
                                     )
 
                                     playlist.author?.let { artist ->
-                                        val annotatedString = buildAnnotatedString {
-                                            withStyle(
-                                                style = MaterialTheme.typography.titleMedium.copy(
-                                                    fontWeight = FontWeight.Normal,
-                                                    color = MaterialTheme.colorScheme.onBackground
-                                                ).toSpanStyle()
-                                            ) {
-                                                if (artist.id != null) {
-                                                    pushStringAnnotation(artist.id!!, artist.name)
-                                                    append(artist.name)
-                                                    pop()
-                                                } else {
-                                                    append(artist.name)
+                                        val annotatedString =
+                                            buildAnnotatedString {
+                                                withStyle(
+                                                    style =
+                                                        MaterialTheme.typography.titleMedium
+                                                            .copy(
+                                                                fontWeight = FontWeight.Normal,
+                                                                color = MaterialTheme.colorScheme.onBackground,
+                                                            ).toSpanStyle(),
+                                                ) {
+                                                    if (artist.id != null) {
+                                                        pushStringAnnotation(artist.id!!, artist.name)
+                                                        append(artist.name)
+                                                        pop()
+                                                    } else {
+                                                        append(artist.name)
+                                                    }
                                                 }
                                             }
-                                        }
                                         ClickableText(annotatedString) { offset ->
                                             annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let { range ->
                                                 navController.navigate("artist/${range.tag}")
@@ -299,7 +307,7 @@ fun OnlinePlaylistScreen(
                                         Text(
                                             text = songCountText,
                                             style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Normal
+                                            fontWeight = FontWeight.Normal,
                                         )
                                     }
 
@@ -309,40 +317,55 @@ fun OnlinePlaylistScreen(
                                                 onClick = {
                                                     if (dbPlaylist?.playlist == null) {
                                                         database.transaction {
-                                                            val playlistEntity = PlaylistEntity(
-                                                                name = playlist.title,
-                                                                browseId = playlist.id,
-                                                                isEditable = playlist.isEditable,
-                                                                playEndpointParams = playlist.playEndpoint?.params,
-                                                                shuffleEndpointParams = playlist.shuffleEndpoint?.params,
-                                                                radioEndpointParams = playlist.radioEndpoint?.params
-                                                            ).toggleLike()
+                                                            val playlistEntity =
+                                                                PlaylistEntity(
+                                                                    name = playlist.title,
+                                                                    browseId = playlist.id,
+                                                                    isEditable = playlist.isEditable,
+                                                                    playEndpointParams = playlist.playEndpoint?.params,
+                                                                    shuffleEndpointParams = playlist.shuffleEndpoint?.params,
+                                                                    radioEndpointParams = playlist.radioEndpoint?.params,
+                                                                ).toggleLike()
 
                                                             insert(playlistEntity)
-                                                            songs.map(SongItem::toMediaMetadata)
+                                                            songs
+                                                                .map(SongItem::toMediaMetadata)
                                                                 .onEach(::insert)
                                                                 .mapIndexed { index, song ->
                                                                     PlaylistSongMap(
                                                                         songId = song.id,
                                                                         playlistId = playlistEntity.id,
-                                                                        position = index
+                                                                        position = index,
                                                                     )
-                                                                }
-                                                                .forEach(::insert)
+                                                                }.forEach(::insert)
                                                         }
                                                     } else {
                                                         database.transaction {
                                                             update(dbPlaylist!!.playlist.toggleLike())
                                                         }
                                                     }
-                                                }
+                                                },
                                             ) {
                                                 Icon(
-                                                    painter = painterResource(
-                                                        if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border
-                                                    ),
+                                                    painter =
+                                                        painterResource(
+                                                            if (dbPlaylist?.playlist?.bookmarkedAt !=
+                                                                null
+                                                            ) {
+                                                                R.drawable.favorite
+                                                            } else {
+                                                                R.drawable.favorite_border
+                                                            },
+                                                        ),
                                                     contentDescription = null,
-                                                    tint = if (dbPlaylist?.playlist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
+                                                    tint =
+                                                        if (dbPlaylist?.playlist?.bookmarkedAt !=
+                                                            null
+                                                        ) {
+                                                            MaterialTheme.colorScheme.error
+                                                        } else {
+                                                            LocalContentColor.current
+                                                        },
                                                 )
                                             }
                                         }
@@ -353,11 +376,11 @@ fun OnlinePlaylistScreen(
                                                     IconButton(
                                                         onClick = {
                                                             showRemoveDownloadDialog = true
-                                                        }
+                                                        },
                                                     ) {
                                                         Icon(
                                                             Icons.Rounded.OfflinePin,
-                                                            contentDescription = null
+                                                            contentDescription = null,
                                                         )
                                                     }
                                                 }
@@ -370,14 +393,14 @@ fun OnlinePlaylistScreen(
                                                                     context,
                                                                     ExoDownloadService::class.java,
                                                                     song.id,
-                                                                    false
+                                                                    false,
                                                                 )
                                                             }
-                                                        }
+                                                        },
                                                     ) {
                                                         CircularProgressIndicator(
                                                             strokeWidth = 2.dp,
-                                                            modifier = Modifier.size(24.dp)
+                                                            modifier = Modifier.size(24.dp),
                                                         )
                                                     }
                                                 }
@@ -388,18 +411,18 @@ fun OnlinePlaylistScreen(
                                                             if (!isSyncing) {
                                                                 isSyncing = true
                                                                 viewModel.viewModelScope.launch(Dispatchers.IO) {
-	                                                                syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id) 
-								}        
-								val _songs = songs.map{ it.toMediaMetadata() }
-                                                                downloadUtil.download(_songs, context)
+                                                                    syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id)
                                                                 }
-                                                                isSyncing = false
+                                                                val _songs = songs.map { it.toMediaMetadata() }
+                                                                downloadUtil.download(_songs, context)
+                                                            }
+                                                            isSyncing = false
                                                         },
-                                                        enabled = !isSyncing
+                                                        enabled = !isSyncing,
                                                     ) {
                                                         Icon(
                                                             Icons.Rounded.Download,
-                                                            contentDescription = null
+                                                            contentDescription = null,
                                                         )
                                                     }
                                                 }
@@ -409,13 +432,13 @@ fun OnlinePlaylistScreen(
                                         IconButton(
                                             onClick = {
                                                 playerConnection.addToQueue(
-                                                    items = songs.map { it.toMediaItem() }
+                                                    items = songs.map { it.toMediaItem() },
                                                 )
-                                            }
+                                            },
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.queue_music),
-                                                contentDescription = null
+                                                contentDescription = null,
                                             )
                                         }
 
@@ -426,14 +449,14 @@ fun OnlinePlaylistScreen(
                                                         playlist = playlist,
                                                         songs = songs,
                                                         coroutineScope = coroutineScope,
-                                                        onDismiss = menuState::dismiss
+                                                        onDismiss = menuState::dismiss,
                                                     )
                                                 }
-                                            }
+                                            },
                                         ) {
                                             Icon(
                                                 Icons.Rounded.MoreVert,
-                                                contentDescription = null
+                                                contentDescription = null,
                                             )
                                         }
                                     }
@@ -451,16 +474,16 @@ fun OnlinePlaylistScreen(
                                                     playlistId = playlist.playEndpoint!!.playlistId,
                                                     title = playlist.title,
                                                     items = songs.map { it.toMediaMetadata() },
-                                                )
+                                                ),
                                             )
                                         },
                                         contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
                                     ) {
                                         Icon(
                                             Icons.Rounded.PlayArrow,
                                             contentDescription = null,
-                                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                                            modifier = Modifier.size(ButtonDefaults.IconSize),
                                         )
                                         Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                                         Text(stringResource(R.string.play))
@@ -475,16 +498,16 @@ fun OnlinePlaylistScreen(
                                                     playlistId = playlist.playEndpoint!!.playlistId,
                                                     title = playlist.title,
                                                     items = songs.map { it.toMediaMetadata() }.shuffled(),
-                                                )
+                                                ),
                                             )
                                         },
                                         contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
                                     ) {
                                         Icon(
                                             Icons.Rounded.Shuffle,
                                             contentDescription = null,
-                                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                                            modifier = Modifier.size(ButtonDefaults.IconSize),
                                         )
                                         Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                                         Text(stringResource(R.string.shuffle))
@@ -496,12 +519,12 @@ fun OnlinePlaylistScreen(
 
                     item(
                         key = "header",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         if (inSelectMode) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp),
                             ) {
                                 SelectHeader(
                                     selectedItems = selection.map { songs[it] }.map { it.toMediaMetadata() },
@@ -512,14 +535,14 @@ fun OnlinePlaylistScreen(
                                     },
                                     onDeselectAll = { selection.clear() },
                                     menuState = menuState,
-                                    onDismiss = onExitSelectionMode
+                                    onDismiss = onExitSelectionMode,
                                 )
                             }
                         }
                     }
 
                     itemsIndexed(
-                        items = songs
+                        items = songs,
                     ) { index, song ->
                         val onCheckedChange: (Boolean) -> Unit = {
                             if (it) {
@@ -540,7 +563,7 @@ fun OnlinePlaylistScreen(
                                         if (inSelectMode) {
                                             Checkbox(
                                                 checked = index in selection,
-                                                onCheckedChange = onCheckedChange
+                                                onCheckedChange = onCheckedChange,
                                             )
                                         } else {
                                             IconButton(
@@ -549,49 +572,49 @@ fun OnlinePlaylistScreen(
                                                         YouTubeSongMenu(
                                                             song = song,
                                                             navController = navController,
-                                                            onDismiss = menuState::dismiss
+                                                            onDismiss = menuState::dismiss,
                                                         )
                                                     }
-                                                }
+                                                },
                                             ) {
                                                 Icon(
                                                     Icons.Rounded.MoreVert,
-                                                    contentDescription = null
+                                                    contentDescription = null,
                                                 )
                                             }
                                         }
                                     },
                                     isSelected = inSelectMode && index in selection,
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (inSelectMode) {
-                                                    onCheckedChange(index !in selection)
-                                                } else if (song.id == mediaMetadata?.id) {
-                                                    playerConnection.player.togglePlayPause()
-                                                } else {
-                                                    playerConnection.playQueue(
-                                                        ListQueue(
-                                                            playlistId = playlist.id,
-                                                            title = playlist.title,
-                                                            items = songs.map { it.toMediaMetadata() },
-                                                            startIndex = index
+                                    modifier =
+                                        Modifier
+                                            .combinedClickable(
+                                                onClick = {
+                                                    if (inSelectMode) {
+                                                        onCheckedChange(index !in selection)
+                                                    } else if (song.id == mediaMetadata?.id) {
+                                                        playerConnection.player.togglePlayPause()
+                                                    } else {
+                                                        playerConnection.playQueue(
+                                                            ListQueue(
+                                                                playlistId = playlist.id,
+                                                                title = playlist.title,
+                                                                items = songs.map { it.toMediaMetadata() },
+                                                                startIndex = index,
+                                                            ),
                                                         )
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                if (!inSelectMode) {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    inSelectMode = true
-                                                    onCheckedChange(true)
-                                                }
-                                            }
-                                        )
-                                        .animateItemPlacement()
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    if (!inSelectMode) {
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        inSelectMode = true
+                                                        onCheckedChange(true)
+                                                    }
+                                                },
+                                            ).animateItemPlacement(),
                                 )
                             },
-                            snackbarHostState = snackbarHostState
+                            snackbarHostState = snackbarHostState,
                         )
                     }
                 } else {
@@ -600,10 +623,11 @@ fun OnlinePlaylistScreen(
                             Column(Modifier.padding(12.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Spacer(
-                                        modifier = Modifier
-                                            .size(AlbumThumbnailSize)
-                                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                                            .background(MaterialTheme.colorScheme.onSurface)
+                                        modifier =
+                                            Modifier
+                                                .size(AlbumThumbnailSize)
+                                                .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                                                .background(MaterialTheme.colorScheme.onSurface),
                                     )
 
                                     Spacer(Modifier.width(16.dp))
@@ -642,22 +666,23 @@ fun OnlinePlaylistScreen(
             navigationIcon = {
                 IconButton(
                     onClick = navController::navigateUp,
-                    onLongClick = navController::backToMain
+                    onLongClick = navController::backToMain,
                 ) {
                     Icon(
                         Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
             },
-            scrollBehavior = scrollBehavior
+            scrollBehavior = scrollBehavior,
         )
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 }

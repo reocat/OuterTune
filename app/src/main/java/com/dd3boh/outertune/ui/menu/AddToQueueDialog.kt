@@ -29,7 +29,6 @@ import com.dd3boh.outertune.ui.component.ListItem
 import com.dd3boh.outertune.ui.component.QueueListItem
 import com.dd3boh.outertune.ui.component.TextFieldDialog
 
-
 @Composable
 fun AddToQueueDialog(
     isVisible: Boolean,
@@ -44,14 +43,13 @@ fun AddToQueueDialog(
         mutableStateOf(false)
     }
 
-
     LaunchedEffect(Unit) {
         queues = queueBoard.getAllQueues().reversed()
     }
 
     if (isVisible) {
         ListDialog(
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
         ) {
             item {
                 ListItem(
@@ -61,12 +59,13 @@ fun AddToQueueDialog(
                             imageVector = Icons.Rounded.Add,
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
-                            modifier = Modifier.size(ListThumbnailSize)
+                            modifier = Modifier.size(ListThumbnailSize),
                         )
                     },
-                    modifier = Modifier.clickable {
-                        showCreateQueueDialog = true
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            showCreateQueueDialog = true
+                        },
                 )
             }
 
@@ -76,10 +75,11 @@ fun AddToQueueDialog(
                 QueueListItem(
                     queue = queue,
                     number = index--,
-                    modifier = Modifier.clickable {
-                        onAdd(queue.title)
-                        onDismiss()
-                    }
+                    modifier =
+                        Modifier.clickable {
+                            onAdd(queue.title)
+                            onDismiss()
+                        },
                 )
             }
         }

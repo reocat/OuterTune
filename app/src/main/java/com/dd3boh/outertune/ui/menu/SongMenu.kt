@@ -111,7 +111,7 @@ fun SongMenu(
                 database.query {
                     update(song.song.copy(title = title))
                 }
-            }
+            },
         )
     }
 
@@ -122,13 +122,18 @@ fun SongMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, listOf(song.toMediaMetadata()), playerConnection,
-                forceInsert = true, delta = false)
+            queueBoard.add(
+                queueName,
+                listOf(song.toMediaMetadata()),
+                playerConnection,
+                forceInsert = true,
+                delta = false,
+            )
             queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
             showChooseQueueDialog = false
-        }
+        },
     )
 
     var showChoosePlaylistDialog by rememberSaveable {
@@ -145,7 +150,7 @@ fun SongMenu(
             }
             listOf(song.id)
         },
-        onDismiss = { showChoosePlaylistDialog = false }
+        onDismiss = { showChoosePlaylistDialog = false },
     )
 
     var showSelectArtistDialog by rememberSaveable {
@@ -154,33 +159,34 @@ fun SongMenu(
 
     if (showSelectArtistDialog) {
         ListDialog(
-            onDismiss = { showSelectArtistDialog = false }
+            onDismiss = { showSelectArtistDialog = false },
         ) {
             items(
                 items = song.artists,
-                key = { it.id }
+                key = { it.id },
             ) { artist ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(ListItemHeight)
-                        .clickable {
-                            navController.navigate("artist/${artist.id}")
-                            showSelectArtistDialog = false
-                            onDismiss()
-                        }
-                        .padding(horizontal = 12.dp),
+                    modifier =
+                        Modifier
+                            .height(ListItemHeight)
+                            .clickable {
+                                navController.navigate("artist/${artist.id}")
+                                showSelectArtistDialog = false
+                                onDismiss()
+                            }.padding(horizontal = 12.dp),
                 ) {
                     Box(
                         modifier = Modifier.padding(8.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         AsyncImage(
                             model = artist.thumbnailUrl,
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(ListThumbnailSize)
-                                .clip(CircleShape)
+                            modifier =
+                                Modifier
+                                    .size(ListThumbnailSize)
+                                    .clip(CircleShape),
                         )
                     }
                     Text(
@@ -189,9 +195,10 @@ fun SongMenu(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp)
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -207,57 +214,65 @@ fun SongMenu(
                     database.query {
                         update(song.song.toggleLike())
                     }
-                }
+                },
             ) {
                 Icon(
                     painter = painterResource(if (song.song.liked) R.drawable.favorite else R.drawable.favorite_border),
                     tint = if (song.song.liked) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 
     HorizontalDivider()
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
-        if (!song.song.isLocal)
+        if (!song.song.isLocal) {
             GridMenuItem(
                 icon = Icons.Rounded.Radio,
-                title = R.string.start_radio
+                title = R.string.start_radio,
             ) {
                 onDismiss()
-                playerConnection.playQueue(YouTubeQueue(WatchEndpoint(videoId = song.id), song.toMediaMetadata(), playlistId = WatchEndpoint(videoId = song.id).playlistId))
+                playerConnection.playQueue(
+                    YouTubeQueue(
+                        WatchEndpoint(videoId = song.id),
+                        song.toMediaMetadata(),
+                        playlistId = WatchEndpoint(videoId = song.id).playlistId,
+                    ),
+                )
             }
+        }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
-            title = R.string.play_next
+            title = R.string.play_next,
         ) {
             onDismiss()
             playerConnection.playNext(song.toMediaItem())
         }
         GridMenuItem(
             icon = Icons.Rounded.Edit,
-            title = R.string.edit
+            title = R.string.edit,
         ) {
             showEditDialog = true
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }
@@ -265,14 +280,16 @@ fun SongMenu(
         if (playlistSong != null) {
             GridMenuItem(
                 icon = Icons.Rounded.PlaylistRemove,
-                title = R.string.remove_from_playlist
+                title = R.string.remove_from_playlist,
             ) {
                 database.transaction {
                     coroutineScope.launch {
                         playlistBrowseId?.let { playlistId ->
                             if (playlistSong.map.setVideoId != null) {
                                 YouTube.removeFromPlaylist(
-                                    playlistId, playlistSong.map.songId, playlistSong.map.setVideoId
+                                    playlistId,
+                                    playlistSong.map.songId,
+                                    playlistSong.map.setVideoId,
                                 )
                             }
                         }
@@ -285,7 +302,7 @@ fun SongMenu(
             }
         }
 
-        if (!song.song.isLocal)
+        if (!song.song.isLocal) {
             DownloadGridMenu(
                 state = download?.state,
                 onDownload = {
@@ -296,15 +313,15 @@ fun SongMenu(
                         context,
                         ExoDownloadService::class.java,
                         song.id,
-                        false
+                        false,
                     )
-                }
+                },
             )
-
+        }
 
         GridMenuItem(
             icon = R.drawable.artist,
-            title = R.string.view_artist
+            title = R.string.view_artist,
         ) {
             if (song.artists.size == 1) {
                 navController.navigate("artist/${song.artists[0].id}")
@@ -316,30 +333,32 @@ fun SongMenu(
         if (song.song.albumId != null && !song.song.isLocal) {
             GridMenuItem(
                 icon = Icons.Rounded.Album,
-                title = R.string.view_album
+                title = R.string.view_album,
             ) {
                 onDismiss()
                 navController.navigate("album/${song.song.albumId}")
             }
         }
-        if (!song.song.isLocal)
+        if (!song.song.isLocal) {
             GridMenuItem(
                 icon = Icons.Rounded.Share,
-                title = R.string.share
+                title = R.string.share,
             ) {
                 onDismiss()
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${song.id}")
-                }
+                val intent =
+                    Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${song.id}")
+                    }
                 context.startActivity(Intent.createChooser(intent, null))
             }
+        }
         if (!song.song.isLocal) {
             if (song.song.inLibrary == null) {
                 GridMenuItem(
                     icon = Icons.Rounded.LibraryAdd,
-                    title = R.string.add_to_library
+                    title = R.string.add_to_library,
                 ) {
                     database.query {
                         update(song.song.toggleLibrary())
@@ -348,7 +367,7 @@ fun SongMenu(
             } else {
                 GridMenuItem(
                     icon = Icons.Rounded.LibraryAddCheck,
-                    title = R.string.remove_from_library
+                    title = R.string.remove_from_library,
                 ) {
                     database.query {
                         update(song.song.toggleLibrary())
@@ -359,7 +378,7 @@ fun SongMenu(
         if (event != null) {
             GridMenuItem(
                 icon = Icons.Rounded.Delete,
-                title = R.string.remove_from_history
+                title = R.string.remove_from_history,
             ) {
                 onDismiss()
                 database.query {

@@ -121,25 +121,28 @@ fun LibraryScreen(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
 
-    val filterString = when (filter) {
-        LibraryFilter.ALBUMS -> stringResource(R.string.albums)
-        LibraryFilter.ARTISTS -> stringResource(R.string.artists)
-        LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
-        LibraryFilter.SONGS -> stringResource(R.string.songs)
-        LibraryFilter.FOLDERS -> stringResource(R.string.folders)
-        LibraryFilter.ALL -> ""
-    }
-
-    val defaultFilter: Collection<Pair<LibraryFilter, String>> = decodeTabString(enabledTabs).map {
-        when(it) {
-            NavigationTab.ALBUM -> LibraryFilter.ALBUMS to stringResource(R.string.albums)
-            NavigationTab.ARTIST -> LibraryFilter.ARTISTS to stringResource(R.string.artists)
-            NavigationTab.PLAYLIST -> LibraryFilter.PLAYLISTS to stringResource(R.string.playlists)
-            NavigationTab.SONG -> LibraryFilter.SONGS to stringResource(R.string.songs)
-            NavigationTab.FOLDERS -> LibraryFilter.FOLDERS to stringResource(R.string.folders)
-            else -> LibraryFilter.ALL to stringResource(R.string.home) // there is no all filter, use as null value
+    val filterString =
+        when (filter) {
+            LibraryFilter.ALBUMS -> stringResource(R.string.albums)
+            LibraryFilter.ARTISTS -> stringResource(R.string.artists)
+            LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
+            LibraryFilter.SONGS -> stringResource(R.string.songs)
+            LibraryFilter.FOLDERS -> stringResource(R.string.folders)
+            LibraryFilter.ALL -> ""
         }
-    }.filterNot { it.first == LibraryFilter.ALL }
+
+    val defaultFilter: Collection<Pair<LibraryFilter, String>> =
+        decodeTabString(enabledTabs)
+            .map {
+                when (it) {
+                    NavigationTab.ALBUM -> LibraryFilter.ALBUMS to stringResource(R.string.albums)
+                    NavigationTab.ARTIST -> LibraryFilter.ARTISTS to stringResource(R.string.artists)
+                    NavigationTab.PLAYLIST -> LibraryFilter.PLAYLISTS to stringResource(R.string.playlists)
+                    NavigationTab.SONG -> LibraryFilter.SONGS to stringResource(R.string.songs)
+                    NavigationTab.FOLDERS -> LibraryFilter.FOLDERS to stringResource(R.string.folders)
+                    else -> LibraryFilter.ALL to stringResource(R.string.home) // there is no all filter, use as null value
+                }
+            }.filterNot { it.first == LibraryFilter.ALL }
 
     val chips = remember { SnapshotStateList<Pair<LibraryFilter, String>>() }
 
@@ -148,14 +151,20 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (filter == LibraryFilter.ALL)
+        if (filter == LibraryFilter.ALL) {
             chips.addAll(defaultFilter)
-        else
+        } else {
             chips.add(filter to filterString)
+        }
     }
 
-    val animatorDurationScale = Settings.Global.getFloat(context.contentResolver,
-        Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f).toLong()
+    val animatorDurationScale =
+        Settings.Global
+            .getFloat(
+                context.contentResolver,
+                Settings.Global.ANIMATOR_DURATION_SCALE,
+                1.0f,
+            ).toLong()
 
     suspend fun animationBasedDelay(value: Long) {
         delay(value * animatorDurationScale)
@@ -172,8 +181,9 @@ fun LibraryScreen(
                 val curFilterIndex = defaultFilter.indexOf(it)
                 if (!chips.contains(it)) {
                     chips.add(0, it)
-                    if (currentPairIndex > curFilterIndex) animationBasedDelay(100)
-                    else {
+                    if (currentPairIndex > curFilterIndex) {
+                        animationBasedDelay(100)
+                    } else {
                         currentPair?.let {
                             animationBasedDelay(2)
                             chips.move(chips.indexOf(it), 0)
@@ -186,12 +196,16 @@ fun LibraryScreen(
             filterSelected = LibraryFilter.ALL
         } else {
             filterSelected = filter
-            chips.filter { it.first != filter }
+            chips
+                .filter { it.first != filter }
                 .onEachIndexed { index, it ->
                     if (chips.contains(it)) {
                         chips.remove(it)
-                        if (index > filterIndex) animationBasedDelay(150 + 30 * index.toLong())
-                        else animationBasedDelay(80)
+                        if (index > filterIndex) {
+                            animationBasedDelay(150 + 30 * index.toLong())
+                        } else {
+                            animationBasedDelay(80)
+                        }
                     }
                 }
         }
@@ -203,19 +217,21 @@ fun LibraryScreen(
                 chips = chips,
                 currentValue = filter,
                 onValueUpdate = {
-                    filter = if (filter == LibraryFilter.ALL)
-                        it
-                    else
-                        LibraryFilter.ALL
+                    filter =
+                        if (filter == LibraryFilter.ALL) {
+                            it
+                        } else {
+                            LibraryFilter.ALL
+                        }
                 },
                 modifier = Modifier.weight(1f),
                 selected = { it == filterSelected },
                 isLoading = { filter ->
-                    (filter == LibraryFilter.PLAYLISTS && isSyncingRemotePlaylists)
-                    || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
-                    || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
-                    || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
-                }
+                    (filter == LibraryFilter.PLAYLISTS && isSyncingRemotePlaylists) ||
+                        (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums) ||
+                        (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists) ||
+                        (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
+                },
             )
 
             if (filter != LibraryFilter.SONGS) {
@@ -223,15 +239,15 @@ fun LibraryScreen(
                     onClick = {
                         viewType = viewType.toggle()
                     },
-                    modifier = Modifier.padding(end = 6.dp)
+                    modifier = Modifier.padding(end = 6.dp),
                 ) {
                     Icon(
                         imageVector =
-                        when (viewType) {
-                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                            LibraryViewType.GRID -> Icons.Rounded.GridView
-                        },
-                        contentDescription = null
+                            when (viewType) {
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                            },
+                        contentDescription = null,
                     )
                 }
             }
@@ -250,7 +266,7 @@ fun LibraryScreen(
                     LibrarySortType.NAME -> R.string.sort_by_name
                 }
             },
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier.padding(start = 16.dp),
         )
     }
 
@@ -272,37 +288,37 @@ fun LibraryScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         when (filter) {
             LibraryFilter.ALBUMS ->
                 LibraryAlbumsScreen(
                     navController,
-                    libraryFilterContent = filterContent
+                    libraryFilterContent = filterContent,
                 )
 
             LibraryFilter.ARTISTS ->
                 LibraryArtistsScreen(
                     navController,
-                    libraryFilterContent = filterContent
+                    libraryFilterContent = filterContent,
                 )
 
             LibraryFilter.PLAYLISTS ->
                 LibraryPlaylistsScreen(
                     navController,
-                    libraryFilterContent = filterContent
+                    libraryFilterContent = filterContent,
                 )
 
             LibraryFilter.SONGS ->
                 LibrarySongsScreen(
                     navController,
-                    libraryFilterContent = filterContent
+                    libraryFilterContent = filterContent,
                 )
 
             LibraryFilter.FOLDERS ->
                 LibraryFoldersScreen(
                     navController,
-                    filterContent = filterContent
+                    filterContent = filterContent,
                 )
 
             LibraryFilter.ALL ->
@@ -310,18 +326,18 @@ fun LibraryScreen(
                     LibraryViewType.LIST -> {
                         LazyColumn(
                             state = lazyListState,
-                            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                         ) {
                             item(
                                 key = "filter",
-                                contentType = CONTENT_TYPE_HEADER
+                                contentType = CONTENT_TYPE_HEADER,
                             ) {
                                 filterContent()
                             }
 
                             item(
                                 key = "header",
-                                contentType = CONTENT_TYPE_HEADER
+                                contentType = CONTENT_TYPE_HEADER,
                             ) {
                                 headerContent()
                             }
@@ -329,33 +345,33 @@ fun LibraryScreen(
                             if (showLikedAndDownloadedPlaylist) {
                                 item(
                                     key = likedPlaylist.id,
-                                    contentType = { CONTENT_TYPE_PLAYLIST }
+                                    contentType = { CONTENT_TYPE_PLAYLIST },
                                 ) {
                                     AutoPlaylistListItem(
                                         playlist = likedPlaylist,
                                         thumbnail = Icons.Rounded.Favorite,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate("auto_playlist/${likedPlaylist.id}")
-                                            }
-                                            .animateItemPlacement()
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    navController.navigate("auto_playlist/${likedPlaylist.id}")
+                                                }.animateItemPlacement(),
                                     )
                                 }
 
                                 item(
                                     key = downloadedPlaylist.id,
-                                    contentType = { CONTENT_TYPE_PLAYLIST }
+                                    contentType = { CONTENT_TYPE_PLAYLIST },
                                 ) {
                                     AutoPlaylistListItem(
                                         playlist = downloadedPlaylist,
                                         thumbnail = Icons.Rounded.CloudDownload,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate("auto_playlist/${downloadedPlaylist.id}")
-                                            }
-                                            .animateItemPlacement()
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    navController.navigate("auto_playlist/${downloadedPlaylist.id}")
+                                                }.animateItemPlacement(),
                                     )
                                 }
                             }
@@ -363,7 +379,7 @@ fun LibraryScreen(
                             items(
                                 items = allItems,
                                 key = { it.id },
-                                contentType = { CONTENT_TYPE_LIST }
+                                contentType = { CONTENT_TYPE_LIST },
                             ) { item ->
                                 when (item) {
                                     is Album -> {
@@ -373,7 +389,7 @@ fun LibraryScreen(
                                             album = item,
                                             isActive = item.id == mediaMetadata?.album?.id,
                                             isPlaying = isPlaying,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItemPlacement(),
                                         )
                                     }
 
@@ -383,7 +399,7 @@ fun LibraryScreen(
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
                                             modifier = Modifier.animateItemPlacement(),
-                                            artist = item
+                                            artist = item,
                                         )
                                     }
 
@@ -393,7 +409,7 @@ fun LibraryScreen(
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
                                             playlist = item,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItemPlacement(),
                                         )
                                     }
 
@@ -407,12 +423,12 @@ fun LibraryScreen(
                         LazyVerticalGrid(
                             state = lazyGridState,
                             columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-                            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                         ) {
                             item(
                                 key = "filter",
                                 span = { GridItemSpan(maxLineSpan) },
-                                contentType = CONTENT_TYPE_HEADER
+                                contentType = CONTENT_TYPE_HEADER,
                             ) {
                                 filterContent()
                             }
@@ -420,7 +436,7 @@ fun LibraryScreen(
                             item(
                                 key = "header",
                                 span = { GridItemSpan(maxLineSpan) },
-                                contentType = CONTENT_TYPE_HEADER
+                                contentType = CONTENT_TYPE_HEADER,
                             ) {
                                 headerContent()
                             }
@@ -428,35 +444,35 @@ fun LibraryScreen(
                             if (showLikedAndDownloadedPlaylist) {
                                 item(
                                     key = likedPlaylist.id,
-                                    contentType = { CONTENT_TYPE_PLAYLIST }
+                                    contentType = { CONTENT_TYPE_PLAYLIST },
                                 ) {
                                     AutoPlaylistGridItem(
                                         playlist = likedPlaylist,
                                         thumbnail = Icons.Rounded.Favorite,
                                         fillMaxWidth = true,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate("auto_playlist/${likedPlaylist.id}")
-                                            }
-                                            .animateItemPlacement()
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    navController.navigate("auto_playlist/${likedPlaylist.id}")
+                                                }.animateItemPlacement(),
                                     )
                                 }
 
                                 item(
                                     key = downloadedPlaylist.id,
-                                    contentType = { CONTENT_TYPE_PLAYLIST }
+                                    contentType = { CONTENT_TYPE_PLAYLIST },
                                 ) {
                                     AutoPlaylistGridItem(
                                         playlist = downloadedPlaylist,
                                         thumbnail = Icons.Rounded.CloudDownload,
                                         fillMaxWidth = true,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                navController.navigate("auto_playlist/${downloadedPlaylist.id}")
-                                            }
-                                            .animateItemPlacement()
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    navController.navigate("auto_playlist/${downloadedPlaylist.id}")
+                                                }.animateItemPlacement(),
                                     )
                                 }
                             }
@@ -464,7 +480,7 @@ fun LibraryScreen(
                             items(
                                 items = allItems,
                                 key = { it.id },
-                                contentType = { CONTENT_TYPE_LIST }
+                                contentType = { CONTENT_TYPE_LIST },
                             ) { item ->
                                 when (item) {
                                     is Album -> {
@@ -475,7 +491,7 @@ fun LibraryScreen(
                                             album = item,
                                             isActive = item.id == mediaMetadata?.album?.id,
                                             isPlaying = isPlaying,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItemPlacement(),
                                         )
                                     }
 
@@ -485,7 +501,7 @@ fun LibraryScreen(
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
                                             modifier = Modifier.animateItemPlacement(),
-                                            artist = item
+                                            artist = item,
                                         )
                                     }
 
@@ -495,7 +511,7 @@ fun LibraryScreen(
                                             menuState = menuState,
                                             coroutineScope = coroutineScope,
                                             playlist = item,
-                                            modifier = Modifier.animateItemPlacement()
+                                            modifier = Modifier.animateItemPlacement(),
                                         )
                                     }
 

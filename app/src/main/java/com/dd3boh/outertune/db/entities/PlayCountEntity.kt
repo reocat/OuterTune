@@ -6,7 +6,7 @@ import androidx.room.Entity
 @Immutable
 @Entity(
     tableName = "playCount",
-    primaryKeys = ["song", "year", "month"]
+    primaryKeys = ["song", "year", "month"],
 )
 class PlayCountEntity(
     val song: String, // song id

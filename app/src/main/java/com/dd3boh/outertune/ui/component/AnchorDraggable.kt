@@ -54,14 +54,14 @@ fun DraggableItem(
     state: AnchoredDraggableState<DragAnchors>,
     content: @Composable BoxScope.() -> Unit,
     startAction: @Composable (BoxScope.() -> Unit)? = {},
-    endAction: @Composable (BoxScope.() -> Unit)? = {}
+    endAction: @Composable (BoxScope.() -> Unit)? = {},
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RectangleShape)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RectangleShape),
     ) {
-
         endAction?.let {
             endAction()
         }
@@ -70,47 +70,49 @@ fun DraggableItem(
             startAction()
         }
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterStart)
-                .offset {
-                    IntOffset(
-                        x = -state
-                            .requireOffset()
-                            .roundToInt(),
-                        y = 0,
-                    )
-                }
-                .anchoredDraggable(state, Orientation.Horizontal, reverseDirection = true),
-            content = content
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterStart)
+                    .offset {
+                        IntOffset(
+                            x =
+                                -state
+                                    .requireOffset()
+                                    .roundToInt(),
+                            y = 0,
+                        )
+                    }.anchoredDraggable(state, Orientation.Horizontal, reverseDirection = true),
+            content = content,
         )
 
         LaunchedEffect(state.isAnimationRunning) {
-            if (state.isAnimationRunning)
+            if (state.isAnimationRunning) {
                 state.animateTo(DragAnchors.Center)
+            }
         }
     }
 }
-
 
 @Composable
 fun AddToQueueAction(modifier: Modifier) {
     Box(
         modifier = modifier.background(MaterialTheme.colorScheme.primary),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
-                modifier = Modifier
-                    .padding(vertical = 5.dp)
-                    .padding(horizontal = 20.dp)
-                    .size(50.dp),
+                modifier =
+                    Modifier
+                        .padding(vertical = 5.dp)
+                        .padding(horizontal = 20.dp)
+                        .size(50.dp),
                 imageVector = Icons.AutoMirrored.Rounded.PlaylistPlay,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = MaterialTheme.colorScheme.onPrimary,
             )
         }
     }
@@ -121,7 +123,7 @@ fun AddToQueueAction(modifier: Modifier) {
 fun SwipeToQueueBox(
     item: MediaItem,
     content: @Composable BoxScope.() -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
 ) {
     val context = LocalContext.current
     val playerConnection = LocalPlayerConnection.current
@@ -132,46 +134,49 @@ fun SwipeToQueueBox(
     val density = LocalDensity.current
     var addedToQueue = false
 
-    val state = remember {
-        AnchoredDraggableState(
-            initialValue = DragAnchors.Center,
-            anchors = DraggableAnchors {
-                DragAnchors.Start at -with(density) { 150.dp.toPx() }
-                DragAnchors.Center at 0f
-            },
-            positionalThreshold = { distance -> distance * 0.7f },
-            velocityThreshold = { with(density) { 10000.dp.toPx() } },
-            animationSpec = tween(),
-            confirmValueChange = { dragValue ->
-                if (dragValue == DragAnchors.Start && !addedToQueue) {
-                    addedToQueue = true
-                    playerConnection?.playNext((item))
+    val state =
+        remember {
+            AnchoredDraggableState(
+                initialValue = DragAnchors.Center,
+                anchors =
+                    DraggableAnchors {
+                        DragAnchors.Start at -with(density) { 150.dp.toPx() }
+                        DragAnchors.Center at 0f
+                    },
+                positionalThreshold = { distance -> distance * 0.7f },
+                velocityThreshold = { with(density) { 10000.dp.toPx() } },
+                animationSpec = tween(),
+                confirmValueChange = { dragValue ->
+                    if (dragValue == DragAnchors.Start && !addedToQueue) {
+                        addedToQueue = true
+                        playerConnection?.playNext((item))
 
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = context.getString(R.string.song_added_to_queue, item.mediaMetadata.title),
-                            duration = SnackbarDuration.Short
-                        )
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = context.getString(R.string.song_added_to_queue, item.mediaMetadata.title),
+                                duration = SnackbarDuration.Short,
+                            )
+                        }
+                    } else if (dragValue == DragAnchors.Center && addedToQueue) {
+                        addedToQueue = false
                     }
-                } else if (dragValue == DragAnchors.Center && addedToQueue)
-                    addedToQueue = false
 
-                true
-            }
-        )
-    }
+                    true
+                },
+            )
+        }
 
     DraggableItem(
         state = state,
         content = {
             content()
         },
-
         startAction = {
             Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .align(Alignment.CenterStart),
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .align(Alignment.CenterStart),
             ) {
                 AddToQueueAction(
                     Modifier
@@ -179,11 +184,15 @@ fun SwipeToQueueBox(
                         .fillMaxHeight()
                         .offset {
                             IntOffset(
-                                ((-state
-                                    .requireOffset() - defaultActionSize.toPx()))
-                                    .roundToInt(), 0
+                                (
+                                    (
+                                        -state
+                                            .requireOffset() - defaultActionSize.toPx()
+                                    )
+                                ).roundToInt(),
+                                0,
                             )
-                        }
+                        },
                 )
             }
         },

@@ -7,21 +7,27 @@ const val MAX_IMAGE_CACHE = 300 // max cached images to hold
 /**
  * Cached image
  */
-data class CachedBitmap(var path: String?, var image: Bitmap?, var resizedImage: Bitmap?)
+data class CachedBitmap(
+    var path: String?,
+    var image: Bitmap?,
+    var resizedImage: Bitmap?,
+)
 
 var bitmapCache = ArrayDeque<CachedBitmap>()
 
 /**
  * Retrieves an image from the cache
  */
-fun retrieveImage(path: String): CachedBitmap? {
-    return bitmapCache.firstOrNull { it.path == path }
-}
+fun retrieveImage(path: String): CachedBitmap? = bitmapCache.firstOrNull { it.path == path }
 
 /**
  * Adds an image to the cache
  */
-fun cache(path: String, image: Bitmap?, resize: Boolean) {
+fun cache(
+    path: String,
+    image: Bitmap?,
+    resize: Boolean,
+) {
     if (image == null) {
         return
     }

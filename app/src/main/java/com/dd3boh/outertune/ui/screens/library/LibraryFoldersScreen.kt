@@ -89,7 +89,9 @@ import java.util.Stack
 fun LibraryFoldersScreen(
     navController: NavController,
     viewModel: LibrarySongsViewModel = hiltViewModel(),
-    filterContent: @Composable() (() -> Unit)? = null
+    filterContent:
+        @Composable()
+        (() -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
     val menuState = LocalMenuState.current
@@ -125,8 +127,11 @@ fun LibraryFoldersScreen(
         viewModel.getLocalSongs(database)
 
         folderStack.push(
-            if (flatSubfolders) viewModel.localSongDirectoryTree.value.toFlattenedTree()
-            else viewModel.localSongDirectoryTree.value
+            if (flatSubfolders) {
+                viewModel.localSongDirectoryTree.value.toFlattenedTree()
+            } else {
+                viewModel.localSongDirectoryTree.value
+            },
         )
     }
 
@@ -138,18 +143,21 @@ fun LibraryFoldersScreen(
         mutableStateOf(folderStack.peek())
     }
 
-    val mutableSongs = remember {
-        mutableStateListOf<Song>()
-    }
+    val mutableSongs =
+        remember {
+            mutableStateListOf<Song>()
+        }
 
     // multiselect
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<String>, String>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<String>, String>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -174,7 +182,10 @@ fun LibraryFoldersScreen(
         // sort songs
         tempList.sortBy {
             when (sortType) {
-                SongSortType.CREATE_DATE -> it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC).toString()
+                SongSortType.CREATE_DATE ->
+                    it.song.inLibrary
+                        ?.toEpochSecond(ZoneOffset.UTC)
+                        .toString()
                 SongSortType.MODIFIED_DATE -> it.song.getDateModifiedLong().toString()
                 SongSortType.RELEASE_DATE -> it.song.getDateLong().toString()
                 SongSortType.NAME -> it.song.title.lowercase()
@@ -200,18 +211,18 @@ fun LibraryFoldersScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
         ) {
             item(
                 key = "header",
-                contentType = CONTENT_TYPE_HEADER
+                contentType = CONTENT_TYPE_HEADER,
             ) {
                 Column(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
                 ) {
                     filterContent?.let {
                         it()
@@ -219,13 +230,15 @@ fun LibraryFoldersScreen(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp),
                     ) {
                         if (inSelectMode) {
                             SelectHeader(
-                                selectedItems = selection.mapNotNull { songId ->
-                                    mutableSongs.find { it.id == songId }
-                                }.map { it.toMediaMetadata()},
+                                selectedItems =
+                                    selection
+                                        .mapNotNull { songId ->
+                                            mutableSongs.find { it.id == songId }
+                                        }.map { it.toMediaMetadata() },
                                 totalItemCount = mutableSongs.size,
                                 onSelectAll = {
                                     selection.clear()
@@ -233,7 +246,7 @@ fun LibraryFoldersScreen(
                                 },
                                 onDeselectAll = { selection.clear() },
                                 menuState = menuState,
-                                onDismiss = onExitSelectionMode
+                                onDismiss = onExitSelectionMode,
                             )
                         } else {
                             SortHeader(
@@ -250,57 +263,62 @@ fun LibraryFoldersScreen(
                                         SongSortType.ARTIST -> R.string.sort_by_artist
                                         SongSortType.PLAY_TIME -> R.string.sort_by_play_time
                                     }
-                                }
+                                },
                             )
 
                             Spacer(Modifier.weight(1f))
 
                             Text(
-                                text = pluralStringResource(
-                                    R.plurals.n_song, currDir.toList().size, currDir.toList().size
-                                ),
+                                text =
+                                    pluralStringResource(
+                                        R.plurals.n_song,
+                                        currDir.toList().size,
+                                        currDir.toList().size,
+                                    ),
                                 style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.secondary,
                             )
                         }
                     }
                 }
             }
-            if (folderStack.size > 1)
+            if (folderStack.size > 1) {
                 item(
                     key = "previous",
-                    contentType = CONTENT_TYPE_FOLDER
+                    contentType = CONTENT_TYPE_FOLDER,
                 ) {
                     SongFolderItem(
                         folderTitle = "..",
                         subtitle = "Previous folder",
-                        modifier = Modifier
-                            .clickable {
-                                if (folderStack.size > 1) {
-                                    folderStack.pop()
-                                    currDir = folderStack.peek()
-                                }
-                            }
+                        modifier =
+                            Modifier
+                                .clickable {
+                                    if (folderStack.size > 1) {
+                                        folderStack.pop()
+                                        currDir = folderStack.peek()
+                                    }
+                                },
                     )
                 }
+            }
 
             // all subdirectories listed here
             itemsIndexed(
                 items = currDir.subdirs,
                 key = { _, item -> item.uid },
-                contentType = { _, _ -> CONTENT_TYPE_FOLDER }
+                contentType = { _, _ -> CONTENT_TYPE_FOLDER },
             ) { index, folder ->
                 SongFolderItem(
                     folder = folder,
                     subtitle = "${folder.toList().size} Song${if (folder.toList().size > 1) "" else "s"}",
-                    modifier = Modifier
-                        .combinedClickable {
-                            // navigate to next page
-                            currDir = folderStack.push(folder)
-                        }
-                        .animateItemPlacement(),
+                    modifier =
+                        Modifier
+                            .combinedClickable {
+                                // navigate to next page
+                                currDir = folderStack.push(folder)
+                            }.animateItemPlacement(),
                     menuState = menuState,
-                    navController = navController
+                    navController = navController,
                 )
             }
 
@@ -311,7 +329,7 @@ fun LibraryFoldersScreen(
                 ) {
                     HorizontalDivider(
                         thickness = DividerDefaults.Thickness,
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier.padding(20.dp),
                     )
                 }
             }
@@ -320,7 +338,7 @@ fun LibraryFoldersScreen(
             itemsIndexed(
                 items = mutableSongs,
                 key = { _, item -> item.id },
-                contentType = { _, _ -> CONTENT_TYPE_SONG }
+                contentType = { _, _ -> CONTENT_TYPE_SONG },
             ) { index, song ->
                 val onCheckedChange: (Boolean) -> Unit = {
                     if (it) {
@@ -341,7 +359,7 @@ fun LibraryFoldersScreen(
                                 if (inSelectMode) {
                                     Checkbox(
                                         checked = song.id in selection,
-                                        onCheckedChange = onCheckedChange
+                                        onCheckedChange = onCheckedChange,
                                     )
                                 } else {
                                     IconButton(
@@ -350,50 +368,50 @@ fun LibraryFoldersScreen(
                                                 SongMenu(
                                                     originalSong = song,
                                                     navController = navController,
-                                                    onDismiss = menuState::dismiss
+                                                    onDismiss = menuState::dismiss,
                                                 )
                                             }
-                                        }
+                                        },
                                     ) {
                                         Icon(
                                             Icons.Rounded.MoreVert,
-                                            contentDescription = null
+                                            contentDescription = null,
                                         )
                                     }
                                 }
                             },
                             isSelected = inSelectMode && song.id in selection,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = {
-                                        if (inSelectMode) {
-                                            onCheckedChange(song.id !in selection)
-                                        } else if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            println()
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = currDir.currentDir,
-                                                    items = mutableSongs.map { it.toMediaMetadata() },
-                                                    startIndex = mutableSongs.indexOf(song)
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (inSelectMode) {
+                                                onCheckedChange(song.id !in selection)
+                                            } else if (song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else {
+                                                println()
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = currDir.currentDir,
+                                                        items = mutableSongs.map { it.toMediaMetadata() },
+                                                        startIndex = mutableSongs.indexOf(song),
+                                                    ),
                                                 )
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        if (!inSelectMode) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            inSelectMode = true
-                                            onCheckedChange(true)
-                                        }
-                                    }
-                                )
-                                .animateItemPlacement()
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!inSelectMode) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                inSelectMode = true
+                                                onCheckedChange(true)
+                                            }
+                                        },
+                                    ).animateItemPlacement(),
                         )
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
                 )
             }
         }
@@ -406,17 +424,18 @@ fun LibraryFoldersScreen(
                 playerConnection.playQueue(
                     ListQueue(
                         title = currDir.currentDir,
-                        items = currDir.toSortedList(sortType, sortDescending).shuffled().map { it.toMediaMetadata() }
-                    )
+                        items = currDir.toSortedList(sortType, sortDescending).shuffled().map { it.toMediaMetadata() },
+                    ),
                 )
-            }
+            },
         )
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 }

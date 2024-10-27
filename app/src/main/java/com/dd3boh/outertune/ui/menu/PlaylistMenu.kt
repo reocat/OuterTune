@@ -97,16 +97,18 @@ fun PlaylistMenu(
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED }) {
                     Download.STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.id]?.state == Download.STATE_COMPLETED
-                    })
+                } else if (songs.all {
+                        downloads[it.id]?.state == Download.STATE_QUEUED ||
+                            downloads[it.id]?.state == Download.STATE_DOWNLOADING ||
+                            downloads[it.id]?.state == Download.STATE_COMPLETED
+                    }
+                ) {
                     Download.STATE_DOWNLOADING
-                else
+                } else {
                     Download.STATE_STOPPED
+                }
         }
     }
 
@@ -119,10 +121,11 @@ fun PlaylistMenu(
             icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
             title = { Text(text = stringResource(R.string.edit_playlist)) },
             onDismiss = { showEditDialog = false },
-            initialTextFieldValue = TextFieldValue(
-                playlist.playlist.name,
-                TextRange(playlist.playlist.name.length)
-            ),
+            initialTextFieldValue =
+                TextFieldValue(
+                    playlist.playlist.name,
+                    TextRange(playlist.playlist.name.length),
+                ),
             onDone = { name ->
                 onDismiss()
                 database.query {
@@ -132,7 +135,7 @@ fun PlaylistMenu(
                 coroutineScope.launch(Dispatchers.IO) {
                     playlist.playlist.browseId?.let { YouTube.renamePlaylist(it, name) }
                 }
-            }
+            },
         )
     }
 
@@ -147,14 +150,14 @@ fun PlaylistMenu(
                 Text(
                     text = stringResource(R.string.remove_download_playlist_confirm, playlist.playlist.name),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
                     onClick = {
                         showRemoveDownloadDialog = false
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -167,14 +170,14 @@ fun PlaylistMenu(
                                 context,
                                 ExoDownloadService::class.java,
                                 song.song.id,
-                                false
+                                false,
                             )
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
@@ -189,14 +192,14 @@ fun PlaylistMenu(
                 Text(
                     text = stringResource(R.string.delete_playlist_confirm, playlist.playlist.name),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
                     onClick = {
                         showDeletePlaylistDialog = false
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -212,11 +215,11 @@ fun PlaylistMenu(
                         coroutineScope.launch(Dispatchers.IO) {
                             playlist.playlist.browseId?.let { YouTube.deletePlaylist(it) }
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
@@ -227,13 +230,18 @@ fun PlaylistMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, songs.map { it.toMediaMetadata() }, playerConnection,
-                forceInsert = true, delta = false)
+            queueBoard.add(
+                queueName,
+                songs.map { it.toMediaMetadata() },
+                playerConnection,
+                forceInsert = true,
+                delta = false,
+            )
             queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
             showChooseQueueDialog = false
-        }
+        },
     )
 
     var showChoosePlaylistDialog by rememberSaveable {
@@ -253,7 +261,7 @@ fun PlaylistMenu(
             }
             songs.map { it.id }
         },
-        onDismiss = { showChoosePlaylistDialog = false }
+        onDismiss = { showChoosePlaylistDialog = false },
     )
 
     PlaylistListItem(
@@ -265,62 +273,87 @@ fun PlaylistMenu(
                         database.query {
                             dbPlaylist?.playlist?.toggleLike()?.let { update(it) }
                         }
-                    }
+                    },
                 ) {
                     Icon(
-                        painter = painterResource(if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
-                        tint = if (dbPlaylist?.playlist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                        contentDescription = null
+                        painter =
+                            painterResource(
+                                if (dbPlaylist?.playlist?.bookmarkedAt !=
+                                    null
+                                ) {
+                                    R.drawable.favorite
+                                } else {
+                                    R.drawable.favorite_border
+                                },
+                            ),
+                        tint =
+                            if (dbPlaylist?.playlist?.bookmarkedAt !=
+                                null
+                            ) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                LocalContentColor.current
+                            },
+                        contentDescription = null,
                     )
                 }
             }
-        }
+        },
     )
 
     HorizontalDivider()
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         GridMenuItem(
             icon = Icons.Rounded.PlayArrow,
-            title = R.string.play
+            title = R.string.play,
         ) {
             onDismiss()
-            playerConnection.playQueue(ListQueue(
-                title = playlist.playlist.name,
-                items = songs.map { it.toMediaMetadata()},
-                playlistId = playlist.playlist.browseId
-            ))
+            playerConnection.playQueue(
+                ListQueue(
+                    title = playlist.playlist.name,
+                    items = songs.map { it.toMediaMetadata() },
+                    playlistId = playlist.playlist.browseId,
+                ),
+            )
         }
 
         GridMenuItem(
             icon = Icons.Rounded.Shuffle,
-            title = R.string.shuffle
+            title = R.string.shuffle,
         ) {
             onDismiss()
-            playerConnection.playQueue(ListQueue(
-                title = playlist.playlist.name,
-                items = songs.shuffled().map { it.toMediaMetadata() },
-                playlistId = playlist.playlist.browseId
-            ))
+            playerConnection.playQueue(
+                ListQueue(
+                    title = playlist.playlist.name,
+                    items = songs.shuffled().map { it.toMediaMetadata() },
+                    playlistId = playlist.playlist.browseId,
+                ),
+            )
         }
 
         playlist.playlist.browseId?.let { browseId ->
             playlist.playlist.radioEndpointParams?.let { radioEndpointParams ->
                 GridMenuItem(
                     icon = Icons.Rounded.Radio,
-                    title = R.string.start_radio
+                    title = R.string.start_radio,
                 ) {
-                    playerConnection.playQueue(YouTubeQueue(WatchEndpoint(
-                        playlistId = "RDAMPL$browseId",
-                        params = radioEndpointParams,
-                    )))
+                    playerConnection.playQueue(
+                        YouTubeQueue(
+                            WatchEndpoint(
+                                playlistId = "RDAMPL$browseId",
+                                params = radioEndpointParams,
+                            ),
+                        ),
+                    )
                     onDismiss()
                 }
             }
@@ -328,7 +361,7 @@ fun PlaylistMenu(
 
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
-            title = R.string.play_next
+            title = R.string.play_next,
         ) {
             coroutineScope.launch {
                 playerConnection.playNext(songs.map { it.toMediaItem() })
@@ -338,14 +371,14 @@ fun PlaylistMenu(
 
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
 
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }
@@ -353,25 +386,25 @@ fun PlaylistMenu(
         DownloadGridMenu(
             state = downloadState,
             onDownload = {
-                val _songs = songs.filterNot { it.song.isLocal }.map{ it.toMediaMetadata() }
+                val _songs = songs.filterNot { it.song.isLocal }.map { it.toMediaMetadata() }
                 downloadUtil.download(_songs, context)
             },
             onRemoveDownload = {
                 showRemoveDownloadDialog = true
-            }
+            },
         )
 
         if (editable) {
             GridMenuItem(
                 icon = Icons.Rounded.Edit,
-                title = R.string.edit
+                title = R.string.edit,
             ) {
                 showEditDialog = true
             }
 
             GridMenuItem(
                 icon = Icons.Rounded.PlaylistRemove,
-                title = R.string.delete
+                title = R.string.delete,
             ) {
                 showDeletePlaylistDialog = true
             }
@@ -380,13 +413,14 @@ fun PlaylistMenu(
         playlist.playlist.shareLink?.let { shareLink ->
             GridMenuItem(
                 icon = Icons.Rounded.Share,
-                title = R.string.share
+                title = R.string.share,
             ) {
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, shareLink)
-                }
+                val intent =
+                    Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, shareLink)
+                    }
                 context.startActivity(Intent.createChooser(intent, null))
                 onDismiss()
             }

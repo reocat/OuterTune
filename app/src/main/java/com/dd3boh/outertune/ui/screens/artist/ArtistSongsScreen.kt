@@ -106,12 +106,14 @@ fun ArtistSongsScreen(
     val lazyListState = rememberLazyListState()
 
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<String>, String>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<String>, String>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -123,25 +125,27 @@ fun ArtistSongsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
         ) {
             item(
                 key = "header",
-                contentType = CONTENT_TYPE_HEADER
+                contentType = CONTENT_TYPE_HEADER,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
                     if (inSelectMode) {
                         SelectHeader(
-                            selectedItems = selection.mapNotNull { songId ->
-                                songs.find { it.id == songId }
-                            }.map { it.toMediaMetadata()},
+                            selectedItems =
+                                selection
+                                    .mapNotNull { songId ->
+                                        songs.find { it.id == songId }
+                                    }.map { it.toMediaMetadata() },
                             totalItemCount = songs.size,
                             onSelectAll = {
                                 selection.clear()
@@ -149,7 +153,7 @@ fun ArtistSongsScreen(
                             },
                             onDeselectAll = { selection.clear() },
                             menuState = menuState,
-                            onDismiss = onExitSelectionMode
+                            onDismiss = onExitSelectionMode,
                         )
                     } else {
                         SortHeader(
@@ -163,7 +167,7 @@ fun ArtistSongsScreen(
                                     ArtistSongSortType.NAME -> R.string.sort_by_name
                                     ArtistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
                                 }
-                            }
+                            },
                         )
                     }
 
@@ -172,14 +176,14 @@ fun ArtistSongsScreen(
                     Text(
                         text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             }
 
             itemsIndexed(
                 items = songs,
-                key = { _, item -> item.id }
+                key = { _, item -> item.id },
             ) { index, song ->
                 val onCheckedChange: (Boolean) -> Unit = {
                     if (it) {
@@ -200,7 +204,7 @@ fun ArtistSongsScreen(
                                 if (inSelectMode) {
                                     Checkbox(
                                         checked = song.id in selection,
-                                        onCheckedChange = onCheckedChange
+                                        onCheckedChange = onCheckedChange,
                                     )
                                 } else {
                                     IconButton(
@@ -209,57 +213,62 @@ fun ArtistSongsScreen(
                                                 SongMenu(
                                                     originalSong = song,
                                                     navController = navController,
-                                                    onDismiss = menuState::dismiss
+                                                    onDismiss = menuState::dismiss,
                                                 )
                                             }
-                                        }
+                                        },
                                     ) {
                                         Icon(
                                             Icons.Rounded.MoreVert,
-                                            contentDescription = null
+                                            contentDescription = null,
                                         )
                                     }
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = {
-                                        if (inSelectMode) {
-                                            onCheckedChange(song.id !in selection)
-                                        } else if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            viewModel.viewModelScope.launch(Dispatchers.IO) {
-                                                val playlistId = YouTube.artist(artist?.id!!).getOrNull()
-                                                    ?.artist?.shuffleEndpoint?.playlistId
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (inSelectMode) {
+                                                onCheckedChange(song.id !in selection)
+                                            } else if (song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else {
+                                                viewModel.viewModelScope.launch(Dispatchers.IO) {
+                                                    val playlistId =
+                                                        YouTube
+                                                            .artist(artist?.id!!)
+                                                            .getOrNull()
+                                                            ?.artist
+                                                            ?.shuffleEndpoint
+                                                            ?.playlistId
 
-                                                // for some reason this get called on the wrong thread and crashes, use main
-                                                CoroutineScope(Dispatchers.Main).launch {
-                                                    playerConnection.playQueue(
-                                                        ListQueue(
-                                                            title = artist?.artist?.name,
-                                                            items = songs.map { it.toMediaMetadata() },
-                                                            startIndex = index,
-                                                            playlistId = playlistId
+                                                    // for some reason this get called on the wrong thread and crashes, use main
+                                                    CoroutineScope(Dispatchers.Main).launch {
+                                                        playerConnection.playQueue(
+                                                            ListQueue(
+                                                                title = artist?.artist?.name,
+                                                                items = songs.map { it.toMediaMetadata() },
+                                                                startIndex = index,
+                                                                playlistId = playlistId,
+                                                            ),
                                                         )
-                                                    )
+                                                    }
                                                 }
                                             }
-                                        }
-                                    },
-                                    onLongClick = {
-                                        if (!inSelectMode) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            inSelectMode = true
-                                            onCheckedChange(true)
-                                        }
-                                    }
-                                )
-                                .animateItemPlacement()
+                                        },
+                                        onLongClick = {
+                                            if (!inSelectMode) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                inSelectMode = true
+                                                onCheckedChange(true)
+                                            }
+                                        },
+                                    ).animateItemPlacement(),
                         )
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
                 )
             }
         }
@@ -269,15 +278,15 @@ fun ArtistSongsScreen(
             navigationIcon = {
                 IconButton(
                     onClick = navController::navigateUp,
-                    onLongClick = navController::backToMain
+                    onLongClick = navController::backToMain,
                 ) {
                     Icon(
                         Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
             },
-            scrollBehavior = scrollBehavior
+            scrollBehavior = scrollBehavior,
         )
 
         HideOnScrollFAB(
@@ -289,16 +298,17 @@ fun ArtistSongsScreen(
                         title = artist?.artist?.name,
                         items = songs.shuffled().map { it.toMediaMetadata() },
                         playlistId = null,
-                    )
+                    ),
                 )
-            }
+            },
         )
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 }

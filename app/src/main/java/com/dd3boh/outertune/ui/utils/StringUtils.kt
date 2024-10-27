@@ -33,9 +33,12 @@ fun formatFileSize(sizeBytes: Long): String {
 }
 
 @Composable
-fun getNSongsString(songCount :Int, downloadCount: Int = 0): String {
-    return if (downloadCount > 0)
+fun getNSongsString(
+    songCount: Int,
+    downloadCount: Int = 0,
+): String =
+    if (downloadCount > 0) {
         "$downloadCount / " + pluralStringResource(R.plurals.n_song, songCount, songCount)
-    else
+    } else {
         pluralStringResource(R.plurals.n_song, songCount, songCount)
-}
+    }

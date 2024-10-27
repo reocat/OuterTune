@@ -110,103 +110,113 @@ fun OnlineSearchResult(
         val content: @Composable () -> Unit = {
             YouTubeListItem(
                 item = item,
-                isActive = when (item) {
-                    is SongItem -> mediaMetadata?.id == item.id
-                    is AlbumItem -> mediaMetadata?.album?.id == item.id
-                    else -> false
-                },
+                isActive =
+                    when (item) {
+                        is SongItem -> mediaMetadata?.id == item.id
+                        is AlbumItem -> mediaMetadata?.album?.id == item.id
+                        else -> false
+                    },
                 isPlaying = isPlaying,
                 trailingContent = {
                     IconButton(
                         onClick = {
                             menuState.show {
                                 when (item) {
-                                    is SongItem -> YouTubeSongMenu(
-                                        song = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss
-                                    )
+                                    is SongItem ->
+                                        YouTubeSongMenu(
+                                            song = item,
+                                            navController = navController,
+                                            onDismiss = menuState::dismiss,
+                                        )
 
-                                    is AlbumItem -> YouTubeAlbumMenu(
-                                        albumItem = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss
-                                    )
+                                    is AlbumItem ->
+                                        YouTubeAlbumMenu(
+                                            albumItem = item,
+                                            navController = navController,
+                                            onDismiss = menuState::dismiss,
+                                        )
 
-                                    is ArtistItem -> YouTubeArtistMenu(
-                                        artist = item,
-                                        onDismiss = menuState::dismiss
-                                    )
+                                    is ArtistItem ->
+                                        YouTubeArtistMenu(
+                                            artist = item,
+                                            onDismiss = menuState::dismiss,
+                                        )
 
-                                    is PlaylistItem -> YouTubePlaylistMenu(
-                                        playlist = item,
-                                        coroutineScope = coroutineScope,
-                                        onDismiss = menuState::dismiss
-                                    )
+                                    is PlaylistItem ->
+                                        YouTubePlaylistMenu(
+                                            playlist = item,
+                                            coroutineScope = coroutineScope,
+                                            onDismiss = menuState::dismiss,
+                                        )
                                 }
                             }
-                        }
+                        },
                     ) {
                         Icon(
                             Icons.Rounded.MoreVert,
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     }
                 },
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = {
-                            when (item) {
-                                is SongItem -> {
-                                    if (item.id == mediaMetadata?.id) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else {
-                                        playerConnection.playQueue(
-                                            YouTubeQueue(
-                                                WatchEndpoint(videoId = item.id),
-                                                item.toMediaMetadata()
-                                            ),
-                                            replace = true,
-                                        )
+                modifier =
+                    Modifier
+                        .combinedClickable(
+                            onClick = {
+                                when (item) {
+                                    is SongItem -> {
+                                        if (item.id == mediaMetadata?.id) {
+                                            playerConnection.player.togglePlayPause()
+                                        } else {
+                                            playerConnection.playQueue(
+                                                YouTubeQueue(
+                                                    WatchEndpoint(videoId = item.id),
+                                                    item.toMediaMetadata(),
+                                                ),
+                                                replace = true,
+                                            )
+                                        }
+                                    }
+
+                                    is AlbumItem -> navController.navigate("album/${item.id}")
+                                    is ArtistItem -> navController.navigate("artist/${item.id}")
+                                    is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
+                                }
+                            },
+                            onLongClick = {
+                                menuState.show {
+                                    when (item) {
+                                        is SongItem ->
+                                            YouTubeSongMenu(
+                                                song = item,
+                                                navController = navController,
+                                                onDismiss = menuState::dismiss,
+                                            )
+
+                                        else -> {}
                                     }
                                 }
-
-                                is AlbumItem -> navController.navigate("album/${item.id}")
-                                is ArtistItem -> navController.navigate("artist/${item.id}")
-                                is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
-                            }
-                        },
-                        onLongClick = {
-                            menuState.show {
-                                when (item) {
-                                    is SongItem -> YouTubeSongMenu(
-                                        song = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss
-                                    )
-
-                                    else -> {}
-                                }
-                            }
-                        }
-                    )
-                    .animateItemPlacement()
+                            },
+                        ).animateItemPlacement(),
             )
         }
 
-        if (item !is SongItem) content()
-        else SwipeToQueueBox(
-            item = item.toMediaItem(),
-            content = { content() },
-            snackbarHostState = snackbarHostState
-        )
+        if (item !is SongItem) {
+            content()
+        } else {
+            SwipeToQueueBox(
+                item = item.toMediaItem(),
+                content = { content() },
+                snackbarHostState = snackbarHostState,
+            )
+        }
     }
 
     LazyColumn(
         state = lazyListState,
-        contentPadding = LocalPlayerAwareWindowInsets.current
-            .add(WindowInsets(top = SearchFilterHeight))
-            .asPaddingValues()
+        contentPadding =
+            LocalPlayerAwareWindowInsets.current
+                .add(WindowInsets(top = SearchFilterHeight))
+                .asPaddingValues(),
     ) {
         if (searchFilter == null) {
             searchSummary?.summaries?.forEach { summary ->
@@ -217,7 +227,7 @@ fun OnlineSearchResult(
                 items(
                     items = summary.items,
                     key = { "${summary.title}/${it.id}" },
-                    itemContent = ytItemContent
+                    itemContent = ytItemContent,
                 )
             }
 
@@ -225,7 +235,7 @@ fun OnlineSearchResult(
                 item {
                     EmptyPlaceholder(
                         icon = Icons.Rounded.Search,
-                        text = stringResource(R.string.no_results_found)
+                        text = stringResource(R.string.no_results_found),
                     )
                 }
             }
@@ -233,7 +243,7 @@ fun OnlineSearchResult(
             items(
                 items = itemsPage?.items.orEmpty(),
                 key = { it.id },
-                itemContent = ytItemContent
+                itemContent = ytItemContent,
             )
 
             if (itemsPage?.continuation != null) {
@@ -250,7 +260,7 @@ fun OnlineSearchResult(
                 item {
                     EmptyPlaceholder(
                         icon = Icons.Rounded.Search,
-                        text = stringResource(R.string.no_results_found)
+                        text = stringResource(R.string.no_results_found),
                     )
                 }
             }
@@ -268,26 +278,28 @@ fun OnlineSearchResult(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 
     ChipsRow(
-        chips = listOf(
-            null to stringResource(R.string.filter_all),
-            FILTER_SONG to stringResource(R.string.filter_songs),
-            FILTER_VIDEO to stringResource(R.string.filter_videos),
-            FILTER_ALBUM to stringResource(R.string.filter_albums),
-            FILTER_ARTIST to stringResource(R.string.filter_artists),
-            FILTER_COMMUNITY_PLAYLIST to stringResource(R.string.filter_community_playlists),
-            FILTER_FEATURED_PLAYLIST to stringResource(R.string.filter_featured_playlists)
-        ),
+        chips =
+            listOf(
+                null to stringResource(R.string.filter_all),
+                FILTER_SONG to stringResource(R.string.filter_songs),
+                FILTER_VIDEO to stringResource(R.string.filter_videos),
+                FILTER_ALBUM to stringResource(R.string.filter_albums),
+                FILTER_ARTIST to stringResource(R.string.filter_artists),
+                FILTER_COMMUNITY_PLAYLIST to stringResource(R.string.filter_community_playlists),
+                FILTER_FEATURED_PLAYLIST to stringResource(R.string.filter_featured_playlists),
+            ),
         currentValue = searchFilter,
         onValueUpdate = {
             if (viewModel.filter.value != it) {
@@ -297,8 +309,9 @@ fun OnlineSearchResult(
                 lazyListState.animateScrollToItem(0)
             }
         },
-        modifier = Modifier
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-            .padding(top = AppBarHeight)
+        modifier =
+            Modifier
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                .padding(top = AppBarHeight),
     )
 }

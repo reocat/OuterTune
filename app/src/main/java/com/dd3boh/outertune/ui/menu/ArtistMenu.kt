@@ -57,73 +57,92 @@ fun ArtistMenu(
                     database.transaction {
                         update(artist.artist.toggleLike())
                     }
-                }
+                },
             ) {
                 Icon(
                     painter = painterResource(if (artist.artist.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
                     tint = if (artist.artist.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 
     HorizontalDivider()
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         if (artist.songCount > 0) {
             GridMenuItem(
                 icon = Icons.Rounded.PlayArrow,
-                title = R.string.play
+                title = R.string.play,
             ) {
                 coroutineScope.launch {
-                    val songs = withContext(Dispatchers.IO) {
-                        database.artistSongs(artist.id, ArtistSongSortType.CREATE_DATE, true).first()
-                            .map { it.toMediaMetadata() }
-                    }
+                    val songs =
+                        withContext(Dispatchers.IO) {
+                            database
+                                .artistSongs(artist.id, ArtistSongSortType.CREATE_DATE, true)
+                                .first()
+                                .map { it.toMediaMetadata() }
+                        }
 
-                    val playlistId = withContext(Dispatchers.IO) {
-                        YouTube.artist(artist.id).getOrNull()?.artist?.shuffleEndpoint?.playlistId
-                    }
+                    val playlistId =
+                        withContext(Dispatchers.IO) {
+                            YouTube
+                                .artist(artist.id)
+                                .getOrNull()
+                                ?.artist
+                                ?.shuffleEndpoint
+                                ?.playlistId
+                        }
 
                     playerConnection.playQueue(
                         ListQueue(
                             title = artist.artist.name,
                             items = songs,
-                            playlistId = playlistId
-                        )
+                            playlistId = playlistId,
+                        ),
                     )
                 }
                 onDismiss()
             }
             GridMenuItem(
                 icon = Icons.Rounded.Shuffle,
-                title = R.string.shuffle
+                title = R.string.shuffle,
             ) {
                 coroutineScope.launch {
-                    val songs = withContext(Dispatchers.IO) {
-                        database.artistSongs(artist.id, ArtistSongSortType.CREATE_DATE, true).first()
-                            .map { it.toMediaMetadata() }
-                            .shuffled()
-                    }
+                    val songs =
+                        withContext(Dispatchers.IO) {
+                            database
+                                .artistSongs(artist.id, ArtistSongSortType.CREATE_DATE, true)
+                                .first()
+                                .map { it.toMediaMetadata() }
+                                .shuffled()
+                        }
 
-                    val playlistId = withContext(Dispatchers.IO) {
-                        YouTube.artist(artist.id).getOrNull()?.artist?.shuffleEndpoint?.playlistId
-                    }
+                    val playlistId =
+                        withContext(Dispatchers.IO) {
+                            YouTube
+                                .artist(artist.id)
+                                .getOrNull()
+                                ?.artist
+                                ?.shuffleEndpoint
+                                ?.playlistId
+                        }
 
                     playerConnection.playQueue(
                         ListQueue(
                             title = artist.artist.name,
                             items = songs,
-                            playlistId = playlistId
-                        )
+                            playlistId = playlistId,
+                        ),
                     )
                 }
                 onDismiss()
@@ -132,14 +151,15 @@ fun ArtistMenu(
         if (artist.artist.isYouTubeArtist) {
             GridMenuItem(
                 icon = Icons.Rounded.Share,
-                title = R.string.share
+                title = R.string.share,
             ) {
                 onDismiss()
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/channel/${artist.id}")
-                }
+                val intent =
+                    Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/channel/${artist.id}")
+                    }
                 context.startActivity(Intent.createChooser(intent, null))
             }
         }

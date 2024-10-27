@@ -136,7 +136,7 @@ fun PlayerMenu(
         onDismiss = {
             showChooseQueueDialog = false
             onDismiss() // here we dismiss since we switch to the queue anyways
-        }
+        },
     )
 
     var showChoosePlaylistDialog by rememberSaveable {
@@ -158,7 +158,7 @@ fun PlayerMenu(
         },
         onDismiss = {
             showChoosePlaylistDialog = false
-        }
+        },
     )
 
     var showSelectArtistDialog by rememberSaveable {
@@ -167,28 +167,28 @@ fun PlayerMenu(
 
     if (showSelectArtistDialog) {
         ListDialog(
-            onDismiss = { showSelectArtistDialog = false }
+            onDismiss = { showSelectArtistDialog = false },
         ) {
             items(mediaMetadata.artists) { artist ->
                 Box(
                     contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .fillParentMaxWidth()
-                        .height(ListItemHeight)
-                        .clickable {
-                            navController.navigate("artist/${artist.id}")
-                            showSelectArtistDialog = false
-                            playerBottomSheetState.collapseSoft()
-                            onDismiss()
-                        }
-                        .padding(horizontal = 24.dp),
+                    modifier =
+                        Modifier
+                            .fillParentMaxWidth()
+                            .height(ListItemHeight)
+                            .clickable {
+                                navController.navigate("artist/${artist.id}")
+                                showSelectArtistDialog = false
+                                playerBottomSheetState.collapseSoft()
+                                onDismiss()
+                            }.padding(horizontal = 24.dp),
                 ) {
                     Text(
                         text = artist.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -201,13 +201,14 @@ fun PlayerMenu(
 
     if (showPitchTempoDialog) {
         PitchTempoDialog(
-            onDismiss = { showPitchTempoDialog = false }
+            onDismiss = { showPitchTempoDialog = false },
         )
     }
 
-    val sleepTimerEnabled = remember(playerConnection.service.sleepTimer.triggerTime, playerConnection.service.sleepTimer.pauseWhenSongEnd) {
-        playerConnection.service.sleepTimer.isActive
-    }
+    val sleepTimerEnabled =
+        remember(playerConnection.service.sleepTimer.triggerTime, playerConnection.service.sleepTimer.pauseWhenSongEnd) {
+            playerConnection.service.sleepTimer.isActive
+        }
 
     var sleepTimerTimeLeft by remember {
         mutableLongStateOf(0L)
@@ -216,11 +217,12 @@ fun PlayerMenu(
     LaunchedEffect(sleepTimerEnabled) {
         if (sleepTimerEnabled) {
             while (isActive) {
-                sleepTimerTimeLeft = if (playerConnection.service.sleepTimer.pauseWhenSongEnd) {
-                    playerConnection.player.duration - playerConnection.player.currentPosition
-                } else {
-                    playerConnection.service.sleepTimer.triggerTime - System.currentTimeMillis()
-                }
+                sleepTimerTimeLeft =
+                    if (playerConnection.service.sleepTimer.pauseWhenSongEnd) {
+                        playerConnection.player.duration - playerConnection.player.currentPosition
+                    } else {
+                        playerConnection.service.sleepTimer.triggerTime - System.currentTimeMillis()
+                    }
                 delay(1000L)
             }
         }
@@ -245,14 +247,14 @@ fun PlayerMenu(
                     onClick = {
                         showSleepTimerDialog = false
                         playerConnection.service.sleepTimer.start(sleepTimerValue.roundToInt())
-                    }
+                    },
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showSleepTimerDialog = false }
+                    onClick = { showSleepTimerDialog = false },
                 ) {
                     Text(stringResource(android.R.string.cancel))
                 }
@@ -260,12 +262,13 @@ fun PlayerMenu(
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.minute,
-                            sleepTimerValue.roundToInt(),
-                            sleepTimerValue.roundToInt()
-                        ),
-                        style = MaterialTheme.typography.bodyLarge
+                        text =
+                            pluralStringResource(
+                                R.plurals.minute,
+                                sleepTimerValue.roundToInt(),
+                                sleepTimerValue.roundToInt(),
+                            ),
+                        style = MaterialTheme.typography.bodyLarge,
                     )
 
                     Slider(
@@ -279,12 +282,12 @@ fun PlayerMenu(
                         onClick = {
                             showSleepTimerDialog = false
                             playerConnection.service.sleepTimer.start(-1)
-                        }
+                        },
                     ) {
                         Text(stringResource(R.string.end_of_song))
                     }
                 }
-            }
+            },
         )
     }
 
@@ -299,21 +302,22 @@ fun PlayerMenu(
             icon = {
                 Icon(
                     imageVector = Icons.Rounded.Info,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             },
             confirmButton = {
                 TextButton(
-                    onClick = { showDetailsDialog = false }
+                    onClick = { showDetailsDialog = false },
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
             },
             text = {
                 Column(
-                    modifier = Modifier
-                        .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
-                        .verticalScroll(rememberScrollState())
+                    modifier =
+                        Modifier
+                            .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     listOf(
                         stringResource(R.string.song_title) to mediaMetadata?.title,
@@ -329,82 +333,87 @@ fun PlayerMenu(
                         stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
                         stringResource(R.string.loudness) to currentFormat?.loudnessDb?.let { "$it dB" },
                         stringResource(R.string.volume) to "${(playerConnection.player.volume * 100).toInt()}%",
-                        stringResource(R.string.file_size) to currentFormat?.contentLength?.let { Formatter.formatShortFileSize(context, it) }
+                        stringResource(R.string.file_size) to
+                            currentFormat?.contentLength?.let { Formatter.formatShortFileSize(context, it) },
                     ).forEach { (label, text) ->
                         val displayText = text ?: stringResource(R.string.unknown)
                         Text(
                             text = label,
-                            style = MaterialTheme.typography.labelMedium
+                            style = MaterialTheme.typography.labelMedium,
                         )
                         Text(
                             text = displayText,
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(displayText))
-                                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
-                                }
-                            )
+                            modifier =
+                                Modifier.clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(displayText))
+                                        Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                                    },
+                                ),
                         )
                         Spacer(Modifier.height(8.dp))
                     }
                 }
-            }
+            },
         )
     }
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 24.dp, bottom = 6.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 24.dp, bottom = 6.dp),
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
             contentDescription = null,
-            modifier = Modifier.size(28.dp)
+            modifier = Modifier.size(28.dp),
         )
 
         BigSeekBar(
             progressProvider = playerVolume::value,
             onProgressChange = { playerConnection.service.playerVolume.value = it },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
-        if (mediaMetadata.isLocal != true)
+        if (mediaMetadata.isLocal != true) {
             GridMenuItem(
                 icon = Icons.Rounded.Radio,
-                title = R.string.start_radio
+                title = R.string.start_radio,
             ) {
                 playerConnection.service.startRadioSeamlessly()
                 onDismiss()
             }
+        }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }
-        if (mediaMetadata.isLocal != true)
+        if (mediaMetadata.isLocal != true) {
             DownloadGridMenu(
                 state = download?.state,
                 onDownload = {
@@ -418,10 +427,11 @@ fun PlayerMenu(
                         context,
                         ExoDownloadService::class.java,
                         mediaMetadata.id,
-                        false
+                        false,
                     )
-                }
+                },
             )
+        }
         if (librarySong?.song?.inLibrary != null) {
             GridMenuItem(
                 icon = Icons.Rounded.LibraryAddCheck,
@@ -444,7 +454,7 @@ fun PlayerMenu(
         }
         GridMenuItem(
             icon = R.drawable.artist,
-            title = R.string.view_artist
+            title = R.string.view_artist,
         ) {
             if (mediaMetadata.artists.size == 1) {
                 navController.navigate("artist/${mediaMetadata.artists[0].id}")
@@ -457,7 +467,7 @@ fun PlayerMenu(
         if (mediaMetadata.album != null && !mediaMetadata.isLocal) {
             GridMenuItem(
                 icon = R.drawable.album,
-                title = R.string.view_album
+                title = R.string.view_album,
             ) {
                 navController.navigate("album/${mediaMetadata.album.id}")
                 playerBottomSheetState.collapseSoft()
@@ -465,35 +475,40 @@ fun PlayerMenu(
             }
         }
 
-        if (mediaMetadata.isLocal != true)
+        if (mediaMetadata.isLocal != true) {
             GridMenuItem(
                 icon = Icons.Rounded.Share,
-                title = R.string.share
+                title = R.string.share,
             ) {
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${mediaMetadata.id}")
-                }
+                val intent =
+                    Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${mediaMetadata.id}")
+                    }
                 context.startActivity(Intent.createChooser(intent, null))
                 onDismiss()
             }
+        }
         GridMenuItem(
             icon = Icons.Rounded.Info,
-            title = R.string.details
+            title = R.string.details,
         ) {
             showDetailsDialog = true
         }
         SleepTimerGridMenu(
             sleepTimerTimeLeft = sleepTimerTimeLeft,
-            enabled = sleepTimerEnabled
+            enabled = sleepTimerEnabled,
         ) {
-            if (sleepTimerEnabled) playerConnection.service.sleepTimer.clear()
-            else showSleepTimerDialog = true
+            if (sleepTimerEnabled) {
+                playerConnection.service.sleepTimer.clear()
+            } else {
+                showSleepTimerDialog = true
+            }
         }
         GridMenuItem(
             icon = Icons.Rounded.Tune,
-            title = R.string.advanced
+            title = R.string.advanced,
         ) {
             showPitchTempoDialog = true
         }
@@ -501,9 +516,7 @@ fun PlayerMenu(
 }
 
 @Composable
-fun PitchTempoDialog(
-    onDismiss: () -> Unit,
-) {
+fun PitchTempoDialog(onDismiss: () -> Unit) {
     val playerConnection = LocalPlayerConnection.current ?: return
     var tempo by remember {
         mutableStateOf(playerConnection.player.playbackParameters.speed)
@@ -524,14 +537,14 @@ fun PitchTempoDialog(
                     tempo = 1f
                     transposeValue = 0
                     updatePlaybackParameters()
-                }
+                },
             ) {
                 Text(stringResource(R.string.reset))
             }
         },
         confirmButton = {
             TextButton(
-                onClick = onDismiss
+                onClick = onDismiss,
             ) {
                 Text(stringResource(android.R.string.ok))
             }
@@ -547,7 +560,7 @@ fun PitchTempoDialog(
                         updatePlaybackParameters()
                     },
                     valueText = { "x$it" },
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    modifier = Modifier.padding(bottom = 12.dp),
                 )
                 ValueAdjuster(
                     icon = Icons.Rounded.Tune,
@@ -557,10 +570,10 @@ fun PitchTempoDialog(
                         transposeValue = it
                         updatePlaybackParameters()
                     },
-                    valueText = { "${if (it > 0) "+" else ""}$it" }
+                    valueText = { "${if (it > 0) "+" else ""}$it" },
                 )
             }
-        }
+        },
     )
 }
 
@@ -576,23 +589,23 @@ fun <T> ValueAdjuster(
     Row(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(28.dp)
+            modifier = Modifier.size(28.dp),
         )
 
         IconButton(
             enabled = currentValue != values.first(),
             onClick = {
                 onValueUpdate(values[values.indexOf(currentValue) - 1])
-            }
+            },
         ) {
             Icon(
                 imageVector = Icons.Rounded.RemoveCircleOutline,
-                contentDescription = null
+                contentDescription = null,
             )
         }
 
@@ -600,18 +613,18 @@ fun <T> ValueAdjuster(
             text = valueText(currentValue),
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.width(80.dp)
+            modifier = Modifier.width(80.dp),
         )
 
         IconButton(
             enabled = currentValue != values.last(),
             onClick = {
                 onValueUpdate(values[values.indexOf(currentValue) + 1])
-            }
+            },
         ) {
             Icon(
                 imageVector = Icons.Rounded.AddCircleOutline,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     }

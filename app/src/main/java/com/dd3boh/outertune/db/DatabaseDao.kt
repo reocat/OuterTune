@@ -40,9 +40,14 @@ import com.zionhuang.innertube.pages.AlbumPage
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao {
-
-    @Query("""
+interface DatabaseDao :
+    SongsDao,
+    AlbumsDao,
+    ArtistsDao,
+    PlaylistsDao,
+    QueueDao {
+    @Query(
+        """
         SELECT song.*
         FROM (SELECT *, COUNT(1) AS referredCount
               FROM related_song_map
@@ -69,7 +74,8 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                                LIMIT 10))
         ORDER BY referredCount DESC
         LIMIT 100
-    """)
+    """,
+    )
     fun quickPicks(now: Long = System.currentTimeMillis()): Flow<List<Song>>
 
     @Query("SELECT * FROM format WHERE id = :id")
@@ -97,7 +103,10 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
     fun genreByName(name: String): GenreEntity?
 
     @Query("SELECT * FROM genre WHERE title LIKE '%' || :query || '%' LIMIT :previewSize")
-    fun genreByAproxName(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<GenreEntity>>
+    fun genreByAproxName(
+        query: String,
+        previewSize: Int = Int.MAX_VALUE,
+    ): Flow<List<GenreEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(genre: GenreEntity)
@@ -115,7 +124,10 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
     fun insert(map: RelatedSongMap)
 
     @Transaction
-    fun insert(mediaMetadata: MediaMetadata, block: (SongEntity) -> SongEntity = { it }) {
+    fun insert(
+        mediaMetadata: MediaMetadata,
+        block: (SongEntity) -> SongEntity = { it },
+    ) {
         if (insert(mediaMetadata.toSongEntity().let(block)) == -1L) return
         mediaMetadata.artists.forEachIndexed { index, artist ->
             val artistId = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId()
@@ -123,15 +135,15 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 ArtistEntity(
                     id = artistId,
                     name = artist.name,
-                    isLocal = artist.isLocal
-                )
+                    isLocal = artist.isLocal,
+                ),
             )
             insert(
                 SongArtistMap(
                     songId = mediaMetadata.id,
                     artistId = artistId,
-                    position = index
-                )
+                    position = index,
+                ),
             )
         }
         mediaMetadata.genre?.forEachIndexed { index, genre ->
@@ -140,61 +152,66 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 GenreEntity(
                     id = genreId,
                     title = genre.title,
-                    isLocal = genre.isLocal
-                )
+                    isLocal = genre.isLocal,
+                ),
             )
             insert(
                 SongGenreMap(
                     songId = mediaMetadata.id,
                     genreId = genreId,
-                    index = index
-                )
+                    index = index,
+                ),
             )
         }
     }
 
     @Transaction
     fun insert(albumPage: AlbumPage) {
-        if (insert(AlbumEntity(
-                id = albumPage.album.browseId,
-                playlistId = albumPage.album.playlistId,
-                title = albumPage.album.title,
-                year = albumPage.album.year,
-                thumbnailUrl = albumPage.album.thumbnail,
-                songCount = albumPage.songs.size,
-                duration = albumPage.songs.sumOf { it.duration ?: 0 }
-            )) == -1L
-        ) return
-        albumPage.songs.map(SongItem::toMediaMetadata)
+        if (insert(
+                AlbumEntity(
+                    id = albumPage.album.browseId,
+                    playlistId = albumPage.album.playlistId,
+                    title = albumPage.album.title,
+                    year = albumPage.album.year,
+                    thumbnailUrl = albumPage.album.thumbnail,
+                    songCount = albumPage.songs.size,
+                    duration = albumPage.songs.sumOf { it.duration ?: 0 },
+                ),
+            ) == -1L
+        ) {
+            return
+        }
+        albumPage.songs
+            .map(SongItem::toMediaMetadata)
             .onEach(::insert)
             .mapIndexed { index, song ->
                 SongAlbumMap(
                     songId = song.id,
                     albumId = albumPage.album.browseId,
-                    index = index
+                    index = index,
                 )
-            }
-            .forEach(::upsert)
+            }.forEach(::upsert)
         albumPage.album.artists
             ?.map { artist ->
                 ArtistEntity(
                     id = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId(),
-                    name = artist.name
+                    name = artist.name,
                 )
-            }
-            ?.onEach(::insert)
+            }?.onEach(::insert)
             ?.mapIndexed { index, artist ->
                 AlbumArtistMap(
                     albumId = albumPage.album.browseId,
                     artistId = artist.id,
-                    order = index
+                    order = index,
                 )
-            }
-            ?.forEach(::insert)
+            }?.forEach(::insert)
     }
 
     @Transaction
-    fun update(album: AlbumEntity, albumPage: AlbumPage) {
+    fun update(
+        album: AlbumEntity,
+        albumPage: AlbumPage,
+    ) {
         update(
             album.copy(
                 id = albumPage.album.browseId,
@@ -203,35 +220,33 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 year = albumPage.album.year,
                 thumbnailUrl = albumPage.album.thumbnail,
                 songCount = albumPage.songs.size,
-                duration = albumPage.songs.sumOf { it.duration ?: 0 }
-            )
+                duration = albumPage.songs.sumOf { it.duration ?: 0 },
+            ),
         )
-        albumPage.songs.map(SongItem::toMediaMetadata)
+        albumPage.songs
+            .map(SongItem::toMediaMetadata)
             .onEach(::insert)
             .mapIndexed { index, song ->
                 SongAlbumMap(
                     songId = song.id,
                     albumId = albumPage.album.browseId,
-                    index = index
+                    index = index,
                 )
-            }
-            .forEach(::upsert)
+            }.forEach(::upsert)
         albumPage.album.artists
             ?.map { artist ->
                 ArtistEntity(
                     id = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId(),
-                    name = artist.name
+                    name = artist.name,
                 )
-            }
-            ?.onEach(::insert)
+            }?.onEach(::insert)
             ?.mapIndexed { index, artist ->
                 AlbumArtistMap(
                     albumId = albumPage.album.browseId,
                     artistId = artist.id,
-                    order = index
+                    order = index,
                 )
-            }
-            ?.forEach(::insert)
+            }?.forEach(::insert)
     }
 
     @Upsert
@@ -283,8 +298,8 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 title = mq.title,
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
-                index = mq.index
-            )
+                index = mq.index,
+            ),
         )
 
         deleteAllQueueSongs(mq.id)
@@ -295,8 +310,8 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 QueueSongMap(
                     queueId = mq.id,
                     songId = it.id,
-                    shuffled = false
-                )
+                    shuffled = false,
+                ),
             )
         }
 
@@ -305,8 +320,8 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 QueueSongMap(
                     queueId = mq.id,
                     songId = it.id,
-                    shuffled = true
-                )
+                    shuffled = true,
+                ),
             )
         }
     }
@@ -323,8 +338,8 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
                 index = mq.index,
-                playlistId = mq.playlistId
-            )
+                playlistId = mq.playlistId,
+            ),
         )
 
         saveQueue(mq)

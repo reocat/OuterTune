@@ -81,13 +81,15 @@ fun YouTubeAlbumMenu(
     LaunchedEffect(Unit) {
         database.album(albumItem.id).collect { album ->
             if (album == null) {
-                YouTube.album(albumItem.id).onSuccess { albumPage ->
-                    database.transaction {
-                        insert(albumPage)
+                YouTube
+                    .album(albumItem.id)
+                    .onSuccess { albumPage ->
+                        database.transaction {
+                            insert(albumPage)
+                        }
+                    }.onFailure {
+                        reportException(it)
                     }
-                }.onFailure {
-                    reportException(it)
-                }
             }
         }
     }
@@ -100,16 +102,18 @@ fun YouTubeAlbumMenu(
         val songs = album?.songs?.map { it.id } ?: return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it]?.state == Download.STATE_COMPLETED }) {
                     Download.STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it]?.state == Download.STATE_QUEUED
-                                || downloads[it]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it]?.state == Download.STATE_COMPLETED
-                    })
+                } else if (songs.all {
+                        downloads[it]?.state == Download.STATE_QUEUED ||
+                            downloads[it]?.state == Download.STATE_DOWNLOADING ||
+                            downloads[it]?.state == Download.STATE_COMPLETED
+                    }
+                ) {
                     Download.STATE_DOWNLOADING
-                else
+                } else {
                     Download.STATE_STOPPED
+                }
         }
     }
 
@@ -121,14 +125,19 @@ fun YouTubeAlbumMenu(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
             album?.songs?.let { song ->
-                queueBoard.add(queueName, song.map { it.toMediaMetadata() }, playerConnection,
-                    forceInsert = true, delta = false)
+                queueBoard.add(
+                    queueName,
+                    song.map { it.toMediaMetadata() },
+                    playerConnection,
+                    forceInsert = true,
+                    delta = false,
+                )
             }
             queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
             showChooseQueueDialog = false
-        }
+        },
     )
 
     var showChoosePlaylistDialog by rememberSaveable {
@@ -148,7 +157,7 @@ fun YouTubeAlbumMenu(
 
             album?.songs?.map { it.id }.orEmpty()
         },
-        onDismiss = { showChoosePlaylistDialog = false }
+        onDismiss = { showChoosePlaylistDialog = false },
     )
 
     var showSelectArtistDialog by rememberSaveable {
@@ -157,41 +166,41 @@ fun YouTubeAlbumMenu(
 
     if (showSelectArtistDialog) {
         ListDialog(
-            onDismiss = { showSelectArtistDialog = false }
+            onDismiss = { showSelectArtistDialog = false },
         ) {
             items(
                 items = album?.artists.orEmpty(),
-                key = { it.id }
+                key = { it.id },
             ) { artist ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(ListItemHeight)
-                        .clickable {
-                            navController.navigate("artist/${artist.id}")
-                            showSelectArtistDialog = false
-                            onDismiss()
-                        }
-                        .padding(horizontal = 12.dp),
+                    modifier =
+                        Modifier
+                            .height(ListItemHeight)
+                            .clickable {
+                                navController.navigate("artist/${artist.id}")
+                                showSelectArtistDialog = false
+                                onDismiss()
+                            }.padding(horizontal = 12.dp),
                 ) {
                     Box(
                         contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier
-                            .fillParentMaxWidth()
-                            .height(ListItemHeight)
-                            .clickable {
-                                showSelectArtistDialog = false
-                                onDismiss()
-                                navController.navigate("artist/${artist.id}")
-                            }
-                            .padding(horizontal = 24.dp),
+                        modifier =
+                            Modifier
+                                .fillParentMaxWidth()
+                                .height(ListItemHeight)
+                                .clickable {
+                                    showSelectArtistDialog = false
+                                    onDismiss()
+                                    navController.navigate("artist/${artist.id}")
+                                }.padding(horizontal = 24.dp),
                     ) {
                         Text(
                             text = artist.name,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -208,59 +217,61 @@ fun YouTubeAlbumMenu(
                     database.query {
                         album?.album?.toggleLike()?.let(::update)
                     }
-                }
+                },
             ) {
                 Icon(
                     painter = painterResource(if (album?.album?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
                     tint = if (album?.album?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 
     HorizontalDivider()
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         GridMenuItem(
             icon = Icons.Rounded.Radio,
-            title = R.string.start_radio
+            title = R.string.start_radio,
         ) {
             playerConnection.playQueue(YouTubeAlbumRadio(albumItem.playlistId))
             onDismiss()
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
-            title = R.string.play_next
+            title = R.string.play_next,
         ) {
-            album?.songs
+            album
+                ?.songs
                 ?.map { it.toMediaItem() }
                 ?.let(playerConnection::playNext)
             onDismiss()
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }
         DownloadGridMenu(
             state = downloadState,
             onDownload = {
-                val _songs = album?.songs?.map{ it.toMediaMetadata() } ?: emptyList()
+                val _songs = album?.songs?.map { it.toMediaMetadata() } ?: emptyList()
                 downloadUtil.download(_songs, context)
             },
             onRemoveDownload = {
@@ -269,15 +280,15 @@ fun YouTubeAlbumMenu(
                         context,
                         ExoDownloadService::class.java,
                         song.id,
-                        false
+                        false,
                     )
                 }
-            }
+            },
         )
         albumItem.artists?.let { artists ->
             GridMenuItem(
                 icon = R.drawable.artist,
-                title = R.string.view_artist
+                title = R.string.view_artist,
             ) {
                 if (artists.size == 1) {
                     navController.navigate("artist/${artists[0].id}")
@@ -289,13 +300,14 @@ fun YouTubeAlbumMenu(
         }
         GridMenuItem(
             icon = Icons.Rounded.Share,
-            title = R.string.share
+            title = R.string.share,
         ) {
-            val intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, albumItem.shareLink)
-            }
+            val intent =
+                Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, albumItem.shareLink)
+                }
             context.startActivity(Intent.createChooser(intent, null))
             onDismiss()
         }

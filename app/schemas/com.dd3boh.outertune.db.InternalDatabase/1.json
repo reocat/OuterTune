@@ -101,17 +101,13 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [
           {
             "name": "index_song_albumId",
             "unique": false,
-            "columnNames": [
-              "albumId"
-            ],
+            "columnNames": ["albumId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_albumId` ON `${TABLE_NAME}` (`albumId`)"
           }
@@ -167,9 +163,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [],
         "foreignKeys": []
@@ -247,9 +241,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [],
         "foreignKeys": []
@@ -327,9 +319,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [],
         "foreignKeys": []
@@ -359,27 +349,20 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "songId",
-            "artistId"
-          ]
+          "columnNames": ["songId", "artistId"]
         },
         "indices": [
           {
             "name": "index_song_artist_map_songId",
             "unique": false,
-            "columnNames": [
-              "songId"
-            ],
+            "columnNames": ["songId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_artist_map_songId` ON `${TABLE_NAME}` (`songId`)"
           },
           {
             "name": "index_song_artist_map_artistId",
             "unique": false,
-            "columnNames": [
-              "artistId"
-            ],
+            "columnNames": ["artistId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_artist_map_artistId` ON `${TABLE_NAME}` (`artistId`)"
           }
@@ -389,23 +372,15 @@
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "songId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["songId"],
+            "referencedColumns": ["id"]
           },
           {
             "table": "artist",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "artistId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["artistId"],
+            "referencedColumns": ["id"]
           }
         ]
       },
@@ -434,27 +409,20 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "songId",
-            "albumId"
-          ]
+          "columnNames": ["songId", "albumId"]
         },
         "indices": [
           {
             "name": "index_song_album_map_songId",
             "unique": false,
-            "columnNames": [
-              "songId"
-            ],
+            "columnNames": ["songId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_album_map_songId` ON `${TABLE_NAME}` (`songId`)"
           },
           {
             "name": "index_song_album_map_albumId",
             "unique": false,
-            "columnNames": [
-              "albumId"
-            ],
+            "columnNames": ["albumId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_album_map_albumId` ON `${TABLE_NAME}` (`albumId`)"
           }
@@ -464,23 +432,15 @@
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "songId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["songId"],
+            "referencedColumns": ["id"]
           },
           {
             "table": "album",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "albumId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["albumId"],
+            "referencedColumns": ["id"]
           }
         ]
       },
@@ -509,27 +469,20 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "albumId",
-            "artistId"
-          ]
+          "columnNames": ["albumId", "artistId"]
         },
         "indices": [
           {
             "name": "index_album_artist_map_albumId",
             "unique": false,
-            "columnNames": [
-              "albumId"
-            ],
+            "columnNames": ["albumId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_album_artist_map_albumId` ON `${TABLE_NAME}` (`albumId`)"
           },
           {
             "name": "index_album_artist_map_artistId",
             "unique": false,
-            "columnNames": [
-              "artistId"
-            ],
+            "columnNames": ["artistId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_album_artist_map_artistId` ON `${TABLE_NAME}` (`artistId`)"
           }
@@ -539,23 +492,15 @@
             "table": "album",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "albumId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["albumId"],
+            "referencedColumns": ["id"]
           },
           {
             "table": "artist",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "artistId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["artistId"],
+            "referencedColumns": ["id"]
           }
         ]
       },
@@ -596,26 +541,20 @@
         ],
         "primaryKey": {
           "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [
           {
             "name": "index_playlist_song_map_playlistId",
             "unique": false,
-            "columnNames": [
-              "playlistId"
-            ],
+            "columnNames": ["playlistId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_playlist_song_map_playlistId` ON `${TABLE_NAME}` (`playlistId`)"
           },
           {
             "name": "index_playlist_song_map_songId",
             "unique": false,
-            "columnNames": [
-              "songId"
-            ],
+            "columnNames": ["songId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_playlist_song_map_songId` ON `${TABLE_NAME}` (`songId`)"
           }
@@ -625,23 +564,15 @@
             "table": "playlist",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "playlistId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["playlistId"],
+            "referencedColumns": ["id"]
           },
           {
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "songId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["songId"],
+            "referencedColumns": ["id"]
           }
         ]
       },
@@ -706,9 +637,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [],
         "foreignKeys": []
@@ -738,27 +667,20 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "songId",
-            "genreId"
-          ]
+          "columnNames": ["songId", "genreId"]
         },
         "indices": [
           {
             "name": "index_song_genre_map_songId",
             "unique": false,
-            "columnNames": [
-              "songId"
-            ],
+            "columnNames": ["songId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_genre_map_songId` ON `${TABLE_NAME}` (`songId`)"
           },
           {
             "name": "index_song_genre_map_genreId",
             "unique": false,
-            "columnNames": [
-              "genreId"
-            ],
+            "columnNames": ["genreId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_song_genre_map_genreId` ON `${TABLE_NAME}` (`genreId`)"
           }
@@ -768,23 +690,15 @@
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "songId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["songId"],
+            "referencedColumns": ["id"]
           },
           {
             "table": "genre",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "genreId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["genreId"],
+            "referencedColumns": ["id"]
           }
         ]
       },
@@ -807,17 +721,13 @@
         ],
         "primaryKey": {
           "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [
           {
             "name": "index_search_history_query",
             "unique": true,
-            "columnNames": [
-              "query"
-            ],
+            "columnNames": ["query"],
             "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_search_history_query` ON `${TABLE_NAME}` (`query`)"
           }
@@ -885,9 +795,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [],
         "foreignKeys": []
@@ -911,9 +819,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [],
         "foreignKeys": []
@@ -949,11 +855,7 @@
         ],
         "primaryKey": {
           "autoGenerate": false,
-          "columnNames": [
-            "song",
-            "year",
-            "month"
-          ]
+          "columnNames": ["song", "year", "month"]
         },
         "indices": [],
         "foreignKeys": []
@@ -989,17 +891,13 @@
         ],
         "primaryKey": {
           "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [
           {
             "name": "index_event_songId",
             "unique": false,
-            "columnNames": [
-              "songId"
-            ],
+            "columnNames": ["songId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_event_songId` ON `${TABLE_NAME}` (`songId`)"
           }
@@ -1009,12 +907,8 @@
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "songId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["songId"],
+            "referencedColumns": ["id"]
           }
         ]
       },
@@ -1043,26 +937,20 @@
         ],
         "primaryKey": {
           "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
+          "columnNames": ["id"]
         },
         "indices": [
           {
             "name": "index_related_song_map_songId",
             "unique": false,
-            "columnNames": [
-              "songId"
-            ],
+            "columnNames": ["songId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_related_song_map_songId` ON `${TABLE_NAME}` (`songId`)"
           },
           {
             "name": "index_related_song_map_relatedSongId",
             "unique": false,
-            "columnNames": [
-              "relatedSongId"
-            ],
+            "columnNames": ["relatedSongId"],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_related_song_map_relatedSongId` ON `${TABLE_NAME}` (`relatedSongId`)"
           }
@@ -1072,23 +960,15 @@
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "songId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["songId"],
+            "referencedColumns": ["id"]
           },
           {
             "table": "song",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
-            "columns": [
-              "relatedSongId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
+            "columns": ["relatedSongId"],
+            "referencedColumns": ["id"]
           }
         ]
       }

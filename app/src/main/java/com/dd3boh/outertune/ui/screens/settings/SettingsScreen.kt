@@ -36,56 +36,56 @@ fun SettingsScreen(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
-
     Column(
-        modifier = Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+        modifier =
+            Modifier
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .verticalScroll(rememberScrollState()),
     ) {
         PreferenceEntry(
             title = { Text(stringResource(R.string.appearance)) },
             icon = { Icon(Icons.Rounded.Palette, null) },
-            onClick = { navController.navigate("settings/appearance") }
+            onClick = { navController.navigate("settings/appearance") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.content)) },
             icon = { Icon(Icons.Rounded.Language, null) },
-            onClick = { navController.navigate("settings/content") }
+            onClick = { navController.navigate("settings/content") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.player_and_audio)) },
             icon = { Icon(Icons.Rounded.PlayArrow, null) },
-            onClick = { navController.navigate("settings/player") }
+            onClick = { navController.navigate("settings/player") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.local_player_settings_title)) },
             icon = { Icon(Icons.Rounded.SdCard, null) },
-            onClick = { navController.navigate("settings/local") }
+            onClick = { navController.navigate("settings/local") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.storage)) },
             icon = { Icon(Icons.Rounded.Storage, null) },
-            onClick = { navController.navigate("settings/storage") }
+            onClick = { navController.navigate("settings/storage") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.privacy)) },
             icon = { Icon(Icons.Rounded.Security, null) },
-            onClick = { navController.navigate("settings/privacy") }
+            onClick = { navController.navigate("settings/privacy") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.backup_restore)) },
             icon = { Icon(Icons.Rounded.Restore, null) },
-            onClick = { navController.navigate("settings/backup_restore") }
+            onClick = { navController.navigate("settings/backup_restore") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.experimental_settings_title)) },
             icon = { Icon(Icons.Rounded.WarningAmber, null) },
-            onClick = { navController.navigate("settings/experimental") }
+            onClick = { navController.navigate("settings/experimental") },
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.about)) },
             icon = { Icon(Icons.Rounded.Info, null) },
-            onClick = { navController.navigate("settings/about") }
+            onClick = { navController.navigate("settings/about") },
         )
     }
 
@@ -94,14 +94,14 @@ fun SettingsScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

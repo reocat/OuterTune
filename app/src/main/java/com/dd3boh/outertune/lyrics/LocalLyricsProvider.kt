@@ -6,9 +6,9 @@ import androidx.annotation.RequiresApi
 import java.nio.file.Files
 import java.nio.file.Paths
 
-
 object LocalLyricsProvider : LyricsProvider {
     override val name = "Local LRC"
+
     override fun isEnabled(context: Context) = true
 
     /**
@@ -25,11 +25,13 @@ object LocalLyricsProvider : LyricsProvider {
         title: String,
         artist: String,
         duration: Int,
-    ): Result<String> = runCatching {
-        // ex .../music/song.ogg -> .../music/song.lrc
-        String(Files.readAllBytes(
-            Paths.get(title.substringBeforeLast('.') + ".lrc"))
-        )
-    }
-
+    ): Result<String> =
+        runCatching {
+            // ex .../music/song.ogg -> .../music/song.lrc
+            String(
+                Files.readAllBytes(
+                    Paths.get(title.substringBeforeLast('.') + ".lrc"),
+                ),
+            )
+        }
 }

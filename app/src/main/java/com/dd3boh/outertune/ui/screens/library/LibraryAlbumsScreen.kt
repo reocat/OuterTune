@@ -51,6 +51,7 @@ import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
+import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.LibraryAlbumGridItem
 import com.dd3boh.outertune.ui.component.LibraryAlbumListItem
@@ -59,14 +60,15 @@ import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryAlbumsViewModel
-import com.dd3boh.outertune.extensions.isSyncEnabled
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryAlbumsScreen(
     navController: NavController,
     viewModel: LibraryAlbumsViewModel = hiltViewModel(),
-    libraryFilterContent: @Composable() (() -> Unit)? = null,
+    libraryFilterContent:
+        @Composable()
+        (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -109,22 +111,23 @@ fun LibraryAlbumsScreen(
     val filterContent = @Composable {
         Row {
             ChipsRow(
-                chips = listOf(
-                    AlbumFilter.LIKED to stringResource(R.string.filter_liked),
-                    AlbumFilter.LIBRARY to stringResource(R.string.filter_library),
-                    AlbumFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
-                ),
+                chips =
+                    listOf(
+                        AlbumFilter.LIKED to stringResource(R.string.filter_liked),
+                        AlbumFilter.LIBRARY to stringResource(R.string.filter_library),
+                        AlbumFilter.DOWNLOADED to stringResource(R.string.filter_downloaded),
+                    ),
                 currentValue = filter,
                 onValueUpdate = { filter = it },
                 modifier = Modifier.weight(1f),
-                isLoading = { filter -> filter == AlbumFilter.LIBRARY && isSyncingLibraryAlbums }
+                isLoading = { filter -> filter == AlbumFilter.LIBRARY && isSyncingLibraryAlbums },
             )
 
             IconButton(
                 onClick = {
                     albumViewType = albumViewType.toggle()
                 },
-                modifier = Modifier.padding(end = 6.dp)
+                modifier = Modifier.padding(end = 6.dp),
             ) {
                 Icon(
                     imageVector =
@@ -132,7 +135,7 @@ fun LibraryAlbumsScreen(
                             LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
                             LibraryViewType.GRID -> Icons.Rounded.GridView
                         },
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         }
@@ -141,7 +144,7 @@ fun LibraryAlbumsScreen(
     val headerContent = @Composable {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             SortHeader(
                 sortType = sortType,
@@ -158,7 +161,7 @@ fun LibraryAlbumsScreen(
                         AlbumSortType.LENGTH -> R.string.sort_by_length
                         AlbumSortType.PLAY_TIME -> R.string.sort_by_play_time
                     }
-                }
+                },
             )
 
             Spacer(Modifier.weight(1f))
@@ -166,30 +169,30 @@ fun LibraryAlbumsScreen(
             Text(
                 text = pluralStringResource(R.plurals.n_album, albums.size, albums.size),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
         }
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         when (viewType) {
             LibraryViewType.LIST ->
                 LazyColumn(
                     state = lazyListState,
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 ) {
                     item(
                         key = "filter",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         libraryFilterContent?.let { it() } ?: filterContent()
                     }
 
                     item(
                         key = "header",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         headerContent()
                     }
@@ -197,7 +200,7 @@ fun LibraryAlbumsScreen(
                     items(
                         items = albums,
                         key = { it.id },
-                        contentType = { CONTENT_TYPE_ALBUM }
+                        contentType = { CONTENT_TYPE_ALBUM },
                     ) { album ->
                         LibraryAlbumListItem(
                             navController = navController,
@@ -205,7 +208,7 @@ fun LibraryAlbumsScreen(
                             album = album,
                             isActive = album.id == mediaMetadata?.album?.id,
                             isPlaying = isPlaying,
-                            modifier = Modifier.animateItemPlacement()
+                            modifier = Modifier.animateItemPlacement(),
                         )
                     }
                 }
@@ -214,12 +217,12 @@ fun LibraryAlbumsScreen(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 ) {
                     item(
                         key = "filter",
                         span = { GridItemSpan(maxLineSpan) },
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         libraryFilterContent?.let { it() } ?: filterContent()
                     }
@@ -227,7 +230,7 @@ fun LibraryAlbumsScreen(
                     item(
                         key = "header",
                         span = { GridItemSpan(maxLineSpan) },
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         headerContent()
                     }
@@ -235,7 +238,7 @@ fun LibraryAlbumsScreen(
                     items(
                         items = albums,
                         key = { it.id },
-                        contentType = { CONTENT_TYPE_ALBUM }
+                        contentType = { CONTENT_TYPE_ALBUM },
                     ) { album ->
                         LibraryAlbumGridItem(
                             navController = navController,
@@ -244,7 +247,7 @@ fun LibraryAlbumsScreen(
                             album = album,
                             isActive = album.id == mediaMetadata?.album?.id,
                             isPlaying = isPlaying,
-                            modifier = Modifier.animateItemPlacement()
+                            modifier = Modifier.animateItemPlacement(),
                         )
                     }
                 }

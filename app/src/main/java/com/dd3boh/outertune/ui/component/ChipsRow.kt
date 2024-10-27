@@ -29,12 +29,13 @@ fun <E> ChipsRow(
     currentValue: E,
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
-    isLoading: (E) -> Boolean = { false }
+    isLoading: (E) -> Boolean = { false },
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
     ) {
         Spacer(Modifier.width(12.dp))
 
@@ -48,10 +49,10 @@ fun <E> ChipsRow(
                     if (isLoading(value)) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
                         )
                     }
-                }
+                },
             )
 
             Spacer(Modifier.width(8.dp))
@@ -67,27 +68,29 @@ fun <E> ChipsLazyRow(
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
     selected: ((E) -> Boolean)? = null,
-    isLoading: (E) -> Boolean = { false }
+    isLoading: (E) -> Boolean = { false },
 ) {
-    val tween: FiniteAnimationSpec<IntOffset> = tween(
-        durationMillis = 200,
-        easing = LinearOutSlowInEasing
-    )
+    val tween: FiniteAnimationSpec<IntOffset> =
+        tween(
+            durationMillis = 200,
+            easing = LinearOutSlowInEasing,
+        )
 
     LazyRow(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier =
+            modifier
+                .fillMaxWidth(),
     ) {
         item(
-            key = "spacer"
+            key = "spacer",
         ) {
             Spacer(Modifier.width(12.dp))
         }
 
         items(
             items = chips,
-            key = { it.second }
-        ) {(value, label) ->
+            key = { it.second },
+        ) { (value, label) ->
             FilterChip(
                 label = { Text(label) },
                 selected = selected?.let { it(value) } ?: (currentValue == value),
@@ -98,10 +101,10 @@ fun <E> ChipsLazyRow(
                     if (isLoading(value)) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
                         )
                     }
-                }
+                },
             )
 
             Spacer(Modifier.width(8.dp))

@@ -53,11 +53,11 @@ fun NewReleaseScreen(
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
     ) {
         items(
             items = newReleaseAlbums,
-            key = { it.id }
+            key = { it.id },
         ) { album ->
             YouTubeGridItem(
                 item = album,
@@ -65,21 +65,22 @@ fun NewReleaseScreen(
                 isPlaying = isPlaying,
                 fillMaxWidth = true,
                 coroutineScope = coroutineScope,
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = {
-                            navController.navigate("album/${album.id}")
-                        },
-                        onLongClick = {
-                            menuState.show {
-                                YouTubeAlbumMenu(
-                                    albumItem = album,
-                                    navController = navController,
-                                    onDismiss = menuState::dismiss
-                                )
-                            }
-                        }
-                    )
+                modifier =
+                    Modifier
+                        .combinedClickable(
+                            onClick = {
+                                navController.navigate("album/${album.id}")
+                            },
+                            onLongClick = {
+                                menuState.show {
+                                    YouTubeAlbumMenu(
+                                        albumItem = album,
+                                        navController = navController,
+                                        onDismiss = menuState::dismiss,
+                                    )
+                                }
+                            },
+                        ),
             )
         }
 
@@ -97,14 +98,14 @@ fun NewReleaseScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

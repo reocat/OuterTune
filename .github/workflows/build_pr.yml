@@ -2,7 +2,7 @@ name: Build PR
 on:
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   build:
@@ -15,12 +15,12 @@ jobs:
         with:
           java-version: 17
           distribution: "temurin"
-          cache: 'gradle'
+          cache: "gradle"
 
       - name: Build debug APK and run jvm tests
         run: ./gradlew assembleUniversalDebug lintUniversalDebug testUniversalDebugUnitTest --stacktrace -DskipFormatKtlint
         env:
-          PULL_REQUEST: 'true'
+          PULL_REQUEST: "true"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

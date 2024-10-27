@@ -27,15 +27,15 @@ fun RowScope.SelectHeader(
     onDeselectAll: () -> Unit,
     menuState: MenuState,
     onDismiss: () -> Unit = {},
-    onRemoveFromHistory: (() -> Unit)? = null
+    onRemoveFromHistory: (() -> Unit)? = null,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = 2.dp, bottom = 3.dp)
+        modifier = Modifier.padding(top = 2.dp, bottom = 3.dp),
     ) {
         Text(
-            text = "${selectedItems.size}/${totalItemCount} selected",
-            modifier = Modifier.weight(1f)
+            text = "${selectedItems.size}/$totalItemCount selected",
+            modifier = Modifier.weight(1f),
         )
 
         // option menu
@@ -46,15 +46,15 @@ fun RowScope.SelectHeader(
                         selection = selectedItems,
                         onDismiss = menuState::dismiss,
                         clearAction = onDeselectAll,
-                        onRemoveFromHistory = onRemoveFromHistory
+                        onRemoveFromHistory = onRemoveFromHistory,
                     )
                 }
-            }
+            },
         ) {
             Icon(
                 Icons.Rounded.MoreVert,
                 contentDescription = null,
-                tint = LocalContentColor.current
+                tint = LocalContentColor.current,
             )
         }
 
@@ -62,12 +62,12 @@ fun RowScope.SelectHeader(
         val allSelected = selectedItems.size < totalItemCount
 
         IconButton(
-            onClick = if (allSelected) onSelectAll else onDeselectAll
+            onClick = if (allSelected) onSelectAll else onDeselectAll,
         ) {
             Icon(
                 imageVector = if (allSelected) Icons.Rounded.SelectAll else Icons.Rounded.Deselect,
                 contentDescription = null,
-                tint = LocalContentColor.current
+                tint = LocalContentColor.current,
             )
         }
 
@@ -77,7 +77,7 @@ fun RowScope.SelectHeader(
         ) {
             Icon(
                 Icons.Rounded.Close,
-                contentDescription = null
+                contentDescription = null,
             )
         }
     }

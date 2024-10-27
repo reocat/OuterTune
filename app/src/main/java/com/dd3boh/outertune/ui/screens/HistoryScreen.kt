@@ -95,12 +95,14 @@ fun HistoryScreen(
         }
     }
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<Long>, Long>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<Long>, Long>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -113,34 +115,41 @@ fun HistoryScreen(
     val historyPage by viewModel.historyPage
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
-    val isLoggedIn = remember(innerTubeCookie) {
-        "SAPISID" in parseCookieString(innerTubeCookie)
-    }
+    val isLoggedIn =
+        remember(innerTubeCookie) {
+            "SAPISID" in parseCookieString(innerTubeCookie)
+        }
 
-    fun dateAgoToString(dateAgo: DateAgo): String {
-        return when (dateAgo) {
+    fun dateAgoToString(dateAgo: DateAgo): String =
+        when (dateAgo) {
             DateAgo.Today -> context.getString(R.string.today)
             DateAgo.Yesterday -> context.getString(R.string.yesterday)
             DateAgo.ThisWeek -> context.getString(R.string.this_week)
             DateAgo.LastWeek -> context.getString(R.string.last_week)
             is DateAgo.Other -> dateAgo.date.format(DateTimeFormatter.ofPattern("yyyy/MM"))
         }
-    }
 
     LazyColumn(
-        contentPadding = LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom).asPaddingValues(),
-        modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top))
+        contentPadding =
+            LocalPlayerAwareWindowInsets.current
+                .only(
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+                ).asPaddingValues(),
+        modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)),
     ) {
         item {
             ChipsRow(
-                chips = if (isLoggedIn) listOf(
-                    HistorySource.LOCAL to stringResource(R.string.local_history),
-                    HistorySource.REMOTE to stringResource(R.string.remote_history),
-                ) else {
-                    listOf(HistorySource.LOCAL to stringResource(R.string.local_history))
-                },
+                chips =
+                    if (isLoggedIn) {
+                        listOf(
+                            HistorySource.LOCAL to stringResource(R.string.local_history),
+                            HistorySource.REMOTE to stringResource(R.string.remote_history),
+                        )
+                    } else {
+                        listOf(HistorySource.LOCAL to stringResource(R.string.local_history))
+                    },
                 currentValue = historySource,
-                onValueUpdate = { viewModel.historySource.value = it }
+                onValueUpdate = { viewModel.historySource.value = it },
             )
         }
 
@@ -149,15 +158,16 @@ fun HistoryScreen(
                 stickyHeader {
                     NavigationTitle(
                         title = section.title,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.background)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.background),
                     )
                 }
 
                 items(
                     items = section.songs,
-                    key = { it.id }
+                    key = { it.id },
                 ) { song ->
                     YouTubeListItem(
                         item = song,
@@ -170,50 +180,50 @@ fun HistoryScreen(
                                         YouTubeSongMenu(
                                             song = song,
                                             navController = navController,
-                                            onDismiss = menuState::dismiss
-                                        )
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Rounded.MoreVert,
-                                    contentDescription = null
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onClick = {
-                                    if (song.id == mediaMetadata?.id) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else if (song.id.startsWith("LA")) {
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = "History",
-                                                items =  section.songs.map { it.toMediaMetadata() }
-                                            )
-                                        )
-                                    } else {
-                                        playerConnection.playQueue(
-                                            YouTubeQueue(
-                                                endpoint = WatchEndpoint(videoId = song.id),
-                                                preloadItem = song.toMediaMetadata()
-                                            )
+                                            onDismiss = menuState::dismiss,
                                         )
                                     }
                                 },
-                                onLongClick = {
-                                    menuState.show {
-                                        YouTubeSongMenu(
-                                            song = song,
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss
-                                        )
-                                    }
-                                }
-                            )
-                            .animateItemPlacement()
+                            ) {
+                                Icon(
+                                    Icons.Rounded.MoreVert,
+                                    contentDescription = null,
+                                )
+                            }
+                        },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    onClick = {
+                                        if (song.id == mediaMetadata?.id) {
+                                            playerConnection.player.togglePlayPause()
+                                        } else if (song.id.startsWith("LA")) {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = "History",
+                                                    items = section.songs.map { it.toMediaMetadata() },
+                                                ),
+                                            )
+                                        } else {
+                                            playerConnection.playQueue(
+                                                YouTubeQueue(
+                                                    endpoint = WatchEndpoint(videoId = song.id),
+                                                    preloadItem = song.toMediaMetadata(),
+                                                ),
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        menuState.show {
+                                            YouTubeSongMenu(
+                                                song = song,
+                                                navController = navController,
+                                                onDismiss = menuState::dismiss,
+                                            )
+                                        }
+                                    },
+                                ).animateItemPlacement(),
                     )
                 }
             }
@@ -222,37 +232,44 @@ fun HistoryScreen(
                 stickyHeader {
                     NavigationTitle(
                         title = dateAgoToString(dateAgo),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface),
                     ) {
                         Spacer(modifier = Modifier.width(16.dp)) // why compose no margin...
 
                         if (inSelectMode) {
                             SelectHeader(
-                                selectedItems = selection.mapNotNull { eventId ->
-                                    eventIndex[eventId]?.song
-                                }.map { it.toMediaMetadata() },
+                                selectedItems =
+                                    selection
+                                        .mapNotNull { eventId ->
+                                            eventIndex[eventId]?.song
+                                        }.map { it.toMediaMetadata() },
                                 totalItemCount = selection.size,
                                 onSelectAll = {
                                     selection.clear()
-                                    selection.addAll(events.flatMap { group ->
-                                        group.value.map { it.event.id }
-                                    })
+                                    selection.addAll(
+                                        events.flatMap { group ->
+                                            group.value.map { it.event.id }
+                                        },
+                                    )
                                 },
                                 onDeselectAll = { selection.clear() },
                                 menuState = menuState,
                                 onDismiss = onExitSelectionMode,
                                 onRemoveFromHistory = {
-                                    val sel = selection.mapNotNull { eventId ->
-                                        eventIndex[eventId]?.event
-                                    }
+                                    val sel =
+                                        selection.mapNotNull { eventId ->
+                                            eventIndex[eventId]?.event
+                                        }
                                     database.query {
                                         sel.forEach {
                                             delete(it)
@@ -286,7 +303,7 @@ fun HistoryScreen(
                             if (inSelectMode) {
                                 Checkbox(
                                     checked = event.event.id in selection,
-                                    onCheckedChange = onCheckedChange
+                                    onCheckedChange = onCheckedChange,
                                 )
                             } else {
                                 IconButton(
@@ -296,45 +313,45 @@ fun HistoryScreen(
                                                 originalSong = event.song,
                                                 event = event.event,
                                                 navController = navController,
-                                                onDismiss = menuState::dismiss
+                                                onDismiss = menuState::dismiss,
                                             )
                                         }
-                                    }
+                                    },
                                 ) {
                                     Icon(
                                         Icons.Rounded.MoreVert,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onClick = {
-                                    if (inSelectMode) {
-                                        onCheckedChange(event.event.id !in selection)
-                                    } else if (event.song.id == mediaMetadata?.id) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else {
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = dateAgoToString(dateAgo),
-                                                items = eventsGroup.map { it.song.toMediaMetadata() },
-                                                startIndex = index
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    onClick = {
+                                        if (inSelectMode) {
+                                            onCheckedChange(event.event.id !in selection)
+                                        } else if (event.song.id == mediaMetadata?.id) {
+                                            playerConnection.player.togglePlayPause()
+                                        } else {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = dateAgoToString(dateAgo),
+                                                    items = eventsGroup.map { it.song.toMediaMetadata() },
+                                                    startIndex = index,
+                                                ),
                                             )
-                                        )
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!inSelectMode) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        inSelectMode = true
-                                        onCheckedChange(true)
-                                    }
-                                }
-                            )
-                            .animateItemPlacement()
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!inSelectMode) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            inSelectMode = true
+                                            onCheckedChange(true)
+                                        }
+                                    },
+                                ).animateItemPlacement(),
                     )
                 }
             }
@@ -346,13 +363,13 @@ fun HistoryScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 }

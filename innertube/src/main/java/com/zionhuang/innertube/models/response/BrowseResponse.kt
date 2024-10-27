@@ -1,11 +1,11 @@
 package com.zionhuang.innertube.models.response
 
-import com.zionhuang.innertube.models.MusicDetailHeaderRenderer
-import com.zionhuang.innertube.models.MusicEditablePlaylistDetailHeaderRenderer
 import com.zionhuang.innertube.models.Button
 import com.zionhuang.innertube.models.Continuation
 import com.zionhuang.innertube.models.GridRenderer
 import com.zionhuang.innertube.models.Menu
+import com.zionhuang.innertube.models.MusicDetailHeaderRenderer
+import com.zionhuang.innertube.models.MusicEditablePlaylistDetailHeaderRenderer
 import com.zionhuang.innertube.models.MusicShelfRenderer
 import com.zionhuang.innertube.models.ResponseContext
 import com.zionhuang.innertube.models.Runs
@@ -23,7 +23,7 @@ data class BrowseResponse(
     val header: Header?,
     val microformat: Microformat?,
     val responseContext: ResponseContext,
-    val background: ThumbnailRenderer?
+    val background: ThumbnailRenderer?,
 ) {
     @Serializable
     data class Contents(

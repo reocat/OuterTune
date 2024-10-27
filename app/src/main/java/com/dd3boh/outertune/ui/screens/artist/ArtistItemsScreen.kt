@@ -95,7 +95,8 @@ fun ArtistItemsScreen(
     val itemsPage by viewModel.itemsPage.collectAsState()
     val songIndex: Map<String, SongItem> by remember(itemsPage) {
         derivedStateOf {
-            itemsPage?.items
+            itemsPage
+                ?.items
                 ?.filterIsInstance<SongItem>()
                 ?.associateBy { it.id }
                 .orEmpty()
@@ -103,12 +104,14 @@ fun ArtistItemsScreen(
     }
 
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<String>, String>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
+    val selection =
+        rememberSaveable(
+            saver =
+                listSaver<MutableList<String>, String>(
+                    save = { it.toList() },
+                    restore = { it.toMutableStateList() },
+                ),
+        ) { mutableStateListOf() }
     val onExitSelectionMode = {
         inSelectMode = false
         selection.clear()
@@ -130,7 +133,7 @@ fun ArtistItemsScreen(
 
     if (itemsPage == null) {
         ShimmerHost(
-            modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+            modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current),
         ) {
             repeat(8) {
                 ListItemPlaceHolder()
@@ -142,12 +145,14 @@ fun ArtistItemsScreen(
         if (inSelectMode) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             ) {
                 SelectHeader(
-                    selectedItems = selection.mapNotNull { songId ->
-                        songIndex[songId]
-                    }.map { it.toMediaMetadata() },
+                    selectedItems =
+                        selection
+                            .mapNotNull { songId ->
+                                songIndex[songId]
+                            }.map { it.toMediaMetadata() },
                     totalItemCount = selection.size,
                     onSelectAll = {
                         selection.clear()
@@ -155,17 +160,17 @@ fun ArtistItemsScreen(
                     },
                     onDeselectAll = { selection.clear() },
                     menuState = menuState,
-                    onDismiss = onExitSelectionMode
+                    onDismiss = onExitSelectionMode,
                 )
             }
         }
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
         ) {
             items(
                 items = itemsPage?.items?.filterIsInstance<SongItem>().orEmpty(),
-                key = { it.id }
+                key = { it.id },
             ) { song ->
                 val onCheckedChange: (Boolean) -> Unit = {
                     if (it) {
@@ -184,7 +189,7 @@ fun ArtistItemsScreen(
                             if (inSelectMode) {
                                 Checkbox(
                                     checked = song.id in selection,
-                                    onCheckedChange = onCheckedChange
+                                    onCheckedChange = onCheckedChange,
                                 )
                             } else {
                                 IconButton(
@@ -193,45 +198,52 @@ fun ArtistItemsScreen(
                                             YouTubeSongMenu(
                                                 song = song,
                                                 navController = navController,
-                                                onDismiss = menuState::dismiss
+                                                onDismiss = menuState::dismiss,
                                             )
                                         }
-                                    }
+                                    },
                                 ) {
                                     Icon(
                                         Icons.Rounded.MoreVert,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .combinedClickable(
-                                onClick = {
-                                    if (inSelectMode) {
-                                        onCheckedChange(song.id !in selection)
-                                    } else if (song.id == mediaMetadata?.id) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else {
-                                        playerConnection.playQueue(YouTubeQueue(song.endpoint ?: WatchEndpoint(
-                                            videoId = song.id), song.toMediaMetadata()))
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!inSelectMode) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        inSelectMode = true
-                                        onCheckedChange(true)
-                                    }
-                                }
-                            )
+                        modifier =
+                            Modifier
+                                .combinedClickable(
+                                    onClick = {
+                                        if (inSelectMode) {
+                                            onCheckedChange(song.id !in selection)
+                                        } else if (song.id == mediaMetadata?.id) {
+                                            playerConnection.player.togglePlayPause()
+                                        } else {
+                                            playerConnection.playQueue(
+                                                YouTubeQueue(
+                                                    song.endpoint ?: WatchEndpoint(
+                                                        videoId = song.id,
+                                                    ),
+                                                    song.toMediaMetadata(),
+                                                ),
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!inSelectMode) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            inSelectMode = true
+                                            onCheckedChange(true)
+                                        }
+                                    },
+                                ),
                     )
                 }
 
                 SwipeToQueueBox(
                     item = song.toMediaItem(),
                     content = { content() },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
                 )
             }
 
@@ -248,61 +260,70 @@ fun ArtistItemsScreen(
     } else {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
         ) {
             items(
                 items = itemsPage?.items.orEmpty(),
-                key = { it.id }
+                key = { it.id },
             ) { item ->
                 YouTubeGridItem(
                     item = item,
-                    isActive = when (item) {
-                        is SongItem -> mediaMetadata?.id == item.id
-                        is AlbumItem -> mediaMetadata?.album?.id == item.id
-                        else -> false
-                    },
+                    isActive =
+                        when (item) {
+                            is SongItem -> mediaMetadata?.id == item.id
+                            is AlbumItem -> mediaMetadata?.album?.id == item.id
+                            else -> false
+                        },
                     isPlaying = isPlaying,
                     fillMaxWidth = true,
                     coroutineScope = coroutineScope,
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = {
-                                when (item) {
-                                    is SongItem -> playerConnection.playQueue(YouTubeQueue(item.endpoint ?: WatchEndpoint(videoId = item.id), item.toMediaMetadata()))
-                                    is AlbumItem -> navController.navigate("album/${item.id}")
-                                    is ArtistItem -> navController.navigate("artist/${item.id}")
-                                    is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
-                                }
-                            },
-                            onLongClick = {
-                                menuState.show {
+                    modifier =
+                        Modifier
+                            .combinedClickable(
+                                onClick = {
                                     when (item) {
-                                        is SongItem -> YouTubeSongMenu(
-                                            song = item,
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss
-                                        )
-
-                                        is AlbumItem -> YouTubeAlbumMenu(
-                                            albumItem = item,
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss
-                                        )
-
-                                        is ArtistItem -> YouTubeArtistMenu(
-                                            artist = item,
-                                            onDismiss = menuState::dismiss
-                                        )
-
-                                        is PlaylistItem -> YouTubePlaylistMenu(
-                                            playlist = item,
-                                            coroutineScope = coroutineScope,
-                                            onDismiss = menuState::dismiss
-                                        )
+                                        is SongItem ->
+                                            playerConnection.playQueue(
+                                                YouTubeQueue(item.endpoint ?: WatchEndpoint(videoId = item.id), item.toMediaMetadata()),
+                                            )
+                                        is AlbumItem -> navController.navigate("album/${item.id}")
+                                        is ArtistItem -> navController.navigate("artist/${item.id}")
+                                        is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
                                     }
-                                }
-                            }
-                        ).animateItemPlacement()
+                                },
+                                onLongClick = {
+                                    menuState.show {
+                                        when (item) {
+                                            is SongItem ->
+                                                YouTubeSongMenu(
+                                                    song = item,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+
+                                            is AlbumItem ->
+                                                YouTubeAlbumMenu(
+                                                    albumItem = item,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+
+                                            is ArtistItem ->
+                                                YouTubeArtistMenu(
+                                                    artist = item,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+
+                                            is PlaylistItem ->
+                                                YouTubePlaylistMenu(
+                                                    playlist = item,
+                                                    coroutineScope = coroutineScope,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+                                        }
+                                    }
+                                },
+                            ).animateItemPlacement(),
                 )
             }
         }
@@ -313,25 +334,26 @@ fun ArtistItemsScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
+            modifier =
+                Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter),
         )
     }
 }

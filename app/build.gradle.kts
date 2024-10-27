@@ -115,7 +115,6 @@ android {
     lint {
         disable += "MissingTranslation"
     }
-
 }
 
 ksp {
@@ -182,6 +181,6 @@ dependencies {
      * to work on the scanner itself, switch the implementation below AND
      * include the project (uncomment the include line) in /settings.gradle.kts
      */
-      implementation(files("prebuilt/ffMetadataEx-release.aar")) // prebuilt
+    implementation(files("prebuilt/ffMetadataEx-release.aar")) // prebuilt
 //     implementation(project(":ffMetadataEx")) // self built
 }

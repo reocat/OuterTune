@@ -67,30 +67,33 @@ fun MiniPlayer(
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(MiniPlayerHeight)
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(MiniPlayerHeight)
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
     ) {
         LinearProgressIndicator(
             progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .align(Alignment.BottomCenter),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .align(Alignment.BottomCenter),
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .fillMaxSize()
-                .padding(end = 6.dp),
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .padding(end = 6.dp),
         ) {
             Box(Modifier.weight(1f)) {
                 mediaMetadata?.let {
                     MiniMediaInfo(
                         mediaMetadata = it,
                         error = error,
-                        modifier = Modifier.padding(horizontal = 6.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp),
                     )
                 }
             }
@@ -103,21 +106,30 @@ fun MiniPlayer(
                     } else {
                         playerConnection.player.togglePlayPause()
                     }
-                }
+                },
             ) {
                 Icon(
-                    imageVector = if(playbackState == Player.STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                    contentDescription = null
+                    imageVector =
+                        if (playbackState ==
+                            Player.STATE_ENDED
+                        ) {
+                            Icons.Rounded.Replay
+                        } else if (isPlaying) {
+                            Icons.Rounded.Pause
+                        } else {
+                            Icons.Rounded.PlayArrow
+                        },
+                    contentDescription = null,
                 )
             }
 
             IconButton(
                 enabled = canSkipNext,
-                onClick = playerConnection.player::seekToNext
+                onClick = playerConnection.player::seekToNext,
             ) {
                 Icon(
                     painter = painterResource(R.drawable.skip_next),
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         }
@@ -132,7 +144,7 @@ fun MiniMediaInfo(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Box(modifier = Modifier.padding(6.dp)) {
             if (mediaMetadata.isLocal) {
@@ -140,10 +152,11 @@ fun MiniMediaInfo(
                 AsyncLocalImage(
                     image = { getLocalThumbnail(mediaMetadata.localPath, true) },
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                        .aspectRatio(ratio = 1f)
+                    modifier =
+                        Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                            .aspectRatio(ratio = 1f),
                 )
             } else {
                 // YTM thumbnail arts
@@ -151,40 +164,43 @@ fun MiniMediaInfo(
                     model = mediaMetadata.thumbnailUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                    modifier =
+                        Modifier
+                            .size(48.dp)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius)),
                 )
             }
             androidx.compose.animation.AnimatedVisibility(
                 visible = error != null,
                 enter = fadeIn(),
-                exit = fadeOut()
+                exit = fadeOut(),
             ) {
                 Box(
                     Modifier
                         .size(48.dp)
                         .background(
                             color = Color.Black.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(ThumbnailCornerRadius)
-                        )
+                            shape = RoundedCornerShape(ThumbnailCornerRadius),
+                        ),
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .align(Alignment.Center)
+                        modifier =
+                            Modifier
+                                .align(Alignment.Center),
                     )
                 }
             }
         }
 
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 6.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(horizontal = 6.dp),
         ) {
             Text(
                 text = mediaMetadata.title,

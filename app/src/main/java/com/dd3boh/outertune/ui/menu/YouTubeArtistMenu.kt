@@ -56,36 +56,45 @@ fun YouTubeArtistMenu(
                                     name = artist.title,
                                     channelId = artist.channelId,
                                     thumbnailUrl = artist.thumbnail,
-                                ).toggleLike()
+                                ).toggleLike(),
                             )
                         }
                     }
-                }
+                },
             ) {
                 Icon(
-                    painter = painterResource(if (libraryArtist?.artist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
+                    painter =
+                        painterResource(
+                            if (libraryArtist?.artist?.bookmarkedAt !=
+                                null
+                            ) {
+                                R.drawable.favorite
+                            } else {
+                                R.drawable.favorite_border
+                            },
+                        ),
                     tint = if (libraryArtist?.artist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-
-        }
+        },
     )
 
     HorizontalDivider()
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         artist.radioEndpoint?.let { watchEndpoint ->
             GridMenuItem(
                 icon = Icons.Rounded.Radio,
-                title = R.string.start_radio
+                title = R.string.start_radio,
             ) {
                 playerConnection.playQueue(YouTubeQueue(watchEndpoint))
                 onDismiss()
@@ -94,7 +103,7 @@ fun YouTubeArtistMenu(
         artist.shuffleEndpoint?.let { watchEndpoint ->
             GridMenuItem(
                 icon = Icons.Rounded.Shuffle,
-                title = R.string.shuffle
+                title = R.string.shuffle,
             ) {
                 playerConnection.playQueue(YouTubeQueue(watchEndpoint))
                 onDismiss()
@@ -102,13 +111,14 @@ fun YouTubeArtistMenu(
         }
         GridMenuItem(
             icon = Icons.Rounded.Share,
-            title = R.string.share
+            title = R.string.share,
         ) {
-            val intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, artist.shareLink)
-            }
+            val intent =
+                Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, artist.shareLink)
+                }
             context.startActivity(Intent.createChooser(intent, null))
             onDismiss()
         }

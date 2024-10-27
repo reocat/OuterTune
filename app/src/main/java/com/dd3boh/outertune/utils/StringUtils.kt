@@ -26,8 +26,9 @@ fun md5(str: String): String {
 }
 
 fun joinByBullet(vararg str: String?) =
-    str.filterNot {
-        it.isNullOrEmpty()
-    }.joinToString(separator = " • ")
+    str
+        .filterNot {
+            it.isNullOrEmpty()
+        }.joinToString(separator = " • ")
 
 fun String.urlEncode(): String = URLEncoder.encode(this, "UTF-8")

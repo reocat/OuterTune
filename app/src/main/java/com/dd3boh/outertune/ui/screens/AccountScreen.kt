@@ -55,79 +55,82 @@ fun AccountScreen(
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
     ) {
         items(
             items = playlists.orEmpty(),
-            key = { it.id }
+            key = { it.id },
         ) { item ->
             YouTubeGridItem(
                 item = item,
                 fillMaxWidth = true,
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = {
-                            navController.navigate("online_playlist/${item.id}")
-                        },
-                        onLongClick = {
-                            menuState.show {
-                                YouTubePlaylistMenu(
-                                    playlist = item,
-                                    coroutineScope = coroutineScope,
-                                    onDismiss = menuState::dismiss
-                                )
-                            }
-                        }
-                    )
+                modifier =
+                    Modifier
+                        .combinedClickable(
+                            onClick = {
+                                navController.navigate("online_playlist/${item.id}")
+                            },
+                            onLongClick = {
+                                menuState.show {
+                                    YouTubePlaylistMenu(
+                                        playlist = item,
+                                        coroutineScope = coroutineScope,
+                                        onDismiss = menuState::dismiss,
+                                    )
+                                }
+                            },
+                        ),
             )
         }
 
         items(
             items = albums.orEmpty(),
-            key = { it.id }
+            key = { it.id },
         ) { item ->
             YouTubeGridItem(
                 item = item,
                 fillMaxWidth = true,
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = {
-                            navController.navigate("album/${item.id}")
-                        },
-                        onLongClick = {
-                            menuState.show {
-                                YouTubeAlbumMenu(
-                                    albumItem = item,
-                                    navController = navController,
-                                    onDismiss = menuState::dismiss
-                                )
-                            }
-                        }
-                    )
+                modifier =
+                    Modifier
+                        .combinedClickable(
+                            onClick = {
+                                navController.navigate("album/${item.id}")
+                            },
+                            onLongClick = {
+                                menuState.show {
+                                    YouTubeAlbumMenu(
+                                        albumItem = item,
+                                        navController = navController,
+                                        onDismiss = menuState::dismiss,
+                                    )
+                                }
+                            },
+                        ),
             )
         }
 
         items(
             items = artists.orEmpty(),
-            key = { it.id }
+            key = { it.id },
         ) { item ->
             YouTubeGridItem(
                 item = item,
                 fillMaxWidth = true,
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = {
-                            navController.navigate("artist/${item.id}")
-                        },
-                        onLongClick = {
-                            menuState.show {
-                                YouTubeArtistMenu(
-                                    artist = item,
-                                    onDismiss = menuState::dismiss
-                                )
-                            }
-                        }
-                    )
+                modifier =
+                    Modifier
+                        .combinedClickable(
+                            onClick = {
+                                navController.navigate("artist/${item.id}")
+                            },
+                            onLongClick = {
+                                menuState.show {
+                                    YouTubeArtistMenu(
+                                        artist = item,
+                                        onDismiss = menuState::dismiss,
+                                    )
+                                }
+                            },
+                        ),
             )
         }
 
@@ -145,14 +148,14 @@ fun AccountScreen(
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

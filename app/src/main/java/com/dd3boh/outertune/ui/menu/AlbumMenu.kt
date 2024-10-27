@@ -95,9 +95,10 @@ fun AlbumMenu(
     var songs by remember {
         mutableStateOf(emptyList<Song>())
     }
-    val allInLibrary = remember(songs) {
-        songs.all { it.song.inLibrary != null }
-    }
+    val allInLibrary =
+        remember(songs) {
+            songs.all { it.song.inLibrary != null }
+        }
 //    for when local albums are a thing
 //    val allLocal by remember(songs) { // if only local songs in this selection
 //        mutableStateOf(songs.isNotEmpty() && songs.all { it.song.isLocal })
@@ -119,16 +120,18 @@ fun AlbumMenu(
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it.id]?.state == STATE_COMPLETED })
+                if (songs.all { downloads[it.id]?.state == STATE_COMPLETED }) {
                     STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it.id]?.state == STATE_QUEUED
-                                || downloads[it.id]?.state == STATE_DOWNLOADING
-                                || downloads[it.id]?.state == STATE_COMPLETED
-                    })
+                } else if (songs.all {
+                        downloads[it.id]?.state == STATE_QUEUED ||
+                            downloads[it.id]?.state == STATE_DOWNLOADING ||
+                            downloads[it.id]?.state == STATE_COMPLETED
+                    }
+                ) {
                     STATE_DOWNLOADING
-                else
+                } else {
                     STATE_STOPPED
+                }
         }
     }
 
@@ -137,7 +140,7 @@ fun AlbumMenu(
     val rotationAnimation by animateFloatAsState(
         targetValue = refetchIconDegree,
         animationSpec = tween(durationMillis = 800),
-        label = ""
+        label = "",
     )
 
     var showChoosePlaylistDialog by rememberSaveable {
@@ -155,13 +158,18 @@ fun AlbumMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, songs.map { it.toMediaMetadata() }, playerConnection,
-                forceInsert = true, delta = false)
+            queueBoard.add(
+                queueName,
+                songs.map { it.toMediaMetadata() },
+                playerConnection,
+                forceInsert = true,
+                delta = false,
+            )
             queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
             showChooseQueueDialog = false
-        }
+        },
     )
 
     AddToPlaylistDialog(
@@ -178,38 +186,39 @@ fun AlbumMenu(
         },
         onDismiss = {
             showChoosePlaylistDialog = false
-        }
+        },
     )
 
     if (showSelectArtistDialog) {
         ListDialog(
-            onDismiss = { showSelectArtistDialog = false }
+            onDismiss = { showSelectArtistDialog = false },
         ) {
             items(
                 items = album.artists,
-                key = { it.id }
+                key = { it.id },
             ) { artist ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(ListItemHeight)
-                        .clickable {
-                            navController.navigate("artist/${artist.id}")
-                            showSelectArtistDialog = false
-                            onDismiss()
-                        }
-                        .padding(horizontal = 12.dp),
+                    modifier =
+                        Modifier
+                            .height(ListItemHeight)
+                            .clickable {
+                                navController.navigate("artist/${artist.id}")
+                                showSelectArtistDialog = false
+                                onDismiss()
+                            }.padding(horizontal = 12.dp),
                 ) {
                     Box(
                         modifier = Modifier.padding(8.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         AsyncImage(
                             model = artist.thumbnailUrl,
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(ListThumbnailSize)
-                                .clip(CircleShape)
+                            modifier =
+                                Modifier
+                                    .size(ListThumbnailSize)
+                                    .clip(CircleShape),
                         )
                     }
                     Text(
@@ -218,9 +227,10 @@ fun AlbumMenu(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp)
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -237,50 +247,51 @@ fun AlbumMenu(
                     database.query {
                         update(album.album.toggleLike())
                     }
-                }
+                },
             ) {
                 Icon(
                     painter = painterResource(if (album.album.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
                     tint = if (album.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        }
+        },
     )
 
     HorizontalDivider()
 
     GridMenu(
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
     ) {
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
-            title = R.string.play_next
+            title = R.string.play_next,
         ) {
             onDismiss()
             playerConnection.playNext(songs.map { it.toMediaItem() })
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }
         if (allInLibrary) {
             GridMenuItem(
                 icon = Icons.Rounded.LibraryAddCheck,
-                title = R.string.remove_all_from_library
+                title = R.string.remove_all_from_library,
             ) {
                 database.transaction {
                     songs.forEach {
@@ -291,7 +302,7 @@ fun AlbumMenu(
         } else {
             GridMenuItem(
                 icon = Icons.Rounded.LibraryAdd,
-                title = R.string.add_all_to_library
+                title = R.string.add_all_to_library,
             ) {
                 database.transaction {
                     songs.forEach {
@@ -303,9 +314,10 @@ fun AlbumMenu(
         DownloadGridMenu(
             state = downloadState,
             onDownload = {
-                val _songs = songs
-                    .filterNot { it.song.isLocal }
-                    .map{ it.toMediaMetadata() }
+                val _songs =
+                    songs
+                        .filterNot { it.song.isLocal }
+                        .map { it.toMediaMetadata() }
                 downloadUtil.download(_songs, context)
             },
             onRemoveDownload = {
@@ -314,14 +326,14 @@ fun AlbumMenu(
                         context,
                         ExoDownloadService::class.java,
                         song.id,
-                        false
+                        false,
                     )
                 }
-            }
+            },
         )
         GridMenuItem(
             icon = R.drawable.artist,
-            title = R.string.view_artist
+            title = R.string.view_artist,
         ) {
             if (album.artists.size == 1) {
                 navController.navigate("artist/${album.artists[0].id}")
@@ -335,10 +347,10 @@ fun AlbumMenu(
                 Icon(
                     imageVector = Icons.Rounded.Sync,
                     contentDescription = null,
-                    modifier = Modifier.graphicsLayer(rotationZ = rotationAnimation)
+                    modifier = Modifier.graphicsLayer(rotationZ = rotationAnimation),
                 )
             },
-            title = R.string.refetch
+            title = R.string.refetch,
         ) {
             refetchIconDegree -= 360
             scope.launch(Dispatchers.IO) {
@@ -351,16 +363,16 @@ fun AlbumMenu(
         }
         GridMenuItem(
             icon = Icons.Rounded.Share,
-            title = R.string.share
+            title = R.string.share,
         ) {
             onDismiss()
-            val intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/browse/${album.album.id}")
-            }
+            val intent =
+                Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/browse/${album.album.id}")
+                }
             context.startActivity(Intent.createChooser(intent, null))
         }
-
     }
 }

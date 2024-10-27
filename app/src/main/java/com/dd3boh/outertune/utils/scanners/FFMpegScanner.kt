@@ -43,8 +43,9 @@ class FFMpegScanner : MetadataScanner {
      * @param path Full file path
      */
     override fun getAllMetadata(path: String): SongTempData {
-        if (EXTRACTOR_DEBUG)
+        if (EXTRACTOR_DEBUG) {
             Timber.tag(EXTRACTOR_TAG).d("Starting Full Extractor session on: $path")
+        }
         val ffmpeg = FFMpegWrapper()
         val data = ffmpeg.getFullAudioMetadata(path)
 
@@ -87,32 +88,34 @@ class FFMpegScanner : MetadataScanner {
             }
         }
 
-
         /**
          * These vars need a bit more parsing
          */
 
-        val title: String = if (rawTitle != null && rawTitle?.isBlank() == false) { // songs with no title tag
-            rawTitle!!.trim()
-        } else {
-            path.substringAfterLast('/').substringBeforeLast('.')
-        }
+        val title: String =
+            if (rawTitle != null && rawTitle?.isBlank() == false) { // songs with no title tag
+                rawTitle!!.trim()
+            } else {
+                path.substringAfterLast('/').substringBeforeLast('.')
+            }
 
-        val duration: Long = try {
-            (parseLong(rawDuration?.trim()) / toSeconds).roundToLong() // just let it crash
-        } catch (e: Exception) {
+        val duration: Long =
+            try {
+                (parseLong(rawDuration?.trim()) / toSeconds).roundToLong() // just let it crash
+            } catch (e: Exception) {
 //            e.printStackTrace()
-            -1L
-        }
+                -1L
+            }
 
         // should never be invalid if scanner even gets here fine...
         val dateModified = LocalDateTime.ofInstant(Instant.ofEpochMilli(File(path).lastModified()), ZoneOffset.UTC)
         val albumId = if (albumName != null) AlbumEntity.generateAlbumId() else null
-        val mime = if (type != null && codec != null) {
-            "${type?.trim()}/${codec?.trim()}"
-        } else {
-            "Unknown"
-        }
+        val mime =
+            if (type != null && codec != null) {
+                "${type?.trim()}/${codec?.trim()}"
+            } else {
+                "Unknown"
+            }
 
         /**
          * Parse the more complicated structures
@@ -124,12 +127,17 @@ class FFMpegScanner : MetadataScanner {
         var date: LocalDateTime? = null
 
         // parse album
-        val albumEntity = if (albumName != null && albumId != null) AlbumEntity(
-            id = albumId,
-            title = albumName!!,
-            songCount = 1,
-            duration = duration.toInt()
-        ) else null
+        val albumEntity =
+            if (albumName != null && albumId != null) {
+                AlbumEntity(
+                    id = albumId,
+                    title = albumName!!,
+                    songCount = 1,
+                    duration = duration.toInt(),
+                )
+            } else {
+                null
+            }
 
         // parse artist
         artists?.split(ARTIST_SEPARATORS)?.forEach { element ->
@@ -157,27 +165,27 @@ class FFMpegScanner : MetadataScanner {
             // user error at this point. I am not parsing all the weird ways the string can come in
         }
 
-
         return SongTempData(
             Song(
-                song = SongEntity(
-                    id = songId,
-                    title = title,
-                    duration = duration.toInt(), // we use seconds for duration
-                    thumbnailUrl = path,
-                    albumId = albumId,
-                    albumName = albumName,
-                    year = year,
-                    date = date,
-                    dateModified = dateModified,
-                    isLocal = true,
-                    inLibrary = LocalDateTime.now(),
-                    localPath = path
-                ),
+                song =
+                    SongEntity(
+                        id = songId,
+                        title = title,
+                        duration = duration.toInt(), // we use seconds for duration
+                        thumbnailUrl = path,
+                        albumId = albumId,
+                        albumName = albumName,
+                        year = year,
+                        date = date,
+                        dateModified = dateModified,
+                        isLocal = true,
+                        inLibrary = LocalDateTime.now(),
+                        localPath = path,
+                    ),
                 artists = artistList,
                 // album not working
                 album = albumEntity,
-                genre = genresList
+                genre = genresList,
             ),
             FormatEntity(
                 id = songId,
@@ -188,9 +196,8 @@ class FFMpegScanner : MetadataScanner {
                 sampleRate = sampleRate?.let { parseInt(it.trim()) } ?: -1,
                 contentLength = duration,
                 loudnessDb = replayGain,
-                playbackUrl = null
-            )
+                playbackUrl = null,
+            ),
         )
     }
-
 }

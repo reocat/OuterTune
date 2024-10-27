@@ -49,19 +49,17 @@ class MultiQueueObject(
     var index: Int, // order of queue
     val playlistId: String? = null,
 ) {
-
     /**
      * Retrieve the current queue in list form, with shuffle state taken in account
      *
      * @return Queue object (entire object)
      */
-    fun getCurrentQueueShuffled(): MutableList<MediaMetadata> {
-        return if (shuffled) {
+    fun getCurrentQueueShuffled(): MutableList<MediaMetadata> =
+        if (shuffled) {
             queue
         } else {
             unShuffled
         }
-    }
 
     /**
      * Retrieve the total duration of all songs
@@ -81,18 +79,18 @@ class MultiQueueObject(
  * Multiple queues manager. Methods will not automatically (re)load queues into the player unless
  * otherwise explicitly stated.
  */
-class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
+class QueueBoard(
+    queues: MutableList<MultiQueueObject> = ArrayList(),
+) {
     private val masterQueues: MutableList<MultiQueueObject> = queues
     private var masterIndex = masterQueues.size - 1 // current queue index
     var detachedHead = false
-
 
     /**
      * ========================
      * Data structure management
      * ========================
      */
-
 
     /**
      * Regenerate indexes of queues to reflect their position
@@ -107,14 +105,20 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @param item
      */
-    private fun bubbleUp(item: MultiQueueObject, player: MusicService) = bubbleUp(masterQueues.indexOf(item), player)
+    private fun bubbleUp(
+        item: MultiQueueObject,
+        player: MusicService,
+    ) = bubbleUp(masterQueues.indexOf(item), player)
 
     /**
      * Push this queue at index to top of the master queue list, and track set this as current queue.
      *
      * @param index
      */
-    private fun bubbleUp(index: Int, player: MusicService) {
+    private fun bubbleUp(
+        index: Int,
+        player: MusicService,
+    ) {
         if (index == masterQueues.size - 1) {
             return
         }
@@ -165,13 +169,14 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         forceInsert: Boolean = false,
         replace: Boolean = false,
         delta: Boolean = true,
-        startIndex: Int = 0
+        startIndex: Int = 0,
     ) {
-        if (QUEUE_DEBUG)
+        if (QUEUE_DEBUG) {
             Timber.tag(TAG).d(
                 "Adding to queue \"$title\". medialist size = ${mediaList.size}. " +
-                        "forceInsert/replace/delta/startIndex = $forceInsert/$replace/$delta/$startIndex"
+                    "forceInsert/replace/delta/startIndex = $forceInsert/$replace/$delta/$startIndex",
             )
+        }
 
         if (mediaList.isEmpty()) {
             return
@@ -182,8 +187,9 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             // Titles ending in "+​" (u200B) signify a extension queue
             val anyExts = masterQueues.firstOrNull { it.title == match.title + " +\u200B" }
             if (replace) { // force replace
-                if (QUEUE_DEBUG)
+                if (QUEUE_DEBUG) {
                     Timber.tag(TAG).d("Adding to queue: Replacing all queue items")
+                }
                 match.queue.clear()
                 match.queue.addAll(mediaList.filterNotNull())
                 match.unShuffled.clear()
@@ -195,7 +201,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                         player.database.updateQueue(match)
                     }
                 }
-                bubbleUp(match, player)  // move queue to end of list so it shows as most recent
+                bubbleUp(match, player) // move queue to end of list so it shows as most recent
                 return
             }
 
@@ -203,8 +209,9 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             // UNLESS forced to
             val containsAll = mediaList.all { s -> match.queue.any { s?.id == it.id } } // if is subset
             if (containsAll && match.queue.size == mediaList.size && !forceInsert) { // jump to song, don't add
-                if (QUEUE_DEBUG)
+                if (QUEUE_DEBUG) {
                     Timber.tag(TAG).d("Adding to queue: jump only")
+                }
                 // find the song in existing queue song, track the index to jump to
                 val findSong = match.queue.firstOrNull { it.id == mediaList[startIndex]?.id }
                 if (findSong != null) {
@@ -212,10 +219,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     // no need update index in db, onMediaItemTransition() has alread done it
                 }
 
-                bubbleUp(match, player)  // move queue to end of list so it shows as most recent
+                bubbleUp(match, player) // move queue to end of list so it shows as most recent
             } else if (delta) {
-                if (QUEUE_DEBUG)
+                if (QUEUE_DEBUG) {
                     Timber.tag(TAG).d("Adding to queue: delta additive")
+                }
                 // add only the songs that are not already in the queue
                 match.queue.addAll(mediaList.filter { s -> match.queue.none { s?.id == it.id } }.filterNotNull())
                 match.unShuffled.addAll(mediaList.filter { s -> match.queue.none { s?.id == it.id } }.filterNotNull())
@@ -234,8 +242,9 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 bubbleUp(match, player) // move queue to end of list so it shows as most recent
             } else if (match.title.endsWith("+\u200B") || anyExts != null) { // this queue is an already an extension queue
-                if (QUEUE_DEBUG)
+                if (QUEUE_DEBUG) {
                     Timber.tag(TAG).d("Adding to queue: extension queue additive")
+                }
                 // add items to existing queue unconditionally
                 if (anyExts != null) {
                     anyExts.queue.addAll(mediaList.filterNotNull())
@@ -254,10 +263,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 // don't change index
                 bubbleUp(match, player) // move queue to end of list so it shows as most recent
-            }
-            else { // make new extension queue
-                if (QUEUE_DEBUG)
+            } else { // make new extension queue
+                if (QUEUE_DEBUG) {
                     Timber.tag(TAG).d("Adding to queue: extension queue creation (and additive)")
+                }
                 // add items to NEW queue unconditionally (add entirely new queue)
                 if (masterQueues.size > MAX_QUEUES) {
                     deleteQueue(masterQueues.first(), player)
@@ -270,14 +279,16 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 shufQueue.addAll((mediaList.filterNotNull()))
                 unShufQueue.addAll((mediaList.filterNotNull()))
 
-                val newQueue = MultiQueueObject(
-                    QueueEntity.generateQueueId(),
-                    "$title +\u200B",
-                    shufQueue,
-                    unShufQueue,
-                    false,
-                    match.queuePos,
-                    masterQueues.size)
+                val newQueue =
+                    MultiQueueObject(
+                        QueueEntity.generateQueueId(),
+                        "$title +\u200B",
+                        shufQueue,
+                        unShufQueue,
+                        false,
+                        match.queuePos,
+                        masterQueues.size,
+                    )
                 masterQueues.add(newQueue)
                 if (player.dataStore.get(PersistentQueueKey, true)) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -293,15 +304,16 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             if (masterQueues.size > MAX_QUEUES) {
                 deleteQueue(masterQueues.first(), player)
             }
-            val newQueue = MultiQueueObject(
-                QueueEntity.generateQueueId(),
-                title,
-                ArrayList(mediaList.filterNotNull()),
-                ArrayList(mediaList.filterNotNull()),
-                false,
-                startIndex,
-                masterQueues.size
-            )
+            val newQueue =
+                MultiQueueObject(
+                    QueueEntity.generateQueueId(),
+                    title,
+                    ArrayList(mediaList.filterNotNull()),
+                    ArrayList(mediaList.filterNotNull()),
+                    false,
+                    startIndex,
+                    masterQueues.size,
+                )
             masterQueues.add(newQueue)
             if (player.dataStore.get(PersistentQueueKey, true)) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -319,7 +331,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         forceInsert: Boolean = false,
         replace: Boolean = false,
         delta: Boolean = true,
-        startIndex: Int = 0
+        startIndex: Int = 0,
     ) = add(title, mediaList, playerConnection.service, forceInsert, replace, delta, startIndex)
 
     /**
@@ -327,7 +339,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @param index Index of item
      */
-    fun removeCurrentQueueSong(index: Int, player: MusicService) = getCurrentQueue()?.let { removeSong(it, index, player) }
+    fun removeCurrentQueueSong(
+        index: Int,
+        player: MusicService,
+    ) = getCurrentQueue()?.let { removeSong(it, index, player) }
 
     /**
      * Removes song from the queue
@@ -335,7 +350,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param item Queue
      * @param index Index of item
      */
-    fun removeSong(item: MultiQueueObject, index: Int, player: MusicService) {
+    fun removeSong(
+        item: MultiQueueObject,
+        index: Int,
+        player: MusicService,
+    ) {
         if (item.shuffled) {
             val removed = item.queue.removeAt(index)
             item.unShuffled.remove(removed)
@@ -354,9 +373,13 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @param item
      */
-    fun deleteQueue(item: MultiQueueObject, player: MusicService): Int {
-        if (QUEUE_DEBUG)
+    fun deleteQueue(
+        item: MultiQueueObject,
+        player: MusicService,
+    ): Int {
+        if (QUEUE_DEBUG) {
             Timber.tag(TAG).d("DELETING QUEUE ${item.title}")
+        }
 
         val match = masterQueues.firstOrNull { it.title == item.title }
         if (match != null) {
@@ -377,7 +400,6 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         return masterQueues.size
     }
 
-
     /**
      * Un-shuffles current queue
      *
@@ -390,11 +412,15 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @return New current position tracker
      */
-    fun unShuffle(index: Int, player: MusicService): Int {
+    fun unShuffle(
+        index: Int,
+        player: MusicService,
+    ): Int {
         val item = masterQueues[index]
         if (item.shuffled) {
-            if (QUEUE_DEBUG)
+            if (QUEUE_DEBUG) {
                 Timber.tag(TAG).d("Un-shuffling queue ${item.title}")
+            }
             // re-track current position
             item.queuePos = item.unShuffled.indexOf(item.queue[item.queuePos])
             item.shuffled = false
@@ -410,8 +436,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
     /**
      * Shuffles current queue
      */
-    fun shuffleCurrent(player: MusicService, preserveCurrent: Boolean = true) = shuffle(masterIndex, player, preserveCurrent)
-
+    fun shuffleCurrent(
+        player: MusicService,
+        preserveCurrent: Boolean = true,
+    ) = shuffle(masterIndex, player, preserveCurrent)
 
     /**
      * Un-shuffles a queue
@@ -424,10 +452,15 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *      fully shuffle everything.
      * @return New current position tracker
      */
-    fun shuffle(index: Int, player: MusicService, preserveCurrent: Boolean = true): Int {
+    fun shuffle(
+        index: Int,
+        player: MusicService,
+        preserveCurrent: Boolean = true,
+    ): Int {
         val item = masterQueues[index]
-        if (QUEUE_DEBUG)
+        if (QUEUE_DEBUG) {
             Timber.tag(TAG).d("Shuffling queue ${item.title}")
+        }
 
         val currentSong = if (item.shuffled) item.queue[item.queuePos] else item.unShuffled[item.queuePos]
 
@@ -456,7 +489,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @return New current position tracker
      */
-    fun move(fromIndex: Int, toIndex: Int, player: MusicService) {
+    fun move(
+        fromIndex: Int,
+        toIndex: Int,
+        player: MusicService,
+    ) {
         // update current position only if the move will affect it
         if (masterIndex >= min(fromIndex, toIndex) && masterIndex <= max(fromIndex, toIndex)) {
             if (fromIndex == masterIndex) {
@@ -481,7 +518,6 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         }
     }
 
-
     /**
      * Move a song in the current queue
      *
@@ -491,8 +527,12 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @return New current position tracker
      */
-    fun moveSong(fromIndex: Int, toIndex: Int, currentMediaItemIndex: Int, player: MusicService) =
-        getCurrentQueue()?.let { moveSong(it, fromIndex, toIndex, currentMediaItemIndex, player) }
+    fun moveSong(
+        fromIndex: Int,
+        toIndex: Int,
+        currentMediaItemIndex: Int,
+        player: MusicService,
+    ) = getCurrentQueue()?.let { moveSong(it, fromIndex, toIndex, currentMediaItemIndex, player) }
 
     /**
      * Move a song, given a queue.
@@ -509,7 +549,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         fromIndex: Int,
         toIndex: Int,
         currentMediaItemIndex: Int,
-        player: MusicService
+        player: MusicService,
     ): Int {
         // update current position only if the move will affect it
         if (currentMediaItemIndex >= min(fromIndex, toIndex) && currentMediaItemIndex <= max(fromIndex, toIndex)) {
@@ -539,11 +579,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             player.database.rewriteQueue(queue)
         }
 
-        if (QUEUE_DEBUG)
+        if (QUEUE_DEBUG) {
             Timber.tag(TAG).d("Moved item from $currentMediaItemIndex to ${queue.queuePos}")
+        }
         return queue.queuePos
     }
-
 
     /**
      * =================
@@ -555,7 +595,6 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * Get all copy of all queues
      */
     fun getAllQueues() = masterQueues.toImmutableList()
-
 
     /**
      * Get the index of the current queue
@@ -583,8 +622,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(playerConnection: PlayerConnection, autoSeek: Boolean = true) =
-        setCurrQueue(getCurrentQueue(), playerConnection.service, autoSeek)
+    fun setCurrQueue(
+        playerConnection: PlayerConnection,
+        autoSeek: Boolean = true,
+    ) = setCurrQueue(getCurrentQueue(), playerConnection.service, autoSeek)
 
     /**
      * Load the current queue into the media player
@@ -593,7 +634,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(player: MusicService, autoSeek: Boolean = true) = setCurrQueue(getCurrentQueue(), player, autoSeek)
+    fun setCurrQueue(
+        player: MusicService,
+        autoSeek: Boolean = true,
+    ) = setCurrQueue(getCurrentQueue(), player, autoSeek)
 
     /**
      * Load a queue into the media player
@@ -603,13 +647,16 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(index: Int, playerConnection: PlayerConnection, autoSeek: Boolean = true): Int? {
-        return try {
+    fun setCurrQueue(
+        index: Int,
+        playerConnection: PlayerConnection,
+        autoSeek: Boolean = true,
+    ): Int? =
+        try {
             setCurrQueue(masterQueues[index], playerConnection.service, autoSeek)
         } catch (e: IndexOutOfBoundsException) {
             -1
         }
-    }
 
     /**
      * Load a queue into the media player
@@ -619,13 +666,16 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(index: Int, player: MusicService, autoSeek: Boolean = true): Int? {
-        return try {
+    fun setCurrQueue(
+        index: Int,
+        player: MusicService,
+        autoSeek: Boolean = true,
+    ): Int? =
+        try {
             setCurrQueue(masterQueues[index], player, autoSeek)
         } catch (e: IndexOutOfBoundsException) {
             -1
         }
-    }
 
     /**
      * Load a queue into the media player
@@ -635,12 +685,17 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(item: MultiQueueObject?, player: MusicService, autoSeek: Boolean = true): Int? {
-        if (QUEUE_DEBUG)
+    fun setCurrQueue(
+        item: MultiQueueObject?,
+        player: MusicService,
+        autoSeek: Boolean = true,
+    ): Int? {
+        if (QUEUE_DEBUG) {
             Timber.tag(TAG).d(
                 "Loading queue ${item?.title ?: "null"} into player. " +
-                        "autoSeek = $autoSeek shuffle state = ${item?.shuffled}"
+                    "autoSeek = $autoSeek shuffle state = ${item?.shuffled}",
             )
+        }
 
         if (item == null) {
             player.player.setMediaItems(ArrayList())
@@ -671,7 +726,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @param index
      */
-    fun setCurrQueuePosIndex(index: Int, player: MusicService) {
+    fun setCurrQueuePosIndex(
+        index: Int,
+        player: MusicService,
+    ) {
         getCurrentQueue()?.let {
             if (it.queuePos != index) {
                 it.queuePos = index
@@ -689,7 +747,10 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @param mediaItem
      */
-    fun setCurrQueuePosIndex(mediaItem: MediaItem?, player: MusicService) {
+    fun setCurrQueuePosIndex(
+        mediaItem: MediaItem?,
+        player: MusicService,
+    ) {
         val currentQueue = getCurrentQueue()
         if (mediaItem == null || currentQueue == null) {
             return
@@ -713,5 +774,4 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
         const val TAG = "QueueBoard"
     }
-
 }

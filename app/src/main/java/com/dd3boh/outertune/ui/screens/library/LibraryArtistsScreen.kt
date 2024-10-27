@@ -50,6 +50,7 @@ import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
+import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.LibraryArtistGridItem
 import com.dd3boh.outertune.ui.component.LibraryArtistListItem
@@ -58,14 +59,15 @@ import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryArtistsViewModel
-import com.dd3boh.outertune.extensions.isSyncEnabled
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryArtistsScreen(
     navController: NavController,
     viewModel: LibraryArtistsViewModel = hiltViewModel(),
-    libraryFilterContent: @Composable() (() -> Unit)? = null,
+    libraryFilterContent:
+        @Composable()
+        (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -104,30 +106,31 @@ fun LibraryArtistsScreen(
     val filterContent = @Composable {
         Row {
             ChipsRow(
-                chips = listOf(
-                    ArtistFilter.LIKED to stringResource(R.string.filter_liked),
-                    ArtistFilter.LIBRARY to stringResource(R.string.filter_library),
-                    ArtistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
-                ),
+                chips =
+                    listOf(
+                        ArtistFilter.LIKED to stringResource(R.string.filter_liked),
+                        ArtistFilter.LIBRARY to stringResource(R.string.filter_library),
+                        ArtistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded),
+                    ),
                 currentValue = filter,
                 onValueUpdate = { filter = it },
                 modifier = Modifier.weight(1f),
-                isLoading = { filter -> filter == ArtistFilter.LIBRARY && isSyncingRemoteArtists }
+                isLoading = { filter -> filter == ArtistFilter.LIBRARY && isSyncingRemoteArtists },
             )
 
             IconButton(
                 onClick = {
                     artistViewType = artistViewType.toggle()
                 },
-                modifier = Modifier.padding(end = 6.dp)
+                modifier = Modifier.padding(end = 6.dp),
             ) {
                 Icon(
                     imageVector =
-                    when (artistViewType) {
-                        LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                        LibraryViewType.GRID -> Icons.Rounded.GridView
-                    },
-                    contentDescription = null
+                        when (artistViewType) {
+                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                            LibraryViewType.GRID -> Icons.Rounded.GridView
+                        },
+                    contentDescription = null,
                 )
             }
         }
@@ -136,7 +139,7 @@ fun LibraryArtistsScreen(
     val headerContent = @Composable {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             SortHeader(
                 sortType = sortType,
@@ -150,7 +153,7 @@ fun LibraryArtistsScreen(
                         ArtistSortType.SONG_COUNT -> R.string.sort_by_song_count
                         ArtistSortType.PLAY_TIME -> R.string.sort_by_play_time
                     }
-                }
+                },
             )
 
             Spacer(Modifier.weight(1f))
@@ -158,30 +161,30 @@ fun LibraryArtistsScreen(
             Text(
                 text = pluralStringResource(R.plurals.n_artist, artists.size, artists.size),
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
         }
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         when (viewType) {
             LibraryViewType.LIST ->
                 LazyColumn(
                     state = lazyListState,
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 ) {
                     item(
                         key = "filter",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         libraryFilterContent?.let { it() } ?: filterContent()
                     }
 
                     item(
                         key = "header",
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         headerContent()
                     }
@@ -189,14 +192,14 @@ fun LibraryArtistsScreen(
                     items(
                         items = artists,
                         key = { it.id },
-                        contentType = { CONTENT_TYPE_ARTIST }
+                        contentType = { CONTENT_TYPE_ARTIST },
                     ) { artist ->
                         LibraryArtistListItem(
                             navController = navController,
                             menuState = menuState,
                             coroutineScope = coroutineScope,
                             modifier = Modifier.animateItemPlacement(),
-                            artist = artist
+                            artist = artist,
                         )
                     }
                 }
@@ -205,12 +208,12 @@ fun LibraryArtistsScreen(
                 LazyVerticalGrid(
                     state = lazyGridState,
                     columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 ) {
                     item(
                         key = "filter",
                         span = { GridItemSpan(maxLineSpan) },
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         libraryFilterContent?.let { it() } ?: filterContent()
                     }
@@ -218,7 +221,7 @@ fun LibraryArtistsScreen(
                     item(
                         key = "header",
                         span = { GridItemSpan(maxLineSpan) },
-                        contentType = CONTENT_TYPE_HEADER
+                        contentType = CONTENT_TYPE_HEADER,
                     ) {
                         headerContent()
                     }
@@ -226,14 +229,14 @@ fun LibraryArtistsScreen(
                     items(
                         items = artists,
                         key = { it.id },
-                        contentType = { CONTENT_TYPE_ARTIST }
+                        contentType = { CONTENT_TYPE_ARTIST },
                     ) { artist ->
                         LibraryArtistGridItem(
                             navController = navController,
                             menuState = menuState,
                             coroutineScope = coroutineScope,
                             modifier = Modifier.animateItemPlacement(),
-                            artist = artist
+                            artist = artist,
                         )
                     }
                 }

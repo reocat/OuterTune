@@ -53,16 +53,18 @@ fun SelectionMediaMetadataMenu(
     onDismiss: () -> Unit,
     clearAction: () -> Unit,
     onRemoveFromHistory: (() -> Unit)? = null,
-){
+) {
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
-    val allInLibrary by remember(selection) { // exclude local songs
+    val allInLibrary by remember(selection) {
+        // exclude local songs
         mutableStateOf(selection.isNotEmpty() && selection.all { !it.isLocal && it.inLibrary != null })
     }
-    val allLocal by remember(selection) { // if only local songs in this selection
+    val allLocal by remember(selection) {
+        // if only local songs in this selection
         mutableStateOf(selection.isNotEmpty() && selection.all { it.isLocal })
     }
 
@@ -78,19 +80,20 @@ fun SelectionMediaMetadataMenu(
         if (selection.isEmpty()) {
             onDismiss()
         } else {
-        downloadUtil.downloads.collect { downloads ->
-            downloadState =
-                if (selection.all { downloads[it.id]?.state == Download.STATE_COMPLETED }) {
-                    Download.STATE_COMPLETED
-                } else if (selection.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.id]?.state == Download.STATE_COMPLETED
-                    }) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            downloadUtil.downloads.collect { downloads ->
+                downloadState =
+                    if (selection.all { downloads[it.id]?.state == Download.STATE_COMPLETED }) {
+                        Download.STATE_COMPLETED
+                    } else if (selection.all {
+                            downloads[it.id]?.state == Download.STATE_QUEUED ||
+                                downloads[it.id]?.state == Download.STATE_DOWNLOADING ||
+                                downloads[it.id]?.state == Download.STATE_COMPLETED
+                        }
+                    ) {
+                        Download.STATE_DOWNLOADING
+                    } else {
+                        Download.STATE_STOPPED
+                    }
             }
         }
     }
@@ -107,7 +110,7 @@ fun SelectionMediaMetadataMenu(
         },
         onDismiss = {
             showChooseQueueDialog = false
-        }
+        },
     )
 
     var showChoosePlaylistDialog by rememberSaveable {
@@ -119,7 +122,7 @@ fun SelectionMediaMetadataMenu(
         onGetSong = {
             selection.map { it.id }
         },
-        onDismiss = { showChoosePlaylistDialog = false }
+        onDismiss = { showChoosePlaylistDialog = false },
     )
 
     var showRemoveDownloadDialog by remember {
@@ -133,14 +136,14 @@ fun SelectionMediaMetadataMenu(
                 Text(
                     text = stringResource(R.string.remove_download_playlist_confirm, "selection"),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 18.dp)
+                    modifier = Modifier.padding(horizontal = 18.dp),
                 )
             },
             buttons = {
                 TextButton(
                     onClick = {
                         showRemoveDownloadDialog = false
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.cancel))
                 }
@@ -153,63 +156,64 @@ fun SelectionMediaMetadataMenu(
                                 context,
                                 ExoDownloadService::class.java,
                                 song.id,
-                                false
+                                false,
                             )
                         }
-                    }
+                    },
                 ) {
                     Text(text = stringResource(android.R.string.ok))
                 }
-            }
+            },
         )
     }
 
-    GridMenu (
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-        )
-    ){
+    GridMenu(
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+            ),
+    ) {
         GridMenuItem(
             icon = R.drawable.play,
-            title = R.string.play
+            title = R.string.play,
         ) {
             onDismiss()
             playerConnection.playQueue(
                 ListQueue(
                     title = "Selection",
-                    items = selection
-                )
+                    items = selection,
+                ),
             )
             clearAction()
         }
 
         GridMenuItem(
             icon = R.drawable.shuffle,
-            title = R.string.shuffle
+            title = R.string.shuffle,
         ) {
             onDismiss()
             playerConnection.playQueue(
                 ListQueue(
                     title = "Selection",
-                    items = selection.shuffled()
-                )
+                    items = selection.shuffled(),
+                ),
             )
             clearAction()
         }
 
         GridMenuItem(
             icon = R.drawable.queue_music,
-            title = R.string.add_to_queue
+            title = R.string.add_to_queue,
         ) {
             showChooseQueueDialog = true
         }
 
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
-            title = R.string.add_to_playlist
+            title = R.string.add_to_playlist,
         ) {
             showChoosePlaylistDialog = true
         }
@@ -218,7 +222,7 @@ fun SelectionMediaMetadataMenu(
             if (allInLibrary) {
                 GridMenuItem(
                     icon = Icons.Rounded.LibraryAddCheck,
-                    title = R.string.remove_all_from_library
+                    title = R.string.remove_all_from_library,
                 ) {
                     database.transaction {
                         selection.forEach { song ->
@@ -229,7 +233,7 @@ fun SelectionMediaMetadataMenu(
             } else {
                 GridMenuItem(
                     icon = Icons.Rounded.LibraryAdd,
-                    title = R.string.add_all_to_library
+                    title = R.string.add_all_to_library,
                 ) {
                     database.transaction {
                         selection.forEach { song ->
@@ -268,7 +272,7 @@ fun SelectionMediaMetadataMenu(
             },
             onRemoveDownload = {
                 showRemoveDownloadDialog = true
-            }
+            },
         )
 
         if (onRemoveFromHistory != null) {

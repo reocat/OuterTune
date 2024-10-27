@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.ui.screens.settings
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -39,7 +38,6 @@ fun LyricsSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
-
     // state variables and such
     val (enableKugou, onEnableKugouChange) = rememberPreference(key = EnableKugouKey, defaultValue = true)
     val (enableLrcLib, onEnableLrcLibChange) = rememberPreference(key = EnableLrcLibKey, defaultValue = true)
@@ -47,25 +45,24 @@ fun LyricsSettings(
     val (multilineLrc, onMultilineLrcChange) = rememberPreference(MultilineLrcKey, defaultValue = true)
     val (lyricTrim, onLyricTrimChange) = rememberPreference(LyricTrimKey, defaultValue = false)
 
-
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         // providers
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_lrclib)) },
             icon = { Icon(Icons.Rounded.Lyrics, null) },
             checked = enableLrcLib,
-            onCheckedChange = onEnableLrcLibChange
+            onCheckedChange = onEnableLrcLibChange,
         )
 
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_kugou)) },
             icon = { Icon(Icons.Rounded.Lyrics, null) },
             checked = enableKugou,
-            onCheckedChange = onEnableKugouChange
+            onCheckedChange = onEnableKugouChange,
         )
 
         // lyrics position
@@ -80,7 +77,7 @@ fun LyricsSettings(
                     LyricsPosition.CENTER -> stringResource(R.string.center)
                     LyricsPosition.RIGHT -> stringResource(R.string.right)
                 }
-            }
+            },
         )
 
         // multiline lyrics
@@ -89,7 +86,7 @@ fun LyricsSettings(
             description = stringResource(R.string.lyrics_multiline_description),
             icon = { Icon(Icons.AutoMirrored.Rounded.Sort, null) },
             checked = multilineLrc,
-            onCheckedChange = onMultilineLrcChange
+            onCheckedChange = onMultilineLrcChange,
         )
 
         // trim (remove spaces around) lyrics
@@ -97,25 +94,23 @@ fun LyricsSettings(
             title = { Text(stringResource(R.string.lyrics_trim_title)) },
             icon = { Icon(Icons.Rounded.ContentCut, null) },
             checked = lyricTrim,
-            onCheckedChange = onLyricTrimChange
+            onCheckedChange = onLyricTrimChange,
         )
-
     }
-
 
     TopAppBar(
         title = { Text(stringResource(R.string.lyrics_settings_title)) },
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
+                onLongClick = navController::backToMain,
             ) {
                 Icon(
                     Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
     )
 }

@@ -26,7 +26,7 @@ fun appBarScrollBehavior(
         state = state,
         snapAnimationSpec = snapAnimationSpec,
         flingAnimationSpec = flingAnimationSpec,
-        canScroll = canScroll
+        canScroll = canScroll,
     )
 
 @ExperimentalMaterial3Api
@@ -37,21 +37,26 @@ class AppBarScrollBehavior constructor(
     val canScroll: () -> Boolean = { true },
 ) : TopAppBarScrollBehavior {
     override val isPinned: Boolean = true
-    override var nestedScrollConnection = object : NestedScrollConnection {
-        override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-            if (!canScroll()) return Offset.Zero
-            state.contentOffset += consumed.y
-            if (state.heightOffset == 0f || state.heightOffset == state.heightOffsetLimit) {
-                if (consumed.y == 0f && available.y > 0f) {
-                    // Reset the total content offset to zero when scrolling all the way down.
-                    // This will eliminate some float precision inaccuracies.
-                    state.contentOffset = 0f
+    override var nestedScrollConnection =
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                if (!canScroll()) return Offset.Zero
+                state.contentOffset += consumed.y
+                if (state.heightOffset == 0f || state.heightOffset == state.heightOffsetLimit) {
+                    if (consumed.y == 0f && available.y > 0f) {
+                        // Reset the total content offset to zero when scrolling all the way down.
+                        // This will eliminate some float precision inaccuracies.
+                        state.contentOffset = 0f
+                    }
                 }
+                state.heightOffset += consumed.y
+                return Offset.Zero
             }
-            state.heightOffset += consumed.y
-            return Offset.Zero
         }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +64,7 @@ suspend fun TopAppBarState.resetHeightOffset() {
     if (heightOffset != 0f) {
         animate(
             initialValue = heightOffset,
-            targetValue = 0f
+            targetValue = 0f,
         ) { value, _ ->
             heightOffset = value
         }

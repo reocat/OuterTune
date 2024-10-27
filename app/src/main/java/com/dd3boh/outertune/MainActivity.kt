@@ -230,22 +230,30 @@ class MainActivity : ComponentActivity() {
     lateinit var syncUtils: SyncUtils
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            if (service is MusicBinder) {
-                playerConnection = PlayerConnection(service, database, lifecycleScope)
+    private val serviceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                name: ComponentName?,
+                service: IBinder?,
+            ) {
+                if (service is MusicBinder) {
+                    playerConnection = PlayerConnection(service, database, lifecycleScope)
+                }
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                playerConnection?.dispose()
+                playerConnection = null
             }
         }
 
-        override fun onServiceDisconnected(name: ComponentName?) {
-            playerConnection?.dispose()
-            playerConnection = null
-        }
-    }
-
     // storage permission helpers
-    private val mediaPermissionLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
-    else Manifest.permission.READ_EXTERNAL_STORAGE
+    private val mediaPermissionLevel =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
     val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -280,8 +288,9 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        if (dataStore.get(StopMusicOnTaskClearKey, false) && playerConnection?.isPlaying?.value == true
-            && isFinishing
+        if (dataStore.get(StopMusicOnTaskClearKey, false) &&
+            playerConnection?.isPlaying?.value == true &&
+            isFinishing
         ) {
             stopService(Intent(this, MusicService::class.java))
             unbindService(serviceConnection)
@@ -291,8 +300,9 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @SuppressLint(
-        "UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition",
-        "StateFlowValueCalledInComposition"
+        "UnusedMaterial3ScaffoldPaddingParameter",
+        "CoroutineCreationDuringComposition",
+        "StateFlowValueCalledInComposition",
     )
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -305,9 +315,10 @@ class MainActivity : ComponentActivity() {
             val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
             val newInterfaceStyle by rememberPreference(NewInterfaceKey, defaultValue = true)
             val isSystemInDarkTheme = isSystemInDarkTheme()
-            val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-                if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-            }
+            val useDarkTheme =
+                remember(darkTheme, isSystemInDarkTheme) {
+                    if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
+                }
             LaunchedEffect(useDarkTheme) {
                 setSystemBarAppearance(useDarkTheme)
             }
@@ -317,7 +328,7 @@ class MainActivity : ComponentActivity() {
 
             val playerBackground by rememberEnumPreference(
                 key = PlayerBackgroundStyleKey,
-                defaultValue = PlayerBackgroundStyle.DEFAULT
+                defaultValue = PlayerBackgroundStyle.DEFAULT,
             )
 
             LaunchedEffect(playerConnection, enableDynamicTheme, isSystemInDarkTheme) {
@@ -327,31 +338,37 @@ class MainActivity : ComponentActivity() {
                     return@LaunchedEffect
                 }
                 playerConnection.service.currentMediaMetadata.collectLatest { song ->
-                    themeColor = if (song != null) {
-                        withContext(Dispatchers.IO) {
-                            if (!song.isLocal) {
-                                val result = imageLoader.execute(
-                                    ImageRequest.Builder(this@MainActivity)
-                                        .data(song.thumbnailUrl)
-                                        .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
-                                        .build()
-                                )
-                                (result.drawable as? BitmapDrawable)?.bitmap?.extractThemeColor()
-                                    ?: DefaultThemeColor
-                            } else {
-                                getLocalThumbnail(song.localPath)?.extractThemeColor()
-                                    ?: DefaultThemeColor
+                    themeColor =
+                        if (song != null) {
+                            withContext(Dispatchers.IO) {
+                                if (!song.isLocal) {
+                                    val result =
+                                        imageLoader.execute(
+                                            ImageRequest
+                                                .Builder(this@MainActivity)
+                                                .data(song.thumbnailUrl)
+                                                .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
+                                                .build(),
+                                        )
+                                    (result.drawable as? BitmapDrawable)?.bitmap?.extractThemeColor()
+                                        ?: DefaultThemeColor
+                                } else {
+                                    getLocalThumbnail(song.localPath)?.extractThemeColor()
+                                        ?: DefaultThemeColor
+                                }
                             }
+                        } else {
+                            DefaultThemeColor
                         }
-                    } else DefaultThemeColor
                 }
             }
 
             // auto scanner
-            val (scannerSensitivity) = rememberEnumPreference(
-                key = ScannerSensitivityKey,
-                defaultValue = ScannerMatchCriteria.LEVEL_2
-            )
+            val (scannerSensitivity) =
+                rememberEnumPreference(
+                    key = ScannerSensitivityKey,
+                    defaultValue = ScannerMatchCriteria.LEVEL_2,
+                )
             val (scanPaths) = rememberPreference(ScanPathsKey, defaultValue = DEFAULT_SCAN_PATH)
             val (excludedScanPaths) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
             val (strictExtensions) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
@@ -365,14 +382,18 @@ class MainActivity : ComponentActivity() {
 
                         // equivalent to (quick scan)
                         try {
-                            val directoryStructure = scanner.scanLocal(
-                                database,
-                                scanPaths.split('\n'),
-                                excludedScanPaths.split('\n'),
-                                pathsOnly = true
-                            ).value
+                            val directoryStructure =
+                                scanner
+                                    .scanLocal(
+                                        database,
+                                        scanPaths.split('\n'),
+                                        excludedScanPaths.split('\n'),
+                                        pathsOnly = true,
+                                    ).value
                             scanner.quickSync(
-                                database, directoryStructure.toList(), scannerSensitivity,
+                                database,
+                                directoryStructure.toList(),
+                                scannerSensitivity,
                                 strictExtensions,
                             )
 
@@ -383,21 +404,23 @@ class MainActivity : ComponentActivity() {
                                         scanner.localToRemoteArtist(database)
                                     } catch (e: ScannerAbortException) {
                                         Looper.prepare()
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            "Scanner (background task) failed: ${e.message}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        Toast
+                                            .makeText(
+                                                this@MainActivity,
+                                                "Scanner (background task) failed: ${e.message}",
+                                                Toast.LENGTH_LONG,
+                                            ).show()
                                     }
                                 }
                             }
                         } catch (e: ScannerAbortException) {
                             Looper.prepare()
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Scanner failed: ${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            Toast
+                                .makeText(
+                                    this@MainActivity,
+                                    "Scanner failed: ${e.message}",
+                                    Toast.LENGTH_LONG,
+                                ).show()
                         } finally {
                             unloadAdvancedScanner()
                         }
@@ -412,11 +435,12 @@ class MainActivity : ComponentActivity() {
             OuterTuneTheme(
                 darkTheme = useDarkTheme,
                 pureBlack = pureBlack,
-                themeColor = themeColor
+                themeColor = themeColor,
             ) {
                 BoxWithConstraints( // Deprecated. please use the scaffold
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
                 ) {
                     val focusManager = LocalFocusManager.current
                     val density = LocalDensity.current
@@ -431,34 +455,41 @@ class MainActivity : ComponentActivity() {
                     val (enabledTabs) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
                     val navigationItems =
                         if (!newInterfaceStyle) Screens.getScreens(enabledTabs) else Screens.MainScreensNew
-                    val defaultOpenTab = remember {
-                        if (newInterfaceStyle) dataStore[DefaultOpenTabNewKey].toEnum(defaultValue = NavigationTabNew.HOME)
-                        else dataStore[DefaultOpenTabKey].toEnum(defaultValue = NavigationTab.HOME)
-                    }
-                    val tabOpenedFromShortcut = remember {
-                        // reroute to library page for new layout is handled in NavHost section
-                        when (intent?.action) {
-                            ACTION_SONGS -> if (newInterfaceStyle) NavigationTabNew.LIBRARY else NavigationTab.SONG
-                            ACTION_ALBUMS -> if (newInterfaceStyle) NavigationTabNew.LIBRARY else NavigationTab.ALBUM
-                            ACTION_PLAYLISTS -> if (newInterfaceStyle) NavigationTabNew.LIBRARY else NavigationTab.PLAYLIST
-                            else -> null
+                    val defaultOpenTab =
+                        remember {
+                            if (newInterfaceStyle) {
+                                dataStore[DefaultOpenTabNewKey].toEnum(defaultValue = NavigationTabNew.HOME)
+                            } else {
+                                dataStore[DefaultOpenTabKey].toEnum(defaultValue = NavigationTab.HOME)
+                            }
                         }
-                    }
+                    val tabOpenedFromShortcut =
+                        remember {
+                            // reroute to library page for new layout is handled in NavHost section
+                            when (intent?.action) {
+                                ACTION_SONGS -> if (newInterfaceStyle) NavigationTabNew.LIBRARY else NavigationTab.SONG
+                                ACTION_ALBUMS -> if (newInterfaceStyle) NavigationTabNew.LIBRARY else NavigationTab.ALBUM
+                                ACTION_PLAYLISTS -> if (newInterfaceStyle) NavigationTabNew.LIBRARY else NavigationTab.PLAYLIST
+                                else -> null
+                            }
+                        }
                     // setup filters for new layout
                     if (tabOpenedFromShortcut != null && newInterfaceStyle) {
                         var filter by rememberEnumPreference(LibraryFilterKey, LibraryFilter.ALL)
-                        filter = when (intent?.action) {
-                            ACTION_SONGS -> LibraryFilter.SONGS
-                            ACTION_ALBUMS -> LibraryFilter.ALBUMS
-                            ACTION_PLAYLISTS -> LibraryFilter.PLAYLISTS
-                            ACTION_SEARCH -> filter // do change filter for search
-                            else -> LibraryFilter.ALL
-                        }
+                        filter =
+                            when (intent?.action) {
+                                ACTION_SONGS -> LibraryFilter.SONGS
+                                ACTION_ALBUMS -> LibraryFilter.ALBUMS
+                                ACTION_PLAYLISTS -> LibraryFilter.PLAYLISTS
+                                ACTION_SEARCH -> filter // do change filter for search
+                                else -> LibraryFilter.ALL
+                            }
                     }
 
-                    val (query, onQueryChange) = rememberSaveable(stateSaver = TextFieldValue.Saver) {
-                        mutableStateOf(TextFieldValue())
-                    }
+                    val (query, onQueryChange) =
+                        rememberSaveable(stateSaver = TextFieldValue.Saver) {
+                            mutableStateOf(TextFieldValue())
+                        }
                     var active by rememberSaveable {
                         mutableStateOf(false)
                     }
@@ -491,26 +522,33 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(intent?.action == ACTION_SEARCH)
                     }
 
-                    val shouldShowSearchBar = remember(active, navBackStackEntry, inSelectMode?.value) {
-                        (active || navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } ||
-                                navBackStackEntry?.destination?.route?.startsWith("search/") == true) &&
+                    val shouldShowSearchBar =
+                        remember(active, navBackStackEntry, inSelectMode?.value) {
+                            (
+                                active ||
+                                    navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } ||
+                                    navBackStackEntry?.destination?.route?.startsWith("search/") == true
+                            ) &&
                                 inSelectMode?.value != true
-                    }
-                    val shouldShowNavigationBar = remember(navBackStackEntry, active) {
-                        navBackStackEntry?.destination?.route == null ||
-                                navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } && !active
-                    }
+                        }
+                    val shouldShowNavigationBar =
+                        remember(navBackStackEntry, active) {
+                            navBackStackEntry?.destination?.route == null ||
+                                navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } &&
+                                !active
+                        }
                     val navigationBarHeight by animateDpAsState(
                         targetValue = if (shouldShowNavigationBar) NavigationBarHeight else 0.dp,
                         animationSpec = NavigationBarAnimationSpec,
-                        label = ""
+                        label = "",
                     )
 
-                    val playerBottomSheetState = rememberBottomSheetState(
-                        dismissedBound = 0.dp,
-                        collapsedBound = bottomInset + (if (shouldShowNavigationBar) NavigationBarHeight else 0.dp) + MiniPlayerHeight,
-                        expandedBound = maxHeight,
-                    )
+                    val playerBottomSheetState =
+                        rememberBottomSheetState(
+                            dismissedBound = 0.dp,
+                            collapsedBound = bottomInset + (if (shouldShowNavigationBar) NavigationBarHeight else 0.dp) + MiniPlayerHeight,
+                            expandedBound = maxHeight,
+                        )
 
                     val playerAwareWindowInsets =
                         remember(bottomInset, shouldShowNavigationBar, playerBottomSheetState.isDismissed) {
@@ -522,34 +560,39 @@ class MainActivity : ComponentActivity() {
                                 .add(WindowInsets(top = AppBarHeight, bottom = bottom))
                         }
 
-                    val scrollBehavior = appBarScrollBehavior(
-                        canScroll = {
-                            navBackStackEntry?.destination?.route?.startsWith("search/") == false &&
+                    val scrollBehavior =
+                        appBarScrollBehavior(
+                            canScroll = {
+                                navBackStackEntry?.destination?.route?.startsWith("search/") == false &&
                                     (playerBottomSheetState.isCollapsed || playerBottomSheetState.isDismissed)
-                        }
-                    )
+                            },
+                        )
 
-                    val searchBarScrollBehavior = appBarScrollBehavior(
-                        state = rememberTopAppBarState(),
-                        canScroll = {
-                            navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } &&
+                    val searchBarScrollBehavior =
+                        appBarScrollBehavior(
+                            state = rememberTopAppBarState(),
+                            canScroll = {
+                                navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } &&
                                     (playerBottomSheetState.isCollapsed || playerBottomSheetState.isDismissed)
-                        }
-                    )
+                            },
+                        )
 
                     LaunchedEffect(navBackStackEntry) {
                         if (navBackStackEntry?.destination?.route?.startsWith("search/") == true) {
-                            val searchQuery = withContext(Dispatchers.IO) {
-                                URLDecoder.decode(navBackStackEntry?.arguments?.getString("query")!!, "UTF-8")
-                            }
+                            val searchQuery =
+                                withContext(Dispatchers.IO) {
+                                    URLDecoder.decode(navBackStackEntry?.arguments?.getString("query")!!, "UTF-8")
+                                }
                             onQueryChange(TextFieldValue(searchQuery, TextRange(searchQuery.length)))
                         } else if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
                             onQueryChange(TextFieldValue())
                         }
 
-                        if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route })
-                            if (navigationItems.fastAny { it.route == previousTab })
+                        if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
+                            if (navigationItems.fastAny { it.route == previousTab }) {
                                 searchBarScrollBehavior.state.resetHeightOffset()
+                            }
+                        }
 
                         navController.currentBackStackEntry?.destination?.route?.let {
                             setPreviousTab(it)
@@ -561,7 +604,8 @@ class MainActivity : ComponentActivity() {
                          * to avoid entering a "ghost" screen.
                          */
                         if (Screens.MainScreens.fastAny { it.route == navBackStackEntry?.destination?.route } ||
-                            Screens.MainScreensNew.fastAny { it.route == navBackStackEntry?.destination?.route }) {
+                            Screens.MainScreensNew.fastAny { it.route == navBackStackEntry?.destination?.route }
+                        ) {
                             if (!navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
                                 navController.popBackStack()
                                 navController.navigate(Screens.Home.route)
@@ -584,13 +628,20 @@ class MainActivity : ComponentActivity() {
 
                     DisposableEffect(playerConnection, playerBottomSheetState) {
                         val player = playerConnection?.player ?: return@DisposableEffect onDispose { }
-                        val listener = object : Player.Listener {
-                            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null && playerBottomSheetState.isDismissed) {
-                                    playerBottomSheetState.collapseSoft()
+                        val listener =
+                            object : Player.Listener {
+                                override fun onMediaItemTransition(
+                                    mediaItem: MediaItem?,
+                                    reason: Int,
+                                ) {
+                                    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED &&
+                                        mediaItem != null &&
+                                        playerBottomSheetState.isDismissed
+                                    ) {
+                                        playerBottomSheetState.collapseSoft()
+                                    }
                                 }
                             }
-                        }
                         player.addListener(listener)
                         onDispose {
                             player.removeListener(listener)
@@ -602,47 +653,53 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(null)
                     }
                     DisposableEffect(Unit) {
-                        val listener = Consumer<Intent> { intent ->
-                            val uri =
-                                intent.data ?: intent.extras?.getString(Intent.EXTRA_TEXT)?.toUri() ?: return@Consumer
-                            when (val path = uri.pathSegments.firstOrNull()) {
-                                "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-                                    if (playlistId.startsWith("OLAK5uy_")) {
-                                        coroutineScope.launch {
-                                            YouTube.albumSongs(playlistId).onSuccess { songs ->
-                                                songs.firstOrNull()?.album?.id?.let { browseId ->
-                                                    navController.navigate("album/$browseId")
+                        val listener =
+                            Consumer<Intent> { intent ->
+                                val uri =
+                                    intent.data ?: intent.extras?.getString(Intent.EXTRA_TEXT)?.toUri() ?: return@Consumer
+                                when (val path = uri.pathSegments.firstOrNull()) {
+                                    "playlist" ->
+                                        uri.getQueryParameter("list")?.let { playlistId ->
+                                            if (playlistId.startsWith("OLAK5uy_")) {
+                                                coroutineScope.launch {
+                                                    YouTube
+                                                        .albumSongs(playlistId)
+                                                        .onSuccess { songs ->
+                                                            songs.firstOrNull()?.album?.id?.let { browseId ->
+                                                                navController.navigate("album/$browseId")
+                                                            }
+                                                        }.onFailure {
+                                                            reportException(it)
+                                                        }
                                                 }
-                                            }.onFailure {
-                                                reportException(it)
+                                            } else {
+                                                navController.navigate("online_playlist/$playlistId")
                                             }
                                         }
-                                    } else {
-                                        navController.navigate("online_playlist/$playlistId")
-                                    }
-                                }
 
-                                "channel", "c" -> uri.lastPathSegment?.let { artistId ->
-                                    navController.navigate("artist/$artistId")
-                                }
-
-                                else -> when {
-                                    path == "watch" -> uri.getQueryParameter("v")
-                                    uri.host == "youtu.be" -> path
-                                    else -> null
-                                }?.let { videoId ->
-                                    coroutineScope.launch {
-                                        withContext(Dispatchers.IO) {
-                                            YouTube.queue(listOf(videoId))
-                                        }.onSuccess {
-                                            sharedSong = it.firstOrNull()
-                                        }.onFailure {
-                                            reportException(it)
+                                    "channel", "c" ->
+                                        uri.lastPathSegment?.let { artistId ->
+                                            navController.navigate("artist/$artistId")
                                         }
-                                    }
+
+                                    else ->
+                                        when {
+                                            path == "watch" -> uri.getQueryParameter("v")
+                                            uri.host == "youtu.be" -> path
+                                            else -> null
+                                        }?.let { videoId ->
+                                            coroutineScope.launch {
+                                                withContext(Dispatchers.IO) {
+                                                    YouTube.queue(listOf(videoId))
+                                                }.onSuccess {
+                                                    sharedSong = it.firstOrNull()
+                                                }.onFailure {
+                                                    reportException(it)
+                                                }
+                                            }
+                                        }
                                 }
                             }
-                        }
 
                         addOnNewIntentListener(listener)
                         onDispose { removeOnNewIntentListener(listener) }
@@ -655,14 +712,14 @@ class MainActivity : ComponentActivity() {
                         LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
-                        LocalSyncUtils provides syncUtils
+                        LocalSyncUtils provides syncUtils,
                     ) {
                         Scaffold(
                             topBar = {
                                 AnimatedVisibility(
                                     visible = shouldShowSearchBar,
                                     enter = fadeIn(),
-                                    exit = fadeOut()
+                                    exit = fadeOut(),
                                 ) {
                                     SearchBar(
                                         query = query,
@@ -673,13 +730,17 @@ class MainActivity : ComponentActivity() {
                                         scrollBehavior = searchBarScrollBehavior,
                                         placeholder = {
                                             Text(
-                                                text = stringResource(
-                                                    if (!active) R.string.search
-                                                    else when (searchSource) {
-                                                        SearchSource.LOCAL -> R.string.search_library
-                                                        SearchSource.ONLINE -> R.string.search_yt_music
-                                                    }
-                                                )
+                                                text =
+                                                    stringResource(
+                                                        if (!active) {
+                                                            R.string.search
+                                                        } else {
+                                                            when (searchSource) {
+                                                                SearchSource.LOCAL -> R.string.search_library
+                                                                SearchSource.ONLINE -> R.string.search_yt_music
+                                                            }
+                                                        },
+                                                    ),
                                             )
                                         },
                                         leadingIcon = {
@@ -698,12 +759,12 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector =
-                                                    if (active || navBackStackEntry?.destination?.route?.startsWith("search") == true) {
-                                                        Icons.AutoMirrored.Rounded.ArrowBack
-                                                    } else {
-                                                        Icons.Rounded.Search
-                                                    },
-                                                    contentDescription = null
+                                                        if (active || navBackStackEntry?.destination?.route?.startsWith("search") == true) {
+                                                            Icons.AutoMirrored.Rounded.ArrowBack
+                                                        } else {
+                                                            Icons.Rounded.Search
+                                                        },
+                                                    contentDescription = null,
                                                 )
                                             }
                                         },
@@ -711,46 +772,54 @@ class MainActivity : ComponentActivity() {
                                             if (active) {
                                                 if (query.text.isNotEmpty()) {
                                                     IconButton(
-                                                        onClick = { onQueryChange(TextFieldValue("")) }
+                                                        onClick = { onQueryChange(TextFieldValue("")) },
                                                     ) {
                                                         Icon(
                                                             imageVector = Icons.Rounded.Close,
-                                                            contentDescription = null
+                                                            contentDescription = null,
                                                         )
                                                     }
                                                 }
                                                 IconButton(
                                                     onClick = {
                                                         searchSource =
-                                                            if (searchSource == SearchSource.ONLINE) SearchSource.LOCAL else SearchSource.ONLINE
-                                                    }
+                                                            if (searchSource ==
+                                                                SearchSource.ONLINE
+                                                            ) {
+                                                                SearchSource.LOCAL
+                                                            } else {
+                                                                SearchSource.ONLINE
+                                                            }
+                                                    },
                                                 ) {
                                                     Icon(
-                                                        imageVector = when (searchSource) {
-                                                            SearchSource.LOCAL -> Icons.Rounded.LibraryMusic
-                                                            SearchSource.ONLINE -> Icons.Rounded.Language
-                                                        },
-                                                        contentDescription = null
+                                                        imageVector =
+                                                            when (searchSource) {
+                                                                SearchSource.LOCAL -> Icons.Rounded.LibraryMusic
+                                                                SearchSource.ONLINE -> Icons.Rounded.Language
+                                                            },
+                                                        contentDescription = null,
                                                     )
                                                 }
-                                            } else if (navBackStackEntry?.destination?.route in listOf(
+                                            } else if (navBackStackEntry?.destination?.route in
+                                                listOf(
                                                     Screens.Home.route,
                                                     Screens.Songs.route,
                                                     Screens.Folders.route,
                                                     Screens.Artists.route,
                                                     Screens.Albums.route,
                                                     Screens.Playlists.route,
-                                                    Screens.Library.route
+                                                    Screens.Library.route,
                                                 )
                                             ) {
                                                 IconButton(
                                                     onClick = {
                                                         navController.navigate("settings")
-                                                    }
+                                                    },
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Rounded.Settings,
-                                                        contentDescription = null
+                                                        contentDescription = null,
                                                     )
                                                 }
                                             }
@@ -761,91 +830,103 @@ class MainActivity : ComponentActivity() {
                                         Crossfade(
                                             targetState = searchSource,
                                             label = "",
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(bottom = if (!playerBottomSheetState.isDismissed) MiniPlayerHeight else 0.dp)
-                                                .navigationBarsPadding()
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxSize()
+                                                    .padding(bottom = if (!playerBottomSheetState.isDismissed) MiniPlayerHeight else 0.dp)
+                                                    .navigationBarsPadding(),
                                         ) { searchSource ->
                                             when (searchSource) {
-                                                SearchSource.LOCAL -> LocalSearchScreen(
-                                                    query = query.text,
-                                                    navController = navController,
-                                                    onDismiss = { onActiveChange(false) }
-                                                )
+                                                SearchSource.LOCAL ->
+                                                    LocalSearchScreen(
+                                                        query = query.text,
+                                                        navController = navController,
+                                                        onDismiss = { onActiveChange(false) },
+                                                    )
 
-                                                SearchSource.ONLINE -> OnlineSearchScreen(
-                                                    query = query.text,
-                                                    onQueryChange = onQueryChange,
-                                                    navController = navController,
-                                                    onSearch = {
-                                                        navController.navigate("search/${it.urlEncode()}")
-                                                        if (dataStore[PauseSearchHistoryKey] != true) {
-                                                            database.query {
-                                                                insert(SearchHistory(query = it))
+                                                SearchSource.ONLINE ->
+                                                    OnlineSearchScreen(
+                                                        query = query.text,
+                                                        onQueryChange = onQueryChange,
+                                                        navController = navController,
+                                                        onSearch = {
+                                                            navController.navigate("search/${it.urlEncode()}")
+                                                            if (dataStore[PauseSearchHistoryKey] != true) {
+                                                                database.query {
+                                                                    insert(SearchHistory(query = it))
+                                                                }
                                                             }
-                                                        }
-                                                    },
-                                                    onDismiss = { onActiveChange(false) }
-                                                )
+                                                        },
+                                                        onDismiss = { onActiveChange(false) },
+                                                    )
                                             }
                                         }
                                     }
                                 }
                             },
                             bottomBar = {
-                                Box() {
+                                Box {
                                     BottomSheetPlayer(
                                         state = playerBottomSheetState,
-                                        navController = navController
+                                        navController = navController,
                                     )
                                     LaunchedEffect(playerBottomSheetState.isExpanded) {
                                         setSystemBarAppearance(
-                                            (playerBottomSheetState.isExpanded
-                                                    && playerBackground != PlayerBackgroundStyle.DEFAULT) || useDarkTheme
+                                            (
+                                                playerBottomSheetState.isExpanded &&
+                                                    playerBackground != PlayerBackgroundStyle.DEFAULT
+                                            ) ||
+                                                useDarkTheme,
                                         )
                                     }
                                     NavigationBar(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .offset {
-                                                if (navigationBarHeight == 0.dp) {
-                                                    IntOffset(
-                                                        x = 0,
-                                                        y = (bottomInset + NavigationBarHeight).roundToPx()
-                                                    )
-                                                } else {
-                                                    val slideOffset =
-                                                        (bottomInset + NavigationBarHeight) * playerBottomSheetState.progress.coerceIn(
-                                                            0f,
-                                                            1f
+                                        modifier =
+                                            Modifier
+                                                .align(Alignment.BottomCenter)
+                                                .offset {
+                                                    if (navigationBarHeight == 0.dp) {
+                                                        IntOffset(
+                                                            x = 0,
+                                                            y = (bottomInset + NavigationBarHeight).roundToPx(),
                                                         )
-                                                    val hideOffset =
-                                                        (bottomInset + NavigationBarHeight) * (1 - navigationBarHeight / NavigationBarHeight)
-                                                    IntOffset(
-                                                        x = 0,
-                                                        y = (slideOffset + hideOffset).roundToPx()
-                                                    )
-                                                }
-                                            }
+                                                    } else {
+                                                        val slideOffset =
+                                                            (bottomInset + NavigationBarHeight) *
+                                                                playerBottomSheetState.progress.coerceIn(
+                                                                    0f,
+                                                                    1f,
+                                                                )
+                                                        val hideOffset =
+                                                            (bottomInset + NavigationBarHeight) *
+                                                                (1 - navigationBarHeight / NavigationBarHeight)
+                                                        IntOffset(
+                                                            x = 0,
+                                                            y = (slideOffset + hideOffset).roundToPx(),
+                                                        )
+                                                    }
+                                                },
                                     ) {
                                         navigationItems.fastForEach { screen ->
                                             NavigationBarItem(
-                                                selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
+                                                selected =
+                                                    navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
                                                 icon = {
                                                     Icon(
                                                         screen.icon,
-                                                        contentDescription = null
+                                                        contentDescription = null,
                                                     )
                                                 },
                                                 label = {
                                                     Text(
                                                         text = stringResource(screen.titleId),
                                                         maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis
+                                                        overflow = TextOverflow.Ellipsis,
                                                     )
                                                 },
                                                 onClick = {
-                                                    if (navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true) {
+                                                    if (navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } ==
+                                                        true
+                                                    ) {
                                                         navBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
                                                         coroutineScope.launch {
                                                             searchBarScrollBehavior.state.resetHeightOffset()
@@ -859,77 +940,82 @@ class MainActivity : ComponentActivity() {
                                                             restoreState = true
                                                         }
                                                     }
-                                                }
+                                                },
                                             )
                                         }
                                     }
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
-                                .background(MaterialTheme.colorScheme.surface)
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
+                                    .background(MaterialTheme.colorScheme.surface),
                         ) {
                             var transitionDirection = AnimatedContentTransitionScope.SlideDirection.Left
 
                             if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
                                 if (navigationItems.fastAny { it.route == previousTab }) {
-                                    val curIndex = navigationItems.indexOf(
-                                        navigationItems.fastFirstOrNull {
-                                            it.route == navBackStackEntry?.destination?.route
-                                        }
-                                    )
+                                    val curIndex =
+                                        navigationItems.indexOf(
+                                            navigationItems.fastFirstOrNull {
+                                                it.route == navBackStackEntry?.destination?.route
+                                            },
+                                        )
 
-                                    val prevIndex = navigationItems.indexOf(
-                                        navigationItems.fastFirstOrNull {
-                                            it.route == previousTab
-                                        }
-                                    )
+                                    val prevIndex =
+                                        navigationItems.indexOf(
+                                            navigationItems.fastFirstOrNull {
+                                                it.route == previousTab
+                                            },
+                                        )
 
-                                    if (prevIndex > curIndex)
+                                    if (prevIndex > curIndex) {
                                         transitionDirection =
                                             AnimatedContentTransitionScope.SlideDirection.Right
+                                    }
                                 }
                             }
 
                             NavHost(
                                 navController = navController,
-                                startDestination = when (tabOpenedFromShortcut ?: defaultOpenTab) {
-                                    NavigationTab.HOME -> Screens.Home
-                                    NavigationTab.SONG -> Screens.Songs
-                                    NavigationTab.FOLDERS -> Screens.Folders
-                                    NavigationTab.ARTIST -> Screens.Artists
-                                    NavigationTab.ALBUM -> Screens.Albums
-                                    NavigationTab.PLAYLIST -> Screens.Playlists
-                                    NavigationTabNew.HOME -> Screens.Home
-                                    NavigationTabNew.LIBRARY -> Screens.Library
-                                    else -> Screens.Home
-                                }.route,
+                                startDestination =
+                                    when (tabOpenedFromShortcut ?: defaultOpenTab) {
+                                        NavigationTab.HOME -> Screens.Home
+                                        NavigationTab.SONG -> Screens.Songs
+                                        NavigationTab.FOLDERS -> Screens.Folders
+                                        NavigationTab.ARTIST -> Screens.Artists
+                                        NavigationTab.ALBUM -> Screens.Albums
+                                        NavigationTab.PLAYLIST -> Screens.Playlists
+                                        NavigationTabNew.HOME -> Screens.Home
+                                        NavigationTabNew.LIBRARY -> Screens.Library
+                                        else -> Screens.Home
+                                    }.route,
                                 enterTransition = {
                                     slideIntoContainer(
                                         transitionDirection,
-                                        animationSpec = tween(200)
+                                        animationSpec = tween(200),
                                     )
                                 },
                                 exitTransition = {
                                     slideOutOfContainer(
                                         transitionDirection,
-                                        animationSpec = tween(200)
+                                        animationSpec = tween(200),
                                     )
                                 },
                                 popEnterTransition = {
                                     slideIntoContainer(
                                         AnimatedContentTransitionScope.SlideDirection.Right,
-                                        animationSpec = tween(200)
+                                        animationSpec = tween(200),
                                     )
                                 },
                                 popExitTransition = {
                                     slideOutOfContainer(
                                         AnimatedContentTransitionScope.SlideDirection.Right,
-                                        animationSpec = tween(200)
+                                        animationSpec = tween(200),
                                     )
                                 },
-                                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                             ) {
                                 composable(Screens.Home.route) {
                                     HomeScreen(navController)
@@ -970,31 +1056,34 @@ class MainActivity : ComponentActivity() {
 
                                 composable(
                                     route = "search/{query}",
-                                    arguments = listOf(
-                                        navArgument("query") {
-                                            type = NavType.StringType
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("query") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) {
                                     OnlineSearchResult(navController)
                                 }
                                 composable(
                                     route = "album/{albumId}",
-                                    arguments = listOf(
-                                        navArgument("albumId") {
-                                            type = NavType.StringType
-                                        },
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("albumId") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) {
                                     AlbumScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "artist/{artistId}",
-                                    arguments = listOf(
-                                        navArgument("artistId") {
-                                            type = NavType.StringType
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("artistId") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) { backStackEntry ->
                                     val artistId = backStackEntry.arguments?.getString("artistId")!!
                                     if (artistId.startsWith("LA")) {
@@ -1005,74 +1094,80 @@ class MainActivity : ComponentActivity() {
                                 }
                                 composable(
                                     route = "artist/{artistId}/songs",
-                                    arguments = listOf(
-                                        navArgument("artistId") {
-                                            type = NavType.StringType
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("artistId") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) {
                                     ArtistSongsScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "artist/{artistId}/items?browseId={browseId}?params={params}",
-                                    arguments = listOf(
-                                        navArgument("artistId") {
-                                            type = NavType.StringType
-                                        },
-                                        navArgument("browseId") {
-                                            type = NavType.StringType
-                                            nullable = true
-                                        },
-                                        navArgument("params") {
-                                            type = NavType.StringType
-                                            nullable = true
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("artistId") {
+                                                type = NavType.StringType
+                                            },
+                                            navArgument("browseId") {
+                                                type = NavType.StringType
+                                                nullable = true
+                                            },
+                                            navArgument("params") {
+                                                type = NavType.StringType
+                                                nullable = true
+                                            },
+                                        ),
                                 ) {
                                     ArtistItemsScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "online_playlist/{playlistId}",
-                                    arguments = listOf(
-                                        navArgument("playlistId") {
-                                            type = NavType.StringType
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("playlistId") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) {
                                     OnlinePlaylistScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "local_playlist/{playlistId}",
-                                    arguments = listOf(
-                                        navArgument("playlistId") {
-                                            type = NavType.StringType
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("playlistId") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) {
                                     LocalPlaylistScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "auto_playlist/{playlistId}",
-                                    arguments = listOf(
-                                        navArgument("playlistId") {
-                                            type = NavType.StringType
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("playlistId") {
+                                                type = NavType.StringType
+                                            },
+                                        ),
                                 ) {
                                     AutoPlaylistScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "youtube_browse/{browseId}?params={params}",
-                                    arguments = listOf(
-                                        navArgument("browseId") {
-                                            type = NavType.StringType
-                                            nullable = true
-                                        },
-                                        navArgument("params") {
-                                            type = NavType.StringType
-                                            nullable = true
-                                        }
-                                    )
+                                    arguments =
+                                        listOf(
+                                            navArgument("browseId") {
+                                                type = NavType.StringType
+                                                nullable = true
+                                            },
+                                            navArgument("params") {
+                                                type = NavType.StringType
+                                                nullable = true
+                                            },
+                                        ),
                                 ) {
                                     YouTubeBrowseScreen(navController, scrollBehavior)
                                 }
@@ -1117,28 +1212,28 @@ class MainActivity : ComponentActivity() {
 
                         BottomSheetMenu(
                             state = LocalMenuState.current,
-                            modifier = Modifier.align(Alignment.BottomCenter)
+                            modifier = Modifier.align(Alignment.BottomCenter),
                         )
 
                         sharedSong?.let { song ->
                             playerConnection?.let {
                                 Dialog(
                                     onDismissRequest = { sharedSong = null },
-                                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                                    properties = DialogProperties(usePlatformDefaultWidth = false),
                                 ) {
                                     Surface(
                                         modifier = Modifier.padding(24.dp),
                                         shape = RoundedCornerShape(16.dp),
                                         color = AlertDialogDefaults.containerColor,
-                                        tonalElevation = AlertDialogDefaults.TonalElevation
+                                        tonalElevation = AlertDialogDefaults.TonalElevation,
                                     ) {
                                         Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally
+                                            horizontalAlignment = Alignment.CenterHorizontally,
                                         ) {
                                             YouTubeSongMenu(
                                                 song = song,
                                                 navController = navController,
-                                                onDismiss = { sharedSong = null }
+                                                onDismiss = { sharedSong = null },
                                             )
                                         }
                                     }

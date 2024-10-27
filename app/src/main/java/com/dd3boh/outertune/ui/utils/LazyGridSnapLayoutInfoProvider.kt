@@ -15,58 +15,51 @@ import androidx.compose.ui.util.fastForEach
 import kotlin.math.abs
 
 @ExperimentalFoundationApi
-fun SnapLayoutInfoProvider(
-    lazyGridState: LazyGridState,
-): SnapLayoutInfoProvider = object : SnapLayoutInfoProvider {
+fun SnapLayoutInfoProvider(lazyGridState: LazyGridState): SnapLayoutInfoProvider =
+    object : SnapLayoutInfoProvider {
+        private val layoutInfo: LazyGridLayoutInfo
+            get() = lazyGridState.layoutInfo
 
-    private val layoutInfo: LazyGridLayoutInfo
-        get() = lazyGridState.layoutInfo
+        override fun calculateApproachOffset(initialVelocity: Float): Float = 0f
 
-    override fun calculateApproachOffset(initialVelocity: Float): Float {
-        return 0f
-    }
+        override fun calculateSnappingOffset(currentVelocity: Float): Float {
+            var closestItemOffset = Float.MAX_VALUE
 
-    override fun calculateSnappingOffset(currentVelocity: Float): Float {
-        var closestItemOffset = Float.MAX_VALUE
+            layoutInfo.visibleItemsInfo.fastForEach { item ->
+                val offset = item.offset.x.toFloat()
 
-        layoutInfo.visibleItemsInfo.fastForEach { item ->
-            val offset = item.offset.x.toFloat()
-
-            // Check if the item is closer to the center than the current closest item
-            if (abs(offset) < abs(closestItemOffset)) {
-                closestItemOffset = offset
+                // Check if the item is closer to the center than the current closest item
+                if (abs(offset) < abs(closestItemOffset)) {
+                    closestItemOffset = offset
+                }
             }
-        }
 
-        // Adjust the offset based on the velocity
-        return closestItemOffset + currentVelocity
+            // Adjust the offset based on the velocity
+            return closestItemOffset + currentVelocity
+        }
     }
-}
 
 @ExperimentalFoundationApi
-fun SnapLayoutInfoProvider(
-    layoutInfo: LazyListLayoutInfo,
-): SnapLayoutInfoProvider = object : SnapLayoutInfoProvider {
-    override fun calculateApproachOffset(initialVelocity: Float): Float {
-        return 0f
-    }
+fun SnapLayoutInfoProvider(layoutInfo: LazyListLayoutInfo): SnapLayoutInfoProvider =
+    object : SnapLayoutInfoProvider {
+        override fun calculateApproachOffset(initialVelocity: Float): Float = 0f
 
-    override fun calculateSnappingOffset(currentVelocity: Float): Float {
-        var closestItemOffset = Float.MAX_VALUE
+        override fun calculateSnappingOffset(currentVelocity: Float): Float {
+            var closestItemOffset = Float.MAX_VALUE
 
-        layoutInfo.visibleItemsInfo.fastForEach { item ->
-            val offset = item.offset.toFloat()
+            layoutInfo.visibleItemsInfo.fastForEach { item ->
+                val offset = item.offset.toFloat()
 
-            // Check if the item is closer to the center than the current closest item
-            if (abs(offset) < abs(closestItemOffset)) {
-                closestItemOffset = offset
+                // Check if the item is closer to the center than the current closest item
+                if (abs(offset) < abs(closestItemOffset)) {
+                    closestItemOffset = offset
+                }
             }
-        }
 
-        // Adjust the offset based on the velocity
-        return closestItemOffset + currentVelocity
+            // Adjust the offset based on the velocity
+            return closestItemOffset + currentVelocity
+        }
     }
-}
 
 fun Density.calculateDistanceToDesiredSnapPosition(
     layoutInfo: LazyListLayoutInfo,

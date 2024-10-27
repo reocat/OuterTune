@@ -30,31 +30,34 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class AutoPlaylistViewModel @Inject constructor(
-    @ApplicationContext context: Context,
-    database: MusicDatabase,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
-    val playlistId = savedStateHandle.get<String>("playlistId")!!
+class AutoPlaylistViewModel
+    @Inject
+    constructor(
+        @ApplicationContext context: Context,
+        database: MusicDatabase,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        val playlistId = savedStateHandle.get<String>("playlistId")!!
 
-    val thumbnail: StateFlow<ImageVector> = MutableStateFlow(
-        when (playlistId) {
-            "liked" -> Icons.Rounded.Favorite
-            "downloaded" -> Icons.Rounded.CloudDownload
-            else -> Icons.AutoMirrored.Rounded.QueueMusic
-        }
-    ).asStateFlow()
+        val thumbnail: StateFlow<ImageVector> =
+            MutableStateFlow(
+                when (playlistId) {
+                    "liked" -> Icons.Rounded.Favorite
+                    "downloaded" -> Icons.Rounded.CloudDownload
+                    else -> Icons.AutoMirrored.Rounded.QueueMusic
+                },
+            ).asStateFlow()
 
-    val songs = context.dataStore.data
-        .map {
-            it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE) to (it[SongSortDescendingKey] ?: true)
-        }
-        .distinctUntilChanged()
-        .flatMapLatest { (sortType, descending) ->
-            when (playlistId) {
-                "liked" -> database.likedSongs(sortType, descending)
-                "downloaded" -> database.downloadSongs(sortType, descending)
-                else -> MutableStateFlow(emptyList())
-            }
-        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-}
+        val songs =
+            context.dataStore.data
+                .map {
+                    it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE) to (it[SongSortDescendingKey] ?: true)
+                }.distinctUntilChanged()
+                .flatMapLatest { (sortType, descending) ->
+                    when (playlistId) {
+                        "liked" -> database.likedSongs(sortType, descending)
+                        "downloaded" -> database.downloadSongs(sortType, descending)
+                        else -> MutableStateFlow(emptyList())
+                    }
+                }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
