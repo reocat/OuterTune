@@ -8,7 +8,7 @@ media3 = "1.4.1"
 room = "2.6.1"
 hilt = "2.52"
 ktor = "2.3.12"
-ksp = "2.0.20-1.0.24"
+ksp = "2.0.21-1.0.26"
 
 [libraries]
 guava = { group = "com.google.guava", name = "guava", version = "33.3.0-android" }
