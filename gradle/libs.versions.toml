@@ -12,7 +12,7 @@ ksp = "2.0.20-1.0.24"
 
 [libraries]
 guava = { group = "com.google.guava", name = "guava", version = "33.3.0-android" }
-coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.8.1" }
+coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.9.0" }
 concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.2.0" }
 
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
