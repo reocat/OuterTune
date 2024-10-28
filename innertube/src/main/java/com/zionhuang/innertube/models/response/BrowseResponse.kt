@@ -50,6 +50,11 @@ data class BrowseResponse(
             val contents: List<MusicShelfRenderer.Content>,
             val continuations: List<Continuation>?,
         )
+        @Serializable
+        data class GridContinuation(
+            val items: List<GridRenderer.Item>,
+            val continuations: List<Continuation>?,
+        )
     }
 
     @Serializable

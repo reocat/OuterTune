@@ -473,7 +473,7 @@ object YouTube {
                                 ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
                             }
                         },
-                    continuation = null,
+                    continuation = gridRenderer.continuations?.getContinuation(),
                 )
             } else {
                 ArtistItemsPage(
@@ -517,15 +517,24 @@ object YouTube {
     suspend fun artistItemsContinuation(continuation: String): Result<ArtistItemsContinuationPage> =
         runCatching {
             val response = innerTube.browse(WEB_REMIX, continuation = continuation).body<BrowseResponse>()
-            ArtistItemsContinuationPage(
-                items =
-                    response.continuationContents?.musicPlaylistShelfContinuation?.contents?.mapNotNull {
+            val gridContinuation = response.continuationContents?.gridContinuation
+            if (gridContinuation != null) {
+                ArtistItemsContinuationPage(
+                    items = gridContinuation.items.mapNotNull {
+                        it.musicTwoRowItemRenderer?.let { renderer ->
+                            ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
+                        }
+                    },
+                    continuation = gridContinuation.continuations?.getContinuation()
+                )
+            } else {
+                ArtistItemsContinuationPage(
+                    items = response.continuationContents?.musicPlaylistShelfContinuation?.contents?.mapNotNull {
                         ArtistItemsContinuationPage.fromMusicResponsiveListItemRenderer(it.musicResponsiveListItemRenderer)
                     }!!,
-                continuation =
-                    response.continuationContents.musicPlaylistShelfContinuation.continuations
-                        ?.getContinuation(),
-            )
+                    continuation = response.continuationContents.musicPlaylistShelfContinuation.continuations?.getContinuation()
+                )
+            }
         }
 
     suspend fun playlist(playlistId: String): Result<PlaylistPage> =
