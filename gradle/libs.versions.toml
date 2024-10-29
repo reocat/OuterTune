@@ -1,7 +1,7 @@
 [versions]
 androidGradlePlugin = "8.7.1"
 kotlin = "2.0.21"
-compose = "1.6.8"
+compose = "1.7.4"
 lifecycle = "2.8.6"
 material3 = "1.2.1"
 media3 = "1.4.1"
