@@ -5,12 +5,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.dd3boh.outertune.utils.RandomStringUtil
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 import java.time.Month
 import java.time.ZoneOffset
@@ -99,6 +99,8 @@ data class SongEntity(
     fun getDateModifiedLong(): Long? = dateModified?.toEpochSecond(ZoneOffset.UTC)
 
     companion object {
-        fun generateSongId() = "LA" + RandomStringUtils.random(8, true, false)
+        fun generateSongId(): String {
+            return "LA" + RandomStringUtil.random(8, true, false)
+        }
     }
 }

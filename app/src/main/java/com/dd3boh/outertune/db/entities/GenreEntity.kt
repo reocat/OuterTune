@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import org.apache.commons.lang3.RandomStringUtils
+import com.dd3boh.outertune.utils.RandomStringUtil
 import java.time.LocalDateTime
 
 @Immutable
@@ -27,6 +27,6 @@ class GenreEntity(
     val isLocalGenre: Boolean
         get() = id.startsWith("LG")
     companion object {
-        fun generateGenreId() = "LG" + RandomStringUtils.random(8, true, false)
+        fun generateGenreId() = "LG" + RandomStringUtil.random(8, true, false)
     }
 }

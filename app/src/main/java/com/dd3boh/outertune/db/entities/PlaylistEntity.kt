@@ -4,12 +4,12 @@ import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.dd3boh.outertune.utils.RandomStringUtil
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 
 @Immutable
@@ -33,7 +33,7 @@ data class PlaylistEntity(
         const val LIKED_PLAYLIST_ID = "LP_LIKED"
         const val DOWNLOADED_PLAYLIST_ID = "LP_DOWNLOADED"
 
-        fun generatePlaylistId() = "LP" + RandomStringUtils.random(8, true, false)
+        fun generatePlaylistId() = "LP" + RandomStringUtil.random(8, true, false)
     }
 
     val isLocalPlaylist: Boolean
