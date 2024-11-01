@@ -5,7 +5,6 @@ val isFullBuild: Boolean by rootProject.extra
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("kapt")
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.compose.compiler)
