@@ -339,11 +339,11 @@ fun ArtistScreen(
                                                     if (song.id == mediaMetadata?.id) {
                                                         playerConnection.player.togglePlayPause()
                                                     } else {
-                                                        val endpoint = song.endpoint ?: WatchEndpoint(videoId = song.id)
                                                         playerConnection.playQueue(
-                                                            YouTubeQueue(
-                                                                endpoint,
-                                                                song.toMediaMetadata()
+                                                            ListQueue(
+                                                                title = "Artist songs (preview): ${artistPage.artist.title}",
+                                                                items = section.items.map { (it as SongItem).toMediaMetadata() },
+                                                                startIndex = section.items.indexOf(song)
                                                             )
                                                         )
                                                     }
