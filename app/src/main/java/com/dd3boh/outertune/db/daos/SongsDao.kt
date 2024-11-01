@@ -24,15 +24,19 @@ import java.time.ZoneOffset
 interface SongsDao {
 
     // region Gets
+    @Transaction
     @Query("SELECT * FROM song WHERE id = :songId")
     fun song(songId: String?): Flow<Song?>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE title LIKE '%' || :query || '%' AND inLibrary IS NOT NULL LIMIT :previewSize")
     fun searchSongs(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE title LIKE '%' || :query || '%' AND isLocal = 1 LIMIT :previewSize")
     fun searchSongsAllLocal(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL")
     fun allLocalSongs(): Flow<List<Song>>
 
@@ -48,6 +52,7 @@ interface SongsDao {
     """)
     fun duplicatedLocalSongs(): Flow<List<SongEntity>>
 
+    @Transaction
     @Query("""
         SELECT *
         FROM song
@@ -70,21 +75,27 @@ interface SongsDao {
     fun getPlayCountByMonth(songId: String?, year: Int, month: Int): Flow<Int>
 
     // region Songs Sort
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY rowId")
     fun songsByRowIdAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY inLibrary")
     fun songsByCreateDateAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY date")
     fun songsByReleaseDateAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY dateModified")
     fun songsByDateModifiedAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
     fun songsByNameAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("""
         SELECT * FROM song 
         WHERE inLibrary IS NOT NULL 
@@ -97,9 +108,11 @@ interface SongsDao {
     """)
     fun songsByArtistAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY totalPlayTime")
     fun songsByPlayTimeAsc(): Flow<List<Song>>
 
+    @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("""
         SELECT song.*, (SELECT SUM(playCount.count) 
@@ -126,21 +139,27 @@ interface SongsDao {
     @Query("SELECT COUNT(1) FROM song WHERE liked")
     fun likedSongsCount(): Flow<Int>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY rowId")
     fun likedSongsByRowIdAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY likedDate")
     fun likedSongsByCreateDateAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY date")
     fun likedSongsByReleaseDateAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY dateModified")
     fun likedSongsByDateModifiedAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY title COLLATE NOCASE ASC")
     fun likedSongsByNameAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("""
         SELECT * FROM song 
         WHERE liked 
@@ -153,9 +172,11 @@ interface SongsDao {
     """)
     fun likedSongsByArtistAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked ORDER BY totalPlayTime")
     fun likedSongsByPlayTimeAsc(): Flow<List<Song>>
 
+    @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("""
         SELECT song.*, (SELECT SUM(playCount.count) 
@@ -179,21 +200,27 @@ interface SongsDao {
     // endregion
 
     // region Downloaded Songs Sort
+    @Transaction
     @Query("SELECT * FROM song WHERE dateDownload IS NOT NULL ORDER BY dateDownload")
     fun downloadNoLocalSongs(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY inLibrary")
     fun downloadSongsByCreateDateAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY date")
     fun downloadSongsByReleaseDateAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY dateModified")
     fun downloadSongsByDateModifiedAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
     fun downloadSongsByNameAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("""
         SELECT * FROM song
         WHERE isLocal OR dateDownload IS NOT NULL
@@ -206,6 +233,7 @@ interface SongsDao {
     """)
     fun downloadSongsByArtistAsc(): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY totalPlayTime")
     fun downloadSongsByPlayTimeAsc(): Flow<List<Song>>
 
@@ -218,7 +246,6 @@ interface SongsDao {
             SongSortType.ARTIST -> downloadSongsByArtistAsc()
             SongSortType.PLAY_TIME -> downloadSongsByPlayTimeAsc()
         }.map { it.reversed(descending) }
-    // endregion
     // endregion
 
     // region Inserts
@@ -239,9 +266,6 @@ interface SongsDao {
     @Query("UPDATE playCount SET count = count + 1 WHERE song = :songId AND year = :year AND month = :month")
     fun incrementPlayCount(songId: String, year: Int, month: Int)
 
-    /**
-     * Increment by one the play count with today's year and month.
-     */
     fun incrementPlayCount(songId: String) {
         val time = LocalDateTime.now().atOffset(ZoneOffset.UTC)
         var oldCount: Int
@@ -249,7 +273,6 @@ interface SongsDao {
             oldCount = getPlayCountByMonth(songId, time.year, time.monthValue).first()
         }
 
-        // add new
         if (oldCount <= 0) {
             insert(PlayCountEntity(songId, time.year, time.monthValue, 0))
         }
@@ -282,9 +305,6 @@ interface SongsDao {
         }
     }
 
-    /**
-     * DON'T USE THIS DIRECTLY, USE updateLocalSongPath(...) instead!
-     */
     @Query("UPDATE song SET inLibrary = :inLibrary, localPath = :localPath WHERE id = :songId")
     fun _updateLSP(songId: String, inLibrary: LocalDateTime?, localPath: String)
 
