@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.map
 interface AlbumsDao : ArtistsDao {
 
     // region Gets
+    @Transaction
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
@@ -42,6 +43,7 @@ interface AlbumsDao : ArtistsDao {
     """)
     fun album(id: String): Flow<Album?>
 
+    @Transaction
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
@@ -52,6 +54,7 @@ interface AlbumsDao : ArtistsDao {
     """)
     fun searchAlbums(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Album>>
 
+    @Transaction
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
@@ -61,9 +64,11 @@ interface AlbumsDao : ArtistsDao {
     """)
     fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?>
 
+    @Transaction
     @Query("SELECT song.* FROM song JOIN song_album_map ON song.id = song_album_map.songId WHERE song_album_map.albumId = :albumId")
     fun albumSongs(albumId: String): Flow<List<Song>>
 
+    @Transaction
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
@@ -76,6 +81,7 @@ interface AlbumsDao : ArtistsDao {
     """)
     fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6): Flow<List<Album>>
 
+    @Transaction
     @RawQuery(observedEntities = [AlbumEntity::class])
     fun _getAlbum(query: SupportSQLiteQuery): Flow<List<Album>>
 
