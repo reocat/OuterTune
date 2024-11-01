@@ -98,7 +98,6 @@ fun ExperimentalSettings(
 
             Text("Material colours test")
 
-
             Column {
                 Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.primary)) {
                     Text("Primary", color = MaterialTheme.colorScheme.onPrimary)
