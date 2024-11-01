@@ -21,7 +21,6 @@ import com.zionhuang.innertube.models.PlaylistItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-
 /*
  * Logic related to playlists entities and their mapping
  */
@@ -30,6 +29,7 @@ import kotlinx.coroutines.flow.map
 interface PlaylistsDao {
 
     // region Gets
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -43,6 +43,7 @@ interface PlaylistsDao {
     """)
     fun playlist(playlistId: String): Flow<Playlist?>
 
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -56,6 +57,7 @@ interface PlaylistsDao {
     """)
     fun playlistByBrowseId(browseId: String): Flow<Playlist?>
 
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -70,11 +72,12 @@ interface PlaylistsDao {
     """)
     fun searchPlaylists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Playlist>>
 
+    @Transaction
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId ORDER BY position")
     fun playlistSongs(playlistId: String): Flow<List<PlaylistSong>>
 
     @Query("SELECT songId from playlist_song_map WHERE playlistId = :playlistId AND songId IN (:songIds)")
-    fun playlistDuplicates(playlistId: String, songIds: List<String>,): List<String>
+    fun playlistDuplicates(playlistId: String, songIds: List<String>): List<String>
 
     @Query("SELECT * FROM playlist_song_map WHERE songId = :songId")
     fun songMapsToPlaylist(songId: String): List<PlaylistSongMap>
@@ -82,6 +85,7 @@ interface PlaylistsDao {
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId AND position >= :from ORDER BY position")
     fun songMapsToPlaylist(playlistId: String, from: Int): List<PlaylistSongMap>
 
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -96,6 +100,7 @@ interface PlaylistsDao {
     """)
     fun editablePlaylistsByCreateDateAsc(): Flow<List<Playlist>>
 
+    @Transaction
     @RawQuery(observedEntities = [PlaylistEntity::class])
     fun _getPlaylists(query: SupportSQLiteQuery): Flow<List<Playlist>>
 
@@ -146,7 +151,7 @@ interface PlaylistsDao {
     @Update
     fun update(map: PlaylistSongMap)
 
-    @Update
+    @Transaction
     fun update(playlistEntity: PlaylistEntity, playlistItem: PlaylistItem) {
         update(playlistEntity.copy(
             name = playlistItem.title,
@@ -197,6 +202,7 @@ interface PlaylistsDao {
     @Delete
     fun delete(playlist: PlaylistEntity)
 
+    @Transaction
     @Query("DELETE FROM playlist_song_map WHERE playlistId = :playlistId")
     fun clearPlaylist(playlistId: String)
 
