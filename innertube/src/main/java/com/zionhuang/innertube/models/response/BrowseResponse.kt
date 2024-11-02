@@ -1,11 +1,11 @@
 package com.zionhuang.innertube.models.response
 
-import com.zionhuang.innertube.models.MusicDetailHeaderRenderer
-import com.zionhuang.innertube.models.MusicEditablePlaylistDetailHeaderRenderer
 import com.zionhuang.innertube.models.Button
 import com.zionhuang.innertube.models.Continuation
 import com.zionhuang.innertube.models.GridRenderer
 import com.zionhuang.innertube.models.Menu
+import com.zionhuang.innertube.models.MusicDetailHeaderRenderer
+import com.zionhuang.innertube.models.MusicEditablePlaylistDetailHeaderRenderer
 import com.zionhuang.innertube.models.MusicShelfRenderer
 import com.zionhuang.innertube.models.ResponseContext
 import com.zionhuang.innertube.models.Runs
@@ -13,7 +13,6 @@ import com.zionhuang.innertube.models.SectionListRenderer
 import com.zionhuang.innertube.models.SubscriptionButton
 import com.zionhuang.innertube.models.Tabs
 import com.zionhuang.innertube.models.ThumbnailRenderer
-import com.zionhuang.innertube.models.TwoColumnBrowseResultsRenderer
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -30,6 +29,16 @@ data class BrowseResponse(
         val singleColumnBrowseResultsRenderer: Tabs?,
         val sectionListRenderer: SectionListRenderer?,
         val twoColumnBrowseResultsRenderer: TwoColumnBrowseResultsRenderer?,
+    )
+
+    @Serializable
+    data class TwoColumnBrowseResultsRenderer(
+        val tabs: List<Tabs.Tab?>?,
+        val secondaryContents: SecondaryContents?,
+    )
+    @Serializable
+    data class SecondaryContents(
+        val sectionListRenderer: SectionListRenderer?,
     )
 
     @Serializable
@@ -79,8 +88,28 @@ data class BrowseResponse(
         )
 
         @Serializable
+        data class Buttons(
+            val menuRenderer: Menu.MenuRenderer?,
+        )
+
+        @Serializable
         data class MusicHeaderRenderer(
-            val title: Runs,
+            val buttons: List<Buttons>?,
+            val title: Runs?,
+            val thumbnail: MusicThumbnailRenderer?,
+            val subtitle: Runs?,
+            val secondSubtitle: Runs?,
+            val straplineTextOne: Runs?,
+            val straplineThumbnail: MusicThumbnailRenderer?,
+        )
+        @Serializable
+        data class MusicThumbnail(
+            val url: String?,
+        )
+        @Serializable
+        data class MusicThumbnailRenderer(
+            val musicThumbnailRenderer: MusicThumbnailRenderer,
+            val thumbnails: List<MusicThumbnail>?,
         )
     }
 
