@@ -4,8 +4,7 @@
     <string name="songs">Τραγούδια</string>
     <string name="artists">Καλλιτέχνες</string>
     <string name="albums">Άλμπουμ</string>
-    <string name="playlists">Λίστες Αναπαρ.</string>
-
+    <string name="playlists">Λίστες</string>
     <!-- Top bar -->
     <plurals name="n_selected">
         <item quantity="one">%d επιλεγμένο</item>
@@ -47,9 +46,9 @@
     <string name="filter_videos">Βίντεο</string>
     <string name="filter_albums">Άλμπουμ</string>
     <string name="filter_artists">Καλλιτέχνες</string>
-    <string name="filter_playlists">Λίστες Αναπαρ.</string>
+    <string name="filter_playlists">Λίστες</string>
     <string name="filter_community_playlists">Λίστες αναπαρ. κοινότητας</string>
-    <string name="filter_featured_playlists">Προτεινόμενες λίστες αναπαρ.</string>
+    <string name="filter_featured_playlists">Προτεινόμενες λίστες αναπαραγωγής</string>
     <string name="filter_bookmarked">Σελιδοδείκτες</string>
     <string name="no_results_found">Δεν βρέθηκαν αποτελέσματα</string>
 
@@ -80,18 +79,20 @@
     <string name="play">Αναπαραγωγή</string>
     <string name="play_next">Αναπαραγωγή επόμενου</string>
     <string name="add_to_queue">Προσθήκη στην ουρά</string>
+    <string name="add_to_library">Προσθήκη στη βιβλιοθήκη</string>
+    <string name="remove_from_library">Αφαίρεση από τη βιβλιοθήκη</string>
     <string name="download">Λήψη</string>
     <string name="downloading">Γίνεται λήψη</string>
     <string name="remove_download">Αφαίρεση λήψης</string>
-    <string name="import_playlist">Εισαγωγή λίστας αναπαρ.</string>
-    <string name="add_to_playlist">Προσθήκη σε λίστα αναπαρ.</string>
+    <string name="import_playlist">Εισαγωγή λίστας</string>
+    <string name="add_to_playlist">Προσθήκη σε λίστα</string>
     <string name="view_artist">Προβολή καλλιτέχνη</string>
     <string name="view_album">Προβολή άλμπουμ</string>
     <string name="refetch">Ανάκτηση</string>
     <string name="share">Κοινή χρήση</string>
     <string name="delete">Διαγραφή</string>
     <string name="remove_from_history">Αφαίρεση από το ιστορικό</string>
-    <string name="remove_from_playlist">Αφαίρεση από λίστα αναπαρ.</string>
+    <string name="remove_from_playlist">Αφαίρεση από λίστα</string>
     <string name="remove_from_queue">Αφαίρεση από την ουρά</string>
     <string name="search_online">Διαδίκτυο</string>
     <string name="sync">Συγχρονισμός</string>
@@ -129,11 +130,10 @@
     <string name="error_song_title_empty">Ο τίτλος τραγουδιού δεν μπορεί να είναι άδειος.</string>
     <string name="error_song_artist_empty">Ο καλλιτέχνης του τραγουδιού δεν μπορεί να είναι άδειος.</string>
     <string name="save">Αποθήκευση</string>
-
-    <string name="choose_playlist">Επιλογή λίστας αναπαρ.</string>
-    <string name="edit_playlist">Επεξεργασία λίστας αναπαρ.</string>
-    <string name="create_playlist">Δημιουργία λίστας αναπαρ.</string>
-    <string name="playlist_name">Όνομα λίστας αναπαρ.</string>
+    <string name="choose_playlist">Επιλογή λίστας</string>
+    <string name="edit_playlist">Επεξεργασία λίστας</string>
+    <string name="create_playlist">Δημιουργία λίστας</string>
+    <string name="playlist_name">Όνομα λίστας</string>
     <string name="error_playlist_name_empty">Το όνομα της λίστας αναπαραγωγής δεν μπορεί να είναι κενό.</string>
 
     <string name="edit_artist">Επεξεργασία καλλιτέχνη</string>
@@ -157,11 +157,11 @@
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d άλμπουμ</item>
-        <item quantity="other">%d άλμπουμ</item>
+        <item quantity="other">%d άλμπουμς</item>
     </plurals>
     <plurals name="n_playlist">
-        <item quantity="one">%d λίστα αναπαρ.</item>
-        <item quantity="other">%d λίστες αναπαρ.</item>
+        <item quantity="one">%d λίστα</item>
+        <item quantity="other">%d λίστες</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="one">%d εβδομάδα</item>
@@ -178,7 +178,7 @@
 
     <!-- Snackbar -->
     <string name="playlist_imported">Λίστα αναπαραγωγής εισήχθη</string>
-    <string name="removed_song_from_playlist">Αφαίρεση του \"%s\" από τη λίστα αναπαρ.</string>
+    <string name="removed_song_from_playlist">Αφαίρεση του \"%s\" από τη λίστα</string>
     <string name="playlist_synced">Λίστα αναπαραγωγής συγχρονισμένη</string>
     <string name="undo">Αναίρεση</string>
 
@@ -224,12 +224,22 @@
     <string name="dark_theme_follow_system">Ακολουθεί το σύστημα</string>
     <string name="pure_black">Καθαρό μαύρο</string>
     <string name="customize_navigation_tabs">Προσαρμογή καρτελών πλοήγησης</string>
+    <string name="player">Aναπαραγωγέας</string>
+    <string name="player_text_alignment">Ευθυγράμμιση κειμένου αναπαραγωγέα</string>
     <string name="lyrics_text_position">Θέση κειμένου στίχων</string>
+    <string name="sided">Πλευρά</string>
     <string name="left">Αριστερά</string>
     <string name="center">Κέντρο</string>
     <string name="right">Δεξιά</string>
+    <string name="player_slider_style">Στυλ ρυθμιστικού αναπαραγωγέα</string>
+    <string name="default_">Προεπιλογή</string>
+    <string name="squiggly">Στριφογυριστό</string>
     <string name="misc">Διάφορα</string>
     <string name="default_open_tab">Προεπιλεγμένη ανοικτή καρτέλα</string>
+    <string name="grid_cell_size">Μέγεθος κελιού πλέγματος</string>
+    <string name="small">Μικρό</string>
+    <string name="big">Μεγάλο</string>
+
     <string name="content">Περιεχόμενο</string>
     <string name="login">Σύνδεση</string>
     <string name="not_logged_in">Δεν έχετε συνδεθεί</string>
@@ -278,16 +288,39 @@
     <string name="clear_search_history_confirm">Είστε σίγουροι ότι θέλετε να διαγράψετε όλο το ιστορικό αναζήτησης;</string>
     <string name="enable_lrclib">Ενεργοποίηση του παρόχου στίχων LrcLib</string>
     <string name="enable_kugou">Ενεργοποίηση παρόχου στίχων KuGou</string>
+    <string name="hide_explicit">Απόκρυψη ρητού περιεχομένου</string>
+
     <string name="backup_restore">Αντίγραφα ασφ. και επαναφορά</string>
     <string name="backup">Αντίγραφο ασφαλείας</string>
     <string name="restore">Επαναφορά</string>
-    <string name="imported_playlist">Εισαγώμενη λίστα αναπαρ.</string>
+    <string name="imported_playlist">Έγινε εισαγωγή της λίστας</string>
     <string name="backup_create_success">Δημιουργία αντιγράφου ασφ. με επιτυχία</string>
     <string name="backup_create_failed">Αδυναμία δημιουργίας αντιγράφων ασφαλείας</string>
     <string name="restore_failed">Αποτυχία επαναφοράς αντιγράφου ασφαλείας</string>
+
+    <string name="discord_integration">Ενσωμάτωση Discord</string>
+    <string name="discord_information">Το InnerTune χρησιμοποιεί τη βιβλιοθήκη KizzyRPC για να ρυθμίσει την κατάσταση του λογαριασμού σας στο Discord. Αυτό περιλαμβάνει τη χρήση της σύνδεσης Discord Gateway, η οποία μπορεί να θεωρηθεί παραβίαση των TOS του Discord. Ωστόσο, δεν υπάρχουν γνωστές περιπτώσεις αναστολής λογαριασμών χρηστών για αυτόν τον λόγο. Η χρήση γίνεται με δική σας ευθύνη.\n\nΤο InnerTune θα εξάγει μόνο το token σας και όλα τα υπόλοιπα αποθηκεύονται τοπικά.</string>
+    <string name="dismiss">Απόρριψη</string>
+    <string name="options">Επιλογές</string>
+    <string name="preview">Προεπισκόπηση</string>
+    <string name="login_failed">Η σύνδεση απέτυχε</string>
+    <string name="logout">Αποσύνδεση</string>
+    <string name="enable_discord_rpc">Ενεργοποίηση Πλούσιας Παρουσίας</string>
 
     <string name="about">Σχετικά</string>
     <string name="app_version">Έκδοση εφαρμογής</string>
 
     <string name="new_version_available">Νέα διαθέσιμη έκδοση</string>
+    <string name="translation_models">Μοντέλα Μετάφρασης</string>
+    <string name="clear_translation_models">Εκκάθαριση μοντέλων μετάφρασης</string>
+    <string name="auto_load_more_desc">Αυτόματη προσθήκη περισσότερων τραγουδιών όταν το τέλος της ουράς επιτυγχάνεται, αν είναι δυνατόν</string>
+    <string name="listen_history">Ιστορικό ακρόασης</string>
+    <string name="disable_screenshot_desc">Όταν αυτή η επιλογή είναι ενεργή, τα στιγμιότυπα και η Πρόσφατη προβολή εφαρμογών θα είναι ανενεργή.</string>
+    <string name="your_youtube_playlists">Οι λίστες YouTube</string>
+    <string name="other_versions">Άλλες εκδόσεις</string>
+    <string name="remove_all_from_library">Αφαίρεση όλων από την βιβλιοθήκη</string>
+    <string name="add_all_to_library">Προσθήκη όλων στη βιβλιοθήκη</string>
+    <string name="auto_load_more">Αυτόματη φόρτωση περισσότερων τραγουδιών</string>
+    <string name="search_history">Ιστορικό αναζήτησης</string>
+    <string name="disable_screenshot">Απενεργοποίηση στιγμιότυπων οθόνης</string>
 </resources>
