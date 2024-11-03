@@ -55,8 +55,8 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AudioNormalizationKey
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
-import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.KeepAliveKey
+import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleLike
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleShuffle
@@ -794,15 +794,15 @@ class MusicService : MediaLibraryService(),
 
     override fun onPlaybackStatsReady(eventTime: AnalyticsListener.EventTime, playbackStats: PlaybackStats) {
         val mediaItem = eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
-        var minPlaybackDur = (dataStore.get(minPlaybackDurKey, 30) / 100)
-        // ensure within bounds. Ehhh 99 is good enough to avoid any rounding errors
-        if (minPlaybackDur >= 100) {
-            minPlaybackDur = 99
-        } else if (minPlaybackDur < 1) {
-            minPlaybackDur = 1
+        var minPlaybackDur = (dataStore.get(minPlaybackDurKey, 30).toFloat() / 100)
+        // ensure within bounds
+        if (minPlaybackDur >= 1f) {
+            minPlaybackDur = 0.99f // Ehhh 99 is good enough to avoid any rounding errors
+        } else if (minPlaybackDur < 0.01f) {
+            minPlaybackDur = 0.01f // Still want "spam skipping" to not count as plays
         }
 
-//        println("Playback ratio: ${playbackStats.totalPlayTimeMs.toFloat() / ((mediaItem.metadata?.duration?.times(1000)) ?: -1)} Min threshold: $MIN_PLAYBACK_THRESHOLD")
+//        println("Playback ratio: ${playbackStats.totalPlayTimeMs.toFloat() / ((mediaItem.metadata?.duration?.times(1000)) ?: -1)} Min threshold: $minPlaybackDur")
         if (playbackStats.totalPlayTimeMs.toFloat() / ((mediaItem.metadata?.duration?.times(1000)) ?: -1) >= minPlaybackDur
             && !dataStore.get(PauseListenHistoryKey, false)) {
             database.query {
