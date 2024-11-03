@@ -13,7 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState  // Added missing import
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -174,8 +174,9 @@ fun ArtistItemsScreen(
             state = lazyListState,
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         ) {
+            val songItems = itemsPage?.items?.filterIsInstance<SongItem>().orEmpty()
             itemsIndexed(
-                items = itemsPage?.items?.filterIsInstance<SongItem>().orEmpty(),
+                items = songItems,
                 key = { _, item -> item.hashCode() }
             ) { index, song ->
                 val onCheckedChange: (Boolean) -> Unit = {
@@ -224,16 +225,13 @@ fun ArtistItemsScreen(
                                     } else if (song.id == mediaMetadata?.id) {
                                         playerConnection.player.togglePlayPause()
                                     } else {
-                                        // Check if index is valid before accessing the list
-                                        if (index in 0 until itemsPage?.items?.size ?: 0) {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = "Artist songs: ${song.artists.firstOrNull()?.name}",
-                                                    items = itemsPage?.items.orEmpty().map { (it as SongItem).toMediaMetadata() },
-                                                    startIndex = index  // Safe usage of index
-                                                )
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                title = "Artist songs: ${song.artists.firstOrNull()?.name}",
+                                                items = songItems.map { it.toMediaMetadata() },
+                                                startIndex = index
                                             )
-                                        }
+                                        )
                                     }
                                 },
                                 onLongClick = {
@@ -273,8 +271,7 @@ fun ArtistItemsScreen(
             itemsIndexed(
                 items = itemsPage?.items.orEmpty(),
                 key = { _, item -> item.hashCode() }
-            ) { index, item ->
-                itemsPage?.items?.map { it.id }
+            ) { _, item ->
                 YouTubeGridItem(
                     item = item,
                     isActive = when (item) {
@@ -289,13 +286,17 @@ fun ArtistItemsScreen(
                         .combinedClickable(
                             onClick = {
                                 when (item) {
-                                    is SongItem -> playerConnection.playQueue(
-                                        ListQueue(
-                                            title = "Artist songs: ${item.artists.firstOrNull()?.name}",
-                                            items = itemsPage?.items.orEmpty().map { (it as SongItem).toMediaMetadata() },
-                                            startIndex = index
+                                    is SongItem -> {
+                                        val songItems = itemsPage?.items?.filterIsInstance<SongItem>().orEmpty()
+                                        val index = songItems.indexOf(item)
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                title = "Artist songs: ${item.artists.firstOrNull()?.name}",
+                                                items = songItems.map { it.toMediaMetadata() },
+                                                startIndex = index
+                                            )
                                         )
-                                    )
+                                    }
                                     is AlbumItem -> navController.navigate("album/${item.id}")
                                     is ArtistItem -> navController.navigate("artist/${item.id}")
                                     is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
@@ -309,18 +310,15 @@ fun ArtistItemsScreen(
                                             navController = navController,
                                             onDismiss = menuState::dismiss
                                         )
-
                                         is AlbumItem -> YouTubeAlbumMenu(
                                             albumItem = item,
                                             navController = navController,
                                             onDismiss = menuState::dismiss
                                         )
-
                                         is ArtistItem -> YouTubeArtistMenu(
                                             artist = item,
                                             onDismiss = menuState::dismiss
                                         )
-
                                         is PlaylistItem -> YouTubePlaylistMenu(
                                             playlist = item,
                                             coroutineScope = coroutineScope,
@@ -329,7 +327,8 @@ fun ArtistItemsScreen(
                                     }
                                 }
                             }
-                        ).animateItemPlacement()
+                        )
+                        .animateItemPlacement()
                 )
             }
             if (itemsPage?.continuation != null) {
