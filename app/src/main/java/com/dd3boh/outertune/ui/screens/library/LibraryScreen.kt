@@ -373,7 +373,7 @@ fun LibraryScreen(
                                 }
 
                                 items(
-                                    items = allItems,
+                                    items = allItems.distinctBy { it.hashCode() },
                                     key = { it.hashCode() },
                                     contentType = { CONTENT_TYPE_LIST }
                                 ) { item ->
@@ -486,7 +486,7 @@ fun LibraryScreen(
                                 }
 
                                 items(
-                                    items = allItems,
+                                    items = allItems.distinctBy { it.hashCode() },
                                     key = { it.hashCode() },
                                     contentType = { CONTENT_TYPE_LIST }
                                 ) { item ->
