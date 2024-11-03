@@ -71,6 +71,8 @@
     <string name="play">Play</string>
     <string name="play_next">Spela upp nästa</string>
     <string name="add_to_queue">Lägg till i kön</string>
+    <string name="add_to_library">Add to library</string>
+    <string name="remove_from_library">Remove from library</string>
     <string name="download">Ladda ned</string>
     <string name="downloading">Downloading</string>
     <string name="remove_download">Ta bort nedladdning</string>
@@ -263,4 +265,6 @@
     <string name="app_version">App version</string>
 
     <string name="new_version_available">New version available</string>
+    <string name="translation_models">Translation Models</string>
+    <string name="clear_translation_models">Clear translation models</string>
 </resources>
