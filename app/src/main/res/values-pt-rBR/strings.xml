@@ -15,10 +15,10 @@
     <!-- Home -->
     <string name="history">Histórico</string>
     <string name="stats">Estatísticas</string>
-    <string name="mood_and_genres">Humor e Gêneros</string>
+    <string name="mood_and_genres">Momentos e Gêneros</string>
     <string name="account">Conta</string>
     <string name="quick_picks">Escolhas rápidas</string>
-    <string name="quick_picks_empty">Escute mais para gerar suas escolhas rápidas</string>
+    <string name="quick_picks_empty">Escute à mais música para gerar suas escolhas rápidas</string>
     <string name="new_release_albums">Novos álbuns lançados</string>
     <!-- History -->
     <string name="today">Hoje</string>
@@ -64,6 +64,8 @@
     <string name="play">Reproduzir</string>
     <string name="play_next">Reproduzir em seguida</string>
     <string name="add_to_queue">Adicionar à fila</string>
+    <string name="add_to_library">Adicionar à biblioteca</string>
+    <string name="remove_from_library">Remover da biblioteca</string>
     <string name="download">Baixar</string>
     <string name="downloading">Baixando</string>
     <string name="remove_download">Remover das músicas baixadas</string>
@@ -75,7 +77,7 @@
     <string name="share">Compartilhar</string>
     <string name="delete">Excluir</string>
     <string name="remove_from_history">Remover do histórico</string>
-    <string name="search_online">Buscar online</string>
+    <string name="search_online">Pesquisar online</string>
     <string name="sync">Sincronizar</string>
     <string name="advanced">Avançado</string>
     <!-- Sort menu -->
@@ -83,7 +85,7 @@
     <string name="sort_by_name">Nome</string>
     <string name="sort_by_artist">Artista</string>
     <string name="sort_by_year">Ano</string>
-    <string name="sort_by_song_count">Quantidade de músicas</string>
+    <string name="sort_by_song_count">Número de músicas</string>
     <string name="sort_by_length">Duração</string>
     <string name="sort_by_play_time">Tempo de reprodução</string>
     <string name="sort_by_custom">Ordem customizada</string>
@@ -99,7 +101,7 @@
     <string name="unknown">Desconhecido</string>
     <string name="copied">Copiado para a área de transferência</string>
     <string name="edit_lyrics">Editar letras</string>
-    <string name="search_lyrics">Buscar letras</string>
+    <string name="search_lyrics">Pesquisar letras</string>
     <string name="edit_song">Editar música</string>
     <string name="song_title">Título da música</string>
     <string name="song_artists">Artistas da música</string>
@@ -218,21 +220,21 @@
     <string name="cache">Cache</string>
     <string name="image_cache">Cache de Imagens</string>
     <string name="song_cache">Cache de Músicas</string>
-    <string name="max_cache_size">Tamanho máximo da cache</string>
+    <string name="max_cache_size">Tamanho máximo do cache</string>
     <string name="unlimited">Ilimitado</string>
     <string name="clear_all_downloads">Limpar todos os downloads</string>
     <string name="max_image_cache_size">Tamanho máximo do cache de imagens</string>
     <string name="clear_image_cache">Limpar cache de imagens</string>
     <string name="max_song_cache_size">Tamanho máximo do cache de músicas</string>
-    <string name="clear_song_cache">Limpar a cache de músicas</string>
+    <string name="clear_song_cache">Limpar o cache de músicas</string>
     <string name="size_used">%s usados</string>
     <string name="privacy">Privacidade</string>
-    <string name="pause_listen_history">Pausar o histórico</string>
-    <string name="clear_listen_history">Limpar o histórico</string>
-    <string name="clear_listen_history_confirm">Você tem certeza que deseja limpar todo o histórico?</string>
+    <string name="pause_listen_history">Pausar o histórico de escuta</string>
+    <string name="clear_listen_history">Limpar o histórico de escuta</string>
+    <string name="clear_listen_history_confirm">Tem certeza que deseja limpar todo o histórico de escuta?</string>
     <string name="pause_search_history">Pausar histórico de pesquisa</string>
     <string name="clear_search_history">Limpar histórico de pesquisa</string>
-    <string name="clear_search_history_confirm">Tem certeza que deseja limpar todo o seu histórico de pesquisa?</string>
+    <string name="clear_search_history_confirm">Tem certeza que deseja limpar todo o histórico de pesquisa?</string>
     <string name="enable_kugou">Ativar o fornecedor de letras KuGou</string>
     <string name="backup_restore">Backup e restauração</string>
     <string name="backup">Fazer backup</string>
@@ -244,6 +246,8 @@
     <string name="about">Sobre</string>
     <string name="app_version">Versão do app</string>
     <string name="new_version_available">Nova versão disponível</string>
+    <string name="translation_models">Modelos de Tradução</string>
+    <string name="clear_translation_models">Limpar modelos de tradução</string>
     <string name="remove_download_playlist_confirm">Você deseja realmente remover as músicas da playlist \"%s\" do armazenamento de Músicas Baixadas?</string>
     <string name="delete_playlist_confirm">Você deseja realmente excluir a playlist \"%s\"?</string>
     <string name="remove_from_playlist">Remover da playlist</string>
@@ -253,5 +257,53 @@
     <string name="add_anyway">Adicionar mesmo assim</string>
     <string name="duplicates_description_single">Esta música já está na sua playlist</string>
     <string name="duplicates_description_multiple">%d músicas já estão na sua playlist</string>
+    <string name="discord_integration">Integração com Discord</string>
+    <string name="dismiss">Ignorar</string>
+    <string name="options">Opções</string>
+    <string name="preview">Pré-visualização</string>
+    <string name="login_failed">Login falhou</string>
+    <string name="logout">Sair</string>
+    <string name="enable_discord_rpc">Ativar Rich Presence</string>
     <string name="not_logged_in">Não logado</string>
+    <string name="discord_information">O InnerTune usa a biblioteca KizzyRPC para definir o status da sua conta do Discord. Isto envolve o uso da conexão Discord Gateway, que pode ser considerado uma violação dos termos de serviço do Discord. Porém, não há nenhum caso conhecido de contas de usuários sendo suspensas por esta razão. Use por sua conta e risco.
+\n
+\nO InnerTune extrairá somente o seu token, e todo o resto é armazenado localmente.</string>
+    <string name="sided">Ao lado</string>
+    <string name="hide_explicit">Esconder conteúdo explícito</string>
+    <string name="player_text_alignment">Alinhamento do texto do reprodutor</string>
+    <string name="player_slider_style">Estilo do slider do reprodutor</string>
+    <string name="default_">Padrão</string>
+    <string name="squiggly">Cobrinha</string>
+    <string name="your_youtube_playlists">Suas playlists do YouTube</string>
+    <string name="action_like_all">Curtir tudo</string>
+    <string name="action_remove_like_all">Remover todos os likes</string>
+    <string name="grid_cell_size">Tamanho da célula da grade</string>
+    <string name="auto_load_more_desc">Adicionar mais músicas automaticamente quando o fim da fila é atingido, se possível</string>
+    <string name="listen_history">Histórico de escuta</string>
+    <string name="disable_screenshot">Desativar capturas de tela</string>
+    <string name="similar_to">Parecido com</string>
+    <string name="library_song_empty">Músicas da biblioteca aparecerão aqui</string>
+    <string name="library_artist_empty">Artistas da biblioteca aparecerão aqui</string>
+    <string name="library_album_empty">Álbuns da biblioteca aparecerão aqui</string>
+    <string name="other_versions">Outras versões</string>
+    <string name="keep_listening">Continue ouvindo</string>
+    <string name="add_all_to_library">Adicionar tudo à biblioteca</string>
+    <string name="remove_from_queue">Remover da fila</string>
+    <string name="tempo_and_pitch">Tempo e Tom</string>
+    <string name="player">Reprodutor</string>
+    <string name="misc">Outros</string>
+    <string name="small">Pequeno</string>
+    <string name="big">Grande</string>
+    <string name="queue">Fila</string>
+    <string name="persistent_queue_desc">Restaurar sua última fila ao iniciar o app</string>
+    <string name="auto_load_more">Tocar mais músicas automaticamente</string>
+    <string name="auto_skip_next_on_error">Pular automaticamente para a próxima música quando um erro ocorre</string>
+    <string name="auto_skip_next_on_error_desc">Garanta uma experiência de reprodução contínua</string>
+    <string name="stop_music_on_task_clear">Parar música ao remover dos apps recentes</string>
+    <string name="search_history">Histórico de pesquisa</string>
+    <string name="disable_screenshot_desc">Quando esta opção está ativada, as capturas de tela e a visualização do app nos recentes são desativadas.</string>
+    <string name="forgotten_favorites">Favoritos esquecidos</string>
+    <string name="library_playlist_empty">Suas playlists aparecerão aqui</string>
+    <string name="theme">Tema</string>
+    <string name="remove_all_from_library">Remover tudo da biblioteca</string>
 </resources>

@@ -71,6 +71,8 @@
     <string name="play">پخش</string>
     <string name="play_next">پخش بعدی</string>
     <string name="add_to_queue">اضافه‌کردن به صف</string>
+    <string name="add_to_library">اضافه‌کردن به کتاب‌خانه</string>
+    <string name="remove_from_library">حذف از کتاب‌خانه</string>
     <string name="download">بارگیری</string>
     <string name="downloading">درحال بارگیری</string>
     <string name="remove_download">حذف بارگیری</string>
@@ -263,4 +265,6 @@
     <string name="app_version">نسخه‌ی برنامه</string>
 
     <string name="new_version_available">نسخه‌ی جدید دردسترس‌است</string>
+    <string name="translation_models">نمونه‌های ترجمه</string>
+    <string name="clear_translation_models">پاک‌کردن نمونه‌های ترجمه</string>
 </resources>
