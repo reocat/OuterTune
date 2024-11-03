@@ -38,7 +38,7 @@ OuterTune is a supercharged fork of [InnerTune](https://github.com/z-huang/Inner
 <br/><br/>
 <img src="./assets/ytm-sync.webp" width="600" alt="Sync with YouTube Music"/>
 
-> **Warning**
+> [!WARNING]
 >
 >If you're in a region where YouTube Music is not supported, you won't be able to use this app
 ***unless*** you have a proxy or VPN to connect to a YTM supported region.
@@ -74,3 +74,12 @@ including bug fixes and new features.
 an awesome base for this fork, none of this would have been possible without it.
 
 [Musicolet](https://play.google.com/store/apps/details?id=in.krosbits.musicolet) for inspiration of a local music player experience done right.
+
+
+## Disclaimer
+
+This project and its contents are not affiliated with, funded, authorized, endorsed by, or in any
+way associated with YouTube, Google LLC or any of its affiliates and subsidiaries.
+
+Any trademark, service mark, trade name, or other intellectual property rights used in this project
+are owned by the respective owners.
