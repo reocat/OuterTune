@@ -139,7 +139,6 @@ fun ArtistItemsScreen(
         }
     }
 
-    // Rest of the code remains the same...
     if (itemsPage == null) {
         ShimmerHost(
             modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
@@ -225,13 +224,16 @@ fun ArtistItemsScreen(
                                     } else if (song.id == mediaMetadata?.id) {
                                         playerConnection.player.togglePlayPause()
                                     } else {
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = "Artist songs: ${song.artists.firstOrNull()?.name}",
-                                                items = itemsPage?.items.orEmpty().map { (it as SongItem).toMediaMetadata() },
-                                                startIndex = index
+                                        // Check if index is valid before accessing the list
+                                        if (index in 0 until itemsPage?.items?.size ?: 0) {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = "Artist songs: ${song.artists.firstOrNull()?.name}",
+                                                    items = itemsPage?.items.orEmpty().map { (it as SongItem).toMediaMetadata() },
+                                                    startIndex = index  // Safe usage of index
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                 },
                                 onLongClick = {
