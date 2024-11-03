@@ -70,11 +70,9 @@ class FFMpegScanner : MetadataScanner {
         data.lines().forEach {
             val tag = it.substringBefore(':')
             when (tag) {
-                // why the fsck does an error here get swallowed silently????
                 "ARTISTS", "ARTIST", "artist" -> artists = it.substringAfter(':')
                 "ALBUM", "album" -> albumName = it.substringAfter(':')
                 "TITLE", "title" -> rawTitle = it.substringAfter(':')
-//                "replaygain" -> replayGain = it.substringAfter(':')
                 "GENRE", "genre" -> genres = it.substringAfter(':')
                 "DATE", "date" -> rawDate = it.substringAfter(':')
                 "codec" -> codec = it.substringAfter(':')
@@ -87,95 +85,93 @@ class FFMpegScanner : MetadataScanner {
             }
         }
 
-
-        /**
-         * These vars need a bit more parsing
-         */
-
-        val title: String = if (rawTitle != null && rawTitle?.isBlank() == false) { // songs with no title tag
-            rawTitle!!.trim()
-        } else {
-            path.substringAfterLast('/').substringBeforeLast('.')
+        // Fix for title parsing
+        val title = when {
+            !rawTitle.isNullOrBlank() -> rawTitle.trim()
+            else -> path.substringAfterLast('/').substringBeforeLast('.')
         }
 
         val duration: Long = try {
-            (parseLong(rawDuration?.trim()) / toSeconds).roundToLong() // just let it crash
+            (parseLong(rawDuration?.trim()) / toSeconds).roundToLong()
         } catch (e: Exception) {
-//            e.printStackTrace()
             -1L
         }
 
-        // should never be invalid if scanner even gets here fine...
-        val dateModified = LocalDateTime.ofInstant(Instant.ofEpochMilli(File(path).lastModified()), ZoneOffset.UTC)
-        val albumId = if (albumName != null) AlbumEntity.generateAlbumId() else null
-        val mime = if (type != null && codec != null) {
-            "${type?.trim()}/${codec?.trim()}"
-        } else {
-            "Unknown"
+        val dateModified = LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(File(path).lastModified()),
+            ZoneOffset.UTC
+        )
+        val albumId = if (!albumName.isNullOrBlank()) AlbumEntity.generateAlbumId() else null
+        val mime = when {
+            !type.isNullOrBlank() && !codec.isNullOrBlank() -> "${type!!.trim()}/${codec!!.trim()}"
+            else -> "Unknown"
         }
-
-        /**
-         * Parse the more complicated structures
-         */
 
         val artistList = ArrayList<ArtistEntity>()
         val genresList = ArrayList<GenreEntity>()
         var year: Int? = null
-        var date: LocalDateTime? = null
+        var parsedDate: LocalDateTime? = null
 
-        // parse album
-        val albumEntity = if (albumName != null && albumId != null) AlbumEntity(
-            id = albumId,
-            title = albumName!!,
-            songCount = 1,
-            duration = duration.toInt()
-        ) else null
+        // Parse album
+        val albumEntity = if (!albumName.isNullOrBlank() && albumId != null) {
+            AlbumEntity(
+                id = albumId,
+                title = albumName,
+                songCount = 1,
+                duration = duration.toInt()
+            )
+        } else null
 
-        // parse artist
+        // Parse artists
         artists?.split(ARTIST_SEPARATORS)?.forEach { element ->
             val artistVal = element.trim()
-            artistList.add(ArtistEntity(ArtistEntity.generateArtistId(), artistVal, isLocal = true))
+            if (artistVal.isNotBlank()) {
+                artistList.add(ArtistEntity(ArtistEntity.generateArtistId(), artistVal, isLocal = true))
+            }
         }
 
-        // parse genre
+        // Parse genres
         genres?.split(";")?.forEach { element ->
             val genreVal = element.trim()
-            genresList.add(GenreEntity(GenreEntity.generateGenreId(), genreVal, isLocal = true))
-        }
-
-        // parse date and year
-        try {
-            if (rawDate != null) {
-                try {
-                    date = LocalDate.parse(rawDate!!.substringAfter(';').trim()).atStartOfDay()
-                } catch (e: Exception) {
-                }
-
-                year = date?.year ?: parseInt(rawDate!!.trim())
+            if (genreVal.isNotBlank()) {
+                genresList.add(GenreEntity(GenreEntity.generateGenreId(), genreVal, isLocal = true))
             }
-        } catch (e: Exception) {
-            // user error at this point. I am not parsing all the weird ways the string can come in
         }
 
+        // Parse date and year
+        if (!rawDate.isNullOrBlank()) {
+            try {
+                // Try to parse as full date first
+                parsedDate = try {
+                    LocalDate.parse(rawDate.substringAfter(';').trim()).atStartOfDay()
+                } catch (e: Exception) {
+                    null
+                }
+                
+                // If date parsing failed, try to parse year
+                year = parsedDate?.year ?: rawDate.trim().toIntOrNull()
+            } catch (e: Exception) {
+                // Invalid date format, both attempts failed
+            }
+        }
 
         return SongTempData(
             Song(
                 song = SongEntity(
                     id = songId,
                     title = title,
-                    duration = duration.toInt(), // we use seconds for duration
+                    duration = duration.toInt(),
                     thumbnailUrl = path,
                     albumId = albumId,
                     albumName = albumName,
                     year = year,
-                    date = date,
+                    date = parsedDate,
                     dateModified = dateModified,
                     isLocal = true,
                     inLibrary = LocalDateTime.now(),
                     localPath = path
                 ),
                 artists = artistList,
-                // album not working
                 album = albumEntity,
                 genre = genresList
             ),
@@ -184,13 +180,12 @@ class FFMpegScanner : MetadataScanner {
                 itag = -1,
                 mimeType = mime,
                 codecs = codec?.trim() ?: "Unknown",
-                bitrate = bitrate?.let { parseInt(it.trim()) } ?: -1,
-                sampleRate = sampleRate?.let { parseInt(it.trim()) } ?: -1,
+                bitrate = bitrate?.trim()?.toIntOrNull() ?: -1,
+                sampleRate = sampleRate?.trim()?.toIntOrNull() ?: -1,
                 contentLength = duration,
                 loudnessDb = replayGain,
                 playbackUrl = null
             )
         )
     }
-
 }
