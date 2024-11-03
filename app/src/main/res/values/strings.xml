@@ -342,6 +342,7 @@
 
 <!-- Settings -->
     <string name="settings_debug">Debug</string>
+    <string name="logout">Logout</string>
 
 <!-- Appearance settings -->
     <string name="player_background_style">Player background style</string>
