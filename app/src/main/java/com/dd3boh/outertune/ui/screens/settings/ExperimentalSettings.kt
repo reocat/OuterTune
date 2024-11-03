@@ -1,7 +1,10 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +14,7 @@ import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -19,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
@@ -89,6 +94,52 @@ fun ExperimentalSettings(
                     }
                 }
             )
+
+
+            Text("Material colours test")
+
+
+            Column {
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.primary)) {
+                    Text("Primary", color = MaterialTheme.colorScheme.onPrimary)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.secondary)) {
+                    Text("Secondary", color = MaterialTheme.colorScheme.onSecondary)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.tertiary)) {
+                    Text("Tertiary", color = MaterialTheme.colorScheme.onTertiary)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surface)) {
+                    Text("Surface", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.inverseSurface)) {
+                    Text("Inverse Surface", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                    Text("Surface Variant", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceBright)) {
+                    Text("Surface Bright", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceTint)) {
+                    Text("Surface Tint", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceDim)) {
+                    Text("Surface Dim", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
+                    Text("Surface Container Highest", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+                    Text("Surface Container High", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
+                    Text("Surface Container Low", color = MaterialTheme.colorScheme.onSurface)
+                }
+                Row(Modifier.padding(10.dp).background(MaterialTheme.colorScheme.errorContainer)) {
+                    Text("Error Container", color = MaterialTheme.colorScheme.onErrorContainer)
+                }
+            }
         }
     }
 
