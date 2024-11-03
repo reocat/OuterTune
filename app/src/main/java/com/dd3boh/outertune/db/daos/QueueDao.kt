@@ -24,19 +24,26 @@ import kotlinx.coroutines.sync.withLock
 
 @Dao
 interface QueueDao {
-
     // region Gets
     @Query("SELECT * from queue ORDER BY `index`")
     fun getAllQueues(): Flow<List<QueueEntity>>
 
     @Transaction
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * from queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId AND shuffled = 1")
+    @Query("""
+        SELECT song.* 
+        FROM queue_song_map 
+        JOIN song ON queue_song_map.songId = song.id 
+        WHERE queueId = :queueId AND shuffled = 1
+    """)
     fun getQueueSongs(queueId: Long): Flow<List<Song>>
 
     @Transaction
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * from queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId AND shuffled = 0")
+    @Query("""
+        SELECT song.* 
+        FROM queue_song_map 
+        JOIN song ON queue_song_map.songId = song.id 
+        WHERE queueId = :queueId AND shuffled = 0
+    """)
     fun getQueueSongsUnshuffled(queueId: Long): Flow<List<Song>>
 
     fun readQueue(): List<MultiQueueObject> {
@@ -98,7 +105,6 @@ interface QueueDao {
             }
         }
     }
-
     // endregion
 
     // region Deletes
