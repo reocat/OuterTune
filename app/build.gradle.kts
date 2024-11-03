@@ -144,8 +144,6 @@ dependencies {
     implementation(libs.palette)
     implementation(projects.materialColorUtilities)
 
-    implementation(libs.accompanist.swiperefresh)
-
     implementation(libs.coil)
 
     implementation(libs.shimmer)
