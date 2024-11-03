@@ -68,7 +68,6 @@ import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
-import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.models.YTItem
 import kotlinx.coroutines.launch
 
@@ -162,10 +161,7 @@ fun OnlineSearchResult(
                                         playerConnection.player.togglePlayPause()
                                     } else {
                                         playerConnection.playQueue(
-                                            YouTubeQueue(
-                                                WatchEndpoint(videoId = item.id),
-                                                item.toMediaMetadata()
-                                            ),
+                                            YouTubeQueue.radio(item.toMediaMetadata()),
                                             replace = true,
                                         )
                                     }
@@ -225,7 +221,8 @@ fun OnlineSearchResult(
                 item {
                     EmptyPlaceholder(
                         icon = Icons.Rounded.Search,
-                        text = stringResource(R.string.no_results_found)
+                        text = stringResource(R.string.no_results_found),
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -250,7 +247,8 @@ fun OnlineSearchResult(
                 item {
                     EmptyPlaceholder(
                         icon = Icons.Rounded.Search,
-                        text = stringResource(R.string.no_results_found)
+                        text = stringResource(R.string.no_results_found),
+                        modifier = Modifier.animateItem()
                     )
                 }
             }

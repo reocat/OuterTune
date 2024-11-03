@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.Favorite
@@ -66,9 +67,11 @@ import com.dd3boh.outertune.constants.PlaylistSortTypeKey
 import com.dd3boh.outertune.constants.PlaylistViewTypeKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsRow
+import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.LibraryPlaylistGridItem
 import com.dd3boh.outertune.ui.component.LibraryPlaylistListItem
@@ -79,7 +82,6 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryPlaylistsViewModel
 import com.zionhuang.innertube.YouTube
-import com.dd3boh.outertune.extensions.isSyncEnabled
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -229,11 +231,13 @@ fun LibraryPlaylistsScreen(
 
             Spacer(Modifier.weight(1f))
 
-            Text(
-                text = pluralStringResource(R.plurals.n_playlist, playlists.size, playlists.size),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
+            playlists?.let { playlists ->
+                Text(
+                    text = pluralStringResource(R.plurals.n_playlist, playlists.size, playlists.size),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
 
             if (libraryFilterContent == null) {
                 IconButton(
@@ -314,18 +318,29 @@ fun LibraryPlaylistsScreen(
                         }
                     }
 
-                    items(
-                        items = playlists,
-                        key = { it.id },
-                        contentType = { CONTENT_TYPE_PLAYLIST }
-                    ) { playlist ->
-                        LibraryPlaylistListItem(
-                            navController = navController,
-                            menuState = menuState,
-                            coroutineScope = coroutineScope,
-                            playlist = playlist,
-                            modifier = Modifier.animateItem()
-                        )
+                    playlists?.let { playlists ->
+                        if (playlists.isEmpty()) {
+                            item {
+                                EmptyPlaceholder(
+                                    icon = Icons.AutoMirrored.Rounded.QueueMusic,
+                                    text = stringResource(R.string.library_playlist_empty),
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        }
+                        items(
+                            items = playlists,
+                            key = { it.id },
+                            contentType = { CONTENT_TYPE_PLAYLIST }
+                        ) { playlist ->
+                            LibraryPlaylistListItem(
+                                navController = navController,
+                                menuState = menuState,
+                                coroutineScope = coroutineScope,
+                                playlist = playlist,
+                                modifier = Modifier.animateItem()
+                            )
+                        }
                     }
                 }
 
@@ -396,18 +411,29 @@ fun LibraryPlaylistsScreen(
                         }
                     }
 
-                    items(
-                        items = playlists,
-                        key = { it.id },
-                        contentType = { CONTENT_TYPE_PLAYLIST }
-                    ) { playlist ->
-                        LibraryPlaylistGridItem(
-                            navController = navController,
-                            menuState = menuState,
-                            coroutineScope = coroutineScope,
-                            playlist = playlist,
-                            modifier = Modifier.animateItem()
-                        )
+                    playlists?.let { playlists ->
+                        if (playlists.isEmpty()) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                EmptyPlaceholder(
+                                    icon = R.drawable.queue_music,
+                                    text = stringResource(R.string.library_playlist_empty),
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        }
+                        items(
+                            items = playlists,
+                            key = { it.id },
+                            contentType = { CONTENT_TYPE_PLAYLIST }
+                        ) { playlist ->
+                            LibraryPlaylistGridItem(
+                                navController = navController,
+                                menuState = menuState,
+                                coroutineScope = coroutineScope,
+                                playlist = playlist,
+                                modifier = Modifier.animateItem()
+                            )
+                        }
                     }
                 }
 

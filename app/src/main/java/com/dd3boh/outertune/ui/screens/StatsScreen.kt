@@ -126,10 +126,7 @@ fun StatsScreen(
                                 playerConnection.player.togglePlayPause()
                             } else {
                                 playerConnection.playQueue(
-                                    YouTubeQueue(
-                                        endpoint = WatchEndpoint(song.id),
-                                        preloadItem = song.toMediaMetadata()
-                                    )
+                                    YouTubeQueue.radio(song.toMediaMetadata())
                                 )
                             }
                         },

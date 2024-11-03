@@ -56,9 +56,10 @@ interface SongsDao {
                      WHERE timestamp > :fromTimeStamp
                      GROUP BY songId
                      ORDER BY SUM(playTime) DESC
-                     LIMIT :limit)
+                     LIMIT :limit
+                     OFFSET :offset)
     """)
-    fun mostPlayedSongs(fromTimeStamp: Long, limit: Int = 6): Flow<List<Song>>
+    fun mostPlayedSongs(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Song>>
 
     @Query("SELECT sum(count) from playCount WHERE song = :songId")
     fun getLifetimePlayCount(songId: String?): Flow<Int>
@@ -264,7 +265,7 @@ interface SongsDao {
         }
     }
 
-    @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId")
+    @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId AND inLibrary IS NULL")
     fun inLibrary(songId: String, inLibrary: LocalDateTime?)
 
     @Query("UPDATE song SET liked = 0, likedDate = null WHERE id = :songId")

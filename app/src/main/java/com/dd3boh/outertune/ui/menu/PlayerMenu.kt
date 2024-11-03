@@ -551,7 +551,7 @@ fun PitchTempoDialog(
                 ValueAdjuster(
                     icon = Icons.Rounded.SlowMotionVideo,
                     currentValue = tempo,
-                    values = listOf(0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f),
+                    values = (0..35).map { round((0.25f + it * 0.05f) * 100) / 100 },
                     onValueUpdate = {
                         tempo = it
                         updatePlaybackParameters()

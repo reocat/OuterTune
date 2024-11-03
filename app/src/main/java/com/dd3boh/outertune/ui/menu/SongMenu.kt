@@ -235,7 +235,7 @@ fun SongMenu(
                 title = R.string.start_radio
             ) {
                 onDismiss()
-                playerConnection.playQueue(YouTubeQueue(WatchEndpoint(videoId = song.id), song.toMediaMetadata(), playlistId = WatchEndpoint(videoId = song.id).playlistId))
+                playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
             }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,

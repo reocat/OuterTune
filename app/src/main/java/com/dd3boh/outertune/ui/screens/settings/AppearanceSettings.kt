@@ -1,15 +1,21 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.os.Build
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +29,6 @@ import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.FolderCopy
 import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.PlaylistPlay
 import androidx.compose.material.icons.rounded.Reorder
 import androidx.compose.material.icons.rounded.Tab
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +58,7 @@ import com.dd3boh.outertune.constants.DefaultOpenTabNewKey
 import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
 import com.dd3boh.outertune.constants.FlatSubfoldersKey
+import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.NewInterfaceKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
@@ -72,10 +78,8 @@ import com.dd3boh.outertune.utils.decodeTabString
 import com.dd3boh.outertune.utils.encodeTabString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorder
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**
  * H: Home
@@ -92,7 +96,7 @@ import org.burnoutcrew.reorderable.reorderable
  */
 const val DEFAULT_ENABLED_TABS = "HSABLF"
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppearanceSettings(
     navController: NavController,
@@ -119,11 +123,55 @@ fun AppearanceSettings(
         mutableStateOf(false)
     }
     val mutableTabs = remember { mutableStateListOf<NavigationTab>() }
+
+
+    val lazySongsListState = rememberLazyListState()
+    var dragInfo by remember {
+        mutableStateOf<Pair<Int, Int>?>(null)
+    }
     val reorderableState = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            mutableTabs.move(from.index, to.index)
+        lazyListState = lazySongsListState,
+        scrollThresholdPadding = WindowInsets.systemBars.add(
+            WindowInsets(
+                top = ListItemHeight,
+                bottom = ListItemHeight
+            )
+        ).asPaddingValues()
+    ) { from, to ->
+        val currentDragInfo = dragInfo
+        dragInfo = if (currentDragInfo == null) {
+            from.index to to.index
+        } else {
+            currentDragInfo.first to to.index
         }
-    )
+        mutableTabs.move(from.index, to.index)
+    }
+    LaunchedEffect(reorderableState.isAnyItemDragging) {
+        if (!reorderableState.isAnyItemDragging) {
+            dragInfo?.let { (from, to) ->
+//                if (from == to) {
+//                    return@LaunchedEffect
+//                }
+
+//                mutableTabs.apply {
+//                    clear()
+//
+//                    val enabled = decodeTabString(enabledTabs)
+//                    addAll(enabled)
+//                    add(NavigationTab.NULL)
+//                    addAll(NavigationTab.entries.filter { item -> enabled.none { it == item || item == NavigationTab.NULL } })
+//                }
+            }
+        }
+    }
+
+
+
+//    val reorderableState = rememberReorderableLazyListState(
+//        onMove = { from, to ->
+//            mutableTabs.move(from.index, to.index)
+//        }
+//    )
 
     fun updateTabs() {
         mutableTabs.apply {
@@ -253,7 +301,7 @@ fun AppearanceSettings(
             ) {
                 // tabs list
                 LazyColumn(
-                    state = reorderableState.listState,
+                    state = lazySongsListState,
                     modifier = Modifier
                         .padding(vertical = 12.dp)
                         .border(
@@ -261,14 +309,13 @@ fun AppearanceSettings(
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                             RoundedCornerShape(ThumbnailCornerRadius)
                         )
-                        .reorderable(reorderableState)
                 ) {
                     itemsIndexed(
                         items = mutableTabs,
                         key = { _, item -> item.hashCode() }
                     ) { index, tab ->
                         ReorderableItem(
-                            reorderableState = reorderableState,
+                            state = reorderableState,
                             key = tab.hashCode()
                         ) {
                             Row(
@@ -294,7 +341,7 @@ fun AppearanceSettings(
                                 Icon(
                                     imageVector = Icons.Rounded.DragHandle,
                                     contentDescription = null,
-                                    modifier = Modifier.detectReorder(reorderableState)
+                                    modifier = Modifier.draggableHandle()
                                 )
                             }
                         }
