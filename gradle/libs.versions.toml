@@ -11,7 +11,7 @@ ktor = "2.3.12"
 ksp = "2.0.21-1.0.26"
 
 [libraries]
-guava = { group = "com.google.guava", name = "guava", version = "33.3.0-android" }
+guava = { group = "com.google.guava", name = "guava", version = "33.3.1-android" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.9.0" }
 concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.2.0" }
 
