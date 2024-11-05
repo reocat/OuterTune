@@ -1,5 +1,7 @@
-@file:Suppress("UnstableApiUsage")
+import java.text.SimpleDateFormat
+import java.util.Date
 
+@Suppress("UnstableApiUsage")
 val isFullBuild: Boolean by rootProject.extra
 
 plugins {
@@ -18,10 +20,12 @@ android {
         applicationId = "com.dd3boh.outertune"
         minSdk = 24
         targetSdk = 35
-        versionCode = 23
-        versionName = "0.6.2"
+        versionCode = 30
+        versionName = SimpleDateFormat("yyyyMMdd").format(Date())
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -39,14 +43,12 @@ android {
         buildConfig = true
     }
 
-// build variants and stuff
     splits {
         abi {
             isEnable = true
             reset()
 
             // all common abis
-            // include("x86_64", "x86", "armeabi-v7a", "arm64-v8a") // universal
             isUniversalApk = false
         }
     }
@@ -54,7 +56,6 @@ android {
     flavorDimensions.add("abi")
 
     productFlavors {
-        // universal
         create("universal") {
             isDefault = true
             dimension = "abi"
@@ -62,21 +63,18 @@ android {
                 abiFilters.addAll(listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a"))
             }
         }
-        // arm64 only
         create("arm64") {
             dimension = "abi"
             ndk {
                 abiFilters.add("arm64-v8a")
             }
         }
-        // x86_64 only
         create("x86_64") {
             dimension = "abi"
             ndk {
                 abiFilters.add("x86_64")
             }
         }
-        // for uncommon, but non-obscure architectures
         create("uncommon_abi") {
             dimension = "abi"
             ndk {
@@ -98,11 +96,8 @@ android {
         jvmTarget = "21"
     }
 
-    // for IzzyOnDroid
     dependenciesInfo {
-        // Disables dependency metadata when building APKs.
         includeInApk = false
-        // Disables dependency metadata when building Android App Bundles.
         includeInBundle = false
     }
 
