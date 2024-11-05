@@ -87,7 +87,8 @@ fun DraggableItem(
                     state = state,
                     orientation = Orientation.Horizontal,
                     reverseDirection = true
-                ),            content = content
+                ),
+            content = content
         )
 
         LaunchedEffect(state.isAnimationRunning) {
@@ -137,7 +138,7 @@ fun SwipeToQueueBox(
     val density = LocalDensity.current
     var addedToQueue = false
 
- val decayAnimationSpec: DecayAnimationSpec<Float> = exponentialDecay(
+    val decayAnimationSpec: DecayAnimationSpec<Float> = exponentialDecay(
         frictionMultiplier = 1.0f,
         absVelocityThreshold = 1f
     )
@@ -156,7 +157,7 @@ fun SwipeToQueueBox(
             confirmValueChange = { dragValue ->
                 if (dragValue == DragAnchors.Start && !addedToQueue) {
                     addedToQueue = true
-                    playerConnection?.playNext((item))
+                    playerConnection?.playNext(item)
 
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
@@ -164,12 +165,19 @@ fun SwipeToQueueBox(
                             duration = SnackbarDuration.Short
                         )
                     }
-                } else if (dragValue == DragAnchors.Center && addedToQueue)
+                } else if (dragValue == DragAnchors.Center && addedToQueue) {
                     addedToQueue = false
+                }
 
                 true
             }
         )
+    }
+
+    LaunchedEffect(state.currentValue) {
+        if (state.currentValue == DragAnchors.Start && !state.isAnimationRunning) {
+            state.animateTo(DragAnchors.Center) 
+        }
     }
 
     DraggableItem(
@@ -177,7 +185,6 @@ fun SwipeToQueueBox(
         content = {
             content()
         },
-
         startAction = {
             Box(
                 modifier = Modifier
