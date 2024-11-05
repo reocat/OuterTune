@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.datastore.preferences.core.edit
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
@@ -30,6 +31,7 @@ import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.utils.backToMain
+import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.utils.parseCookieString
@@ -62,9 +64,14 @@ fun LoginScreen(
                 webViewClient = object : WebViewClient() {
                     override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
                         if (url.startsWith("https://music.youtube.com")) {
-                            var youTubeCookieString = CookieManager.getInstance().getCookie(url)
-                            innerTubeCookie = if ("SAPISID" in parseCookieString(youTubeCookieString)) youTubeCookieString else ""                            
-                            GlobalScope.launch {
+                            val youtubeCookieString = CookieManager.getInstance().getCookie(url)                            
+                            GlobalScope.launch {                                             if ("SAPISID" in parseCookieString(youtubeCookieString)) { // if logged in
+                                    innerTubeCookie = youtubeCookieString
+                                } else { // if logged out
+                                    context.dataStore.edit { settings ->
+                                        settings.remove(InnerTubeCookieKey)
+                                    }
+                                }
                                 YouTube.accountInfo().onSuccess {
                                     accountName = it.name
                                     accountEmail = it.email.orEmpty()
@@ -88,8 +95,12 @@ fun LoginScreen(
                 addJavascriptInterface(object {
                     @JavascriptInterface
                     fun onRetrieveVisitorData(newVisitorData: String?) {
-                        if (innerTubeCookie == "") {
-                            visitorData = ""
+                        if (innerTubeCookie == "") { // clear visitorData after logout (this will be regenerated in App.kt)
+                            GlobalScope.launch {
+                                context.dataStore.edit { settings ->
+                                    settings.remove(VisitorDataKey)
+                                }
+                            }
                             return
                         }
 
