@@ -87,7 +87,8 @@ fun DraggableItem(
                     state = state,
                     orientation = Orientation.Horizontal,
                     reverseDirection = true
-                ),            content = content
+                ),
+            content = content
         )
 
         LaunchedEffect(state.isAnimationRunning) {
@@ -137,26 +138,30 @@ fun SwipeToQueueBox(
     val density = LocalDensity.current
     var addedToQueue = false
 
- val decayAnimationSpec: DecayAnimationSpec<Float> = exponentialDecay(
-        frictionMultiplier = 1.0f,
+    val decayAnimationSpec: DecayAnimationSpec<Float> = exponentialDecay(
+        frictionMultiplier = 0.8f, 
         absVelocityThreshold = 1f
+    )
+    
+    val slowSnapAnimationSpec = tween<Float>(
+        durationMillis = 500
     )
 
     val state = remember {
         AnchoredDraggableState(
             initialValue = DragAnchors.Center,
             anchors = DraggableAnchors {
-                DragAnchors.Start at -with(density) { 150.dp.toPx() }
+                DragAnchors.Start at -with(density) { 200.dp.toPx() }
                 DragAnchors.Center at 0f
             },
-            positionalThreshold = { distance -> distance * 0.7f },
-            velocityThreshold = { with(density) { 10000.dp.toPx() } },
-            snapAnimationSpec = tween(),
+            positionalThreshold = { distance -> distance * 0.5f },
+            velocityThreshold = { with(density) { 5000.dp.toPx() } }, 
+            snapAnimationSpec = slowSnapAnimationSpec,
             decayAnimationSpec = decayAnimationSpec,
             confirmValueChange = { dragValue ->
                 if (dragValue == DragAnchors.Start && !addedToQueue) {
                     addedToQueue = true
-                    playerConnection?.playNext((item))
+                    playerConnection?.playNext(item)
 
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
@@ -164,12 +169,19 @@ fun SwipeToQueueBox(
                             duration = SnackbarDuration.Short
                         )
                     }
-                } else if (dragValue == DragAnchors.Center && addedToQueue)
+                } else if (dragValue == DragAnchors.Center && addedToQueue) {
                     addedToQueue = false
+                }
 
                 true
             }
         )
+    }
+
+    LaunchedEffect(state.currentValue) {
+        if (state.currentValue == DragAnchors.Start && !state.isAnimationRunning) {
+            state.animateTo(DragAnchors.Center)
+        }
     }
 
     DraggableItem(
@@ -177,7 +189,6 @@ fun SwipeToQueueBox(
         content = {
             content()
         },
-
         startAction = {
             Box(
                 modifier = Modifier
