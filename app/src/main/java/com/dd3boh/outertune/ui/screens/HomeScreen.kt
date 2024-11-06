@@ -444,13 +444,6 @@ fun HomeScreen(
                 }
             }
 
-
-            item {
-                NavigationTitle(
-                    title = stringResource(R.string.quick_picks)
-                )
-            }
-
             quickPicks?.takeIf { it.isNotEmpty() }?.let { quickPicks ->
                 item {
                     NavigationTitle(
