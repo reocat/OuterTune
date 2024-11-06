@@ -9,7 +9,7 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.foundation.gestures.animateInternalToZero
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -30,6 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,7 +66,6 @@ fun DraggableItem(
             .fillMaxWidth()
             .clip(RectangleShape)
     ) {
-
         endAction?.let {
             endAction()
         }
@@ -71,6 +73,7 @@ fun DraggableItem(
         startAction?.let {
             startAction()
         }
+        
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -90,14 +93,8 @@ fun DraggableItem(
                 ),
             content = content
         )
-
-        LaunchedEffect(state.isAnimationRunning) {
-            if (state.isAnimationRunning)
-                state.animateTo(DragAnchors.Center)
-        }
     }
 }
-
 
 @Composable
 fun AddToQueueAction(modifier: Modifier) {
@@ -136,23 +133,27 @@ fun SwipeToQueueBox(
     val defaultActionSize = 150.dp
 
     val density = LocalDensity.current
-    var addedToQueue = false
+    var addedToQueue by remember { mutableStateOf(false) }
 
     val decayAnimationSpec: DecayAnimationSpec<Float> = exponentialDecay(
-        frictionMultiplier = 1.0f,
+        frictionMultiplier = 0.8f,
         absVelocityThreshold = 1f
+    )
+
+    val slowSnapAnimationSpec = tween<Float>(
+        durationMillis = 500
     )
 
     val state = remember {
         AnchoredDraggableState(
             initialValue = DragAnchors.Center,
             anchors = DraggableAnchors {
-                DragAnchors.Start at -with(density) { 150.dp.toPx() }
+                DragAnchors.Start at -with(density) { 200.dp.toPx() }
                 DragAnchors.Center at 0f
             },
-            positionalThreshold = { distance -> distance * 0.7f },
-            velocityThreshold = { with(density) { 10000.dp.toPx() } },
-            snapAnimationSpec = tween(),
+            positionalThreshold = { distance -> distance * 0.5f },
+            velocityThreshold = { with(density) { 5000.dp.toPx() } },
+            snapAnimationSpec = slowSnapAnimationSpec,
             decayAnimationSpec = decayAnimationSpec,
             confirmValueChange = { dragValue ->
                 if (dragValue == DragAnchors.Start && !addedToQueue) {
@@ -176,7 +177,15 @@ fun SwipeToQueueBox(
 
     LaunchedEffect(state.currentValue) {
         if (state.currentValue == DragAnchors.Start && !state.isAnimationRunning) {
-            state.animateTo(DragAnchors.Center) 
+            coroutineScope.launch {
+                state.animateInternalToZero()
+                state.updateAnchors(
+                    DraggableAnchors {
+                        DragAnchors.Start at -with(density) { 200.dp.toPx() }
+                        DragAnchors.Center at 0f
+                    }
+                )
+            }
         }
     }
 
