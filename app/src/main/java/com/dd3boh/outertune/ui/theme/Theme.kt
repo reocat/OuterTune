@@ -103,6 +103,13 @@ fun Scheme.toColorScheme() = ColorScheme(
     outline = Color(outline),
     outlineVariant = Color(outlineVariant),
     scrim = Color(scrim),
+    surfaceContainer = Color(surface),
+    surfaceContainerHigh = Color(surface),
+    surfaceContainerHighest = Color(surface),
+    surfaceContainerLow = Color(surface),
+    surfaceContainerLowest = Color(surface),
+    surfaceBright = Color(surface),
+    surfaceDim = Color(surface)
 )
 
 fun ColorScheme.pureBlack(apply: Boolean) =

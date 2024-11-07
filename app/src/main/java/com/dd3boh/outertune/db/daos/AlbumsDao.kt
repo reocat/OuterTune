@@ -9,6 +9,7 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.dd3boh.outertune.constants.AlbumFilter
@@ -34,8 +35,21 @@ interface AlbumsDao : ArtistsDao {
 
     // region Gets
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount
+        SELECT DISTINCT 
+            album.id,
+            album.playlistId,
+            album.title,
+            album.year,
+            album.thumbnailUrl,
+            album.themeColor,
+            album.songCount,
+            album.duration,
+            album.lastUpdateTime,
+            album.bookmarkedAt,
+            album.isLocal,
+            COUNT(song.dateDownload) as downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :id
@@ -44,8 +58,21 @@ interface AlbumsDao : ArtistsDao {
     fun album(id: String): Flow<Album?>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount
+        SELECT DISTINCT 
+            album.id,
+            album.playlistId,
+            album.title,
+            album.year,
+            album.thumbnailUrl,
+            album.themeColor,
+            album.songCount,
+            album.duration,
+            album.lastUpdateTime,
+            album.bookmarkedAt,
+            album.isLocal,
+            COUNT(song.dateDownload) as downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.title LIKE '%' || :query || '%' AND song.inLibrary IS NOT NULL
@@ -55,8 +82,21 @@ interface AlbumsDao : ArtistsDao {
     fun searchAlbums(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Album>>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query("""
-        SELECT album.*, count(song.dateDownload) downloadCount
+        SELECT DISTINCT 
+            album.id,
+            album.playlistId,
+            album.title,
+            album.year,
+            album.thumbnailUrl,
+            album.themeColor,
+            album.songCount,
+            album.duration,
+            album.lastUpdateTime,
+            album.bookmarkedAt,
+            album.isLocal,
+            COUNT(song.dateDownload) as downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
         WHERE album.id = :albumId
@@ -65,12 +105,26 @@ interface AlbumsDao : ArtistsDao {
     fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT song.* FROM song JOIN song_album_map ON song.id = song_album_map.songId WHERE song_album_map.albumId = :albumId")
     fun albumSongs(albumId: String): Flow<List<Song>>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query("""
-        SELECT *, count(song.dateDownload) downloadCount
+        SELECT DISTINCT 
+            album.id,
+            album.playlistId,
+            album.title,
+            album.year,
+            album.thumbnailUrl,
+            album.themeColor,
+            album.songCount,
+            album.duration,
+            album.lastUpdateTime,
+            album.bookmarkedAt,
+            album.isLocal,
+            COUNT(song.dateDownload) as downloadCount
         FROM album
             JOIN song ON album.id = song.albumId
             JOIN event ON song.id = event.songId
@@ -108,7 +162,19 @@ interface AlbumsDao : ArtistsDao {
         }
 
         val query = SimpleSQLiteQuery("""
-            SELECT album.*, count(song.dateDownload) downloadCount
+            SELECT DISTINCT 
+                album.id,
+                album.playlistId,
+                album.title,
+                album.year,
+                album.thumbnailUrl,
+                album.themeColor,
+                album.songCount,
+                album.duration,
+                album.lastUpdateTime,
+                album.bookmarkedAt,
+                album.isLocal,
+                COUNT(song.dateDownload) as downloadCount
             FROM album
                 LEFT JOIN song ON song.albumId = album.id
             WHERE $where
@@ -123,6 +189,7 @@ interface AlbumsDao : ArtistsDao {
     fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
    
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT song.*
@@ -146,7 +213,9 @@ interface AlbumsDao : ArtistsDao {
     """
     )
     fun forgottenFavorites(now: Long = System.currentTimeMillis()): Flow<List<Song>>
+
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT song.*

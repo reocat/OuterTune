@@ -96,6 +96,7 @@ fun SearchBar(
     trailingIcon: @Composable (() -> Unit)? = null,
     shape: Shape = SearchBarDefaults.inputFieldShape,
     colors: SearchBarColors = SearchBarDefaults.colors(),
+    inputFieldColors: TextFieldColors = SearchBarDefaults.inputFieldColors(),
     tonalElevation: Dp = SearchBarDefaults.TonalElevation,
     windowInsets: WindowInsets = WindowInsets.systemBars,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -205,7 +206,7 @@ fun SearchBar(
                     placeholder = placeholder,
                     leadingIcon = leadingIcon,
                     trailingIcon = trailingIcon,
-                    colors = colors.inputFieldColors,
+                    colors = inputFieldColors,
                     interactionSource = interactionSource,
                     focusRequester = focusRequester,
                 )
