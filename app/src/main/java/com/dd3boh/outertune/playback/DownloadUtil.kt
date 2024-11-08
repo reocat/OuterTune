@@ -2,6 +2,7 @@ package com.dd3boh.outertune.playback
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.media3.common.PlaybackException
@@ -41,14 +42,21 @@ import javax.inject.Singleton
 
 @Singleton
 class DownloadUtil @Inject constructor(
-    @ApplicationContext context: Context,
-    val database: MusicDatabase,
-    val databaseProvider: DatabaseProvider,
-    @DownloadCache val downloadCache: SimpleCache,
+    @ApplicationContext private val context: Context,
+    private val database: MusicDatabase,
+    private val databaseProvider: DatabaseProvider,
+    @DownloadCache private val downloadCache: SimpleCache,
 ) {
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val songUrlCache = HashMap<String, Pair<String, Long>>()
+
+    private fun isNetworkAvailable(): Boolean {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
     private val dataSourceFactory = ResolvingDataSource.Factory(
         OkHttpDataSource.Factory(
             OkHttpClient.Builder()
@@ -57,24 +65,51 @@ class DownloadUtil @Inject constructor(
         )
     ) { dataSpec ->
         val mediaId = dataSpec.key ?: error("No media id")
-        if (mediaId.startsWith("LA")) { // downloads are hidden for local songs, this is a last resort
-            throw PlaybackException("Local song are non-downloadable", null, PlaybackException.ERROR_CODE_UNSPECIFIED)
+
+        // Check if this is a downloaded song first
+        val download = downloadManager.downloadIndex.getDownload(mediaId)
+        if (download?.state == Download.STATE_COMPLETED) {
+            return@Factory dataSpec
         }
 
-        songUrlCache[mediaId]?.takeIf { it.second < System.currentTimeMillis() }?.let {
+        // Handle local songs
+        if (mediaId.startsWith("LA")) {
+            throw PlaybackException(
+                "Local songs are non-downloadable",
+                null,
+                PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
+            )
+        }
+
+        // Check network availability for non-downloaded songs
+        if (!isNetworkAvailable()) {
+            throw PlaybackException(
+                "No network connection available and song not downloaded",
+                null,
+                PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+            )
+        }
+
+        // Check URL cache
+        songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
             return@Factory dataSpec.withUri(it.first.toUri())
         }
 
-        val playedFormat = runBlocking(Dispatchers.IO) { database.format(mediaId).first() }
-        val playerResponse = runBlocking(Dispatchers.IO) {
-            YouTube.player(mediaId, registerPlayback = false)
-        }.getOrThrow()
-        if (playerResponse.playabilityStatus.status != "OK") {
-            throw PlaybackException(playerResponse.playabilityStatus.reason, null, PlaybackException.ERROR_CODE_REMOTE_ERROR)
-        }
+        try {
+            val playedFormat = runBlocking(Dispatchers.IO) { database.format(mediaId).first() }
+            val playerResponse = runBlocking(Dispatchers.IO) {
+                YouTube.player(mediaId, registerPlayback = false)
+            }.getOrThrow()
 
-        val format =
-            if (playedFormat != null) {
+            if (playerResponse.playabilityStatus.status != "OK") {
+                throw PlaybackException(
+                    playerResponse.playabilityStatus.reason,
+                    null,
+                    PlaybackException.ERROR_CODE_REMOTE_ERROR
+                )
+            }
+
+            val format = (if (playedFormat != null) {
                 playerResponse.streamingData?.adaptiveFormats?.find { it.itag == playedFormat.itag }
             } else {
                 playerResponse.streamingData?.adaptiveFormats
@@ -84,34 +119,59 @@ class DownloadUtil @Inject constructor(
                             AudioQuality.AUTO -> if (connectivityManager.isActiveNetworkMetered) -1 else 1
                             AudioQuality.HIGH -> 1
                             AudioQuality.LOW -> -1
-                        } + (if (it.mimeType.startsWith("audio/webm")) 10240 else 0) // prefer opus stream
+                        } + (if (it.mimeType.startsWith("audio/webm")) 10240 else 0)
                     }
-            }!!.let {
-                // Specify range to avoid YouTube's throttling
+            } ?: throw PlaybackException(
+                "No suitable format found",
+                null,
+                PlaybackException.ERROR_CODE_DECODER_INIT_FAILED
+            )).let {
                 it.copy(url = "${it.url}&range=0-${it.contentLength ?: 10000000}")
             }
 
-        database.query {
-            upsert(
-                FormatEntity(
-                    id = mediaId,
-                    itag = format.itag,
-                    mimeType = format.mimeType.split(";")[0],
-                    codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
-                    bitrate = format.bitrate,
-                    sampleRate = format.audioSampleRate,
-                    contentLength = format.contentLength!!,
-                    loudnessDb = playerResponse.playerConfig?.audioConfig?.loudnessDb,
-                    playbackUrl = playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+            // Update format in database
+            database.query {
+                upsert(
+                    FormatEntity(
+                        id = mediaId,
+                        itag = format.itag,
+                        mimeType = format.mimeType.split(";")[0],
+                        codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                        bitrate = format.bitrate,
+                        sampleRate = format.audioSampleRate,
+                        contentLength = format.contentLength!!,
+                        loudnessDb = playerResponse.playerConfig?.audioConfig?.loudnessDb,
+                        playbackUrl = playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                    )
                 )
-            )
-        }
+            }
 
-        songUrlCache[mediaId] = format.url!! to playerResponse.streamingData!!.expiresInSeconds * 1000L
-        dataSpec.withUri(format.url!!.toUri())
+            songUrlCache[mediaId] = format.url!! to (System.currentTimeMillis() + 3600000) // 1 hour cache
+            dataSpec.withUri(format.url!!.toUri())
+        } catch (e: Exception) {
+            throw when (e) {
+                is PlaybackException -> e
+                else -> PlaybackException(
+                    "Error preparing media: ${e.message}",
+                    e,
+                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+                )
+            }
+        }
     }
+
+    // Rest of the code remains the same...
+    // (keeping the existing download management code)
+
     val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
-    val downloadManager: DownloadManager = DownloadManager(context, databaseProvider, downloadCache, dataSourceFactory, Executor(Runnable::run)).apply {
+    
+    val downloadManager: DownloadManager = DownloadManager(
+        context,
+        databaseProvider,
+        downloadCache,
+        dataSourceFactory,
+        Executor(Runnable::run)
+    ).apply {
         maxParallelDownloads = 3
         addListener(
             ExoDownloadService.TerminalStateNotificationHelper(
@@ -121,32 +181,38 @@ class DownloadUtil @Inject constructor(
             )
         )
     }
+
     val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
     fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
 
-
     fun download(songs: List<MediaMetadata>, context: Context) {
+        if (!isNetworkAvailable()) return
         songs.forEach { song -> download(song, context) }
     }
 
-    fun download(song: MediaMetadata, context: Context){
+    fun download(song: MediaMetadata, context: Context) {
+        if (!isNetworkAvailable()) return
+        
         val downloadRequest = DownloadRequest.Builder(song.id, song.id.toUri())
             .setCustomCacheKey(song.id)
             .setData(song.title.toByteArray())
             .build()
+        
         DownloadService.sendAddDownload(
             context,
             ExoDownloadService::class.java,
             downloadRequest,
-            false)
+            false
+        )
     }
 
-    fun resumeDownloadsOnStart(context: Context){
+    fun resumeDownloadsOnStart(context: Context) {
         DownloadService.sendResumeDownloads(
             context,
             ExoDownloadService::class.java,
-            false)
+            false
+        )
     }
 
     init {
@@ -156,9 +222,14 @@ class DownloadUtil @Inject constructor(
             result[cursor.download.request.id] = cursor.download
         }
         downloads.value = result
+        
         downloadManager.addListener(
             object : DownloadManager.Listener {
-                override fun onDownloadChanged(downloadManager: DownloadManager, download: Download, finalException: Exception?) {
+                override fun onDownloadChanged(
+                    downloadManager: DownloadManager,
+                    download: Download,
+                    finalException: Exception?
+                ) {
                     downloads.update { map ->
                         map.toMutableMap().apply {
                             set(download.request.id, download)
@@ -166,11 +237,12 @@ class DownloadUtil @Inject constructor(
                     }
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        if (download.state == Download.STATE_COMPLETED){
-                            val updateTime = Instant.ofEpochMilli(download.updateTimeMs).atZone(ZoneOffset.UTC).toLocalDateTime()
+                        if (download.state == Download.STATE_COMPLETED) {
+                            val updateTime = Instant.ofEpochMilli(download.updateTimeMs)
+                                .atZone(ZoneOffset.UTC)
+                                .toLocalDateTime()
                             database.updateDownloadStatus(download.request.id, updateTime)
-                        }
-                        else {
+                        } else {
                             database.updateDownloadStatus(download.request.id, null)
                         }
                     }
