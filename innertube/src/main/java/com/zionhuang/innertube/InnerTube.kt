@@ -25,6 +25,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import java.net.Proxy
 import java.util.Locale
 
@@ -34,6 +35,7 @@ import java.util.Locale
  */
 class InnerTube {
     private var httpClient = createClient()
+    private var isOfflineMode = false
 
     var locale = YouTubeLocale(
         gl = Locale.getDefault().country,
@@ -68,6 +70,12 @@ class InnerTube {
             })
         }
 
+        engine {
+            config { 
+                retryOnConnectionFailure(true)
+            }
+        }
+
         install(ContentEncoding) {
             brotli(1.0F)
             gzip(0.9F)
@@ -83,6 +91,14 @@ class InnerTube {
         defaultRequest {
             url("https://music.youtube.com/youtubei/v1/")
         }
+    }
+
+    fun setOfflineMode(enabled: Boolean) {
+        isOfflineMode = enabled
+    }
+
+    private fun isLocalContent(videoId: String): Boolean {
+        return videoId.startsWith("local_")
     }
 
     private fun HttpRequestBuilder.ytClient(client: YouTubeClient, setLogin: Boolean = false) {
@@ -128,11 +144,30 @@ class InnerTube {
         parameter("ctoken", continuation)
     }
 
+    @Throws(IOException::class)
+    private fun checkConnectivity() {
+        if (isOfflineMode) throw IOException("App is in offline mode")
+    }
+
     suspend fun player(
         client: YouTubeClient,
         videoId: String,
         playlistId: String?,
     ) = httpClient.post("player") {
+        // Skip network call for local content
+        if (isLocalContent(videoId)) {
+            return@post
+            null
+        }
+
+        try {
+            checkConnectivity()
+        } catch (e: IOException) {
+            // Return null or cached response for offline mode
+            return@post
+            null
+        }
+
         ytClient(client, setLogin = true)
         setBody(
             PlayerBody(
@@ -153,6 +188,16 @@ class InnerTube {
 
     suspend fun registerPlayback(url: String, cpn: String, playlistId: String?)
             = httpClient.get(url) {
+        // Skip playback registration for offline mode or local content
+        if (isOfflineMode || (playlistId != null && isLocalContent(playlistId))) {
+            return@get
+        }
+
+        try {
+            checkConnectivity()
+        } catch (e: IOException) {
+            return@get
+        }
         ytClient(YouTubeClient.ANDROID_MUSIC, true)
         parameter("ver", "2")
         parameter("c", "ANDROID_MUSIC")
