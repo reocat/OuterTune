@@ -5,9 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.dd3boh.outertune.db.entities.QueueEntity
 import com.dd3boh.outertune.db.entities.QueueSongMap
 import com.dd3boh.outertune.db.entities.Song
@@ -46,6 +46,9 @@ interface QueueDao {
     """)
     fun getQueueSongsUnshuffled(queueId: Long): Flow<List<Song>>
 
+    @Query("SELECT id FROM queue")
+    fun getAllQueueIds(): List<Long>
+
     fun readQueue(): List<MultiQueueObject> {
         val resultQueues = ArrayList<MultiQueueObject>()
         val queues = runBlocking { getAllQueues().first() }
@@ -77,11 +80,17 @@ interface QueueDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queueSong: QueueSongMap)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertQueues(queues: List<QueueEntity>)
     // endregion
 
     // region Updates
     @Update
     fun update(queue: QueueEntity)
+
+    @Upsert
+    fun updateQueues(queues: List<QueueEntity>)
 
     @Transaction
     fun updateQueue(mq: MultiQueueObject) {
@@ -116,6 +125,9 @@ interface QueueDao {
 
     @Query("DELETE FROM queue_song_map WHERE queueId = :id")
     fun deleteAllQueueSongs(id: Long)
+
+    @Query("DELETE FROM queue WHERE id IN (:queueIds)")
+    fun deleteQueuesByIds(queueIds: List<String>)
 
     @Query("DELETE FROM queue WHERE id = :id")
     fun deleteQueue(id: Long)
