@@ -74,6 +74,7 @@ import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Event
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity
+import com.dd3boh.outertune.db.entities.QueueEntity
 import com.dd3boh.outertune.db.entities.RelatedSongMap
 import com.dd3boh.outertune.di.DownloadCache
 import com.dd3boh.outertune.extensions.SilentHandler
@@ -849,11 +850,54 @@ class MusicService : MediaLibraryService(),
         }
     }
 
-    @Deprecated("This nukes the entire db and adds everything again. Saving queues is to be done inside QueueBoard, incrementally.")
     private fun saveQueueToDisk() {
-        // TODO: get rid of this. Yeah I'd want to update individual queues instead of nuking the entire db and writing everything but ehhhhh that's for later
+        val allQueues = queueBoard.getAllQueues()
+
         CoroutineScope(Dispatchers.IO).launch {
-            database.rewriteAllQueues(queueBoard.getAllQueues())
+            // No need to convert IDs since they're already Long
+            val savedQueueIds = database.getAllQueueIds()
+
+            // Convert MultiQueueObjects to QueueEntities
+            val allQueueEntities = allQueues.map { queue ->
+                QueueEntity(
+                    id = try {
+                        queue.id.toLong()
+                    } catch (e: NumberFormatException) {
+                        QueueEntity.generateQueueId()
+                    },
+                    title = queue.title,
+                    shuffled = queue.shuffled,
+                    queuePos = queue.queuePos,
+                    index = queue.index,
+                    playlistId = queue.playlistId
+                )
+            }
+
+            // Filter using Long ID comparisons
+            val queuesToInsert = allQueueEntities.filter { entity ->
+                entity.id !in savedQueueIds
+            }
+
+            val queuesToUpdate = allQueueEntities.filter { entity ->
+                entity.id in savedQueueIds
+            }
+
+            val queueIdsToDelete = savedQueueIds.filter { dbId ->
+                allQueueEntities.none { it.id == dbId }
+            }
+
+            // Batch operations
+            if (queuesToInsert.isNotEmpty()) {
+                database.insertQueues(queuesToInsert)
+            }
+
+            if (queuesToUpdate.isNotEmpty()) {
+                database.updateQueues(queuesToUpdate)
+            }
+
+            if (queueIdsToDelete.isNotEmpty()) {
+                database.deleteQueuesByIds(queueIdsToDelete.map { it.toString() })
+            }
         }
     }
 
