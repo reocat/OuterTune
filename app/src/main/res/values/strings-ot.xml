@@ -102,6 +102,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="slim_navbar_description">Remove text labels to reduce navbar height</string>
     <string name="slim_hs_tiles">Compact home navigation</string>
     <string name="slim_hs_tiles_description">Display navigation options as compact chips instead of large tiles.</string>
+    <string name="slim">Slim</string>
 
     <string name="tab_arrangement">Arrange tabs</string>
     <string name="tab_arrangement_disable_tip">--- Drag below here to disable ---</string>

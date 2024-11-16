@@ -38,9 +38,7 @@ fun PlayerSliderTrack(
     val activeTrackColor = colors.activeTrackColor
     val inactiveTickColor = colors.inactiveTickColor
     val activeTickColor = colors.activeTickColor
-
     val valueRange = sliderState.valueRange
-
     Canvas(
         modifier
             .fillMaxWidth()
@@ -92,13 +90,11 @@ private fun DrawScope.drawTrack(
                 (sliderEnd.x - sliderStart.x) * activeRangeEnd,
         center.y
     )
-
     val sliderValueStart = Offset(
         sliderStart.x +
                 (sliderEnd.x - sliderStart.x) * activeRangeStart,
         center.y
     )
-
     drawLine(
         activeTrackColor,
         sliderValueStart,
@@ -106,7 +102,6 @@ private fun DrawScope.drawTrack(
         trackStrokeWidth,
         StrokeCap.Round
     )
-
     for (tick in tickFractions) {
         val outsideFraction = tick > activeRangeEnd || tick < activeRangeStart
         drawCircle(

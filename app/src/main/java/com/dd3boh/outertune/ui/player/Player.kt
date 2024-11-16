@@ -469,6 +469,8 @@ fun BottomSheetPlayer(
                 }
             }
 
+            Spacer(Modifier.height(12.dp))
+
             when (sliderStyle) {
                 SliderStyle.DEFAULT -> {
                     Slider(
@@ -476,8 +478,6 @@ fun BottomSheetPlayer(
                         valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
                         onValueChange = {
                             sliderPosition = it.toLong()
-                            // slider too granular for this haptic to feel right
-//                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                         },
                         onValueChangeFinished = {
                             sliderPosition?.let {
@@ -485,16 +485,8 @@ fun BottomSheetPlayer(
                                 position = it
                             }
                             sliderPosition = null
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         },
-                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
-                        track = { sliderState ->
-                            PlayerSliderTrack(
-                                sliderState = sliderState,
-                                colors = SliderDefaults.colors()
-                            )
-                        },
-                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding),
                     )
                 }
                 SliderStyle.SQUIGGLY -> {
@@ -521,7 +513,33 @@ fun BottomSheetPlayer(
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
                     )
                 }
+                SliderStyle.SLIM -> {
+                    Slider(
+                        value = (sliderPosition ?: position).toFloat(),
+                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                        onValueChange = {
+                            sliderPosition = it.toLong()
+                        },
+                        onValueChangeFinished = {
+                            sliderPosition?.let {
+                                playerConnection.player.seekTo(it)
+                                position = it
+                            }
+                            sliderPosition = null
+                        },
+                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                        track = { sliderState ->
+                            PlayerSliderTrack(
+                                sliderState = sliderState,
+                                colors = SliderDefaults.colors()
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                    )
+                }
             }
+
+            Spacer(Modifier.height(4.dp))
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -709,11 +727,6 @@ fun BottomSheetPlayer(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Brush.verticalGradient(colors), alpha = 0.8f)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White.copy(alpha = 0.15f))
                     )
                 }
             }

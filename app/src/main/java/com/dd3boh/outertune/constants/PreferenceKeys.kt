@@ -34,7 +34,7 @@ val PlayerTextAlignmentKey = stringPreferencesKey("playerTextAlignment")
 val SliderStyleKey = stringPreferencesKey("sliderStyle")
 
 enum class SliderStyle {
-    DEFAULT, SQUIGGLY
+    DEFAULT, SQUIGGLY, SLIM
 }
 
 /**
