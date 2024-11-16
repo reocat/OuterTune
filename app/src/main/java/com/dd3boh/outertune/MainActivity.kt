@@ -2,6 +2,7 @@ package com.dd3boh.outertune
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
@@ -191,6 +192,7 @@ import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
 import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
+import com.dd3boh.outertune.ui.screens.settings.LocaleManager
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
 import com.dd3boh.outertune.ui.screens.settings.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.screens.settings.NavigationTab
@@ -236,6 +238,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -306,6 +309,16 @@ class MainActivity : ComponentActivity() {
             unbindService(serviceConnection)
             playerConnection = null
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val sharedPreferences = newBase.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val savedLanguage = sharedPreferences.getString("app_language", Locale.getDefault().language) ?: "en"
+
+        val localeManager = LocaleManager(newBase)
+        localeManager.updateLocale(savedLanguage)
+
+        super.attachBaseContext(newBase)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)

@@ -1,5 +1,13 @@
 package com.dd3boh.outertune.ui.screens.settings
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -14,6 +22,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.VpnKey
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +48,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
+import com.dd3boh.outertune.constants.AppLanguageKey
 import com.dd3boh.outertune.constants.ContentCountryKey
 import com.dd3boh.outertune.constants.ContentLanguageKey
 import com.dd3boh.outertune.constants.CountryCodeToName
@@ -65,8 +75,11 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import java.net.Proxy
+import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentSettings(
@@ -86,6 +99,8 @@ fun ContentSettings(
     val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(LikedAutoDownloadKey, LikedAutodownloadMode.OFF)
     val (contentLanguage, onContentLanguageChange) = rememberPreference(key = ContentLanguageKey, defaultValue = "system")
     val (contentCountry, onContentCountryChange) = rememberPreference(key = ContentCountryKey, defaultValue = "system")
+    val (selectedLanguage, setSelectedLanguage) = rememberPreference(key = AppLanguageKey, defaultValue = "en")
+    val localeManager = remember { LocaleManager(context) }
 
     val (proxyEnabled, onProxyEnabledChange) = rememberPreference(key = ProxyEnabledKey, defaultValue = false)
     val (proxyType, onProxyTypeChange) = rememberEnumPreference(key = ProxyTypeKey, defaultValue = Proxy.Type.HTTP)
@@ -195,6 +210,31 @@ fun ContentSettings(
         PreferenceGroupTitle(
             title = stringResource(R.string.localization)
         )
+        // Language settings
+        ListPreference(
+            title = { Text(stringResource(R.string.app_language)) },
+            icon = { Icon(Icons.Rounded.Public, null) },
+            selectedValue = selectedLanguage,
+            values = LanguageCodeToName.keys.toList(),
+            valueText = { LanguageCodeToName[it] ?: stringResource(R.string.system_default) },
+            onValueSelected = { newLanguage ->
+                if (localeManager.updateLocale(newLanguage)) {
+                    setSelectedLanguage(newLanguage)
+
+                    // Restart activity to apply changes
+                    val intent = context.packageManager
+                        .getLaunchIntentForPackage(context.packageName)
+                        ?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Failed to update language. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        )
         ListPreference(
             title = { Text(stringResource(R.string.content_language)) },
             icon = { Icon(Icons.Rounded.Language, null) },
@@ -262,3 +302,154 @@ fun ContentSettings(
         scrollBehavior = scrollBehavior
     )
 }
+
+// LocaleManager
+class LocaleManager(private val context: Context) {
+    companion object {
+        private val COMPLEX_SCRIPT_LANGUAGES = setOf(
+            "ne", "mr", "hi", "bn", "pa", "gu", "ta", "te", "kn", "ml",
+            "si", "th", "lo", "my", "ka", "am", "km",
+            "zh-CN", "zh-TW", "zh-HK", "ja", "ko"
+        )
+    }
+
+    fun updateLocale(languageCode: String): Boolean {
+        try {
+            val locale = createLocaleFromCode(languageCode)
+            val config = context.resources.configuration
+
+            Locale.setDefault(locale)
+
+            setLocaleApi24(config, locale)
+
+            @Suppress("DEPRECATION")
+            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+
+            val newContext = context.createConfigurationContext(config)
+            updateAppContext(newContext)
+
+            return true
+        } catch (e: Exception) {
+            Timber.tag("LocaleManager").e(e, "Failed to update locale")
+            return false
+        }
+    }
+
+    private fun createLocaleFromCode(languageCode: String): Locale {
+        return when {
+            languageCode == "zh-CN" -> Locale.SIMPLIFIED_CHINESE
+            languageCode == "zh-TW" -> Locale.TRADITIONAL_CHINESE
+            languageCode == "zh-HK" -> Locale("zh", "HK")
+
+            languageCode in COMPLEX_SCRIPT_LANGUAGES -> {
+                if (languageCode.contains("-")) {
+                    val (language, country) = languageCode.split("-")
+                    Locale.Builder()
+                        .setLanguage(language)
+                        .setRegion(country)
+                        .setScript(getScriptForLanguage(languageCode))
+                        .build()
+                } else {
+                    Locale.Builder()
+                        .setLanguage(languageCode)
+                        .setScript(getScriptForLanguage(languageCode))
+                        .build()
+                }
+            }
+
+            languageCode.contains("-") -> {
+                val (language, country) = languageCode.split("-")
+                Locale(language, country)
+            }
+
+            else -> Locale(languageCode)
+        }
+    }
+
+    private fun getScriptForLanguage(languageCode: String): String {
+        return when (languageCode) {
+            "hi", "mr" -> "Deva" // Devanagari
+            "bn" -> "Beng" // Bengali
+            "pa" -> "Guru" // Gurmukhi
+            "gu" -> "Gujr" // Gujarati
+            "ta" -> "Taml" // Tamil
+            "te" -> "Telu" // Telugu
+            "kn" -> "Knda" // Kannada
+            "ml" -> "Mlym" // Malayalam
+            "si" -> "Sinh" // Sinhala
+            "th" -> "Thai" // Thai
+            "ka" -> "Geor" // Georgian
+            "am" -> "Ethi" // Ethiopic
+            "km" -> "Khmr" // Khmer
+            else -> ""
+        }
+    }
+
+    private fun setLocaleApi24(config: Configuration, locale: Locale) {
+        val localeList = LocaleList(locale)
+        LocaleList.setDefault(localeList)
+        config.setLocales(localeList)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun setLocaleLegacy(config: Configuration, locale: Locale) {
+        config.locale = locale
+    }
+
+    @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
+    private fun updateAppContext(newContext: Context) {
+        try {
+            val activityThread = Class.forName("android.app.ActivityThread")
+            val thread = activityThread.getMethod("currentActivityThread").invoke(null)
+            val application = activityThread.getMethod("getApplication").invoke(thread)
+            val appContext = application.javaClass.getMethod("getBaseContext").invoke(application)
+
+            val contextImpl = Class.forName("android.app.ContextImpl")
+            val implResources = contextImpl.getDeclaredField("mResources")
+            implResources.isAccessible = true
+            implResources.set(appContext, newContext.resources)
+        } catch (e: Exception) {
+            Timber.tag("LocaleManager").e(e, "Failed to update app context")
+        }
+    }
+}
+
+// Language mappings
+val LanguageCodeToName = mapOf(
+    "ar" to "العربية",
+    "en" to "English",
+    "fr" to "Français",
+    "es" to "Español (España)",
+    "it" to "Italiano",
+    "de" to "Deutsch",
+    "nl" to "Nederlands",
+    "pt-PT" to "Português",
+    "pt" to "Português (Brasil)",
+    "ru" to "Русский",
+    "tr" to "Türkçe",
+    "id" to "Bahasa Indonesia",
+    "ur" to "اردو",
+    "fa" to "فارسی",
+    "ne" to "नेपाली",
+    "mr" to "मराठी",
+    "hi" to "हिन्दी",
+    "bn" to "বাংলা",
+    "pa" to "ਪੰਜਾਬੀ",
+    "gu" to "ગુજરાતી",
+    "ta" to "தமிழ்",
+    "te" to "తెలుగు",
+    "kn" to "ಕನ್ನಡ",
+    "ml" to "മലയാളം",
+    "si" to "සිංහල",
+    "th" to "ภาษาไทย",
+    "lo" to "ລາວ",
+    "my" to "ဗမာ",
+    "ka" to "ქართული",
+    "am" to "አማርኛ",
+    "km" to "ខ្មែរ",
+    "zh-CN" to "中文 (简体)",
+    "zh-TW" to "中文 (繁體)",
+    "zh-HK" to "中文 (香港)",
+    "ja" to "日本語",
+    "ko" to "한국어",
+)

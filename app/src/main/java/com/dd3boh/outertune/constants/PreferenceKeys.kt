@@ -23,6 +23,11 @@ val DefaultOpenTabNewKey = stringPreferencesKey("defaultOpenTabNew")
 val SlimNavBarKey = booleanPreferencesKey("slimNavBar")
 
 /**
+ * Localization
+ */
+val AppLanguageKey = stringPreferencesKey("app_language")
+
+/**
  * Content
  */
 const val SYSTEM_DEFAULT = "SYSTEM_DEFAULT"

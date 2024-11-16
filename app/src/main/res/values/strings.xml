@@ -469,4 +469,5 @@
     <string name="clear_translation_models">Clear translation models</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
+    <string name="app_language">App language</string>
 </resources>
