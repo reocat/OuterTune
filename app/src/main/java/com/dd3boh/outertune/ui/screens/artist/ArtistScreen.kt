@@ -147,20 +147,28 @@ fun ArtistScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(4f / 3)
+                                .then(
+                                    if (artistPage.artist.thumbnail != null) {
+                                        Modifier.aspectRatio(4f / 3)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
                         ) {
-                            AsyncImage(
-                                model = artistPage.artist.thumbnail.resize(1200, 900),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .fadingEdge(
-                                        top = WindowInsets.systemBars
-                                            .asPaddingValues()
-                                            .calculateTopPadding() + AppBarHeight,
-                                        bottom = 64.dp
-                                    )
-                            )
+                            if (artistPage.artist.thumbnail != null){
+                                AsyncImage(
+                                    model = artistPage.artist.thumbnail?.resize(1200, 900),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .fadingEdge(
+                                            top = WindowInsets.systemBars
+                                                .asPaddingValues()
+                                                .calculateTopPadding() + AppBarHeight,
+                                            bottom = 64.dp
+                                        )
+                                )
+                            }
                             AutoResizeText(
                                 text = artistPage.artist.title,
                                 style = MaterialTheme.typography.displayLarge,
@@ -172,6 +180,17 @@ fun ArtistScreen(
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .padding(horizontal = 48.dp)
+                                    .then(
+                                        if (artistPage.artist.thumbnail == null) {
+                                            Modifier.padding(
+                                                top = WindowInsets.systemBars
+                                                    .asPaddingValues()
+                                                    .calculateTopPadding() + AppBarHeight
+                                            )
+                                        } else {
+                                            Modifier
+                                        }
+                                    )
                             )
                         }
 

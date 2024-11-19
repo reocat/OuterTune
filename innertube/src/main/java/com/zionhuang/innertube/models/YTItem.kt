@@ -67,7 +67,7 @@ data class PlaylistItem(
 data class ArtistItem(
     override val id: String,
     override val title: String,
-    override val thumbnail: String,
+    override val thumbnail: String?,
     val channelId: String? = null,
     val playEndpoint: WatchEndpoint? = null,
     val shuffleEndpoint: WatchEndpoint?,

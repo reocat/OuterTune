@@ -214,22 +214,25 @@ object YouTube {
             artist = ArtistItem(
                 id = browseId,
                 title = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                    ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+                    ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
+                    ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
                 thumbnail = response.header?.musicImmersiveHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
-                    ?: response.header?.musicVisualHeaderRenderer?.foregroundThumbnail?.musicThumbnailRenderer?.getThumbnailUrl()!!,
-                channelId = response.header?.musicImmersiveHeaderRenderer?.subscriptionButton?.subscribeButtonRenderer?.channelId!!,
+                    ?: response.header?.musicVisualHeaderRenderer?.foregroundThumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
+                    ?: response.header?.musicDetailHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
+                channelId = response.header?.musicImmersiveHeaderRenderer?.subscriptionButton?.subscribeButtonRenderer?.channelId,
                 playEndpoint = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                     ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicShelfRenderer
                     ?.contents?.firstOrNull()?.musicResponsiveListItemRenderer?.overlay?.musicItemThumbnailOverlayRenderer
                     ?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint,
-                shuffleEndpoint = response.header.musicImmersiveHeaderRenderer.playButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint,
-                radioEndpoint = response.header.musicImmersiveHeaderRenderer.startRadioButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint
+                shuffleEndpoint = response.header?.musicImmersiveHeaderRenderer?.playButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint
+                    ?: response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
+                        ?.contents?.firstOrNull()?.musicShelfRenderer?.contents?.firstOrNull()?.musicResponsiveListItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
+                radioEndpoint = response.header?.musicImmersiveHeaderRenderer?.startRadioButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint
             ),
             sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                 ?.tabRenderer?.content?.sectionListRenderer?.contents
                 ?.mapNotNull(ArtistPage::fromSectionListRendererContent)!!,
-            description = response.header.musicImmersiveHeaderRenderer.description?.runs?.firstOrNull()?.text
-        )
+            description = response.header?.musicImmersiveHeaderRenderer?.description?.runs?.firstOrNull()?.text        )
     }
 
     suspend fun artistItems(endpoint: BrowseEndpoint): Result<ArtistItemsPage> = runCatching {
@@ -623,7 +626,7 @@ object YouTube {
     }
 
     suspend fun getChannelId(browseId: String): String {
-        YouTube.artist(browseId).onSuccess {
+        artist(browseId).onSuccess {
             return it.artist.channelId!!
         }
         return ""
