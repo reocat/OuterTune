@@ -1,6 +1,9 @@
 package com.zionhuang.innertube
 
+import com.zionhuang.innertube.encoder.ContentEncodingConfig
 import com.zionhuang.innertube.encoder.brotli
+import com.zionhuang.innertube.encoder.deflate
+import com.zionhuang.innertube.encoder.gzip
 import com.zionhuang.innertube.models.Context
 import com.zionhuang.innertube.models.YouTubeClient
 import com.zionhuang.innertube.models.YouTubeLocale
@@ -9,7 +12,6 @@ import com.zionhuang.innertube.utils.parseCookieString
 import com.zionhuang.innertube.utils.sha1
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestBuilder
@@ -76,7 +78,8 @@ class InnerTube {
             }
         }
 
-        install(ContentEncoding) {
+        // Using BrotliEncoder, GzipEncoder, and DeflateEncoder
+        val contentEncodingConfig = ContentEncodingConfig().apply {
             brotli(1.0F)
             gzip(0.9F)
             deflate(0.8F)

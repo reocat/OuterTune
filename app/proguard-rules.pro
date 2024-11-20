@@ -54,6 +54,17 @@
 # Keep Gateway data classes
 -keep class com.my.kizzy.gateway.entities.** { <fields>; }
 
+# Keep Ktor client engine and plugins
+-keep class io.ktor.client.** { *; }
+-keep class io.ktor.client.engine.** { *; }
+-keep class io.ktor.client.plugins.** { *; }
+
+# Keep Ktor client internal engine OkHttp
+-keep class io.ktor.client.engine.okhttp.** { *; }
+
+# Keep any other essential classes that may be obfuscated
+-dontwarn io.ktor.**
+
 # Don't print notes about potential mistakes or omissions in the configuration for kotlinx-serialization classes
 # See also https://github.com/Kotlin/kotlinx.serialization/issues/1900
 -dontnote kotlinx.serialization.**
@@ -73,3 +84,4 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 -dontwarn org.slf4j.impl.StaticLoggerBinder
+
