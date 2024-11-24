@@ -23,6 +23,8 @@ android {
         versionCode = 30
         versionName = SimpleDateFormat("yyyyMMdd").format(Date())
 
+        multiDexEnabled = true
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -168,6 +170,8 @@ dependencies {
 
 
     coreLibraryDesugaring(libs.desugaring)
+    
+    implementation(libs.multidex)
 
     implementation(libs.timber)
 
