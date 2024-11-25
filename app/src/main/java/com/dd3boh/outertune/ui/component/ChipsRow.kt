@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
@@ -39,6 +41,7 @@ fun <E> ChipsRow(
     currentValue: E,
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     isLoading: (E) -> Boolean = { false }
 ) {
     Row(
@@ -52,7 +55,9 @@ fun <E> ChipsRow(
             FilterChip(
                 label = { Text(label) },
                 selected = currentValue == value,
-                colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = containerColor,
+                ),
                 onClick = { onValueUpdate(value) },
                 trailingIcon = {
                     if (isLoading(value)) {
@@ -61,7 +66,9 @@ fun <E> ChipsRow(
                             strokeWidth = 2.dp
                         )
                     }
-                }
+                },
+                shape = RoundedCornerShape(16.dp),
+                border = null
             )
 
             Spacer(Modifier.width(8.dp))
@@ -76,6 +83,7 @@ fun <E> ChipsLazyRow(
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
     selected: ((E) -> Boolean)? = null,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     isLoading: (E) -> Boolean = { false }
 ) {
     val haptic = LocalHapticFeedback.current
@@ -106,7 +114,9 @@ fun <E> ChipsLazyRow(
             FilterChip(
                 label = { Text(label) },
                 selected = selected?.let { it(value) } ?: (currentValue == value),
-                colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = containerColor,
+                ),
                 onClick = {
                     onValueUpdate(value)
                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
@@ -124,9 +134,10 @@ fun <E> ChipsLazyRow(
                             strokeWidth = 2.dp
                         )
                     }
-                }
+                },
+                shape = RoundedCornerShape(16.dp),
+                border = null
             )
-
             Spacer(Modifier.width(8.dp))
         }
     }
