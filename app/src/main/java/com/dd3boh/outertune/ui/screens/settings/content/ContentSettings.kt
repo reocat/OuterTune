@@ -27,12 +27,17 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.VpnKey
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -233,7 +238,17 @@ fun ContentSettings(
                 onUseLoginForBrowseChange(it)
             }
         )
-
+        PreferenceGroupTitle(
+            title = "CONTENT IMPORT"
+        )
+        PreferenceEntry(
+            title = { Text(text = "Import from Spotify") },
+            description = null,
+            icon = { Icon(Icons.Rounded.Download, null) },
+            onClick = {
+                navController.navigate("settings/content/import_from_spotify")
+            }
+        )
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_localization)
         )
