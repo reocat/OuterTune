@@ -4,10 +4,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dd3boh.outertune.db.MusicDatabase
+import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SpotifyAuthResponse
 import com.dd3boh.outertune.models.SpotifyUserProfile
+import com.dd3boh.outertune.models.spotify.liked_songs.SpotifyLikedSongsPaginatedResponse
 import com.dd3boh.outertune.models.spotify.playlists.SpotifyPlaylistPaginatedResponse
-import com.dd3boh.outertune.ui.screens.settings.content.model.ImportFromSpotifyScreenState
+import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.ImportFromSpotifyScreenState
+import com.zionhuang.innertube.YouTube
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -21,13 +25,16 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: HttpClient) :
-    ViewModel() {
+class ImportFromSpotifyViewModel @Inject constructor(
+    private val httpClient: HttpClient, private val musicDatabase: MusicDatabase
+) : ViewModel() {
     val importFromSpotifyScreenState = mutableStateOf(
         ImportFromSpotifyScreenState(
             isRequesting = false,
@@ -71,10 +78,9 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
                                 isObtainingAccessTokenSuccessful = true
                             )
 
-                        Timber.tag("Outertune Log")
-                            .d(importFromSpotifyScreenState.value.accessToken)
+                        logTheString(importFromSpotifyScreenState.value.accessToken)
 
-                        getUserProfile(importFromSpotifyScreenState.value.accessToken).let {
+                        getUserProfileFromSpotify(importFromSpotifyScreenState.value.accessToken).let {
                             importFromSpotifyScreenState.value =
                                 importFromSpotifyScreenState.value.copy(
                                     userName = it.displayName
@@ -133,13 +139,15 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
         }.body<SpotifyPlaylistPaginatedResponse>()
     }
 
-    private suspend fun getLikedSongs(authToken: String) {
-        httpClient.get("https://api.spotify.com/v1/me/tracks?offset=0&limit=50") {
+    private suspend fun getLikedSongsFromSpotify(
+        authToken: String, url: String
+    ): SpotifyLikedSongsPaginatedResponse {
+        return httpClient.get(url) {
             bearerAuth(authToken)
-        }.bodyAsText()
+        }.body<SpotifyLikedSongsPaginatedResponse>()
     }
 
-    private suspend fun getUserProfile(authToken: String): SpotifyUserProfile {
+    private suspend fun getUserProfileFromSpotify(authToken: String): SpotifyUserProfile {
         return httpClient.get("https://api.spotify.com/v1/me") {
             bearerAuth(authToken)
         }.body<SpotifyUserProfile>()
@@ -157,6 +165,52 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
                     append("redirect_uri", "http://localhost:45454")
                 })
             )
+        }
+    }
+
+    fun logTheString(string: String) {
+        Timber.tag("OuterTune Log").d(string)
+    }
+
+    fun importSpotifyLikedSongs(
+        saveInDefaultLikedSongs: Boolean,
+        url: String = "https://api.spotify.com/v1/me/tracks?offset=0&limit=50"
+    ) {
+        viewModelScope.launch {
+            getLikedSongsFromSpotify(
+                authToken = importFromSpotifyScreenState.value.accessToken, url = url
+            ).let { spotifyLikedSongsPaginatedResponse ->
+                spotifyLikedSongsPaginatedResponse.likedSongs.forEachIndexed { index, likedSong ->
+                    logTheString("Currently on (${index + 1}) ${likedSong.likedSongItem.trackName}")
+                    val youtubeSearchResult = YouTube.search(
+                        query = likedSong.likedSongItem.trackName + " " + likedSong.likedSongItem.artists.first().name,
+                        filter = YouTube.SearchFilter.FILTER_SONG
+                    )
+                    youtubeSearchResult.onSuccess { result ->
+                        result.items.first().let { songItem ->
+                            logTheString("Result : (${index + 1}) ${songItem.title}")
+                            withContext(Dispatchers.IO) {
+                                musicDatabase.insert(
+                                    SongEntity(
+                                        id = songItem.id,
+                                        title = songItem.title,
+                                        localPath = null,
+                                        liked = saveInDefaultLikedSongs,
+                                        thumbnailUrl = songItem.thumbnail?.substringBefore("=w")
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+                if (spotifyLikedSongsPaginatedResponse.nextPaginatedUrl != null) {
+                    importSpotifyLikedSongs(
+                        saveInDefaultLikedSongs,
+                        url = spotifyLikedSongsPaginatedResponse.nextPaginatedUrl
+                    )
+                    logTheString(spotifyLikedSongsPaginatedResponse.nextPaginatedUrl)
+                }
+            }
         }
     }
 }
