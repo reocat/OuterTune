@@ -196,7 +196,7 @@ import com.dd3boh.outertune.ui.screens.search.OnlineSearchScreen
 import com.dd3boh.outertune.ui.screens.settings.AboutScreen
 import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
 import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
-import com.dd3boh.outertune.ui.screens.settings.ContentSettings
+import com.dd3boh.outertune.ui.screens.settings.content.ContentSettings
 import com.dd3boh.outertune.ui.screens.settings.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
@@ -211,6 +211,7 @@ import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.PrivacySettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
+import com.dd3boh.outertune.ui.screens.settings.content.ImportFromSpotifyScreen
 import com.dd3boh.outertune.ui.theme.ColorSaver
 import com.dd3boh.outertune.ui.theme.DefaultThemeColor
 import com.dd3boh.outertune.ui.theme.OuterTuneTheme
@@ -1039,7 +1040,7 @@ class MainActivity : ComponentActivity() {
 
                             NavHost(
                                 navController = navController,
-                                startDestination = when (tabOpenedFromShortcut ?: defaultOpenTab) {
+                                startDestination = "settings/content/import_from_spotify" ?: when (tabOpenedFromShortcut ?: defaultOpenTab) {
                                     NavigationTab.HOME -> Screens.Home
                                     NavigationTab.SONG -> Screens.Songs
                                     NavigationTab.FOLDERS -> Screens.Folders
@@ -1270,6 +1271,9 @@ class MainActivity : ComponentActivity() {
 
                                 composable("setup_wizard") {
                                     SetupWizard(navController)
+                                }
+                                composable("settings/content/import_from_spotify") {
+                                    ImportFromSpotifyScreen(navController)
                                 }
                             }
                         }
