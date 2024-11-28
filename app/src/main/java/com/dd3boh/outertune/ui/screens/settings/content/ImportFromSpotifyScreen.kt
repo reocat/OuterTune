@@ -1,7 +1,8 @@
 package com.dd3boh.outertune.ui.screens.settings.content
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,12 +21,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -36,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,18 +58,28 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     val spotifyClientSecret = rememberSaveable {
         mutableStateOf("")
     }
+    val spotifyAuthorizationCode = rememberSaveable {
+        mutableStateOf("")
+    }
     val textFieldPaddingValues = remember {
         PaddingValues(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp)
     }
     val localClipBoardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-        if (importFromSpotifyScreenState.value.accessToken.isNotBlank()) {
-            Text(
-                text = "Logged in successfully. Now, pick the items to import:",
-                fontSize = 16.sp,
-                modifier = Modifier.padding(start = 15.dp, bottom = 7.5.dp)
-            )
+    val localUriHandler = LocalUriHandler.current
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = if (importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful) Alignment.TopCenter else Alignment.BottomCenter
+    ) {
+        if (importFromSpotifyScreenState.value.accessToken.isNotBlank() && importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
+                Text(
+                    text = "Logged in as ${importFromSpotifyScreenState.value.userName}. Now, select the items you want to import:",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(start = 15.dp, bottom = 7.5.dp)
+                )
+            }
             return
         }
         Column(
@@ -74,8 +88,63 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 .wrapContentHeight()
                 .imePadding()
                 .verticalScroll(rememberScrollState())
+                .animateContentSize()
         ) {
-            Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
+            if (importFromSpotifyScreenState.value.error) {
+                val isStackTraceVisible = rememberSaveable {
+                    mutableStateOf(false)
+                }
+                Text(
+                    text = importFromSpotifyScreenState.value.exception?.message
+                        ?: "Well, that’s embarrassing. We have no clue what happened either.",
+                    modifier = Modifier.padding(start = 15.dp, end = 15.dp),
+                    color = MaterialTheme.colorScheme.error
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            isStackTraceVisible.value = isStackTraceVisible.value.not()
+                        }
+                        .padding(start = 15.dp, end = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "Stacktrace", fontWeight = FontWeight.Bold)
+                        importFromSpotifyScreenState.value.exception?.stackTrace?.joinToString()
+                            ?.let {
+                                IconButton(onClick = {
+                                    localClipBoardManager.setText(AnnotatedString(text = it))
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.ContentCopy,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                    }
+                    IconButton(onClick = {
+                        isStackTraceVisible.value = isStackTraceVisible.value.not()
+                    }) {
+                        Icon(
+                            imageVector = if (isStackTraceVisible.value) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                            contentDescription = null
+                        )
+                    }
+                }
+                if (isStackTraceVisible.value) {
+                    Text(
+                        text = importFromSpotifyScreenState.value.exception?.stackTrace?.joinToString()
+                            ?: "Something went wrong. We’re just as confused as you are.",
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp)
+                    )
+                }
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                )
+            }
             Text(
                 text = "Login with Spotify API Credentials",
                 fontSize = 16.sp,
@@ -92,7 +161,21 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 label = {
                     Text(text = "Client ID")
                 },
-                readOnly = importFromSpotifyScreenState.value.isRequesting.not()
+                readOnly = importFromSpotifyScreenState.value.isRequesting
+            )
+            Button(
+                onClick = {
+                    localUriHandler.openUri("https://accounts.spotify.com/authorize?client_id=${spotifyClientId.value}&response_type=code&redirect_uri=http://localhost:45454&scope=user-library-read")
+                }, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp)
+            ) {
+                Text(text = "Authorize")
+            }
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp)
             )
             TextField(
                 modifier = Modifier
@@ -105,54 +188,35 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 label = {
                     Text(text = "Client secret")
                 },
-                readOnly = importFromSpotifyScreenState.value.isRequesting.not()
+                readOnly = importFromSpotifyScreenState.value.isRequesting
             )
-            if (importFromSpotifyScreenState.value.error) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(15.dp)
-                )
-                Text(
-                    text = importFromSpotifyScreenState.value.exception?.message
-                        ?: "Well, that’s embarrassing. We have no clue what happened either.",
-                    modifier = Modifier.padding(start = 15.dp, end = 15.dp)
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Stacktrace", fontWeight = FontWeight.Bold)
-                    importFromSpotifyScreenState.value.exception?.stackTrace?.joinToString()?.let {
-                        IconButton(onClick = {
-                            localClipBoardManager.setText(AnnotatedString(text = it))
-                        }) {
-                            Icon(imageVector = Icons.Rounded.ContentCopy, contentDescription = null)
-                        }
-                    }
-                }
-                Text(
-                    text = importFromSpotifyScreenState.value.exception?.stackTrace?.joinToString()
-                        ?: "Something went wrong. We’re just as confused as you are.",
-                    modifier = Modifier.padding(start = 15.dp, end = 15.dp)
-                )
-                return
-            }
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(textFieldPaddingValues),
+                value = spotifyAuthorizationCode.value,
+                onValueChange = {
+                    spotifyAuthorizationCode.value = it
+                },
+                label = {
+                    Text(text = "Authorization Code")
+                },
+                readOnly = importFromSpotifyScreenState.value.isRequesting
+            )
             if (importFromSpotifyScreenState.value.isRequesting.not()) {
                 Button(
                     onClick = {
                         importFromSpotifyViewModel.loginWithSpotifyCredentials(
-                            clientId = spotifyClientId.value,
-                            clientSecret = spotifyClientSecret.value
+                            clientId = spotifyClientId.value.trim(),
+                            clientSecret = spotifyClientSecret.value.trim(),
+                            authorizationCode = spotifyAuthorizationCode.value.trim()
                         )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 15.dp, bottom = 15.dp, end = 15.dp)
                 ) {
-                    Text(text = "Login")
+                    Text(text = "Authenticate")
                 }
             } else {
                 LinearProgressIndicator(
