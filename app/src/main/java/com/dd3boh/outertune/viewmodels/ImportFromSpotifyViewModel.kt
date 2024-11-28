@@ -1,10 +1,12 @@
 package com.dd3boh.outertune.viewmodels
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dd3boh.outertune.models.SpotifyAuthResponse
 import com.dd3boh.outertune.models.SpotifyUserProfile
+import com.dd3boh.outertune.models.spotify.playlists.SpotifyPlaylistPaginatedResponse
 import com.dd3boh.outertune.ui.screens.settings.content.model.ImportFromSpotifyScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.HttpClient
@@ -28,12 +30,21 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
     ViewModel() {
     val importFromSpotifyScreenState = mutableStateOf(
         ImportFromSpotifyScreenState(
-            isRequesting = false, accessToken = "", error = false, exception = null,
-            userName = "", isObtainingAccessTokenSuccessful = false
+            isRequesting = false,
+            accessToken = "",
+            error = false,
+            exception = null,
+            userName = "",
+            isObtainingAccessTokenSuccessful = false,
+            playlists = emptyList(),
+            totalPlaylistsCount = 0,
+            reachedEndForPlaylistPagination = false
         )
     )
+    val selectedPlaylists = mutableStateListOf<String>()
+    val isLikedSongsSelectedForImport = mutableStateOf(false)
 
-    fun loginWithSpotifyCredentials(
+    fun spotifyLoginAndFetchPlaylists(
         clientId: String, clientSecret: String, authorizationCode: String
     ) {
         viewModelScope.launch {
@@ -44,7 +55,7 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
                     exception = null,
                     accessToken = "",
                     userName = "",
-                    isObtainingAccessTokenSuccessful = false
+                    isObtainingAccessTokenSuccessful = false, playlists = emptyList()
                 )
                 getSpotifyAccessTokenDataResponse(
                     clientId = clientId,
@@ -58,12 +69,26 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
                                 isRequesting = false,
                                 isObtainingAccessTokenSuccessful = true
                             )
+
+                        Timber.tag("Outertune Log")
+                            .d(importFromSpotifyScreenState.value.accessToken)
+
                         getUserProfile(importFromSpotifyScreenState.value.accessToken).let {
                             importFromSpotifyScreenState.value =
                                 importFromSpotifyScreenState.value.copy(
                                     userName = it.displayName
                                 )
                         }
+
+                        getPlaylists(importFromSpotifyScreenState.value.accessToken).let {
+                            importFromSpotifyScreenState.value =
+                                importFromSpotifyScreenState.value.copy(
+                                    playlists = importFromSpotifyScreenState.value.playlists + it.items,
+                                    totalPlaylistsCount = importFromSpotifyScreenState.value.totalPlaylistsCount,
+                                    reachedEndForPlaylistPagination = it.nextUrl == null
+                                )
+                        }
+
                     } else {
                         throw Exception("Request failed with status code : ${response.status.value}\n${response.bodyAsText()}")
                     }
@@ -77,8 +102,38 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
         }
     }
 
+    private var playListPaginationOffset = 0
+
+    init {
+        playListPaginationOffset = 0
+    }
+
+    fun retrieveNextPageOfPlaylists() {
+        viewModelScope.launch {
+            importFromSpotifyScreenState.value =
+                importFromSpotifyScreenState.value.copy(isRequesting = true)
+            getPlaylists(importFromSpotifyScreenState.value.accessToken).let {
+                importFromSpotifyScreenState.value =
+                    importFromSpotifyScreenState.value.copy(
+                        playlists = importFromSpotifyScreenState.value.playlists + it.items,
+                        totalPlaylistsCount = importFromSpotifyScreenState.value.totalPlaylistsCount,
+                        reachedEndForPlaylistPagination = it.nextUrl == null,
+                        isRequesting = false
+                    )
+            }
+        }
+    }
+
+    private suspend fun getPlaylists(
+        authToken: String
+    ): SpotifyPlaylistPaginatedResponse {
+        return httpClient.get("https://api.spotify.com/v1/me/playlists?offset=${++playListPaginationOffset}&limit=5") {
+            bearerAuth(authToken)
+        }.body<SpotifyPlaylistPaginatedResponse>()
+    }
+
     private suspend fun getLikedSongs(authToken: String) {
-        httpClient.get("https://api.spotify.com/v1/me/tracks") {
+        httpClient.get("https://api.spotify.com/v1/me/tracks?offset=0&limit=50") {
             bearerAuth(authToken)
         }.bodyAsText()
     }

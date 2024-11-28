@@ -1,6 +1,7 @@
 package com.dd3boh.outertune.ui.screens.settings.content
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,16 +15,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,11 +42,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -46,12 +58,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
+import timber.log.Timber
 
 @Composable
 fun ImportFromSpotifyScreen(navController: NavController) {
     val importFromSpotifyViewModel: ImportFromSpotifyViewModel = hiltViewModel()
     val importFromSpotifyScreenState = importFromSpotifyViewModel.importFromSpotifyScreenState
+    val userPlaylists = importFromSpotifyViewModel.importFromSpotifyScreenState.value.playlists
     val spotifyClientId = rememberSaveable {
         mutableStateOf("")
     }
@@ -67,18 +82,141 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     val localClipBoardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
+    val lazyListState = rememberLazyListState()
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = if (importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful) Alignment.TopCenter else Alignment.BottomCenter
+        modifier = Modifier.fillMaxSize()
     ) {
         if (importFromSpotifyScreenState.value.accessToken.isNotBlank() && importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.TopCenter)
+            ) {
                 Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
                 Text(
-                    text = "Logged in as ${importFromSpotifyScreenState.value.userName}. Now, select the items you want to import:",
+                    text = "Logged in as ${importFromSpotifyScreenState.value.userName}. Found ${importFromSpotifyScreenState.value.totalPlaylistsCount} playlists.\n\nNow, select the items you want to import:",
                     fontSize = 16.sp,
                     modifier = Modifier.padding(start = 15.dp, bottom = 7.5.dp)
                 )
+                LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
+                                        importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                                }
+                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(MaterialTheme.colorScheme.primary),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Favorite,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
+                                Spacer(Modifier.width(15.dp))
+                                Text(
+                                    text = "Liked Songs",
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            }
+                            Checkbox(
+                                checked = importFromSpotifyViewModel.isLikedSongsSelectedForImport.value,
+                                onCheckedChange = {
+                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
+                                        importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                                })
+                        }
+                    }
+                    items(userPlaylists) { playlist ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (importFromSpotifyViewModel.selectedPlaylists.contains(
+                                            playlist.playlistId
+                                        ).not()
+                                    ) {
+                                        importFromSpotifyViewModel.selectedPlaylists.add(playlist.playlistId)
+                                    } else {
+                                        importFromSpotifyViewModel.selectedPlaylists.remove(playlist.playlistId)
+                                    }
+                                }
+                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth(0.75f)
+                            ) {
+                                AsyncImage(
+                                    model = playlist.images.first().url,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(
+                                            RoundedCornerShape(10.dp)
+                                        )
+                                )
+                                Spacer(Modifier.width(15.dp))
+                                Text(
+                                    text = playlist.playlistName
+                                )
+                            }
+                            Checkbox(
+                                checked = importFromSpotifyViewModel.selectedPlaylists.contains(
+                                    playlist.playlistId
+                                ), onCheckedChange = {
+                                    if (importFromSpotifyViewModel.selectedPlaylists.contains(
+                                            playlist.playlistId
+                                        ).not()
+                                    ) {
+                                        importFromSpotifyViewModel.selectedPlaylists.add(playlist.playlistId)
+                                    } else {
+                                        importFromSpotifyViewModel.selectedPlaylists.remove(playlist.playlistId)
+                                    }
+                                })
+                        }
+                    }
+                    if (importFromSpotifyScreenState.value.isRequesting && importFromSpotifyScreenState.value.reachedEndForPlaylistPagination.not()) {
+                        item {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(15.dp)
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(Modifier.height(100.dp))
+                    }
+                }
+            }
+            BottomAppBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+            ) {
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp), onClick = {
+
+                    }) {
+                    Text(text = "Import Selected Items")
+                }
             }
             return
         }
@@ -89,6 +227,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 .imePadding()
                 .verticalScroll(rememberScrollState())
                 .animateContentSize()
+                .align(Alignment.BottomCenter)
         ) {
             if (importFromSpotifyScreenState.value.error) {
                 val isStackTraceVisible = rememberSaveable {
@@ -165,7 +304,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
             )
             Button(
                 onClick = {
-                    localUriHandler.openUri("https://accounts.spotify.com/authorize?client_id=${spotifyClientId.value}&response_type=code&redirect_uri=http://localhost:45454&scope=user-library-read")
+                    localUriHandler.openUri("https://accounts.spotify.com/authorize?client_id=${spotifyClientId.value}&response_type=code&redirect_uri=http://localhost:45454&scope=user-library-read playlist-read-private")
                 }, modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 15.dp, end = 15.dp)
@@ -206,7 +345,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
             if (importFromSpotifyScreenState.value.isRequesting.not()) {
                 Button(
                     onClick = {
-                        importFromSpotifyViewModel.loginWithSpotifyCredentials(
+                        importFromSpotifyViewModel.spotifyLoginAndFetchPlaylists(
                             clientId = spotifyClientId.value.trim(),
                             clientSecret = spotifyClientSecret.value.trim(),
                             authorizationCode = spotifyAuthorizationCode.value.trim()
@@ -225,6 +364,14 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         .padding(start = 15.dp, bottom = 30.dp, end = 15.dp, top = 7.5.dp)
                 )
             }
+        }
+    }
+    LaunchedEffect(lazyListState.canScrollForward) {
+        Timber.tag("Outertune Log").d("in launched effect")
+        if (importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful && lazyListState.canScrollForward.not() && importFromSpotifyScreenState.value.reachedEndForPlaylistPagination.not() && importFromSpotifyScreenState.value.isRequesting.not()) {
+            importFromSpotifyViewModel.retrieveNextPageOfPlaylists()
+            Timber.tag("Outertune Log")
+                .d("applying from launched effect")
         }
     }
 }
