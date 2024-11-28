@@ -55,7 +55,8 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
                     exception = null,
                     accessToken = "",
                     userName = "",
-                    isObtainingAccessTokenSuccessful = false, playlists = emptyList()
+                    isObtainingAccessTokenSuccessful = false,
+                    playlists = emptyList()
                 )
                 getSpotifyAccessTokenDataResponse(
                     clientId = clientId,
@@ -95,31 +96,30 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
                 }
             } catch (e: Exception) {
                 importFromSpotifyScreenState.value = importFromSpotifyScreenState.value.copy(
-                    isRequesting = false, error = true, exception = e, accessToken = "",
+                    isRequesting = false,
+                    error = true,
+                    exception = e,
+                    accessToken = "",
                     isObtainingAccessTokenSuccessful = false
                 )
             }
         }
     }
 
-    private var playListPaginationOffset = 0
-
-    init {
-        playListPaginationOffset = 0
-    }
+    private var paginatedResultsLimit = 50
+    private var playListPaginationOffset = -paginatedResultsLimit
 
     fun retrieveNextPageOfPlaylists() {
         viewModelScope.launch {
             importFromSpotifyScreenState.value =
                 importFromSpotifyScreenState.value.copy(isRequesting = true)
             getPlaylists(importFromSpotifyScreenState.value.accessToken).let {
-                importFromSpotifyScreenState.value =
-                    importFromSpotifyScreenState.value.copy(
-                        playlists = importFromSpotifyScreenState.value.playlists + it.items,
-                        totalPlaylistsCount = importFromSpotifyScreenState.value.totalPlaylistsCount,
-                        reachedEndForPlaylistPagination = it.nextUrl == null,
-                        isRequesting = false
-                    )
+                importFromSpotifyScreenState.value = importFromSpotifyScreenState.value.copy(
+                    playlists = importFromSpotifyScreenState.value.playlists + it.items,
+                    totalPlaylistsCount = it.totalResults ?: 0,
+                    reachedEndForPlaylistPagination = it.nextUrl == null,
+                    isRequesting = false
+                )
             }
         }
     }
@@ -127,7 +127,8 @@ class ImportFromSpotifyViewModel @Inject constructor(private val httpClient: Htt
     private suspend fun getPlaylists(
         authToken: String
     ): SpotifyPlaylistPaginatedResponse {
-        return httpClient.get("https://api.spotify.com/v1/me/playlists?offset=${++playListPaginationOffset}&limit=5") {
+        playListPaginationOffset += paginatedResultsLimit
+        return httpClient.get("https://api.spotify.com/v1/me/playlists?offset=${playListPaginationOffset}&limit=$paginatedResultsLimit") {
             bearerAuth(authToken)
         }.body<SpotifyPlaylistPaginatedResponse>()
     }
