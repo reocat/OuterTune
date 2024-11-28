@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings.content
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,6 +84,13 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val lazyListState = rememberLazyListState()
+    LaunchedEffect(
+        lazyListState.canScrollForward, importFromSpotifyScreenState.value.isRequesting
+    ) {
+        if (importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful && lazyListState.canScrollForward.not() && importFromSpotifyScreenState.value.reachedEndForPlaylistPagination.not() && importFromSpotifyScreenState.value.isRequesting.not()) {
+            importFromSpotifyViewModel.retrieveNextPageOfPlaylists()
+        }
+    }
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -100,17 +108,15 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 )
                 LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
-                                        importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
-                                }
-                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
+                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                            }
+                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                            horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
@@ -127,8 +133,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                                 }
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "Liked Songs",
-                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                    text = "Liked Songs", modifier = Modifier.fillMaxWidth(0.75f)
                                 )
                             }
                             Checkbox(
@@ -140,23 +145,21 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         }
                     }
                     items(userPlaylists) { playlist ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (importFromSpotifyViewModel.selectedPlaylists.contains(
-                                            playlist.playlistId
-                                        ).not()
-                                    ) {
-                                        importFromSpotifyViewModel.selectedPlaylists.add(playlist.playlistId)
-                                    } else {
-                                        importFromSpotifyViewModel.selectedPlaylists.remove(playlist.playlistId)
-                                    }
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (importFromSpotifyViewModel.selectedPlaylists.contains(
+                                        playlist.playlistId
+                                    ).not()
+                                ) {
+                                    importFromSpotifyViewModel.selectedPlaylists.add(playlist.playlistId)
+                                } else {
+                                    importFromSpotifyViewModel.selectedPlaylists.remove(playlist.playlistId)
                                 }
-                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                            }
+                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                            horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth(0.75f)
@@ -239,13 +242,12 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                     color = MaterialTheme.colorScheme.error
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            isStackTraceVisible.value = isStackTraceVisible.value.not()
-                        }
-                        .padding(start = 15.dp, end = 15.dp),
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        isStackTraceVisible.value = isStackTraceVisible.value.not()
+                    }
+                    .padding(start = 15.dp, end = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -364,14 +366,6 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         .padding(start = 15.dp, bottom = 30.dp, end = 15.dp, top = 7.5.dp)
                 )
             }
-        }
-    }
-    LaunchedEffect(lazyListState.canScrollForward) {
-        Timber.tag("Outertune Log").d("in launched effect")
-        if (importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful && lazyListState.canScrollForward.not() && importFromSpotifyScreenState.value.reachedEndForPlaylistPagination.not() && importFromSpotifyScreenState.value.isRequesting.not()) {
-            importFromSpotifyViewModel.retrieveNextPageOfPlaylists()
-            Timber.tag("Outertune Log")
-                .d("applying from launched effect")
         }
     }
 }
