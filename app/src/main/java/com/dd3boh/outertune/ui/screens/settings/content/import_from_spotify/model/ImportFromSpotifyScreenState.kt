@@ -1,4 +1,4 @@
-package com.dd3boh.outertune.ui.screens.settings.content.model
+package com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model
 
 import com.dd3boh.outertune.models.spotify.playlists.SpotifyPlaylistItem
 
