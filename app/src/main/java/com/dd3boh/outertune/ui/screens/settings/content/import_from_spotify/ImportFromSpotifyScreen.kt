@@ -1,6 +1,5 @@
-package com.dd3boh.outertune.ui.screens.settings.content
+package com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,9 +31,12 @@ import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,8 +63,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
-import timber.log.Timber
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImportFromSpotifyScreen(navController: NavController) {
     val importFromSpotifyViewModel: ImportFromSpotifyViewModel = hiltViewModel()
@@ -84,6 +86,9 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val lazyListState = rememberLazyListState()
+    val isLikedSongsDestinationDialogShown = rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(
         lazyListState.canScrollForward, importFromSpotifyScreenState.value.isRequesting
     ) {
@@ -216,12 +221,12 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(15.dp), onClick = {
-
+                        isLikedSongsDestinationDialogShown.value = true
                     }) {
                     Text(text = "Import Selected Items")
                 }
             }
-            return
+            return@Box
         }
         Column(
             modifier = Modifier
@@ -337,7 +342,8 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     .padding(textFieldPaddingValues),
                 value = spotifyAuthorizationCode.value,
                 onValueChange = {
-                    spotifyAuthorizationCode.value = it
+                    spotifyAuthorizationCode.value =
+                        it.substringAfter("http://localhost:45454/?code=").trim()
                 },
                 label = {
                     Text(text = "Authorization Code")
@@ -365,6 +371,40 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         .fillMaxWidth()
                         .padding(start = 15.dp, bottom = 30.dp, end = 15.dp, top = 7.5.dp)
                 )
+            }
+        }
+    }
+    if (isLikedSongsDestinationDialogShown.value) {
+        BasicAlertDialog(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp)
+                .clip(
+                    RoundedCornerShape(15.dp)
+                )
+                .background(AlertDialogDefaults.containerColor), onDismissRequest = {
+                isLikedSongsDestinationDialogShown.value = false
+            }) {
+            Column(modifier = Modifier.padding(15.dp)) {
+                Text(
+                    text = "Choose \"Liked Songs\" Destination",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(text = "Where should the liked songs be imported?")
+                Spacer(Modifier.height(15.dp))
+                Button(onClick = {
+                    importFromSpotifyViewModel.importSpotifyLikedSongs(saveInDefaultLikedSongs = false)
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "A new playlist named \"Liked Songs\"")
+                }
+                Spacer(Modifier.height(5.dp))
+                Button(onClick = {
+                    importFromSpotifyViewModel.importSpotifyLikedSongs(saveInDefaultLikedSongs = true)
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "In the default \"Liked Songs\"")
+                }
             }
         }
     }
