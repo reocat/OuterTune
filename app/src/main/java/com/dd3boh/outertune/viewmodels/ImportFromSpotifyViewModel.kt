@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dd3boh.outertune.db.MusicDatabase
+import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SpotifyAuthResponse
 import com.dd3boh.outertune.models.SpotifyUserProfile
@@ -29,11 +31,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class ImportFromSpotifyViewModel @Inject constructor(
-    private val httpClient: HttpClient, private val musicDatabase: MusicDatabase
+    private val httpClient: HttpClient, private val localDatabase: MusicDatabase
 ) : ViewModel() {
     val importFromSpotifyScreenState = mutableStateOf(
         ImportFromSpotifyScreenState(
@@ -172,6 +175,8 @@ class ImportFromSpotifyViewModel @Inject constructor(
         Timber.tag("OuterTune Log").d(string)
     }
 
+    private val generatedPlaylistId = PlaylistEntity.generatePlaylistId()
+    private val currentTime = LocalDateTime.now()
     fun importSpotifyLikedSongs(
         saveInDefaultLikedSongs: Boolean,
         url: String = "https://api.spotify.com/v1/me/tracks?offset=0&limit=50"
@@ -181,16 +186,16 @@ class ImportFromSpotifyViewModel @Inject constructor(
                 authToken = importFromSpotifyScreenState.value.accessToken, url = url
             ).let { spotifyLikedSongsPaginatedResponse ->
                 spotifyLikedSongsPaginatedResponse.likedSongs.forEachIndexed { index, likedSong ->
-                    logTheString("Currently on (${index + 1}) ${likedSong.likedSongItem.trackName}")
+                    logTheString("From Spotify : (${index + 1}) ${likedSong.likedSongItem.trackName}")
                     val youtubeSearchResult = YouTube.search(
                         query = likedSong.likedSongItem.trackName + " " + likedSong.likedSongItem.artists.first().name,
                         filter = YouTube.SearchFilter.FILTER_SONG
                     )
                     youtubeSearchResult.onSuccess { result ->
                         result.items.first().let { songItem ->
-                            logTheString("Result : (${index + 1}) ${songItem.title}")
+                            logTheString("Result From YouTube : (${index + 1}) ${songItem.title}")
                             withContext(Dispatchers.IO) {
-                                musicDatabase.insert(
+                                localDatabase.insert(
                                     SongEntity(
                                         id = songItem.id,
                                         title = songItem.title,
@@ -199,6 +204,20 @@ class ImportFromSpotifyViewModel @Inject constructor(
                                         thumbnailUrl = songItem.thumbnail?.substringBefore("=w")
                                     )
                                 )
+                                if (saveInDefaultLikedSongs.not()) {
+                                    localDatabase.insert(
+                                        PlaylistEntity(
+                                            id = generatedPlaylistId,
+                                            name = "Liked Songs",
+                                            bookmarkedAt = currentTime
+                                        )
+                                    )
+                                    localDatabase.insert(
+                                        PlaylistSongMap(
+                                            playlistId = generatedPlaylistId, songId = songItem.id
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
