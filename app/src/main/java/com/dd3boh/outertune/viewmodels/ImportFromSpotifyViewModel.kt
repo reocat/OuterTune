@@ -2,14 +2,15 @@ package com.dd3boh.outertune.viewmodels
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dd3boh.outertune.db.MusicDatabase
+import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
+import com.dd3boh.outertune.db.entities.SongArtistMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SpotifyAuthResponse
 import com.dd3boh.outertune.models.SpotifyUserProfile
@@ -20,6 +21,7 @@ import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.mode
 import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.ImportProgressEvent
 import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.Playlist
 import com.zionhuang.innertube.YouTube
+import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -35,12 +37,8 @@ import io.ktor.http.Parameters
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -314,21 +312,41 @@ class ImportFromSpotifyViewModel @Inject constructor(
                             filter = YouTube.SearchFilter.FILTER_SONG
                         )
                         youtubeSearchResult.onSuccess { result ->
+                            val firstSong = result.items.first() as SongItem
                             if (result.items.isEmpty()) {
                                 return@onSuccess
                             }
+                            firstSong.artists.forEachIndexed { index, artist ->
+                                artist.id?.let { artistId ->
+                                    try {
+                                        localDatabase.insert(
+                                            ArtistEntity(
+                                                id = artistId, name = artist.name
+                                            )
+                                        )
+                                        localDatabase.insert(
+                                            SongArtistMap(
+                                                songId = firstSong.id,
+                                                artistId = artistId,
+                                                position = index
+                                            )
+                                        )
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
                             localDatabase.insert(
                                 SongEntity(
-                                    id = result.items.first().id,
-                                    thumbnailUrl = result.items.first().thumbnail?.getOriginalSizeThumbnail(),
-                                    title = result.items.first().title,
+                                    id = firstSong.id,
+                                    thumbnailUrl = firstSong.thumbnail.getOriginalSizeThumbnail(),
+                                    title = firstSong.title,
                                     localPath = null
                                 )
                             )
                             localDatabase.insert(
                                 PlaylistSongMap(
-                                    playlistId = generatedPlaylistId,
-                                    songId = result.items.first().id
+                                    playlistId = generatedPlaylistId, songId = firstSong.id
                                 )
                             )
                             _playlistsImportProgress.emit(
@@ -383,7 +401,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
         return tracks
     }
 
-    private var progressedTracksInALikedSingsCount = 0
+    private var progressedTracksInTheLikedSongsCount = 0
 
     private suspend fun importSpotifyLikedSongs(
         saveInDefaultLikedSongs: Boolean,
@@ -404,6 +422,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                             return@onSuccess
                         }
                         result.items.first().let { songItem ->
+                            songItem as SongItem
                             withContext(Dispatchers.IO) {
                                 localDatabase.insert(
                                     SongEntity(
@@ -411,9 +430,29 @@ class ImportFromSpotifyViewModel @Inject constructor(
                                         title = songItem.title,
                                         localPath = null,
                                         liked = saveInDefaultLikedSongs,
-                                        thumbnailUrl = songItem.thumbnail?.getOriginalSizeThumbnail()
+                                        thumbnailUrl = songItem.thumbnail.getOriginalSizeThumbnail()
                                     )
                                 )
+                                songItem.artists.forEachIndexed { index, artist ->
+                                    artist.id?.let { artistId ->
+                                        try {
+                                            localDatabase.insert(
+                                                ArtistEntity(
+                                                    id = artistId, name = artist.name
+                                                )
+                                            )
+                                            localDatabase.insert(
+                                                SongArtistMap(
+                                                    songId = songItem.id,
+                                                    artistId = artistId,
+                                                    position = index
+                                                )
+                                            )
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
                                 if (saveInDefaultLikedSongs.not()) {
                                     localDatabase.insert(
                                         PlaylistEntity(
@@ -427,13 +466,18 @@ class ImportFromSpotifyViewModel @Inject constructor(
                                             playlistId = generatedPlaylistId, songId = songItem.id
                                         )
                                     )
+                                } else {/*
+                                     Updates `liked` to `true` for a song already in the database.
+                                     Does not affect a newly added song if it is already marked as `liked`.
+                                     */
+                                    localDatabase.toggleLikedToTrue(songId = songItem.id)
                                 }
                             }
                         }
                         _likedSongsImportProgress.emit(
                             ImportProgressEvent.LikedSongsProgress(
                                 completed = false,
-                                currentCount = ++progressedTracksInALikedSingsCount,
+                                currentCount = ++progressedTracksInTheLikedSongsCount,
                                 totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
                             )
                         )
@@ -450,7 +494,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                 _likedSongsImportProgress.emit(
                     ImportProgressEvent.LikedSongsProgress(
                         completed = true,
-                        currentCount = progressedTracksInALikedSingsCount,
+                        currentCount = progressedTracksInTheLikedSongsCount,
                         totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
                     )
                 )
