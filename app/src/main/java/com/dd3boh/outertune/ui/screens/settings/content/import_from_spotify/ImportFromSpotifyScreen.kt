@@ -124,14 +124,13 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 )
                 LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
-                                        importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
-                                }
-                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
+                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                            }
+                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -162,27 +161,25 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         }
                     }
                     items(userPlaylists) { playlist ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
-                                            .contains(
-                                                playlist.playlistId
-                                            ).not()) {
-                                        importFromSpotifyViewModel.selectedPlaylists.add(
-                                            Playlist(
-                                                name = playlist.playlistName,
-                                                id = playlist.playlistId
-                                            )
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                        .contains(
+                                            playlist.playlistId
+                                        ).not()) {
+                                    importFromSpotifyViewModel.selectedPlaylists.add(
+                                        Playlist(
+                                            name = playlist.playlistName, id = playlist.playlistId
                                         )
-                                    } else {
-                                        importFromSpotifyViewModel.selectedPlaylists.removeIf {
-                                            it.id == playlist.playlistId
-                                        }
+                                    )
+                                } else {
+                                    importFromSpotifyViewModel.selectedPlaylists.removeIf {
+                                        it.id == playlist.playlistId
                                     }
                                 }
-                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                            }
+                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(
@@ -279,13 +276,12 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                     color = MaterialTheme.colorScheme.error
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            isStackTraceVisible.value = isStackTraceVisible.value.not()
-                        }
-                        .padding(start = 15.dp, end = 15.dp),
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        isStackTraceVisible.value = isStackTraceVisible.value.not()
+                    }
+                    .padding(start = 15.dp, end = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -410,28 +406,26 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     }
     if (importFromSpotifyViewModel.isImportingInProgress.value) {
         Scaffold(topBar = {
-            Column(
-                modifier = Modifier
-                    .clickable { }
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .windowInsetsPadding(WindowInsets.statusBars)) {
+            Column(modifier = Modifier
+                .clickable { }
+                .fillMaxWidth()
+                .padding(15.dp)
+                .windowInsetsPadding(WindowInsets.statusBars)) {
                 Text("Import in progress...", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 Spacer(Modifier.height(5.dp))
                 Text(
-                    "DO NOT PANIC IF IT LOOKS STUCK; sometimes retrieval may take some time.",
+                    "Don't close the app or go back. This operation doesn't run in the background, so stay put until it's done!\nDO NOT PANIC IF IT LOOKS STUCK; sometimes retrieval may take some time.",
                     fontSize = 14.sp
                 )
                 Spacer(Modifier.height(5.dp))
                 HorizontalDivider(modifier = Modifier.fillMaxWidth())
             }
         }) {
-            Box(
-                modifier = Modifier
-                    .padding(it)
-                    .clickable { }
-                    .fillMaxSize()
-                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+            Box(modifier = Modifier
+                .padding(it)
+                .clickable { }
+                .fillMaxSize()
+                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
                 contentAlignment = Alignment.BottomCenter) {
                 LazyColumn(
                     userScrollEnabled = false,
@@ -467,12 +461,20 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 Spacer(Modifier.height(15.dp))
                 Button(onClick = {
                     saveToDefaultLikedSongs.value = false
+                    importFromSpotifyViewModel.importSelectedItems(
+                        saveToDefaultLikedSongs.value, context
+                    )
+                    isLikedSongsDestinationDialogShown.value = false
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "A new playlist named \"Liked Songs\"")
                 }
                 Spacer(Modifier.height(5.dp))
                 Button(onClick = {
                     saveToDefaultLikedSongs.value = true
+                    importFromSpotifyViewModel.importSelectedItems(
+                        saveToDefaultLikedSongs.value, context
+                    )
+                    isLikedSongsDestinationDialogShown.value = false
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "In the default \"Liked Songs\"")
                 }
@@ -489,7 +491,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
         if (importFromSpotifyViewModel.isImportingInProgress.value) {
             Toast.makeText(
                 context,
-                "Don't even think about closing the app or going back. This operation doesn't run in the background, so just sit tight until it's done. You’re not going anywhere!",
+                "Don't close the app or go back. This operation doesn't run in the background, so stay put until it's done!",
                 Toast.LENGTH_SHORT
             ).show()
         } else {
