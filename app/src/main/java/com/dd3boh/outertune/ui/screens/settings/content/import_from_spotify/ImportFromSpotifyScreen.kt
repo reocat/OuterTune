@@ -46,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -62,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.Playlist
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,11 +91,14 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     val isLikedSongsDestinationDialogShown = rememberSaveable {
         mutableStateOf(false)
     }
+    val saveToDefaultLikedSongs: MutableState<Boolean?> = rememberSaveable {
+        mutableStateOf(null)
+    }
     LaunchedEffect(
         lazyListState.canScrollForward, importFromSpotifyScreenState.value.isRequesting
     ) {
         if (importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful && lazyListState.canScrollForward.not() && importFromSpotifyScreenState.value.reachedEndForPlaylistPagination.not() && importFromSpotifyScreenState.value.isRequesting.not()) {
-            importFromSpotifyViewModel.retrieveNextPageOfPlaylists()
+            importFromSpotifyViewModel.retrieveNextPageOfPlaylists(context)
         }
     }
     Box(
@@ -113,13 +118,14 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 )
                 LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
                     item {
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
-                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
-                            }
-                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
+                                        importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                                }
+                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -150,19 +156,28 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         }
                     }
                     items(userPlaylists) { playlist ->
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                if (importFromSpotifyViewModel.selectedPlaylists.contains(
-                                        playlist.playlistId
-                                    ).not()
-                                ) {
-                                    importFromSpotifyViewModel.selectedPlaylists.add(playlist.playlistId)
-                                } else {
-                                    importFromSpotifyViewModel.selectedPlaylists.remove(playlist.playlistId)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                            .contains(
+                                                playlist.playlistId
+                                            ).not()
+                                    ) {
+                                        importFromSpotifyViewModel.selectedPlaylists.add(
+                                            Playlist(
+                                                name = playlist.playlistName,
+                                                id = playlist.playlistId
+                                            )
+                                        )
+                                    } else {
+                                        importFromSpotifyViewModel.selectedPlaylists.removeIf {
+                                            it.id == playlist.playlistId
+                                        }
+                                    }
                                 }
-                            }
-                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(
@@ -184,16 +199,25 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                                 )
                             }
                             Checkbox(
-                                checked = importFromSpotifyViewModel.selectedPlaylists.contains(
-                                    playlist.playlistId
-                                ), onCheckedChange = {
-                                    if (importFromSpotifyViewModel.selectedPlaylists.contains(
-                                            playlist.playlistId
-                                        ).not()
+                                checked = importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                    .contains(
+                                        playlist.playlistId
+                                    ), onCheckedChange = {
+                                    if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                            .contains(
+                                                playlist.playlistId
+                                            ).not()
                                     ) {
-                                        importFromSpotifyViewModel.selectedPlaylists.add(playlist.playlistId)
+                                        importFromSpotifyViewModel.selectedPlaylists.add(
+                                            Playlist(
+                                                name = playlist.playlistName,
+                                                id = playlist.playlistId
+                                            )
+                                        )
                                     } else {
-                                        importFromSpotifyViewModel.selectedPlaylists.remove(playlist.playlistId)
+                                        importFromSpotifyViewModel.selectedPlaylists.removeIf {
+                                            it.id == playlist.playlistId
+                                        }
                                     }
                                 })
                         }
@@ -221,7 +245,11 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(15.dp), onClick = {
-                        isLikedSongsDestinationDialogShown.value = true
+                        if (importFromSpotifyViewModel.isLikedSongsSelectedForImport.value && saveToDefaultLikedSongs.value == null) {
+                            isLikedSongsDestinationDialogShown.value = true
+                        } else {
+                            importFromSpotifyViewModel.importSelectedItems(saveToDefaultLikedSongs.value,context)
+                        }
                     }) {
                     Text(text = "Import Selected Items")
                 }
@@ -247,12 +275,13 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                     color = MaterialTheme.colorScheme.error
                 )
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        isStackTraceVisible.value = isStackTraceVisible.value.not()
-                    }
-                    .padding(start = 15.dp, end = 15.dp),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            isStackTraceVisible.value = isStackTraceVisible.value.not()
+                        }
+                        .padding(start = 15.dp, end = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -356,7 +385,8 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         importFromSpotifyViewModel.spotifyLoginAndFetchPlaylists(
                             clientId = spotifyClientId.value.trim(),
                             clientSecret = spotifyClientSecret.value.trim(),
-                            authorizationCode = spotifyAuthorizationCode.value.trim()
+                            authorizationCode = spotifyAuthorizationCode.value.trim(),
+                            context
                         )
                     },
                     modifier = Modifier
@@ -395,13 +425,13 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 Text(text = "Where should the liked songs be imported?")
                 Spacer(Modifier.height(15.dp))
                 Button(onClick = {
-                    importFromSpotifyViewModel.importSpotifyLikedSongs(saveInDefaultLikedSongs = false)
+                    saveToDefaultLikedSongs.value = false
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "A new playlist named \"Liked Songs\"")
                 }
                 Spacer(Modifier.height(5.dp))
                 Button(onClick = {
-                    importFromSpotifyViewModel.importSpotifyLikedSongs(saveInDefaultLikedSongs = true)
+                    saveToDefaultLikedSongs.value = true
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "In the default \"Liked Songs\"")
                 }

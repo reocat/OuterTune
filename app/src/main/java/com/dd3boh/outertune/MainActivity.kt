@@ -211,7 +211,7 @@ import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.PrivacySettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
-import com.dd3boh.outertune.ui.screens.settings.content.ImportFromSpotifyScreen
+import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.ImportFromSpotifyScreen
 import com.dd3boh.outertune.ui.theme.ColorSaver
 import com.dd3boh.outertune.ui.theme.DefaultThemeColor
 import com.dd3boh.outertune.ui.theme.OuterTuneTheme
@@ -1040,7 +1040,7 @@ class MainActivity : ComponentActivity() {
 
                             NavHost(
                                 navController = navController,
-                                startDestination = "settings/content/import_from_spotify" ?: when (tabOpenedFromShortcut ?: defaultOpenTab) {
+                                startDestination =  when (tabOpenedFromShortcut ?: defaultOpenTab) {
                                     NavigationTab.HOME -> Screens.Home
                                     NavigationTab.SONG -> Screens.Songs
                                     NavigationTab.FOLDERS -> Screens.Folders
