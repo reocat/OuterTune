@@ -154,6 +154,48 @@ class ImportFromSpotifyViewModel @Inject constructor(
         }
     }
 
+    val selectedAllPlaylists = mutableStateOf(false)
+    fun selectAllPlaylists(context: Context, onCompletion: () -> Unit) {
+        isLikedSongsSelectedForImport.value = true
+        selectedAllPlaylists.value = false
+        selectedPlaylists.clear()
+        viewModelScope.launch {
+            selectedPlaylists.addAll(fetchAllPlaylists(importFromSpotifyScreenState.value.accessToken))
+        }.invokeOnCompletion {
+            selectedAllPlaylists.value = true
+            onCompletion()
+            viewModelScope.launch {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context, "Selected all playlists successfully", Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private suspend fun fetchAllPlaylists(
+        authToken: String
+    ): List<Playlist> {
+        var url: String? = "https://api.spotify.com/v1/me/playlists"
+        val playlists = mutableListOf<Playlist>()
+
+        while (url != null) {
+            httpClient.get(url) {
+                bearerAuth(authToken)
+            }.body<SpotifyPlaylistPaginatedResponse>().let { response ->
+                playlists.addAll(response.items.map {
+                    Playlist(
+                        name = it.playlistName, id = it.playlistId
+                    )
+                })
+                logTheString(url.toString())
+                url = response.nextUrl
+            }
+        }
+        return playlists
+    }
+
     private suspend fun getPlaylists(
         authToken: String, context: Context
     ): SpotifyPlaylistPaginatedResponse {
@@ -312,10 +354,10 @@ class ImportFromSpotifyViewModel @Inject constructor(
                             filter = YouTube.SearchFilter.FILTER_SONG
                         )
                         youtubeSearchResult.onSuccess { result ->
-                            val firstSong = result.items.first() as SongItem
                             if (result.items.isEmpty()) {
                                 return@onSuccess
                             }
+                            val firstSong = result.items.first() as SongItem
                             firstSong.artists.forEachIndexed { index, artist ->
                                 artist.id?.let { artistId ->
                                     try {
@@ -376,27 +418,22 @@ class ImportFromSpotifyViewModel @Inject constructor(
     }
 
     private suspend fun getTracksFromAPlaylist(
-        spotifyPlaylistId: String,
-        authToken: String,
-        url: String = "https://api.spotify.com/v1/playlists/$spotifyPlaylistId/tracks",
-        tracks: MutableList<TrackItem> = mutableListOf()
+        spotifyPlaylistId: String, authToken: String
     ): List<TrackItem> {
-        try {
-            httpClient.get(url) {
-                bearerAuth(authToken)
-            }.body<SpotifyResultPaginatedResponse>().let {
-                tracks.addAll(it.tracks.map { it.trackItem })
-                if (it.nextPaginatedUrl != null) {
-                    getTracksFromAPlaylist(
-                        url = it.nextPaginatedUrl,
-                        authToken = authToken,
-                        spotifyPlaylistId = spotifyPlaylistId,
-                        tracks = tracks
-                    )
+        var url: String? = "https://api.spotify.com/v1/playlists/$spotifyPlaylistId/tracks"
+        val tracks: MutableList<TrackItem> = mutableListOf()
+        while (url != null) {
+            try {
+                httpClient.get(url) {
+                    bearerAuth(authToken)
+                }.body<SpotifyResultPaginatedResponse>().let {
+                    tracks.addAll(it.tracks.map { it.trackItem })
+                    url = it.nextPaginatedUrl
                 }
+            } catch (e: Exception) {
+                url = null
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
         return tracks
     }
@@ -404,102 +441,99 @@ class ImportFromSpotifyViewModel @Inject constructor(
     private var progressedTracksInTheLikedSongsCount = 0
 
     private suspend fun importSpotifyLikedSongs(
-        saveInDefaultLikedSongs: Boolean,
-        context: Context,
-        url: String = "https://api.spotify.com/v1/me/tracks?offset=0&limit=50"
+        saveInDefaultLikedSongs: Boolean, context: Context
     ): Unit = supervisorScope {
-        getLikedSongsFromSpotify(
-            authToken = importFromSpotifyScreenState.value.accessToken, url = url, context
-        ).let { spotifyLikedSongsPaginatedResponse ->
-            spotifyLikedSongsPaginatedResponse.tracks.forEachIndexed { index, likedSong ->
-                launch {
-                    val youtubeSearchResult = YouTube.search(
-                        query = likedSong.trackItem.trackName + " " + likedSong.trackItem.artists.first().name,
-                        filter = YouTube.SearchFilter.FILTER_SONG
-                    )
-                    youtubeSearchResult.onSuccess { result ->
-                        if (result.items.isEmpty()) {
-                            return@onSuccess
-                        }
-                        result.items.first().let { songItem ->
-                            songItem as SongItem
-                            withContext(Dispatchers.IO) {
-                                localDatabase.insert(
-                                    SongEntity(
-                                        id = songItem.id,
-                                        title = songItem.title,
-                                        localPath = null,
-                                        liked = saveInDefaultLikedSongs,
-                                        thumbnailUrl = songItem.thumbnail.getOriginalSizeThumbnail()
+        var url: String? = "https://api.spotify.com/v1/me/tracks?offset=0&limit=50"
+        var totalSongsCount = -1
+        while (url != null) {
+            getLikedSongsFromSpotify(
+                authToken = importFromSpotifyScreenState.value.accessToken, url = url, context
+            ).let { spotifyLikedSongsPaginatedResponse ->
+                totalSongsCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
+                spotifyLikedSongsPaginatedResponse.tracks.forEachIndexed { index, likedSong ->
+                    launch {
+                        val youtubeSearchResult = YouTube.search(
+                            query = likedSong.trackItem.trackName + " " + likedSong.trackItem.artists.first().name,
+                            filter = YouTube.SearchFilter.FILTER_SONG
+                        )
+                        youtubeSearchResult.onSuccess { result ->
+                            if (result.items.isEmpty()) {
+                                return@onSuccess
+                            }
+                            result.items.first().let { songItem ->
+                                songItem as SongItem
+                                withContext(Dispatchers.IO) {
+                                    localDatabase.insert(
+                                        SongEntity(
+                                            id = songItem.id,
+                                            title = songItem.title,
+                                            localPath = null,
+                                            liked = saveInDefaultLikedSongs,
+                                            thumbnailUrl = songItem.thumbnail.getOriginalSizeThumbnail()
+                                        )
                                     )
-                                )
-                                songItem.artists.forEachIndexed { index, artist ->
-                                    artist.id?.let { artistId ->
-                                        try {
-                                            localDatabase.insert(
-                                                ArtistEntity(
-                                                    id = artistId, name = artist.name
+                                    songItem.artists.forEachIndexed { index, artist ->
+                                        artist.id?.let { artistId ->
+                                            try {
+                                                localDatabase.insert(
+                                                    ArtistEntity(
+                                                        id = artistId, name = artist.name
+                                                    )
                                                 )
-                                            )
-                                            localDatabase.insert(
-                                                SongArtistMap(
-                                                    songId = songItem.id,
-                                                    artistId = artistId,
-                                                    position = index
+                                                localDatabase.insert(
+                                                    SongArtistMap(
+                                                        songId = songItem.id,
+                                                        artistId = artistId,
+                                                        position = index
+                                                    )
                                                 )
-                                            )
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            }
                                         }
                                     }
-                                }
-                                if (saveInDefaultLikedSongs.not()) {
-                                    localDatabase.insert(
-                                        PlaylistEntity(
-                                            id = generatedPlaylistId,
-                                            name = "Liked Songs",
-                                            bookmarkedAt = currentTime
+                                    if (saveInDefaultLikedSongs.not()) {
+                                        localDatabase.insert(
+                                            PlaylistEntity(
+                                                id = generatedPlaylistId,
+                                                name = "Liked Songs",
+                                                bookmarkedAt = currentTime
+                                            )
                                         )
-                                    )
-                                    localDatabase.insert(
-                                        PlaylistSongMap(
-                                            playlistId = generatedPlaylistId, songId = songItem.id
+                                        localDatabase.insert(
+                                            PlaylistSongMap(
+                                                playlistId = generatedPlaylistId,
+                                                songId = songItem.id
+                                            )
                                         )
-                                    )
-                                } else {/*
+                                    } else {/*
                                      Updates `liked` to `true` for a song already in the database.
                                      Does not affect a newly added song if it is already marked as `liked`.
                                      */
-                                    localDatabase.toggleLikedToTrue(songId = songItem.id)
+                                        localDatabase.toggleLikedToTrue(songId = songItem.id)
+                                    }
                                 }
                             }
-                        }
-                        _likedSongsImportProgress.emit(
-                            ImportProgressEvent.LikedSongsProgress(
-                                completed = false,
-                                currentCount = ++progressedTracksInTheLikedSongsCount,
-                                totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
+                            _likedSongsImportProgress.emit(
+                                ImportProgressEvent.LikedSongsProgress(
+                                    completed = false,
+                                    currentCount = ++progressedTracksInTheLikedSongsCount,
+                                    totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
-            if (spotifyLikedSongsPaginatedResponse.nextPaginatedUrl != null) {
-                importSpotifyLikedSongs(
-                    saveInDefaultLikedSongs,
-                    url = spotifyLikedSongsPaginatedResponse.nextPaginatedUrl,
-                    context = context
-                )
-            } else {
-                _likedSongsImportProgress.emit(
-                    ImportProgressEvent.LikedSongsProgress(
-                        completed = true,
-                        currentCount = progressedTracksInTheLikedSongsCount,
-                        totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
-                    )
-                )
+                url = spotifyLikedSongsPaginatedResponse.nextPaginatedUrl
             }
         }
+        _likedSongsImportProgress.emit(
+            ImportProgressEvent.LikedSongsProgress(
+                completed = true,
+                currentCount = progressedTracksInTheLikedSongsCount,
+                totalTracksCount = totalSongsCount
+            )
+        )
     }
 }
 
