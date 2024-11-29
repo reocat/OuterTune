@@ -361,11 +361,17 @@ class ImportFromSpotifyViewModel @Inject constructor(
                             firstSong.artists.forEachIndexed { index, artist ->
                                 artist.id?.let { artistId ->
                                     try {
-                                        localDatabase.insert(
-                                            ArtistEntity(
-                                                id = artistId, name = artist.name
-                                            )
-                                        )
+                                        // Artist names like "XYZ & ABC" or "XYZ" can refer to the same id, but there's no way to tell which name is correct. To avoid this, if the `id` doesn’t exist (in the local database), we’ll fetch the name from the artist page instead of assuming it's always "XYZ & ABC"
+                                        if (localDatabase.artistIdExists(artistId).not()) {
+                                            YouTube.artist(artistId).onSuccess { artistPage ->
+                                                localDatabase.insert(
+                                                    ArtistEntity(
+                                                        id = artistId,
+                                                        name = artistPage.artist.title
+                                                    )
+                                                )
+                                            }
+                                        }
                                         localDatabase.insert(
                                             SongArtistMap(
                                                 songId = firstSong.id,
@@ -475,11 +481,18 @@ class ImportFromSpotifyViewModel @Inject constructor(
                                     songItem.artists.forEachIndexed { index, artist ->
                                         artist.id?.let { artistId ->
                                             try {
-                                                localDatabase.insert(
-                                                    ArtistEntity(
-                                                        id = artistId, name = artist.name
-                                                    )
-                                                )
+                                                // Artist names like "XYZ & ABC" or "XYZ" can refer to the same id, but there's no way to tell which name is correct. To avoid this, if the `id` doesn’t exist (in the local database), we’ll fetch the name from the artist page instead of assuming it's always "XYZ & ABC"
+                                                if (localDatabase.artistIdExists(artistId).not()) {
+                                                    YouTube.artist(artistId)
+                                                        .onSuccess { artistPage ->
+                                                            localDatabase.insert(
+                                                                ArtistEntity(
+                                                                    id = artistId,
+                                                                    name = artistPage.artist.title
+                                                                )
+                                                            )
+                                                        }
+                                                }
                                                 localDatabase.insert(
                                                     SongArtistMap(
                                                         songId = songItem.id,
