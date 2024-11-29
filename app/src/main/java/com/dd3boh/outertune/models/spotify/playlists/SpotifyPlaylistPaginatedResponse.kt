@@ -11,5 +11,5 @@ data class SpotifyPlaylistPaginatedResponse(
     var previousUrl: String? = null,
     @SerialName("total")
     var totalResults: Int? = null,
-    var items: List<SpotifyPlaylistItem> = arrayListOf()
+    var items: List<SpotifyPlaylistItem> = emptyList()
 )
