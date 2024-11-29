@@ -29,6 +29,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
@@ -47,6 +49,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -64,7 +67,11 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -76,8 +83,7 @@ import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ImportFromSpotifyScreen(
-    navController: NavController,
-    isMiniPlayerVisible: MutableState<Boolean>
+    navController: NavController, isMiniPlayerVisible: MutableState<Boolean>
 ) {
     val importFromSpotifyViewModel: ImportFromSpotifyViewModel = hiltViewModel()
     val importFromSpotifyScreenState = importFromSpotifyViewModel.importFromSpotifyScreenState
@@ -172,17 +178,16 @@ fun ImportFromSpotifyScreen(
                     userScrollEnabled = selectAll.value.not()
                 ) {
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (selectAll.value) {
-                                        return@clickable
-                                    }
-                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
-                                        importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (selectAll.value) {
+                                    return@clickable
                                 }
-                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                                importFromSpotifyViewModel.isLikedSongsSelectedForImport.value =
+                                    importFromSpotifyViewModel.isLikedSongsSelectedForImport.value.not()
+                            }
+                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -216,30 +221,28 @@ fun ImportFromSpotifyScreen(
                         }
                     }
                     items(userPlaylists) { playlist ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (selectAll.value) {
-                                        return@clickable
-                                    }
-                                    if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
-                                            .contains(
-                                                playlist.playlistId
-                                            ).not()) {
-                                        importFromSpotifyViewModel.selectedPlaylists.add(
-                                            Playlist(
-                                                name = playlist.playlistName,
-                                                id = playlist.playlistId
-                                            )
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (selectAll.value) {
+                                    return@clickable
+                                }
+                                if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                        .contains(
+                                            playlist.playlistId
+                                        ).not()) {
+                                    importFromSpotifyViewModel.selectedPlaylists.add(
+                                        Playlist(
+                                            name = playlist.playlistName, id = playlist.playlistId
                                         )
-                                    } else {
-                                        importFromSpotifyViewModel.selectedPlaylists.removeIf {
-                                            it.id == playlist.playlistId
-                                        }
+                                    )
+                                } else {
+                                    importFromSpotifyViewModel.selectedPlaylists.removeIf {
+                                        it.id == playlist.playlistId
                                     }
                                 }
-                                .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
+                            }
+                            .padding(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(
@@ -343,8 +346,140 @@ fun ImportFromSpotifyScreen(
                 .verticalScroll(rememberScrollState())
                 .animateContentSize()
                 .align(Alignment.BottomCenter)
+                .animateContentSize()
         ) {
             Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
+            val isInstructionExpanded = rememberSaveable {
+                mutableStateOf(false)
+            }
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    isInstructionExpanded.value = isInstructionExpanded.value.not()
+                }
+                .padding(top = 7.5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = "Instructions to get required credentials",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(start = 15.dp, bottom = 7.5.dp)
+                        .fillMaxWidth(0.7f)
+                )
+                IconButton(onClick = {
+                    isInstructionExpanded.value = isInstructionExpanded.value.not()
+                }) {
+                    Icon(
+                        contentDescription = null,
+                        imageVector = if (isInstructionExpanded.value) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore
+                    )
+                }
+            }
+            if (isInstructionExpanded.value) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    val colorScheme = MaterialTheme.colorScheme
+                    val instructionPadding = remember {
+                        PaddingValues(start = 15.dp, bottom = 7.5.dp, end = 7.5.dp)
+                    }
+                    val firstInstruction = remember {
+                        buildAnnotatedString {
+                            append("1. Visit ")
+                            pushStringAnnotation(
+                                tag = "spotify for developers",
+                                annotation = "https://developer.spotify.com/dashboard/"
+                            )
+                            withStyle(SpanStyle(color = colorScheme.primary)) {
+                                append("Spotify for developers dashboard")
+                            }
+                            pop()
+                            append(" and click on \"Create app\".")
+                        }
+                    }
+                    ClickableText(
+                        text = firstInstruction,
+                        onClick = { offset ->
+                            firstInstruction.getStringAnnotations(
+                                tag = "spotify for developers", start = offset, end = offset
+                            ).first().let {
+                                localUriHandler.openUri(it.item)
+                            }
+                        },
+                        style = TextStyle(fontSize = 16.sp, color = LocalContentColor.current),
+                        modifier = Modifier.padding(instructionPadding)
+                    )
+                    SelectionContainer {
+                        Text(fontSize = 16.sp, text = buildAnnotatedString {
+                            append("2. Enter the necessary details and use ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                append("http://localhost:45454")
+                            }
+                            append(" as the ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                append("Redirect URIs")
+                            }
+                            append(".")
+                        }, modifier = Modifier.padding(instructionPadding))
+                    }
+                    Text(
+                        fontSize = 16.sp,
+                        text = "3. Make sure to click \"Add\" once you've entered the local path above.",
+                        modifier = Modifier.padding(instructionPadding)
+                    )
+                    Text(fontSize = 16.sp, text = buildAnnotatedString {
+                        append("4. Toggle ")
+                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                            append("Web API")
+                        }
+                        append(". The checkbox should now have a tick mark.")
+                    }, modifier = Modifier.padding(instructionPadding))
+
+                    Text(
+                        fontSize = 16.sp,
+                        text = "5. Accept the terms of service and click \"Save\".",
+                        modifier = Modifier.padding(instructionPadding)
+                    )
+                    Text(
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(instructionPadding),
+                        text = "You’ll be redirected to a new page. Click on Settings, then copy the Client ID and Client Secret, and paste them into the text fields below in this app."
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp, bottom = 7.5.dp),
+                        color = LocalContentColor.current.copy(0.1f)
+                    )
+                    Text(
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(instructionPadding),
+                        text = buildAnnotatedString {
+                            append("Now, click the ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                append("Authorize")
+                            }
+                            append(" button below and login with your account from which you want to import from, and authorize, which will redirect you to a site which should start from ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                append("http://localhost:45454/?code=")
+                            }
+                            append("\n\nPaste that entire URL in the below text field which says ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                append("Authorization Code")
+                            }
+                            append(" and click the ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                append("Authenticate")
+                            }
+                            append(" button.")
+                        })
+                }
+            }
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp, bottom = 7.5.dp)
+            )
             if (importFromSpotifyScreenState.value.error) {
                 val isStackTraceVisible = rememberSaveable {
                     mutableStateOf(false)
@@ -355,13 +490,12 @@ fun ImportFromSpotifyScreen(
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp),
                     color = MaterialTheme.colorScheme.error
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            isStackTraceVisible.value = isStackTraceVisible.value.not()
-                        }
-                        .padding(start = 15.dp, end = 15.dp),
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        isStackTraceVisible.value = isStackTraceVisible.value.not()
+                    }
+                    .padding(start = 15.dp, end = 15.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -403,7 +537,8 @@ fun ImportFromSpotifyScreen(
             Text(
                 text = "Login with Spotify API Credentials",
                 fontSize = 16.sp,
-                modifier = Modifier.padding(start = 15.dp, bottom = 7.5.dp)
+                modifier = Modifier.padding(start = 15.dp, bottom = 7.5.dp),
+                fontWeight = FontWeight.SemiBold
             )
             TextField(
                 modifier = Modifier
@@ -486,12 +621,11 @@ fun ImportFromSpotifyScreen(
     }
     if (importFromSpotifyViewModel.isImportingInProgress.value) {
         Scaffold(topBar = {
-            Column(
-                modifier = Modifier
-                    .clickable { }
-                    .fillMaxWidth()
-                    .padding(15.dp)
-                    .windowInsetsPadding(WindowInsets.statusBars)) {
+            Column(modifier = Modifier
+                .clickable { }
+                .fillMaxWidth()
+                .padding(15.dp)
+                .windowInsetsPadding(WindowInsets.statusBars)) {
                 Text("Import in progress...", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
                 Spacer(Modifier.height(5.dp))
                 Text(
@@ -502,12 +636,11 @@ fun ImportFromSpotifyScreen(
                 HorizontalDivider(modifier = Modifier.fillMaxWidth())
             }
         }) {
-            Box(
-                modifier = Modifier
-                    .padding(it)
-                    .clickable { }
-                    .fillMaxSize()
-                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+            Box(modifier = Modifier
+                .padding(it)
+                .clickable { }
+                .fillMaxSize()
+                .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
                 contentAlignment = Alignment.BottomCenter) {
                 LazyColumn(
                     userScrollEnabled = false,
