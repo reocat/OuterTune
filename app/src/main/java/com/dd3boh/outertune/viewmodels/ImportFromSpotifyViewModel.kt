@@ -2,6 +2,7 @@ package com.dd3boh.outertune.viewmodels
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -68,9 +69,9 @@ class ImportFromSpotifyViewModel @Inject constructor(
     val selectedPlaylists = mutableStateListOf<Playlist>()
     val isLikedSongsSelectedForImport = mutableStateOf(false)
     val isImportingCompleted = mutableStateOf(false)
+    val isImportingInProgress = mutableStateOf(false)
     fun spotifyLoginAndFetchPlaylists(
-        clientId: String, clientSecret: String, authorizationCode: String,
-        context: Context
+        clientId: String, clientSecret: String, authorizationCode: String, context: Context
     ) {
         viewModelScope.launch {
             try {
@@ -101,8 +102,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                             logTheString(importFromSpotifyScreenState.value.accessToken)
 
                             getUserProfileFromSpotify(
-                                importFromSpotifyScreenState.value.accessToken,
-                                context
+                                importFromSpotifyScreenState.value.accessToken, context
                             ).let {
                                 importFromSpotifyScreenState.value =
                                     importFromSpotifyScreenState.value.copy(
@@ -111,8 +111,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                             }
 
                             getPlaylists(
-                                importFromSpotifyScreenState.value.accessToken,
-                                context
+                                importFromSpotifyScreenState.value.accessToken, context
                             ).let {
                                 importFromSpotifyScreenState.value =
                                     importFromSpotifyScreenState.value.copy(
@@ -158,8 +157,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
     }
 
     private suspend fun getPlaylists(
-        authToken: String,
-        context: Context
+        authToken: String, context: Context
     ): SpotifyPlaylistPaginatedResponse {
         playListPaginationOffset += paginatedResultsLimit
         return try {
@@ -173,8 +171,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
     }
 
     private suspend fun getLikedSongsFromSpotify(
-        authToken: String, url: String,
-        context: Context
+        authToken: String, url: String, context: Context
     ): SpotifyResultPaginatedResponse {
         return try {
             httpClient.get(url) {
@@ -183,16 +180,13 @@ class ImportFromSpotifyViewModel @Inject constructor(
         } catch (e: Exception) {
             Toast.makeText(context, e.message.toString(), Toast.LENGTH_SHORT).show()
             SpotifyResultPaginatedResponse(
-                totalCountOfLikedSongs = 0,
-                nextPaginatedUrl = null,
-                tracks = listOf()
+                totalCountOfLikedSongs = 0, nextPaginatedUrl = null, tracks = listOf()
             )
         }
     }
 
     private suspend fun getUserProfileFromSpotify(
-        authToken: String,
-        context: Context
+        authToken: String, context: Context
     ): SpotifyUserProfile {
         return try {
             httpClient.get("https://api.spotify.com/v1/me") {
@@ -237,8 +231,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
             completed = false, currentCount = 0, totalTracksCount = 0
         )
     )
-    val likedSongsImportProgress = _likedSongsImportProgress.asStateFlow()
-
+    val importLogs = mutableStateListOf<String>()
 
     private val _playlistsImportProgress = MutableStateFlow(
         ImportProgressEvent.PlaylistsProgress(
@@ -250,15 +243,35 @@ class ImportFromSpotifyViewModel @Inject constructor(
 
             )
     )
-    val playlistsImportProgress = _playlistsImportProgress.asStateFlow()
 
     private var progressedTracksInAPlaylistCount = 0
 
+    init {
+        viewModelScope.launch {
+            _playlistsImportProgress.collectLatest {
+                "Importing playlist \"${it.playlistName}\" – ${it.progressedTrackCount}/${it.totalTracksCount} tracks completed".let {
+                    importLogs.add(it)
+                    logTheString(it)
+                }
+            }
+        }
+        viewModelScope.launch {
+            _likedSongsImportProgress.collectLatest {
+                "Importing Liked Songs – ${it.currentCount} of ${it.totalTracksCount} completed".let {
+                    importLogs.add(it)
+                    logTheString(it)
+                }
+            }
+        }
+    }
 
     fun importSelectedItems(saveInDefaultLikedSongs: Boolean?, context: Context) {
+        importLogs.clear()
         isImportingCompleted.value = false
+        isImportingInProgress.value = true
         viewModelScope.launch(Dispatchers.IO) {
             supervisorScope {
+                logTheString("Starting the import process")
                 val likedSongsJob = launch {
                     saveInDefaultLikedSongs?.let {
                         importSpotifyLikedSongs(it, context)
@@ -272,7 +285,9 @@ class ImportFromSpotifyViewModel @Inject constructor(
                 }
                 likedSongsJob.join()
                 playlistsJob.join()
+                logTheString("Import Succeeded!")
                 isImportingCompleted.value = true
+                isImportingInProgress.value = false
             }
         }
     }

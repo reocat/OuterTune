@@ -1,5 +1,7 @@
 package com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,8 +44,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -65,6 +69,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.Playlist
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
+import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,6 +99,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
     val saveToDefaultLikedSongs: MutableState<Boolean?> = rememberSaveable {
         mutableStateOf(null)
     }
+    val logsListState = rememberLazyListState()
     LaunchedEffect(
         lazyListState.canScrollForward, importFromSpotifyScreenState.value.isRequesting
     ) {
@@ -163,8 +169,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                                     if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
                                             .contains(
                                                 playlist.playlistId
-                                            ).not()
-                                    ) {
+                                            ).not()) {
                                         importFromSpotifyViewModel.selectedPlaylists.add(
                                             Playlist(
                                                 name = playlist.playlistName,
@@ -198,28 +203,25 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                                     text = playlist.playlistName
                                 )
                             }
-                            Checkbox(
-                                checked = importFromSpotifyViewModel.selectedPlaylists.map { it.id }
-                                    .contains(
-                                        playlist.playlistId
-                                    ), onCheckedChange = {
-                                    if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
-                                            .contains(
-                                                playlist.playlistId
-                                            ).not()
-                                    ) {
-                                        importFromSpotifyViewModel.selectedPlaylists.add(
-                                            Playlist(
-                                                name = playlist.playlistName,
-                                                id = playlist.playlistId
-                                            )
+                            Checkbox(checked = importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                .contains(
+                                    playlist.playlistId
+                                ), onCheckedChange = {
+                                if (importFromSpotifyViewModel.selectedPlaylists.map { it.id }
+                                        .contains(
+                                            playlist.playlistId
+                                        ).not()) {
+                                    importFromSpotifyViewModel.selectedPlaylists.add(
+                                        Playlist(
+                                            name = playlist.playlistName, id = playlist.playlistId
                                         )
-                                    } else {
-                                        importFromSpotifyViewModel.selectedPlaylists.removeIf {
-                                            it.id == playlist.playlistId
-                                        }
+                                    )
+                                } else {
+                                    importFromSpotifyViewModel.selectedPlaylists.removeIf {
+                                        it.id == playlist.playlistId
                                     }
-                                })
+                                }
+                            })
                         }
                     }
                     if (importFromSpotifyScreenState.value.isRequesting && importFromSpotifyScreenState.value.reachedEndForPlaylistPagination.not()) {
@@ -248,7 +250,9 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                         if (importFromSpotifyViewModel.isLikedSongsSelectedForImport.value && saveToDefaultLikedSongs.value == null) {
                             isLikedSongsDestinationDialogShown.value = true
                         } else {
-                            importFromSpotifyViewModel.importSelectedItems(saveToDefaultLikedSongs.value,context)
+                            importFromSpotifyViewModel.importSelectedItems(
+                                saveToDefaultLikedSongs.value, context
+                            )
                         }
                     }) {
                     Text(text = "Import Selected Items")
@@ -404,6 +408,43 @@ fun ImportFromSpotifyScreen(navController: NavController) {
             }
         }
     }
+    if (importFromSpotifyViewModel.isImportingInProgress.value) {
+        Scaffold(topBar = {
+            Column(
+                modifier = Modifier
+                    .clickable { }
+                    .fillMaxWidth()
+                    .padding(15.dp)
+                    .windowInsetsPadding(WindowInsets.statusBars)) {
+                Text("Import in progress...", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    "DO NOT PANIC IF IT LOOKS STUCK; sometimes retrieval may take some time.",
+                    fontSize = 14.sp
+                )
+                Spacer(Modifier.height(5.dp))
+                HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            }
+        }) {
+            Box(
+                modifier = Modifier
+                    .padding(it)
+                    .clickable { }
+                    .fillMaxSize()
+                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+                contentAlignment = Alignment.BottomCenter) {
+                LazyColumn(
+                    userScrollEnabled = false,
+                    modifier = Modifier.fillMaxSize(),
+                    state = logsListState
+                ) {
+                    items(importFromSpotifyViewModel.importLogs) {
+                        Text(text = it)
+                    }
+                }
+            }
+        }
+    }
     if (isLikedSongsDestinationDialogShown.value) {
         BasicAlertDialog(
             modifier = Modifier
@@ -436,6 +477,28 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                     Text(text = "In the default \"Liked Songs\"")
                 }
             }
+        }
+    }
+    LaunchedEffect(importFromSpotifyViewModel.isImportingCompleted.value) {
+        if (importFromSpotifyViewModel.isImportingCompleted.value) {
+            Toast.makeText(context, "Import Succeeded!", Toast.LENGTH_LONG).show()
+            navController.navigateUp()
+        }
+    }
+    BackHandler {
+        if (importFromSpotifyViewModel.isImportingInProgress.value) {
+            Toast.makeText(
+                context,
+                "Don't even think about closing the app or going back. This operation doesn't run in the background, so just sit tight until it's done. You’re not going anywhere!",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            navController.navigateUp()
+        }
+    }
+    LaunchedEffect(logsListState.canScrollForward) {
+        if (logsListState.canScrollForward) {
+            logsListState.animateScrollToItem(logsListState.layoutInfo.totalItemsCount - 1)
         }
     }
 }
