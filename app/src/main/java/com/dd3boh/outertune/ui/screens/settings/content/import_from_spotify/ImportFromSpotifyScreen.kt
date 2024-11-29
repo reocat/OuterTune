@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -49,7 +51,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -71,11 +72,13 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.Playlist
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
-import kotlin.math.log
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ImportFromSpotifyScreen(navController: NavController) {
+fun ImportFromSpotifyScreen(
+    navController: NavController,
+    isMiniPlayerVisible: MutableState<Boolean>
+) {
     val importFromSpotifyViewModel: ImportFromSpotifyViewModel = hiltViewModel()
     val importFromSpotifyScreenState = importFromSpotifyViewModel.importFromSpotifyScreenState
     val userPlaylists = importFromSpotifyViewModel.importFromSpotifyScreenState.value.playlists
@@ -113,7 +116,9 @@ fun ImportFromSpotifyScreen(navController: NavController) {
         }
     }
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = if (isMiniPlayerVisible.value && WindowInsets.isImeVisible.not()) 80.dp else 0.dp)
     ) {
         if (importFromSpotifyScreenState.value.accessToken.isNotBlank() && importFromSpotifyScreenState.value.isObtainingAccessTokenSuccessful) {
             Column(
@@ -339,6 +344,7 @@ fun ImportFromSpotifyScreen(navController: NavController) {
                 .animateContentSize()
                 .align(Alignment.BottomCenter)
         ) {
+            Spacer(Modifier.windowInsetsPadding(WindowInsets.statusBars))
             if (importFromSpotifyScreenState.value.error) {
                 val isStackTraceVisible = rememberSaveable {
                     mutableStateOf(false)
