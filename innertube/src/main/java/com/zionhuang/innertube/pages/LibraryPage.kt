@@ -92,7 +92,7 @@ data class LibraryPage(
                                     id = it.navigationEndpoint?.browseEndpoint?.browseId
                                 )
                             } ?: emptyList(),
-                    album = renderer.flexColumns.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
+                        album = renderer.flexColumns.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
                             ?.let {
                                 Album(
                                     name = it.text,
