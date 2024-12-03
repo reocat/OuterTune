@@ -111,7 +111,7 @@ interface SongsDao {
         ) COLLATE NOCASE
     """)
     fun songsByArtistAsc(): Flow<List<Song>>
-
+    
     @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY totalPlayTime")
     fun songsByPlayTimeAsc(): Flow<List<Song>>

@@ -19,7 +19,7 @@ import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.models.YTItem
 import com.zionhuang.innertube.pages.ExplorePage
 import com.zionhuang.innertube.pages.HomePage
-import com.zionhuang.innertube.utils.completedLibraryPage
+import com.zionhuang.innertube.utils.completed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -76,8 +76,8 @@ class HomeViewModel @Inject constructor(
 
         if (YouTube.cookie != null) { // if logged in
             // InnerTune way is YouTube.likedPlaylists().onSuccess { ... }
-            // OuterTune uses YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess { ... }
-            YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess {
+            // OuterTune uses YouTube.library("FEmusic_liked_playlists").completed().onSuccess { ... }
+            YouTube.library("FEmusic_liked_playlists").completed().onSuccess {
                 accountPlaylists.value = it.items.filterIsInstance<PlaylistItem>()
             }.onFailure {
                 reportException(it)

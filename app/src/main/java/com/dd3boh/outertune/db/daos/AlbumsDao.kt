@@ -6,10 +6,10 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.dd3boh.outertune.constants.AlbumFilter
@@ -134,6 +134,17 @@ interface AlbumsDao : ArtistsDao {
         LIMIT :limit OFFSET :offset;
     """)
     fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Album>>
+
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album_artist_map 
+            JOIN album ON album_artist_map.albumId = album.id
+            JOIN song ON album_artist_map.albumId = song.albumId
+        WHERE artistId = :artistId
+        GROUP BY album.id
+        LIMIT :previewSize
+    """)
+    fun artistAlbumsPreview(artistId: String, previewSize: Int = 6): Flow<List<Album>>
 
     @Transaction
     @RawQuery(observedEntities = [AlbumEntity::class])

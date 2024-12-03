@@ -232,7 +232,7 @@ class SyncUtils @Inject constructor(
             Timber.tag(_TAG).d("Artist subscriptions synchronization started")
 
             // Get remote artists (from library and uploads)
-            val remoteArtists = GetRemoteData<ArtistItem>("FEmusic_library_corpus_artists", "FEmusic_library_privately_owned_artists")
+            val remoteArtists = GetRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists", "FEmusic_library_privately_owned_artists")
 
             // Get local artists
             val artistsToRemoveFromSubscriptions = database.artistsBookmarkedAsc().first()
