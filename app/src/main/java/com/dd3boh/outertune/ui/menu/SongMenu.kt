@@ -50,6 +50,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -74,7 +76,6 @@ import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -89,7 +90,6 @@ fun SongMenu(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
-    val downloadUtil = LocalDownloadUtil.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val songState = database.song(originalSong.id).collectAsState(initial = originalSong)
     val song = songState.value ?: originalSong
@@ -228,14 +228,14 @@ fun SongMenu(
             bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
         )
     ) {
-        if (!song.song.isLocal)
-            GridMenuItem(
-                icon = Icons.Rounded.Radio,
-                title = R.string.start_radio
-            ) {
+        GridMenuItem(
+            icon = Icons.Rounded.Radio,
+            title = R.string.start_radio,
+            enabled = !song.song.isLocal
+        ) {
                 onDismiss()
                 playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
-            }
+        }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
             title = R.string.play_next
@@ -285,22 +285,30 @@ fun SongMenu(
             }
         }
 
-        if (!song.song.isLocal)
-            DownloadGridMenu(
-                state = download?.state,
-                onDownload = {
-                    downloadUtil.download(song.toMediaMetadata(), context)
-                },
-                onRemoveDownload = {
-                    DownloadService.sendRemoveDownload(
-                        context,
-                        ExoDownloadService::class.java,
-                        song.id,
-                        false
-                    )
-                }
-            )
-
+        DownloadGridMenu(
+            state = download?.state,
+            enabled = !song.song.isLocal,
+            onDownload = {
+                val downloadRequest = DownloadRequest.Builder(song.id, song.id.toUri())
+                    .setCustomCacheKey(song.id)
+                    .setData(song.song.title.toByteArray())
+                    .build()
+                DownloadService.sendAddDownload(
+                    context,
+                    ExoDownloadService::class.java,
+                    downloadRequest,
+                    false
+                )
+            },
+            onRemoveDownload = {
+                DownloadService.sendRemoveDownload(
+                    context,
+                    ExoDownloadService::class.java,
+                    song.id,
+                    false
+                )
+            }
+        )
 
         GridMenuItem(
             icon = R.drawable.artist,
@@ -313,49 +321,49 @@ fun SongMenu(
                 showSelectArtistDialog = true
             }
         }
-        if (song.song.albumId != null && !song.song.isLocal) {
+        GridMenuItem(
+            icon = Icons.Rounded.Album,
+            title = R.string.view_album,
+            enabled = song.song.albumId != null && !song.song.isLocal
+        ) {
+            onDismiss()
+            navController.navigate("album/${song.song.albumId}")
+        }
+        GridMenuItem(
+            icon = Icons.Rounded.Share,
+            title = R.string.share,
+            enabled = !song.song.isLocal
+        ) {
+            onDismiss()
+            val intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${song.id}")
+            }
+            context.startActivity(Intent.createChooser(intent, null))
+        }
+        if (song.song.inLibrary == null) {
             GridMenuItem(
-                icon = Icons.Rounded.Album,
-                title = R.string.view_album
+                icon = Icons.Rounded.LibraryAdd,
+                title = R.string.add_to_library,
+                enabled = !song.song.isLocal
             ) {
-                onDismiss()
-                navController.navigate("album/${song.song.albumId}")
+                database.query {
+                    update(song.song.toggleLibrary())
+                }
+            }
+        } else {
+            GridMenuItem(
+                icon = Icons.Rounded.LibraryAddCheck,
+                title = R.string.remove_from_library,
+                enabled = !song.song.isLocal
+            ) {
+                database.query {
+                    update(song.song.toggleLibrary())
+                }
             }
         }
-        if (!song.song.isLocal)
-            GridMenuItem(
-                icon = Icons.Rounded.Share,
-                title = R.string.share
-            ) {
-                onDismiss()
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${song.id}")
-                }
-                context.startActivity(Intent.createChooser(intent, null))
-            }
-        if (!song.song.isLocal) {
-            if (song.song.inLibrary == null) {
-                GridMenuItem(
-                    icon = Icons.Rounded.LibraryAdd,
-                    title = R.string.add_to_library
-                ) {
-                    database.query {
-                        update(song.song.toggleLibrary())
-                    }
-                }
-            } else {
-                GridMenuItem(
-                    icon = Icons.Rounded.LibraryAddCheck,
-                    title = R.string.remove_from_library
-                ) {
-                    database.query {
-                        update(song.song.toggleLibrary())
-                    }
-                }
-            }
-        }
+
         if (event != null) {
             GridMenuItem(
                 icon = Icons.Rounded.Delete,
