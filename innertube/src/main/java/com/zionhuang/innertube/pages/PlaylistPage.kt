@@ -26,7 +26,7 @@ data class PlaylistPage(
                         name = it.text,
                         id = it.navigationEndpoint?.browseEndpoint?.browseId,
                     )
-                }.orEmpty().ifEmpty { return null },
+                }.orEmpty(),
                 album = renderer.flexColumns.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.let {
                     Album(
                         name = it.text,
