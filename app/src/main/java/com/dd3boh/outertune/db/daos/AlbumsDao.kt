@@ -136,6 +136,18 @@ interface AlbumsDao : ArtistsDao {
     fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Album>>
 
     @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album_artist_map 
+            JOIN album ON album_artist_map.albumId = album.id
+            JOIN song ON album_artist_map.albumId = song.albumId
+        WHERE artistId = :artistId
+        GROUP BY album.id
+        LIMIT :previewSize
+    """)
+    fun artistAlbumsPreview(artistId: String, previewSize: Int = 6): Flow<List<Album>>
+    
+    @Transaction
     @RawQuery(observedEntities = [AlbumEntity::class])
     fun _getAlbum(query: SupportSQLiteQuery): Flow<List<Album>>
 

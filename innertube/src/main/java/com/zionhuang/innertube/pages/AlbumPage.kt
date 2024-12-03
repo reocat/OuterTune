@@ -5,8 +5,6 @@ import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.Artist
 import com.zionhuang.innertube.models.MusicResponsiveHeaderRenderer
 import com.zionhuang.innertube.models.MusicResponsiveListItemRenderer
-import com.zionhuang.innertube.models.MusicResponsiveListItemRenderer.FlexColumn
-import com.zionhuang.innertube.models.Run
 import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.models.oddElements
 import com.zionhuang.innertube.models.response.BrowseResponse
@@ -83,8 +81,8 @@ data class AlbumPage(
         fun getSong(renderer: MusicResponsiveListItemRenderer, album: AlbumItem? = null): SongItem? {
             return SongItem(
                 id = renderer.playlistItemData?.videoId ?: return null,
-                title = extractRuns(renderer.flexColumns, "MUSIC_VIDEO").firstOrNull()?.text ?: return null,
-                artists = extractRuns(renderer.flexColumns, "MUSIC_PAGE_TYPE_ARTIST").map{
+                title = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO").firstOrNull()?.text ?: return null,
+                artists = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_PAGE_TYPE_ARTIST").map{
                     Artist(
                         name = it.text,
                         id = it.navigationEndpoint?.browseEndpoint?.browseId
@@ -106,25 +104,6 @@ data class AlbumPage(
                     it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE"
                 } != null
             )
-        }
-
-        private fun extractRuns(columns: List<FlexColumn>, typeLike: String): List<Run> {
-            val filteredRuns = mutableListOf<Run>()
-            for (column in columns) {
-                val runs = column.musicResponsiveListItemFlexColumnRenderer.text?.runs
-                    ?: continue
-
-                for (run in runs) {
-                    val typeStr = run.navigationEndpoint?.watchEndpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
-                        ?: run.navigationEndpoint?.browseEndpoint?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType
-                        ?: continue
-
-                    if (typeLike in typeStr) {
-                        filteredRuns.add(run)
-                    }
-                }
-            }
-            return filteredRuns
         }
     }
 }

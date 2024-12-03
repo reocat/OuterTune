@@ -2,7 +2,6 @@ package com.dd3boh.outertune.ui.screens.artist
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,6 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Radio
 import androidx.compose.material.icons.rounded.Share
@@ -51,6 +51,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -78,8 +79,10 @@ import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
+import com.dd3boh.outertune.ui.component.AlbumGridItem
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.FontSizeRange
+import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTitle
@@ -87,10 +90,8 @@ import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SwipeToQueueBox
 import com.dd3boh.outertune.ui.component.YouTubeGridItem
 import com.dd3boh.outertune.ui.component.YouTubeListItem
-import com.dd3boh.outertune.ui.component.shimmer.ButtonPlaceholder
-import com.dd3boh.outertune.ui.component.shimmer.ListItemPlaceHolder
-import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
-import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
+import com.dd3boh.outertune.ui.component.shimmer.ArtistPagePlaceholder
+import com.dd3boh.outertune.ui.menu.AlbumMenu
 import com.dd3boh.outertune.ui.menu.SongMenu
 import com.dd3boh.outertune.ui.menu.YouTubeAlbumMenu
 import com.dd3boh.outertune.ui.menu.YouTubeArtistMenu
@@ -100,7 +101,6 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.fadingEdge
 import com.dd3boh.outertune.ui.utils.resize
 import com.dd3boh.outertune.viewmodels.ArtistViewModel
-import com.valentinilk.shimmer.shimmer
 import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.PlaylistItem
@@ -124,9 +124,11 @@ fun ArtistScreen(
     val artistPage = viewModel.artistPage
     val libraryArtist by viewModel.libraryArtist.collectAsState()
     val librarySongs by viewModel.librarySongs.collectAsState()
+    val libraryAlbums by viewModel.libraryAlbums.collectAsState()
 
     val lazyListState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val showLocal = remember { mutableStateOf(false) }
 
     val transparentAppBar by remember {
         derivedStateOf {
@@ -134,185 +136,218 @@ fun ArtistScreen(
         }
     }
 
-    LazyColumn(
-        state = lazyListState,
-        contentPadding = LocalPlayerAwareWindowInsets.current
-            .add(WindowInsets(top = -WindowInsets.systemBars.asPaddingValues().calculateTopPadding() - AppBarHeight))
-            .asPaddingValues()
-    ) {
-        artistPage.let {
-            if (artistPage != null) {
-                item(key = "header") {
-                    Column {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .then(
-                                    if (artistPage.artist.thumbnail != null) {
-                                        Modifier.aspectRatio(4f / 3)
-                                    } else {
-                                        Modifier
-                                    }
+    val artistHead = @Composable {
+        val thumbnail = artistPage?.artist?.thumbnail ?: libraryArtist?.artist?.thumbnailUrl
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier
+                    )
+            ) {
+                if (thumbnail != null) {
+                    AsyncImage(
+                        model = thumbnail.resize(1200, 900),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fadingEdge(
+                                top = WindowInsets.systemBars
+                                    .asPaddingValues()
+                                    .calculateTopPadding() + AppBarHeight,
+                                bottom = 64.dp
+                            )
+                    )
+                }
+            }
+            if (artistPage?.artist != null){
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(12.dp)
+                ) {
+                    (artistPage.artist.shuffleEndpoint ?: artistPage.artist.playEndpoint)?.let { shuffleEndpoint ->
+                        Button(
+                            onClick = {
+                                playerConnection.playQueue(
+                                    YouTubeQueue(shuffleEndpoint),
+                                    title = artistPage.artist.title
                                 )
+                            },
+                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+                            modifier = Modifier.weight(1f)
                         ) {
-                            if (artistPage.artist.thumbnail != null){
-                                AsyncImage(
-                                    model = artistPage.artist.thumbnail?.resize(1200, 900),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .fadingEdge(
-                                            top = WindowInsets.systemBars
-                                                .asPaddingValues()
-                                                .calculateTopPadding() + AppBarHeight,
-                                            bottom = 64.dp
-                                        )
+                            Icon(
+                                imageVector = Icons.Rounded.Shuffle,
+                                contentDescription = null,
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(
+                                text = stringResource(R.string.shuffle)
+                            )
+                        }
+                    }
+
+                    artistPage.artist.radioEndpoint?.let { radioEndpoint ->
+                        OutlinedButton(
+                            onClick = {
+                                playerConnection.playQueue(
+                                    YouTubeQueue(radioEndpoint),
+                                    title = "Radio: ${artistPage.artist.title}"
                                 )
-                            }
-                            AutoResizeText(
-                                text = artistPage.artist.title,
-                                style = MaterialTheme.typography.displayLarge,
-                                fontSizeRange = FontSizeRange(32.sp, 58.sp),
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(horizontal = 48.dp)
-                                    .then(
-                                        if (artistPage.artist.thumbnail == null) {
-                                            Modifier.padding(
-                                                top = WindowInsets.systemBars
-                                                    .asPaddingValues()
-                                                    .calculateTopPadding() + AppBarHeight
-                                            )
-                                        } else {
-                                            Modifier
-                                        }
-                                    )
+                            },
+                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Radio,
+                                contentDescription = null,
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(stringResource(R.string.radio))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = LocalPlayerAwareWindowInsets.current
+                .add(
+                    WindowInsets(
+                        top = -WindowInsets.systemBars.asPaddingValues()
+                            .calculateTopPadding() - AppBarHeight
+                    )
+                )
+                .asPaddingValues()
+        ) {
+            if (artistPage == null && !showLocal.value) {
+                item(key = "shimmer") {
+                    ArtistPagePlaceholder()
+                }
+            }
+            else {
+                item(key = "header") {
+                    artistHead()
+                }
+
+                if (showLocal.value) {
+                    if (librarySongs.isNotEmpty()) {
+                        item {
+                            NavigationTitle(
+                                title = stringResource(R.string.songs),
+                                onClick = {
+                                    navController.navigate("artist/${viewModel.artistId}/songs")
+                                }
                             )
                         }
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.padding(12.dp)
-                        ) {
-                            artistPage.artist.shuffleEndpoint?.let { shuffleEndpoint ->
-                                Button(
-                                    onClick = {
-                                        playerConnection.playQueue(
-                                            YouTubeQueue(shuffleEndpoint),
-                                            title = artistPage.artist.title
-                                        )
-                                    },
-                                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Shuffle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                        itemsIndexed(
+                            items = librarySongs,
+                            key = { _, item -> item.hashCode() }
+                        ) { index, song ->
+                            SwipeToQueueBox(
+                                item = song.toMediaItem(),
+                                content = {
+                                    SongListItem(
+                                        song = song,
+                                        isActive = song.id == mediaMetadata?.id,
+                                        isPlaying = isPlaying,
+                                        trailingContent = {
+                                            IconButton(
+                                                onClick = {
+                                                    menuState.show {
+                                                        SongMenu(
+                                                            originalSong = song,
+                                                            navController = navController,
+                                                            onDismiss = menuState::dismiss
+                                                        )
+                                                    }
+                                                }                                            
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.MoreVert,
+                                                    contentDescription = null
+                                                )
+                                        }
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .combinedClickable {
+                                                if (song.id == mediaMetadata?.id) {
+                                                    playerConnection.player.togglePlayPause()
+                                                } else {
+                                                    playerConnection.playQueue(
+                                                        ListQueue(
+                                                            title = "Library: ${libraryArtist?.artist?.name}",
+                                                            items = librarySongs.filter { it.song.isLocal }.toList()
+                                                                .shuffled().map { it.toMediaMetadata() },
+                                                            startIndex = index
+                                                        )
+                                            }
+                                        }
+                                            .animateItem()
                                     )
-                                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                    Text(
-                                        text = stringResource(R.string.shuffle)
-                                    )
+                                },
+                                snackbarHostState = snackbarHostState
+                            )
+                        }
+                    }
+                    if (libraryAlbums.isNotEmpty()) {
+                        item {
+                            NavigationTitle(
+                                title = stringResource(R.string.albums),
+                                onClick = {
+                                    navController.navigate("artist/${viewModel.artistId}/albums")
                                 }
-                            }
-
-                            artistPage.artist.radioEndpoint?.let { radioEndpoint ->
-                                OutlinedButton(
-                                    onClick = {
-                                        playerConnection.playQueue(
-                                            YouTubeQueue(radioEndpoint),
-                                            title = "Radio: ${artistPage.artist.title}"
-                                        )
-                                    },
-                                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Radio,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                        }
+                        item {
+                            LazyRow {
+                                items(
+                                    items = libraryAlbums,
+                                    key = { it.id }
+                                ) { album ->
+                                    AlbumGridItem(
+                                        album = album,
+                                        isActive = album.id == mediaMetadata?.album?.id,
+                                        isPlaying = isPlaying,
+                                        coroutineScope = coroutineScope,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .combinedClickable(
+                                                onClick = {
+                                                    navController.navigate("album/${album.id}")
+                                                },
+                                                onLongClick = {
+                                                    menuState.show {
+                                                        AlbumMenu(
+                                                            originalAlbum = album,
+                                                            navController = navController,
+                                                            onDismiss = menuState::dismiss
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                            .animateItem()
                                     )
-                                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                    Text(stringResource(R.string.radio))
                                 }
                             }
                         }
                     }
                 }
+                else artistPage?.sections?.fastForEach { section ->
+                    val isSongsSection = (section.items.firstOrNull() as? SongItem)?.album != null
 
-                if (librarySongs.isNotEmpty()) {
                     item {
                         NavigationTitle(
-                            title = stringResource(R.string.from_your_library),
-                            onClick = {
-                                navController.navigate("artist/${viewModel.artistId}/songs")
-                            }
-                        )
-                    }
-
-                    itemsIndexed(
-                        items = librarySongs,
-                        key = { _, item -> item.hashCode() }
-                    ) { index, song ->
-                        SwipeToQueueBox(
-                            item = song.toMediaItem(),
-                            content = {
-                                SongListItem(
-                                    song = song,
-                                    isActive = song.id == mediaMetadata?.id,
-                                    isPlaying = isPlaying,
-                                    trailingContent = {
-                                        IconButton(
-                                            onClick = {
-                                                menuState.show {
-                                                    SongMenu(
-                                                        originalSong = song,
-                                                        navController = navController,
-                                                        onDismiss = menuState::dismiss
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.MoreVert,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .combinedClickable {
-                                            if (song.id == mediaMetadata?.id) {
-                                                playerConnection.player.togglePlayPause()
-                                            } else {
-                                                playerConnection.playQueue(
-                                                    ListQueue(
-                                                        title = "Library: ${artistPage.artist.title}",
-                                                        items = librarySongs.filter { it.song.isLocal }.toList()
-                                                            .shuffled().map { it.toMediaMetadata() },
-                                                        startIndex = index
-                                                    )
-                                                )
-                                            }
-                                        }
-                                        .animateItem()
-                                )
-                            },
-                            snackbarHostState = snackbarHostState
-                        )
-
-                    }
-                }
-
-                artistPage.sections.fastForEach { section ->
-                    item {
-                        NavigationTitle(
-                            title = section.title,
+                            title = if (isSongsSection) stringResource(R.string.songs) else section.title,
                             onClick = section.moreEndpoint?.let {
                                 {
                                     navController.navigate("artist/${viewModel.artistId}/items?browseId=${it.browseId}?params=${it.params}")
@@ -321,7 +356,7 @@ fun ArtistScreen(
                         )
                     }
 
-                    if ((section.items.firstOrNull() as? SongItem)?.album != null) {
+                    if (isSongsSection) {
                         items(
                             items = section.items,
                             key = { it.id }
@@ -361,7 +396,9 @@ fun ArtistScreen(
                                                             ListQueue(
                                                                 title = "Artist songs (preview): ${artistPage.artist.title}",
                                                                 items = section.items.map { (it as SongItem).toMediaMetadata() },
-                                                                startIndex = section.items.indexOf(song)
+                                                                startIndex = section.items.indexOf(
+                                                                    song
+                                                                )
                                                             )
                                                         )
                                                     }
@@ -383,7 +420,8 @@ fun ArtistScreen(
                             )
 
                         }
-                    } else {
+                    }
+                    else {
                         item {
                             LazyRow {
                                 items(
@@ -408,9 +446,15 @@ fun ArtistScreen(
                                                             title = artistPage.artist.title
                                                         )
 
-                                                        is AlbumItem -> navController.navigate("album/${item.id}")
-                                                        is ArtistItem -> navController.navigate("artist/${item.id}")
-                                                        is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
+                                                        is AlbumItem -> navController.navigate(
+                                                            "album/${item.id}"
+                                                        )
+                                                        is ArtistItem -> navController.navigate(
+                                                            "artist/${item.id}"
+                                                        )
+                                                        is PlaylistItem -> navController.navigate(
+                                                            "online_playlist/${item.id}"
+                                                        )
                                                     }
                                                 },
                                                 onLongClick = {
@@ -449,128 +493,94 @@ fun ArtistScreen(
                         }
                     }
                 }
-            } else {
-                item(key = "shimmer") {
-                    ShimmerHost {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(4f / 3)
-                        ) {
-                            Spacer(
-                                modifier = Modifier
-                                    .shimmer()
-                                    .background(MaterialTheme.colorScheme.onSurface)
-                                    .fadingEdge(
-                                        top = WindowInsets.systemBars
-                                            .asPaddingValues()
-                                            .calculateTopPadding() + AppBarHeight,
-                                        bottom = 108.dp
-                                    )
-                            )
-                            TextPlaceholder(
-                                height = 56.dp,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(horizontal = 48.dp)
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.padding(12.dp)
-                        ) {
-                            ButtonPlaceholder(Modifier.weight(1f))
-
-                            Spacer(Modifier.width(12.dp))
-
-                            ButtonPlaceholder(Modifier.weight(1f))
-                        }
-
-                        repeat(6) {
-                            ListItemPlaceHolder()
-                        }
-                    }
-                }
             }
         }
     }
 
-    TopAppBar(
-        title = { if (!transparentAppBar) Text(artistPage?.artist?.title.orEmpty()) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
-                )
+        HideOnScrollFAB(
+            visible = librarySongs.isNotEmpty(),
+            lazyListState = lazyListState,
+            icon = if (showLocal.value) Icons.Rounded.LibraryMusic else Icons.Rounded.Language,
+            onClick = {
+                showLocal.value = showLocal.value.not()
             }
-        },
-        actions = {
-            IconButton(
-                onClick = {
-                    database.transaction {
-                        val artist = libraryArtist?.artist
-                        if (artist != null) {
-                            update(artist.toggleLike())
-                        } else {
-                            artistPage?.artist?.let {
-                                insert(
-                                    ArtistEntity(
-                                        id = it.id,
-                                        name = it.title,
-                                        channelId = it.channelId,
-                                        thumbnailUrl = it.thumbnail,
-                                    ).toggleLike()
-                                )
+        )
+        TopAppBar(
+            title = { if (!transparentAppBar) Text(artistPage?.artist?.title.orEmpty()) },
+            navigationIcon = {
+                IconButton(
+                    onClick = navController::navigateUp,
+                    onLongClick = navController::backToMain
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = null
+                    )
+                }
+            },
+            actions = {
+                IconButton(
+                    onClick = {
+                        database.transaction {
+                            val artist = libraryArtist?.artist
+                            if (artist != null) {
+                                update(artist.toggleLike())
+                            } else {
+                                artistPage?.artist?.let {
+                                    insert(
+                                        ArtistEntity(
+                                            id = it.id,
+                                            name = it.title,
+                                            channelId = it.channelId,
+                                            thumbnailUrl = it.thumbnail,
+                                        ).toggleLike()
+                                    )
+                                }
                             }
                         }
                     }
+                ) {
+                    Icon(
+                        imageVector = if (libraryArtist?.artist?.bookmarkedAt != null) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        tint = if (libraryArtist?.artist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
+                        contentDescription = null
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = if (libraryArtist?.artist?.bookmarkedAt != null) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                    tint = if (libraryArtist?.artist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
-                    contentDescription = null
-                )
-            }
 
-            IconButton(
-                onClick = {
-                    viewModel.artistPage?.artist?.shareLink?.let { link ->
-                        val intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, link)
+                IconButton(
+                    onClick = {
+                        viewModel.artistPage?.artist?.shareLink?.let { link ->
+                            val intent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, link)
+                            }
+                            context.startActivity(Intent.createChooser(intent, null))
                         }
-                        context.startActivity(Intent.createChooser(intent, null))
                     }
+                ) {
+                    Icon(
+                        Icons.Rounded.Share,
+                        contentDescription = null
+                    )
                 }
-            ) {
-                Icon(
-                    Icons.Rounded.Share,
-                    contentDescription = null
-                )
+            },
+            scrollBehavior = scrollBehavior,
+            colors = if (transparentAppBar) {
+                TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            } else {
+                TopAppBarDefaults.topAppBarColors()
             }
-        },
-        scrollBehavior = scrollBehavior,
-        colors = if (transparentAppBar) {
-            TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-        } else {
-            TopAppBarDefaults.topAppBarColors()
-        }
-    )
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
         )
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                    .align(Alignment.BottomCenter)
+            )
+        }
     }
-}

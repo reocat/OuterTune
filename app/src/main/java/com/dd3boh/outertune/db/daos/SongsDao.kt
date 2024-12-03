@@ -110,6 +110,10 @@ interface SongsDao {
     fun songsByArtistAsc(): Flow<List<Song>>
 
     @Transaction
+    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL LIMIT :previewSize")
+    fun artistSongsPreview(artistId: String, previewSize: Int = 3): Flow<List<Song>>
+
+    @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY totalPlayTime")
     fun songsByPlayTimeAsc(): Flow<List<Song>>
 
