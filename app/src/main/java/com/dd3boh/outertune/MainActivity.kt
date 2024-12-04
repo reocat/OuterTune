@@ -159,6 +159,7 @@ import com.dd3boh.outertune.ui.screens.NewReleaseScreen
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.StatsScreen
 import com.dd3boh.outertune.ui.screens.YouTubeBrowseScreen
+import com.dd3boh.outertune.ui.screens.artist.ArtistAlbumsScreen
 import com.dd3boh.outertune.ui.screens.artist.ArtistItemsScreen
 import com.dd3boh.outertune.ui.screens.artist.ArtistScreen
 import com.dd3boh.outertune.ui.screens.artist.ArtistSongsScreen
@@ -1036,13 +1037,8 @@ class MainActivity : ComponentActivity() {
                                             type = NavType.StringType
                                         }
                                     )
-                                ) { backStackEntry ->
-                                    val artistId = backStackEntry.arguments?.getString("artistId")!!
-                                    if (artistId.startsWith("LA")) {
-                                        ArtistSongsScreen(navController, scrollBehavior)
-                                    } else {
-                                        ArtistScreen(navController, scrollBehavior)
-                                    }
+                                ) {
+                                    ArtistScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "artist/{artistId}/songs",
@@ -1053,6 +1049,16 @@ class MainActivity : ComponentActivity() {
                                     )
                                 ) {
                                     ArtistSongsScreen(navController, scrollBehavior)
+                                }
+                                composable(
+                                    route = "artist/{artistId}/albums",
+                                    arguments = listOf(
+                                        navArgument("artistId") {
+                                            type = NavType.StringType
+                                        }
+                                    )
+                                ) {
+                                    ArtistAlbumsScreen(navController, scrollBehavior)
                                 }
                                 composable(
                                     route = "artist/{artistId}/items?browseId={browseId}?params={params}",

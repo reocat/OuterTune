@@ -30,7 +30,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +41,6 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
@@ -56,7 +54,6 @@ import com.dd3boh.outertune.constants.ArtistSongSortDescendingKey
 import com.dd3boh.outertune.constants.ArtistSongSortType
 import com.dd3boh.outertune.constants.ArtistSongSortTypeKey
 import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
-import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -86,7 +83,6 @@ fun ArtistSongsScreen(
     viewModel: ArtistSongsViewModel = hiltViewModel(),
 ) {
     val haptic = LocalHapticFeedback.current
-    val context = LocalContext.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -97,11 +93,6 @@ fun ArtistSongsScreen(
 
     val artist by viewModel.artist.collectAsState()
     val songs by viewModel.songs.collectAsState()
-    val songIndex: Map<String, Song> by remember(songs) {
-        derivedStateOf {
-            songs.associateBy { it.id }
-        }
-    }
 
     val lazyListState = rememberLazyListState()
 
