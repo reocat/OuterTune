@@ -16,45 +16,53 @@ on:
 permissions:
   contents: write
   discussions: write
-  
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        abi: [ "universal", "arm64", "x86_64", "uncommon_abi" ]  # Defined ABIs
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-    - name: Set Up Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with: 
-        cache-cleanup: on-success
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
-    - name: Upload debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: "app/build/outputs/apk/universal/debug/*"
-    - name: Sign APKs
-      uses: ilharp/sign-android-release@v1.0.4
-      with:
-        releaseDir: app/build/outputs/apk/universal/release
-        signingKey: ${{ secrets.RELEASE_KEYSTORE }}
-        keyAlias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-        keyPassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-    - name: Move signed APK
-      run: |
-          mkdir app/build/outputs/apk/universal/release/out && mv app/build/outputs/apk/universal/release/app-universal-release-unsigned-signed.apk app/build/outputs/apk/universal/release/out/app-release.apk
-    - name: Upload release APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release
-        path: "app/build/outputs/apk/universal/release/out/*"
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set Up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: on-success
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build APK for ABI
+        run: ./gradlew assemble${{ matrix.abi }}Release
+        env:
+          PULL_REQUEST: 'false'
+
+      - name: Sign APKs
+        uses: ilharp/sign-android-release@v1.0.4
+        with:
+          releaseDir: app/build/outputs/apk/${{ matrix.abi }}/release
+          signingKey: ${{ secrets.RELEASE_KEYSTORE }}
+          keyAlias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+
+      - name: Move signed APK
+        run: |
+          mkdir -p app/build/outputs/apk/${{ matrix.abi }}/release/out
+          mv app/build/outputs/apk/${{ matrix.abi }}/release/*-unsigned-signed.apk app/build/outputs/apk/${{ matrix.abi }}/release/out/app-${{ matrix.abi }}-release.apk
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.abi }}-release
+          path: "app/build/outputs/apk/${{ matrix.abi }}/release/out/*"
