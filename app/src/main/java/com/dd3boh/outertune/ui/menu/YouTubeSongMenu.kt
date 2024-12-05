@@ -28,6 +28,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -97,6 +98,12 @@ fun YouTubeSongMenu(
 
     var showChooseQueueDialog by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    LaunchedEffect(librarySong?.song?.liked) {
+        librarySong?.let {
+            downloadUtil.autoDownloadIfLiked(it.song)
+        }
     }
 
     AddToQueueDialog(
@@ -258,7 +265,7 @@ fun YouTubeSongMenu(
                 database.transaction {
                     insert(song.toMediaMetadata())
                 }
-                downloadUtil.download(song.toMediaMetadata(), context)
+                downloadUtil.download(song.toMediaMetadata())
             },
             onRemoveDownload = {
                 DownloadService.sendRemoveDownload(

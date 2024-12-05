@@ -3,8 +3,6 @@ package com.dd3boh.outertune.ui.menu
 import android.content.Intent
 import android.text.format.Formatter
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -117,7 +115,6 @@ fun PlayerMenu(
     val playerVolume = playerConnection.service.playerVolume.collectAsState()
     val currentFormat by playerConnection.currentFormat.collectAsState(initial = null)
     val currentPlayCount by playerConnection.currentPlayCount.collectAsState(initial = null)
-    val activityResultLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
@@ -125,6 +122,12 @@ fun PlayerMenu(
 
     var showChooseQueueDialog by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    LaunchedEffect(librarySong?.song?.liked) {
+        librarySong?.let {
+            downloadUtil.autoDownloadIfLiked(it.song)
+        }
     }
 
     AddToQueueDialog(
@@ -411,7 +414,6 @@ fun PlayerMenu(
                     database.transaction {
                         insert(mediaMetadata)
                     }
-                    downloadUtil.download(mediaMetadata, context)
                 },
                 onRemoveDownload = {
                     DownloadService.sendRemoveDownload(

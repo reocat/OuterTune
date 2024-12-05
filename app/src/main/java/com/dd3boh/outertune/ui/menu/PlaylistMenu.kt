@@ -354,7 +354,7 @@ fun PlaylistMenu(
             state = downloadState,
             onDownload = {
                 val _songs = songs.filterNot { it.song.isLocal }.map{ it.toMediaMetadata() }
-                downloadUtil.download(_songs, context)
+                downloadUtil.download(_songs)
             },
             onRemoveDownload = {
                 showRemoveDownloadDialog = true

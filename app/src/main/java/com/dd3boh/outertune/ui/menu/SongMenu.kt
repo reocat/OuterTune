@@ -32,6 +32,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -98,6 +99,10 @@ fun SongMenu(
 
     var showEditDialog by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    LaunchedEffect(song.song.liked) {
+        downloadUtil.autoDownloadIfLiked(song.song)
     }
 
     if (showEditDialog) {
@@ -289,7 +294,7 @@ fun SongMenu(
             DownloadGridMenu(
                 state = download?.state,
                 onDownload = {
-                    downloadUtil.download(song.toMediaMetadata(), context)
+                    downloadUtil.download(song.toMediaMetadata())
                 },
                 onRemoveDownload = {
                     DownloadService.sendRemoveDownload(

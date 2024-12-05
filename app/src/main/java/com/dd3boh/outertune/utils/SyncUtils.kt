@@ -6,6 +6,7 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.toMediaMetadata
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
@@ -34,7 +35,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class SyncUtils @Inject constructor(
-    val database: MusicDatabase
+    val database: MusicDatabase,
+    private val downloadUtil: DownloadUtil
 ) {
     private val _isSyncingRemoteLikedSongs = MutableStateFlow(false)
     private val _isSyncingRemoteSongs = MutableStateFlow(false)
@@ -106,6 +108,9 @@ class SyncUtils @Inject constructor(
                     }
                 }
             }
+
+            val songs = database.likedSongsNotDownloaded().first().map { it.song }
+            downloadUtil.autoDownloadIfLiked(songs)
         } finally {
             Timber.tag(_TAG).d("Liked songs synchronization ended")
             _isSyncingRemoteLikedSongs.value = false

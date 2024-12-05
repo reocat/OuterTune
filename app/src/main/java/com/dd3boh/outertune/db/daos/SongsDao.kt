@@ -75,6 +75,9 @@ interface SongsDao {
     @Query("SELECT count from playCount WHERE song = :songId AND year = :year AND month = :month")
     fun getPlayCountByMonth(songId: String?, year: Int, month: Int): Flow<Int>
 
+    @Query("SELECT * FROM song WHERE liked AND dateDownload IS NULL")
+    fun likedSongsNotDownloaded(): Flow<List<Song>>
+
     // region Songs Sort
     @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY rowId")

@@ -265,7 +265,9 @@ fun SelectionMediaMetadataMenu(
                     }
                 } else {
                     selection.filter { !it.liked }.forEach { song ->
-                        update(song.toSongEntity().toggleLike())
+                        val likedSong = song.toSongEntity().copy(liked = true)
+                        update(likedSong)
+                        downloadUtil.autoDownloadIfLiked(likedSong)
                     }
                 }
             }
@@ -275,7 +277,7 @@ fun SelectionMediaMetadataMenu(
             state = downloadState,
             onDownload = {
                 val songs = selection.filterNot { it.isLocal }
-                downloadUtil.download(songs, context)
+                downloadUtil.download(songs)
             },
             onRemoveDownload = {
                 showRemoveDownloadDialog = true

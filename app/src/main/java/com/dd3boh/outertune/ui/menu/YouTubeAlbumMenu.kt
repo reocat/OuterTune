@@ -261,7 +261,7 @@ fun YouTubeAlbumMenu(
             state = downloadState,
             onDownload = {
                 val _songs = album?.songs?.map{ it.toMediaMetadata() } ?: emptyList()
-                downloadUtil.download(_songs, context)
+                downloadUtil.download(_songs)
             },
             onRemoveDownload = {
                 album?.songs?.forEach { song ->

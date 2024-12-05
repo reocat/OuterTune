@@ -2,6 +2,7 @@ package com.dd3boh.outertune.playback
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.media3.common.PlaybackException
@@ -16,8 +17,10 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
+import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.FormatEntity
+import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.di.DownloadCache
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.utils.enumPreference
@@ -38,10 +41,11 @@ import java.time.ZoneOffset
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.dd3boh.outertune.extensions.getLikeAutoDownload
 
 @Singleton
 class DownloadUtil @Inject constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext private val context: Context,
     val database: MusicDatabase,
     val databaseProvider: DatabaseProvider,
     @DownloadCache val downloadCache: SimpleCache,
@@ -123,17 +127,25 @@ class DownloadUtil @Inject constructor(
     }
     val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
+
     fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
 
-
-    fun download(songs: List<MediaMetadata>, context: Context) {
-        songs.forEach { song -> download(song, context) }
+    fun download(songs: List<MediaMetadata>) {
+        songs.forEach { song -> downloadSong(song.id, song.title) }
     }
 
-    fun download(song: MediaMetadata, context: Context){
-        val downloadRequest = DownloadRequest.Builder(song.id, song.id.toUri())
-            .setCustomCacheKey(song.id)
-            .setData(song.title.toByteArray())
+    fun download(song: MediaMetadata){
+        downloadSong(song.id, song.title)
+    }
+
+    fun download(song: SongEntity){
+        downloadSong(song.id, song.title)
+    }
+
+    private fun downloadSong(id: String, title: String){
+        val downloadRequest = DownloadRequest.Builder(id, id.toUri())
+            .setCustomCacheKey(id)
+            .setData(title.toByteArray())
             .build()
         DownloadService.sendAddDownload(
             context,
@@ -142,11 +154,32 @@ class DownloadUtil @Inject constructor(
             false)
     }
 
-    fun resumeDownloadsOnStart(context: Context){
+    fun resumeDownloadsOnStart(){
         DownloadService.sendResumeDownloads(
             context,
             ExoDownloadService::class.java,
             false)
+    }
+
+    fun autoDownloadIfLiked(songs: List<SongEntity>){
+        songs.forEach { song -> autoDownloadIfLiked(song) }
+    }
+
+    fun autoDownloadIfLiked(song: SongEntity){
+        if (!song.liked || song.dateDownload != null){
+            return
+        }
+
+        val isWifiConnected = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: false
+
+        if (
+            context.getLikeAutoDownload() == LikedAutodownloadMode.ON
+            || (context.getLikeAutoDownload() == LikedAutodownloadMode.WIFI_ONLY && isWifiConnected)
+        )
+        {
+            download(song)
+        }
     }
 
     init {

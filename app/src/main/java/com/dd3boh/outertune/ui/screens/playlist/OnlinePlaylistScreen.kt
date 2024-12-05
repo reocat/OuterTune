@@ -386,7 +386,7 @@ fun OnlinePlaylistScreen(
                                                                 syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id)
                                                             }
                                                             val _songs = songs.map{ it.toMediaMetadata() }
-                                                            downloadUtil.download(_songs, context)
+                                                            downloadUtil.download(_songs)
                                                         }
                                                     ) {
                                                         Icon(

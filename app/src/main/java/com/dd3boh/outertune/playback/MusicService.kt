@@ -144,6 +144,9 @@ class MusicService : MediaLibraryService(),
     lateinit var database: MusicDatabase
 
     @Inject
+    lateinit var downloadUtil: DownloadUtil
+
+    @Inject
     lateinit var lyricsHelper: LyricsHelper
 
     @Inject
@@ -602,7 +605,9 @@ class MusicService : MediaLibraryService(),
     fun toggleLike() {
         database.query {
             currentSong.value?.let {
-                update(it.song.toggleLike())
+                val song = it.song.toggleLike()
+                update(song)
+                downloadUtil.autoDownloadIfLiked(song)
             }
         }
     }

@@ -335,7 +335,7 @@ fun YouTubePlaylistMenu(
                 state = downloadState,
                 onDownload = {
                     val _songs = songs.map{ it.toMediaMetadata() }
-                    downloadUtil.download(_songs, context)
+                    downloadUtil.download(_songs)
                 },
                 onRemoveDownload = {
                     showRemoveDownloadDialog = true
