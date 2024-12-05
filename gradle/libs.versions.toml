@@ -9,7 +9,7 @@ media3 = "1.5.0"
 room = "2.6.1"
 hilt = "2.53"
 ktor = "3.0.2"
-ksp = "2.0.21-1.0.28"
+ksp = "2.1.0-1.0.29"
 multidex = "2.0.1"
 
 [libraries]
