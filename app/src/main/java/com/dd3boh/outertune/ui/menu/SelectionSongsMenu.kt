@@ -263,11 +263,11 @@ fun SelectionMediaMetadataMenu(
             database.query {
                 if (allLiked) {
                     selection.forEach { song ->
-                        update(song.toSongEntity().copy(liked = false))
+                        update(song.toSongEntity().toggleLike())
                     }
                 } else {
-                    selection.forEach { song ->
-                        update(song.toSongEntity().copy(liked = true))
+                    selection.filter { !it.liked }.forEach { song ->
+                        update(song.toSongEntity().toggleLike())
                     }
                 }
             }
