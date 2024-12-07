@@ -202,7 +202,7 @@ fun LibrarySongsScreen(
                     onSortDescendingChange = onSortDescendingChange,
                     sortTypeText = { sortType ->
                         when (sortType) {
-                            SongSortType.CREATE_DATE -> R.string.sort_by_create_date
+                            SongSortType.CREATE_DATE -> if (filter == SongFilter.LIKED) R.string.sort_by_like_date else R.string.sort_by_create_date
                             SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
                             SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
                             SongSortType.NAME -> R.string.sort_by_name
