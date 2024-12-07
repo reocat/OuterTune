@@ -308,8 +308,9 @@ class SyncUtils @Inject constructor(
                     return
                 }
 
-                val remotePlaylists = page.items.filterIsInstance<PlaylistItem>().drop(1).reversed()
-                    .filterNot { it.id == "SE" }
+                val remotePlaylists = page.items.filterIsInstance<PlaylistItem>()
+                    .filterNot { it.id == "LM" ||  it.id == "SE" }
+                    .reversed()
 
                 val localPlaylists = database.playlistInLibraryAsc().first()
 
