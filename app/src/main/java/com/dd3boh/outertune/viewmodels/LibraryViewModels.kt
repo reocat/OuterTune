@@ -82,14 +82,8 @@ class LibrarySongsViewModel @Inject constructor(
     private val excludedScanPaths = context.dataStore[ExcludedScanPathsKey]?: ""
     val localSongDirectoryTree = refreshLocal(database, scanPaths.split('\n'), excludedScanPaths.split('\n'))
 
-    fun syncLibrarySongs() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() }
-    }
-
-    fun syncLikedSongs() {
-        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() }
-    }
-
+    fun syncLibrarySongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs() } }
+    fun syncLikedSongs() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs() } }
 
     /**
      * Get local songs, update the one in the viewmodel
@@ -153,7 +147,7 @@ class LibraryArtistsViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    fun sync() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteArtists() } }
+    fun syncArtists() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteArtists() } }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -197,7 +191,7 @@ class LibraryAlbumsViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    fun sync() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteAlbums() } }
+    fun syncAlbums() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteAlbums() } }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -246,7 +240,7 @@ class LibraryPlaylistsViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    fun sync() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemotePlaylists() } }
+    fun syncPlaylists() { viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemotePlaylists() } }
 }
 
 @HiltViewModel

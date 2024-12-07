@@ -90,7 +90,7 @@ fun LibraryArtistsScreen(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
 
-    LaunchedEffect(Unit) { if (context.isSyncEnabled()) viewModel.sync() }
+    LaunchedEffect(Unit) { if (context.isSyncEnabled()) viewModel.syncArtists() }
 
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
@@ -111,7 +111,12 @@ fun LibraryArtistsScreen(
                     ArtistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
                 ),
                 currentValue = filter,
-                onValueUpdate = { filter = it },
+                onValueUpdate = {
+                    filter = it
+                    if (context.isSyncEnabled()){
+                        if (it == ArtistFilter.LIBRARY) viewModel.syncArtists()
+                    }
+                },
                 modifier = Modifier.weight(1f),
                 isLoading = { filter -> filter == ArtistFilter.LIBRARY && isSyncingRemoteArtists }
             )

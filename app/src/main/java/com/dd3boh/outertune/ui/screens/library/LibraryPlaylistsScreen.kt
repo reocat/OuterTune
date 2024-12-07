@@ -123,7 +123,7 @@ fun LibraryPlaylistsScreen(
     var showAddPlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var syncedPlaylist: Boolean by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) { if (context.isSyncEnabled()) viewModel.sync() }
+    LaunchedEffect(Unit) { if (context.isSyncEnabled()) viewModel.syncPlaylists() }
 
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
@@ -201,7 +201,7 @@ fun LibraryPlaylistsScreen(
             onValueUpdate = {
                 filter = it
                 if (context.isSyncEnabled()){
-                    if (it == PlaylistFilter.LIBRARY) viewModel.sync()
+                    if (it == PlaylistFilter.LIBRARY) viewModel.syncPlaylists()
                 }
             },
             isLoading = { filter ->
