@@ -1,10 +1,12 @@
 package com.dd3boh.outertune.utils
 
+import android.content.Context
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.SongEntity
+import com.dd3boh.outertune.extensions.isInternetConnected
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.DownloadUtil
 import com.zionhuang.innertube.YouTube
@@ -13,7 +15,7 @@ import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.utils.completed
-import com.zionhuang.innertube.utils.completedLibraryPage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -36,7 +39,8 @@ import javax.inject.Singleton
 @Singleton
 class SyncUtils @Inject constructor(
     val database: MusicDatabase,
-    private val downloadUtil: DownloadUtil
+    private val downloadUtil: DownloadUtil,
+    @ApplicationContext private val context: Context
 ) {
     private val _isSyncingRemoteLikedSongs = MutableStateFlow(false)
     private val _isSyncingRemoteSongs = MutableStateFlow(false)
@@ -50,7 +54,7 @@ class SyncUtils @Inject constructor(
     val isSyncingRemoteArtists: StateFlow<Boolean> = _isSyncingRemoteArtists.asStateFlow()
     val isSyncingRemotePlaylists: StateFlow<Boolean> = _isSyncingRemotePlaylists.asStateFlow()
 
-    private val _TAG = "SyncUtils"
+    private val logTag = "SyncUtils"
 
     suspend fun syncAll() {
         coroutineScope {
@@ -67,15 +71,19 @@ class SyncUtils @Inject constructor(
      */
     suspend fun syncRemoteLikedSongs() {
         if (!_isSyncingRemoteLikedSongs.compareAndSet(expect = false, update = true)) {
-            Timber.tag(_TAG).d("Liked songs synchronization already in progress")
+            Timber.tag(logTag).d("Liked songs synchronization already in progress")
             return // Synchronization already in progress
         }
 
         try {
-            Timber.tag(_TAG).d("Liked songs synchronization started")
+            Timber.tag(logTag).d("Liked songs synchronization started")
 
             // Get remote and local liked songs
             YouTube.playlist("LM").completed().onSuccess{ page->
+                if (!context.isInternetConnected()){
+                    return
+                }
+
                 val remoteSongs = page.songs.reversed()
 
                 // Identify local songs to unlike
@@ -93,17 +101,13 @@ class SyncUtils @Inject constructor(
                 }
 
                 // Insert or like songs in the database
-                coroutineScope {
-                    remoteSongs.forEach { remoteSong ->
-                        launch(Dispatchers.IO) {
-                            val localSong = database.song(remoteSong.id).firstOrNull()
-                            database.transaction {
-                                if (localSong == null) {
-                                    insert(remoteSong.toMediaMetadata(), SongEntity::localToggleLike)
-                                } else if (!localSong.song.liked) {
-                                    update(localSong.song.localToggleLike())
-                                }
-                            }
+                for (remoteSong in remoteSongs) {
+                    val localSong = database.song(remoteSong.id).firstOrNull()
+                    database.transaction {
+                        if (localSong == null) {
+                            insert(remoteSong.toMediaMetadata(), SongEntity::localToggleLike)
+                        } else if (!localSong.song.liked) {
+                            update(localSong.song.localToggleLike())
                         }
                     }
                 }
@@ -112,7 +116,7 @@ class SyncUtils @Inject constructor(
             val songs = database.likedSongsNotDownloaded().first().map { it.song }
             downloadUtil.autoDownloadIfLiked(songs)
         } finally {
-            Timber.tag(_TAG).d("Liked songs synchronization ended")
+            Timber.tag(logTag).d("Liked songs synchronization ended")
             _isSyncingRemoteLikedSongs.value = false
         }
     }
@@ -122,15 +126,18 @@ class SyncUtils @Inject constructor(
      */
     suspend fun syncRemoteSongs() {
         if (!_isSyncingRemoteSongs.compareAndSet(expect = false, update = true)) {
-            Timber.tag(_TAG).d("Library songs synchronization already in progress")
+            Timber.tag(logTag).d("Library songs synchronization already in progress")
             return // Synchronization already in progress
         }
 
         try {
-            Timber.tag(_TAG).d("Library songs synchronization started")
+            Timber.tag(logTag).d("Library songs synchronization started")
 
             // Get remote songs (from library and uploads)
-            val remoteSongs = GetRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
+            val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
+            if (!context.isInternetConnected()){
+                return
+            }
 
             // Identify local songs to remove
             val songsToRemoveFromLibrary = database.songsByNameAsc().first()
@@ -163,7 +170,7 @@ class SyncUtils @Inject constructor(
                 jobs.joinAll()
             }
         } finally {
-            Timber.tag(_TAG).d("Library songs synchronization ended")
+            Timber.tag(logTag).d("Library songs synchronization ended")
             _isSyncingRemoteSongs.value = false
         }
     }
@@ -173,15 +180,18 @@ class SyncUtils @Inject constructor(
      */
     suspend fun syncRemoteAlbums() {
         if (!_isSyncingRemoteAlbums.compareAndSet(expect = false, update = true)) {
-            Timber.tag(_TAG).d("Library albums synchronization already in progress")
+            Timber.tag(logTag).d("Library albums synchronization already in progress")
             return // Synchronization already in progress
         }
 
         try {
-            Timber.tag(_TAG).d("Library albums synchronization started")
+            Timber.tag(logTag).d("Library albums synchronization started")
 
             // Get remote albums (from library and uploads)
-            val remoteAlbums = GetRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
+            val remoteAlbums = getRemoteData<AlbumItem>("FEmusic_liked_albums", "FEmusic_library_privately_owned_releases")
+            if (!context.isInternetConnected()){
+                return
+            }
 
             // Identify local albums to remove
             val albumsToRemoveFromLibrary = database.albumsLikedAsc().first()
@@ -214,7 +224,7 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            Timber.tag(_TAG).d("Library albums synchronization ended")
+            Timber.tag(logTag).d("Library albums synchronization ended")
             _isSyncingRemoteAlbums.value = false // Use the correct AtomicBoolean
         }
     }
@@ -224,15 +234,18 @@ class SyncUtils @Inject constructor(
      */
     suspend fun syncRemoteArtists() {
         if (!_isSyncingRemoteArtists.compareAndSet(expect = false, update = true)) {
-            Timber.tag(_TAG).d("Artist subscriptions synchronization already in progress")
+            Timber.tag(logTag).d("Artist subscriptions synchronization already in progress")
             return // Synchronization already in progress
         }
 
         try {
-            Timber.tag(_TAG).d("Artist subscriptions synchronization started")
+            Timber.tag(logTag).d("Artist subscriptions synchronization started")
 
             // Get remote artists (from library and uploads)
-            val remoteArtists = GetRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists", "FEmusic_library_privately_owned_artists")
+            val remoteArtists = getRemoteData<ArtistItem>("FEmusic_library_corpus_track_artists", "FEmusic_library_privately_owned_artists")
+            if (!context.isInternetConnected()){
+                return
+            }
 
             // Get local artists
             val artistsToRemoveFromSubscriptions = database.artistsBookmarkedAsc().first()
@@ -272,7 +285,7 @@ class SyncUtils @Inject constructor(
                 }
             }
         } finally {
-            Timber.tag(_TAG).d("Artist subscriptions synchronization ended")
+            Timber.tag(logTag).d("Artist subscriptions synchronization ended")
             _isSyncingRemoteArtists.value = false
         }
     }
@@ -282,15 +295,19 @@ class SyncUtils @Inject constructor(
      */
     suspend fun syncRemotePlaylists() {
         if (!_isSyncingRemotePlaylists.compareAndSet(expect = false, update = true)) {
-            Timber.tag(_TAG).d("Library playlist synchronization already in progress")
+            Timber.tag(logTag).d("Library playlist synchronization already in progress")
             return
         }
 
         try {
-            Timber.tag(_TAG).d("Library playlist synchronization started")
+            Timber.tag(logTag).d("Library playlist synchronization started")
 
             // Get remote and local playlists
-            YouTube.library("FEmusic_liked_playlists").completedLibraryPage().onSuccess { page ->
+            YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
+                if (!context.isInternetConnected()){
+                    return
+                }
+
                 val remotePlaylists = page.items.filterIsInstance<PlaylistItem>().drop(1).reversed()
                     .filterNot { it.id == "SE" }
 
@@ -351,12 +368,16 @@ class SyncUtils @Inject constructor(
             }
         } finally {
             _isSyncingRemotePlaylists.value = false
-            Timber.tag(_TAG).d("Library playlist synchronization ended")
+            Timber.tag(logTag).d("Library playlist synchronization ended")
         }
     }
 
     suspend fun syncPlaylist(browseId: String, playlistId: String) {
         YouTube.playlist(browseId).completed().onSuccess { playlistPage ->
+            if (!context.isInternetConnected()){
+                return
+            }
+
             coroutineScope {
                 launch(Dispatchers.IO) {
                     database.transaction {
@@ -380,7 +401,7 @@ class SyncUtils @Inject constructor(
         }
     }
 
-    private suspend inline fun <reified T> GetRemoteData(libraryId: String, uploadsId: String): MutableList<T> {
+    private suspend inline fun <reified T> getRemoteData(libraryId: String, uploadsId: String): MutableList<T> {
         val browseIds = mapOf(
             libraryId to 0,
             uploadsId to 1
@@ -390,7 +411,7 @@ class SyncUtils @Inject constructor(
         coroutineScope {
             val fetchJobs = browseIds.map { (browseId, tab) ->
                 async {
-                    YouTube.library(browseId, tab).completedLibraryPage().onSuccess { page ->
+                    YouTube.library(browseId, tab).completed().onSuccess { page ->
                         val data = page.items.filterIsInstance<T>().reversed()
                         synchronized(remote) { remote.addAll(data) }
                     }
