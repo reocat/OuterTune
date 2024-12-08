@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -80,6 +81,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.GridThumbnailHeight
@@ -91,6 +93,7 @@ import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.Song
+import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.MultiQueueObject
@@ -127,25 +130,31 @@ inline fun ListItem(
     trailingContent: @Composable RowScope.() -> Unit = {},
     isSelected: Boolean? = false,
     isActive: Boolean = false,
+    enabled: Boolean = true,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = if (isActive) {
-            modifier // playing highlight
-                .height(ListItemHeight)
-                .padding(horizontal = 8.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(
-                    color = // selected active
-                    if (isSelected == true) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                    else MaterialTheme.colorScheme.secondaryContainer
-                )
+        modifier = if(!enabled) {
+                modifier
+                    .height(ListItemHeight)
+                    .padding(horizontal = 8.dp)
+                    .graphicsLayer { alpha = 0.5f }
+            } else if (isActive) {
+                modifier // playing highlight
+                    .height(ListItemHeight)
+                    .padding(horizontal = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        color = // selected active
+                        if (isSelected == true) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        else MaterialTheme.colorScheme.secondaryContainer
+                    )
             } else if (isSelected == true) {
-            modifier // inactive selected
-                .height(ListItemHeight)
-                .padding(horizontal = 8.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(color = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.4f))
+                modifier // inactive selected
+                    .height(ListItemHeight)
+                    .padding(horizontal = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(color = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.4f))
             }
             else {
                 modifier // default
@@ -158,6 +167,27 @@ inline fun ListItem(
             contentAlignment = Alignment.Center
         ) {
             thumbnailContent()
+            if (!enabled) {
+                Box(
+                    modifier = Modifier
+                        .size(ListThumbnailSize) // Adjust size as needed
+                        .align(Alignment.Center)
+                        .background(
+                            Color.Black.copy(alpha = 0.25f),
+                            RoundedCornerShape(ThumbnailCornerRadius)
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CloudOff,
+                        contentDescription = "Offline",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(ListThumbnailSize / 2)
+                            .align(Alignment.Center)
+                            .graphicsLayer { alpha = 1f }
+                    )
+                }
+            }
         }
         Column(
             modifier = Modifier
@@ -195,6 +225,7 @@ fun ListItem(
     isSelected: Boolean? = false,
     isActive: Boolean = false,
     isLocalSong: Boolean? = null,
+    enabled: Boolean = true,
 ) = ListItem(
     title = title,
     subtitle = {
@@ -219,7 +250,8 @@ fun ListItem(
     trailingContent = trailingContent,
     modifier = modifier,
     isSelected = isSelected,
-    isActive = isActive
+    isActive = isActive,
+    enabled = enabled
 )
 
 @Composable
@@ -324,40 +356,47 @@ fun SongListItem(
             Icon.Library()
         }
         if (showDownloadIcon) {
-            val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
+            val download by LocalDownloadUtil.current.getDownload(song.id)
+                .collectAsState(initial = null)
             Icon.Download(download?.state)
         }
 
         // local song indicator
         if (song.song.isLocal) {
-           FolderCopy()
+            FolderCopy()
         }
     },
     isActive: Boolean = false,
     isPlaying: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
-) = ListItem(
-    title = song.song.title,
-    subtitle = joinByBullet(
-        song.artists.joinToString { it.name },
-        makeTimeString(song.song.duration * 1000L)
-    ),
-    badges = badges,
-    thumbnailContent = {
-        ItemThumbnail(
-            thumbnailUrl = if (song.song.isLocal) song.song.localPath else song.song.thumbnailUrl,
-            albumIndex = albumIndex,
-            isActive = isActive,
-            isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
-            modifier = Modifier.size(ListThumbnailSize)
-        )
-    },
-    trailingContent = trailingContent,
-    modifier = modifier,
-    isSelected = isSelected,
-    isActive = isActive
-)
+) {
+    val isNetworkConnected = LocalIsInternetConnected.current
+
+    ListItem(
+        title = song.song.title,
+        subtitle = joinByBullet(
+            song.artists.joinToString { it.name },
+            makeTimeString(song.song.duration * 1000L)
+        ),
+        badges = badges,
+        thumbnailContent = {
+            ItemThumbnail(
+                thumbnailUrl = if (song.song.isLocal) song.song.localPath else song.song.thumbnailUrl,
+                albumIndex = albumIndex,
+                isActive = isActive,
+                isPlaying = isPlaying,
+                shape = RoundedCornerShape(ThumbnailCornerRadius),
+                modifier = Modifier.size(ListThumbnailSize)
+            )
+        },
+        trailingContent = trailingContent,
+        modifier = modifier,
+        isSelected = isSelected,
+        isActive = isActive,
+        enabled = song.song.isAvailableOffline() || isNetworkConnected
+    )
+}
+
 @Composable
 fun SongFolderItem(
     folderTitle: String,
@@ -396,7 +435,7 @@ fun SongFolderItem(
     folderTitle: String? = null,
     menuState: MenuState,
     navController: NavController,
-    subtitle: String
+    subtitle: String,
 ) = ListItem(title = folderTitle ?: folder.currentDir,
     subtitle = subtitle,
     thumbnailContent = {
@@ -769,8 +808,10 @@ fun AutoPlaylistListItem(
         Box(
             modifier = Modifier
                 .size(ListThumbnailSize)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
-                    shape = RoundedCornerShape(ThumbnailCornerRadius))
+                .background(
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+                    shape = RoundedCornerShape(ThumbnailCornerRadius)
+                )
         ) {
             Icon(
                 imageVector = thumbnail,
@@ -1003,30 +1044,49 @@ fun YouTubeListItem(
     isActive: Boolean = false,
     isPlaying: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
-) = ListItem(
-    title = item.title,
-    subtitle = when (item) {
-        is SongItem -> joinByBullet(item.artists.joinToString { it.name }, makeTimeString(item.duration?.times(1000L)))
-        is AlbumItem -> joinByBullet(item.artists?.joinToString { it.name }, item.year?.toString())
-        is ArtistItem -> null
-        is PlaylistItem -> joinByBullet(item.author?.name, item.songCountText)
-    },
-    badges = badges,
-    thumbnailContent = {
-        ItemThumbnail(
-            thumbnailUrl = item.thumbnail,
-            albumIndex = albumIndex,
-            isActive = isActive,
-            isPlaying = isPlaying,
-            shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(ThumbnailCornerRadius),
-            modifier = Modifier.size(ListThumbnailSize)
-        )
-    },
-    trailingContent = trailingContent,
-    modifier = modifier,
-    isSelected = isSelected,
-    isActive = isActive
-)
+) {
+    val isNetworkConnected = LocalIsInternetConnected.current
+    val downloads by LocalDownloadUtil.current.downloads.collectAsState()
+
+    var enabled = true
+    if (item is SongItem) { enabled = downloads[item.id]?.isAvailableOffline() ?: false || isNetworkConnected }
+
+    ListItem(
+        title = item.title,
+        subtitle = when (item) {
+            is SongItem -> joinByBullet(
+                item.artists.joinToString { it.name },
+                makeTimeString(item.duration?.times(1000L))
+            )
+
+            is AlbumItem -> joinByBullet(
+                item.artists?.joinToString { it.name },
+                item.year?.toString()
+            )
+
+            is ArtistItem -> null
+            is PlaylistItem -> joinByBullet(item.author?.name, item.songCountText)
+        },
+        badges = badges,
+        thumbnailContent = {
+            ItemThumbnail(
+                thumbnailUrl = item.thumbnail,
+                albumIndex = albumIndex,
+                isActive = isActive,
+                isPlaying = isPlaying,
+                shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(
+                    ThumbnailCornerRadius
+                ),
+                modifier = Modifier.size(ListThumbnailSize)
+            )
+        },
+        trailingContent = trailingContent,
+        modifier = modifier,
+        isSelected = isSelected,
+        isActive = isActive,
+        enabled = enabled
+    )
+}
 
 @Composable
 fun YouTubeGridItem(

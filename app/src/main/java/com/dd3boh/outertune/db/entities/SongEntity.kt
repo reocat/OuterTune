@@ -103,4 +103,8 @@ data class SongEntity(
             return "LA" + RandomStringUtil.random(8, true, false)
         }
     }
+
+    fun isAvailableOffline(): Boolean {
+        return dateDownload != null || isLocal
+    }
 }

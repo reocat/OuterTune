@@ -33,17 +33,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.SearchFilterHeight
+import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
+import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
@@ -78,9 +83,12 @@ fun OnlineSearchResult(
     viewModel: OnlineSearchViewModel = hiltViewModel(),
 ) {
     val menuState = LocalMenuState.current
+    val context = LocalContext.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    val isNetworkConnected = LocalIsInternetConnected.current
+    val downloads by LocalDownloadUtil.current.downloads.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -106,6 +114,9 @@ fun OnlineSearchResult(
     }
 
     val ytItemContent: @Composable LazyItemScope.(YTItem) -> Unit = { item: YTItem ->
+        var enabled = true
+        if (item is SongItem) { enabled = downloads[item.id]?.isAvailableOffline() ?: false || isNetworkConnected }
+
         val content: @Composable () -> Unit = {
             YouTubeListItem(
                 item = item,
@@ -157,13 +168,26 @@ fun OnlineSearchResult(
                         onClick = {
                             when (item) {
                                 is SongItem -> {
-                                    if (item.id == mediaMetadata?.id) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else {
-                                        playerConnection.playQueue(
-                                            YouTubeQueue.radio(item.toMediaMetadata()),
-                                            replace = true,
-                                        )
+                                    if (enabled) {
+                                        if (item.id == mediaMetadata?.id) {
+                                            playerConnection.player.togglePlayPause()
+                                        } else {
+                                            playerConnection.playQueue(
+                                                if (isNetworkConnected){
+                                                    YouTubeQueue(
+                                                        WatchEndpoint(videoId = item.id),
+                                                        item.toMediaMetadata()
+                                                    )
+                                                }
+                                                else {
+                                                    ListQueue(
+                                                        title = "${context.getString(R.string.queue_searched_songs)} $viewModel.query",
+                                                        items = listOf(item.toMediaMetadata())
+                                                    )
+                                                },
+                                                replace = true,
+                                            )
+                                        }
                                     }
                                 }
 
@@ -192,6 +216,7 @@ fun OnlineSearchResult(
 
         if (item !is SongItem) content()
         else SwipeToQueueBox(
+            enabled = enabled,
             item = item.toMediaItem(),
             content = { content() },
             snackbarHostState = snackbarHostState

@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -85,6 +86,7 @@ fun ArtistSongsScreen(
     val haptic = LocalHapticFeedback.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val isNetworkConnected = LocalIsInternetConnected.current
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
@@ -180,7 +182,9 @@ fun ArtistSongsScreen(
                     }
                 }
 
+                val enabled = song.song.isAvailableOffline() || isNetworkConnected
                 SwipeToQueueBox(
+                    enabled = enabled,
                     item = song.toMediaItem(),
                     content = {
                         SongListItem(
@@ -218,23 +222,25 @@ fun ArtistSongsScreen(
                                     onClick = {
                                         if (inSelectMode) {
                                             onCheckedChange(song.id !in selection)
-                                        } else if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            viewModel.viewModelScope.launch(Dispatchers.IO) {
-                                                val playlistId = YouTube.artist(artist?.id!!).getOrNull()
-                                                    ?.artist?.shuffleEndpoint?.playlistId
+                                        } else if (enabled) {
+                                            if (song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else {
+                                                viewModel.viewModelScope.launch(Dispatchers.IO) {
+                                                    val playlistId = YouTube.artist(artist?.id!!).getOrNull()
+                                                        ?.artist?.shuffleEndpoint?.playlistId
 
-                                                // for some reason this get called on the wrong thread and crashes, use main
-                                                CoroutineScope(Dispatchers.Main).launch {
-                                                    playerConnection.playQueue(
-                                                        ListQueue(
-                                                            title = artist?.artist?.name,
-                                                            items = songs.map { it.toMediaMetadata() },
-                                                            startIndex = index,
-                                                            playlistId = playlistId
+                                                    // for some reason this get called on the wrong thread and crashes, use main
+                                                    CoroutineScope(Dispatchers.Main).launch {
+                                                        playerConnection.playQueue(
+                                                            ListQueue(
+                                                                title = artist?.artist?.name,
+                                                                items = songs.map { it.toMediaMetadata() },
+                                                                startIndex = index,
+                                                                playlistId = playlistId
+                                                            )
                                                         )
-                                                    )
+                                                    }
                                                 }
                                             }
                                         }

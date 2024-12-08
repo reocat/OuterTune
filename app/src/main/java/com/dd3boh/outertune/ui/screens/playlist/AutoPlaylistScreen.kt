@@ -75,6 +75,7 @@ import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSyncUtils
@@ -128,6 +129,7 @@ fun AutoPlaylistScreen(
     val database = LocalDatabase.current
     val syncUtils = LocalSyncUtils.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val isNetworkConnected = LocalIsInternetConnected.current
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
@@ -537,7 +539,9 @@ fun AutoPlaylistScreen(
                     }
                 }
 
+                val enabled = song.song.isAvailableOffline() || isNetworkConnected
                 SwipeToQueueBox(
+                    enabled = enabled,
                     item = song.toMediaItem(),
                     content = {
                         SongListItem(
@@ -573,17 +577,19 @@ fun AutoPlaylistScreen(
                                     onClick = {
                                         if (inSelectMode) {
                                             onCheckedChange(index !in selection)
-                                        } else if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = playlist.name,
-                                                    items = songs.map { it.toMediaMetadata()},
-                                                    startIndex = index,
-                                                    playlistId = playlist.browseId
+                                        } else if (enabled) {
+                                            if (song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else {
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = playlist.name,
+                                                        items = songs.map { it.toMediaMetadata()},
+                                                        startIndex = index,
+                                                        playlistId = playlist.browseId
+                                                    )
                                                 )
-                                            )
+                                            }
                                         }
                                     },
                                     onLongClick = {

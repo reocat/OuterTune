@@ -328,7 +328,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val connectivityObserver = NetworkConnectivityObserver(this)
-            val isNetworkConnected by connectivityObserver.networkStatus.collectAsState(false)
+            val isInternetConnected by connectivityObserver.networkStatus.collectAsState(false)
 
             val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
             val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -698,7 +698,7 @@ class MainActivity : ComponentActivity() {
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
                         LocalSyncUtils provides syncUtils,
-                        LocalNetworkStatus provides isNetworkConnected
+                        LocalIsInternetConnected provides isInternetConnected
                     ) {
                         Scaffold(
                             topBar = {
@@ -1237,4 +1237,4 @@ val LocalPlayerConnection = staticCompositionLocalOf<PlayerConnection?> { error(
 val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No WindowInsets provided") }
 val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No DownloadUtil provided") }
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
-val LocalNetworkStatus = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
+val LocalIsInternetConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }

@@ -90,6 +90,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -150,6 +151,7 @@ fun LocalPlaylistScreen(
     val menuState = LocalMenuState.current
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val isNetworkConnected = LocalIsInternetConnected.current
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
@@ -473,7 +475,9 @@ fun LocalPlaylistScreen(
                         }
                     }
 
+                    val enabled = song.song.song.isAvailableOffline() || isNetworkConnected
                     SwipeToQueueBox(
+                        enabled = enabled,
                         item = song.song.toMediaItem(),
                         content = {
                             SongListItem(
@@ -481,7 +485,6 @@ fun LocalPlaylistScreen(
                                 isActive = song.song.id == mediaMetadata?.id,
                                 isPlaying = isPlaying,
                                 showInLibraryIcon = true,
-
                                 trailingContent = {
                                     IconButton(
                                         onClick = {
@@ -522,17 +525,19 @@ fun LocalPlaylistScreen(
                                         onClick = {
                                             if (inSelectMode) {
                                                 onCheckedChange(song.map.id !in selection)
-                                            } else if (song.song.id == mediaMetadata?.id) {
-                                                playerConnection.player.togglePlayPause()
-                                            } else {
-                                                playerConnection.playQueue(
-                                                    ListQueue(
-                                                        title = playlist!!.playlist.name,
-                                                        items = songs.map { it.song.toMediaMetadata() },
-                                                        startIndex = index,
-                                                        playlistId = playlist?.playlist?.browseId
+                                            } else if (enabled) {
+                                                if (song.song.id == mediaMetadata?.id) {
+                                                    playerConnection.player.togglePlayPause()
+                                                } else {
+                                                    playerConnection.playQueue(
+                                                        ListQueue(
+                                                            title = playlist!!.playlist.name,
+                                                            items = songs.map { it.song.toMediaMetadata() },
+                                                            startIndex = index,
+                                                            playlistId = playlist?.playlist?.browseId
+                                                        )
                                                     )
-                                                )
+                                                }
                                             }
                                         },
                                         onLongClick = {

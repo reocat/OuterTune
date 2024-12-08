@@ -56,6 +56,10 @@ class HistoryViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     init {
+        fetchRemoteHistory()
+    }
+    
+    fun fetchRemoteHistory() {
         viewModelScope.launch(Dispatchers.IO) {
             YouTube.musicHistory().onSuccess {
                 historyPage.value = it

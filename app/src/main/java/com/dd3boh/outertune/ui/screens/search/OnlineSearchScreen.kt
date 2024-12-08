@@ -34,6 +34,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -42,9 +43,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.SuggestionItemHeight
+import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -77,9 +82,11 @@ fun OnlineSearchScreen(
 ) {
     val menuState = LocalMenuState.current
     val database = LocalDatabase.current
+    val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val playerConnection = LocalPlayerConnection.current ?: return
-
+    val isNetworkConnected = LocalIsInternetConnected.current
+    val downloads by LocalDownloadUtil.current.downloads.collectAsState()
     val scope = rememberCoroutineScope()
 
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -166,6 +173,9 @@ fun OnlineSearchScreen(
             items = viewState.items,
             key = { it.id }
         ) { item ->
+            var enabled = true
+            if (item is SongItem) { enabled = downloads[item.id]?.isAvailableOffline() ?: false || isNetworkConnected }
+
             val content: @Composable () -> Unit = {
                 YouTubeListItem(
                     item = item,
@@ -220,24 +230,37 @@ fun OnlineSearchScreen(
                         .clickable {
                             when (item) {
                                 is SongItem -> {
-                                    if (item.id == mediaMetadata?.id) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else if (item.id.startsWith("LA")) {
-                                        playerConnection.playQueue(
-                                            ListQueue(
+                                    if (enabled){
+                                        if (item.id == mediaMetadata?.id) {
+                                            playerConnection.player.togglePlayPause()
+                                        } else if (item.id.startsWith("LA")) {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = "Search: $query",
+                                                    items = viewState.items.map { it as SongItem}.map { it.toMediaMetadata() }
+                                                ),
+                                                replace = true,
                                                 title = "Search: $query",
-                                                items = viewState.items.map { it as SongItem}.map { it.toMediaMetadata() }
-                                            ),
-                                            replace = true,
-                                            title = "Search: $query",
-                                        )
-                                    } else {
-                                        playerConnection.playQueue(
-                                            YouTubeQueue.radio(item.toMediaMetadata(),),
-                                            replace = true,
-                                            title = "Search: $query",
-                                        )
-                                        onDismiss()
+                                            )
+                                        } else {
+                                            playerConnection.playQueue(
+                                                if (isNetworkConnected){
+                                                    YouTubeQueue(
+                                                        WatchEndpoint(videoId = item.id),
+                                                        item.toMediaMetadata()
+                                                    )
+                                                }
+                                                else {
+                                                    ListQueue(
+                                                        title = "${context.getString(R.string.queue_searched_songs)} $viewModel.query",
+                                                        items = listOf(item.toMediaMetadata())
+                                                    )
+                                                },
+                                                replace = true,
+                                                title = "Search: $query",
+                                            )
+                                            onDismiss()
+                                        }
                                     }
                                 }
 
@@ -264,6 +287,7 @@ fun OnlineSearchScreen(
             if (item !is SongItem) content()
             else {
                 SwipeToQueueBox(
+                    enabled = enabled,
                     item = item.toMediaItem(),
                     content = { content() },
                     snackbarHostState = snackbarHostState

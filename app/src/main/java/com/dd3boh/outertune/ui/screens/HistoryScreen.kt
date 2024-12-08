@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -64,12 +65,16 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.HistorySource
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.db.entities.EventWithSong
+import com.dd3boh.outertune.extensions.isAvailableOffline
+import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
@@ -81,6 +86,7 @@ import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTitle
 import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongListItem
+import com.dd3boh.outertune.ui.component.SwipeToQueueBox
 import com.dd3boh.outertune.ui.component.YouTubeListItem
 import com.dd3boh.outertune.ui.menu.SongMenu
 import com.dd3boh.outertune.ui.menu.YouTubeSongMenu
@@ -102,8 +108,12 @@ fun HistoryScreen(
     val context = LocalContext.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val isNetworkConnected = LocalIsInternetConnected.current
+    val downloads by LocalDownloadUtil.current.downloads.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val historySource by viewModel.historySource.collectAsState()
     var isSearching by rememberSaveable { mutableStateOf(false) }
@@ -248,7 +258,12 @@ fun HistoryScreen(
                         listOf(HistorySource.LOCAL to stringResource(R.string.local_history))
                     },
                     currentValue = historySource,
-                    onValueUpdate = { viewModel.historySource.value = it }
+                    onValueUpdate = {
+                    viewModel.historySource.value = it
+                    if (it == HistorySource.REMOTE){
+                        viewModel.fetchRemoteHistory()
+                    }
+                }
                 )
             }
 
@@ -263,10 +278,13 @@ fun HistoryScreen(
                         )
                     }
 
-                    items(
-                        items = section.songs,
-                        key = { it.id }
-                    ) { song ->
+                items(
+                    items = section.songs,
+                    key = { it.id }
+                ) { song ->
+                    val enabled = downloads[song.id]?.isAvailableOffline() ?: false || isNetworkConnected
+
+                    val content: @Composable () -> Unit = {
                         YouTubeListItem(
                             item = song,
                             isActive = song.id == mediaMetadata?.id,
@@ -293,19 +311,32 @@ fun HistoryScreen(
                                 .fillMaxWidth()
                                 .combinedClickable(
                                     onClick = {
-                                        if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else if (song.id.startsWith("LA")) {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = "History",
-                                                    items = section.songs.map { it.toMediaMetadata() }
+                                        if (enabled) {
+                                            if (song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else if (song.id.startsWith("LA")) {
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = "History",
+                                                        items = section.songs.map { it.toMediaMetadata() }
+                                                    )
                                                 )
-                                            )
-                                        } else {
-                                            playerConnection.playQueue(
-                                                YouTubeQueue.radio(song.toMediaMetadata())
-                                            )
+                                            } else {
+                                                playerConnection.playQueue(
+                                                    if (isNetworkConnected){
+                                                        YouTubeQueue(
+                                                            endpoint = WatchEndpoint(videoId = song.id),
+                                                            preloadItem = song.toMediaMetadata()
+                                                        )
+                                                    }
+                                                    else {
+                                                        ListQueue(
+                                                            title = "${context.getString(R.string.queue_searched_songs)} $viewModel.query",
+                                                            items = listOf(song.toMediaMetadata())
+                                                        )
+                                                    }
+                                                )
+                                            }
                                         }
                                     },
                                     onLongClick = {
@@ -321,23 +352,31 @@ fun HistoryScreen(
                                 .animateItem()
                         )
                     }
+
+                    SwipeToQueueBox(
+                        enabled = enabled,
+                        item = song.toMediaItem(),
+                        content = { content() },
+                        snackbarHostState = snackbarHostState
+                    )
                 }
-            } else {
-                filteredEventsMap.forEach { (dateAgo, eventsGroup) ->
-                    stickyHeader {
-                        NavigationTitle(
-                            title = dateAgoToString(dateAgo),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surface)
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surface)
-                        ) {
-                            Spacer(modifier = Modifier.width(16.dp)) // why compose no margin...
+            }
+        } else {
+            events.forEach { (dateAgo, eventsGroup) ->
+                stickyHeader {
+                    NavigationTitle(
+                        title = dateAgoToString(dateAgo),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        Spacer(modifier = Modifier.width(16.dp)) // why compose no margin...
 
                             if (inSelectMode) {
                                 SelectHeader(
@@ -382,6 +421,9 @@ fun HistoryScreen(
                             }
                         }
 
+                    val enabled = event.song.song.isAvailableOffline() || isNetworkConnected
+
+                    val content: @Composable () -> Unit = {
                         SongListItem(
                             song = event.song,
                             isActive = event.song.id == mediaMetadata?.id,
@@ -419,16 +461,18 @@ fun HistoryScreen(
                                     onClick = {
                                         if (inSelectMode) {
                                             onCheckedChange(event.event.id !in selection)
-                                        } else if (event.song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = dateAgoToString(dateAgo),
-                                                    items = eventsGroup.map { it.song.toMediaMetadata() },
-                                                    startIndex = index
+                                        } else if (enabled) {
+                                            if (event.song.id == mediaMetadata?.id) {
+                                                playerConnection.player.togglePlayPause()
+                                            } else {
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = dateAgoToString(dateAgo),
+                                                        items = eventsGroup.map { it.song.toMediaMetadata() },
+                                                        startIndex = index
+                                                    )
                                                 )
-                                            )
+                                            }
                                         }
                                     },
                                     onLongClick = {
@@ -442,19 +486,11 @@ fun HistoryScreen(
                                 .animateItem()
                         )
                     }
-                }
-            }
-        }
-
-        HideOnScrollFAB(
-            visible = filteredEventsMap.isNotEmpty(),
-            lazyListState = lazyListState,
-            icon = R.drawable.shuffle,
-            onClick = {
-                playerConnection.playQueue(
-                    ListQueue(
-                        title = context.getString(R.string.history),
-                        items = filteredEventIndex.values.map { it.song.toMediaMetadata() }.shuffled(),
+                    SwipeToQueueBox(
+                        enabled = enabled,
+                        item = event.song.toMediaItem(),
+                        content = { content() },
+                        snackbarHostState = snackbarHostState
                     )
                 )
             }

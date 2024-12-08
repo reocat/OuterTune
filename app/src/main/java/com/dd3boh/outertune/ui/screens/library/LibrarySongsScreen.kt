@@ -50,6 +50,7 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.dd3boh.outertune.LocalIsInternetConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -90,6 +91,7 @@ fun LibrarySongsScreen(
     val haptic = LocalHapticFeedback.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val isNetworkConnected = LocalIsInternetConnected.current
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -267,48 +269,49 @@ fun LibrarySongsScreen(
                         }
                     }
 
-                    SwipeToQueueBox(
-                        item = song.toMediaItem(),
-                        content = {
-                            SongListItem(
-                                song = song,
-                                isActive = song.id == mediaMetadata?.id,
-                                isPlaying = isPlaying,
-                                showLikedIcon = filter != SongFilter.LIKED,
-                                showDownloadIcon = filter != SongFilter.DOWNLOADED,
-                                trailingContent = {
-                                    if (inSelectMode) {
-                                        Checkbox(
-                                            checked = song.id in selection,
-                                            onCheckedChange = onCheckedChange
-                                        )
-                                    } else {
-                                        IconButton(
-                                            onClick = {
-                                                menuState.show {
-                                                    SongMenu(
-                                                        originalSong = song,
-                                                        navController = navController,
-                                                        onDismiss = menuState::dismiss
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                Icons.Rounded.MoreVert,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    }
-                                },
-                                isSelected = inSelectMode && song.id in selection,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .combinedClickable(
+                val enabled = song.song.isAvailableOffline() || isNetworkConnected
+                SwipeToQueueBox(
+                    enabled = enabled,
+                    item = song.toMediaItem(),
+                    content = {
+                        SongListItem(
+                            song = song,
+                            isActive = song.id == mediaMetadata?.id,
+                            isPlaying = isPlaying,
+                            trailingContent = {
+                                if (inSelectMode) {
+                                    Checkbox(
+                                        checked = song.id in selection,
+                                        onCheckedChange = onCheckedChange
+                                    )
+                                } else {
+                                    IconButton(
                                         onClick = {
-                                            if (inSelectMode) {
-                                                onCheckedChange(song.id !in selection)
-                                            } else if (song.id == mediaMetadata?.id) {
+                                            menuState.show {
+                                                SongMenu(
+                                                    originalSong = song,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss
+                                                )
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Rounded.MoreVert,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            },
+                            isSelected = inSelectMode && song.id in selection,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(
+                                    onClick = {
+                                        if (inSelectMode) {
+                                            onCheckedChange(song.id !in selection)
+                                        } else if (enabled){
+                                            if (song.id == mediaMetadata?.id) {
                                                 playerConnection.player.togglePlayPause()
                                             } else {
                                                 playerConnection.playQueue(
@@ -319,21 +322,21 @@ fun LibrarySongsScreen(
                                                     )
                                                 )
                                             }
-                                        },
-                                        onLongClick = {
-                                            if (!inSelectMode) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                inSelectMode = true
-                                                onCheckedChange(true)
-                                            }
                                         }
-                                    )
-                                    .animateItem()
-                            )
-                        },
-                        snackbarHostState = snackbarHostState
-                    )
-                }
+                                    },
+                                    onLongClick = {
+                                        if (!inSelectMode) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            inSelectMode = true
+                                            onCheckedChange(true)
+                                        }
+                                    }
+                                )
+                                .animateItem()
+                        )
+                    },
+                    snackbarHostState = snackbarHostState
+                )
             }
         }
 
