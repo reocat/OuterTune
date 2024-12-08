@@ -31,6 +31,10 @@ class ArtistViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
+        fetchArtistsFromYTM()
+    }
+
+    fun fetchArtistsFromYTM() {
         viewModelScope.launch {
             YouTube.artist(artistId)
                 .onSuccess {

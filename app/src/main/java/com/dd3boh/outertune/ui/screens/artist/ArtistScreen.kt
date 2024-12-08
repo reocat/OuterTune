@@ -48,6 +48,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -71,11 +72,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalNetworkStatus
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.db.entities.ArtistEntity
+import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -118,6 +121,7 @@ fun ArtistScreen(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val menuState = LocalMenuState.current
+    val isNetworkConnected = LocalNetworkStatus.current
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -130,7 +134,7 @@ fun ArtistScreen(
 
     val lazyListState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showLocal by rememberSaveable { mutableStateOf(false) }
+    var showLocal by rememberSaveable { mutableStateOf(!isNetworkConnected) }
 
     val transparentAppBar by remember {
         derivedStateOf {
@@ -138,105 +142,118 @@ fun ArtistScreen(
         }
     }
 
-    val artistHead = @Composable {
-        val thumbnail = artistPage?.artist?.thumbnail ?: libraryArtist?.artist?.thumbnailUrl
+    LaunchedEffect(isNetworkConnected) {
+        if (!showLocal) {
+            showLocal = true
+        }
+    }
 
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier
-                    )
-            ) {
-                if (thumbnail != null) {
-                    AsyncImage(
-                        model = thumbnail.resize(1200, 900),
-                        contentDescription = null,
+    val artistHead = @Composable {
+        if (artistPage != null || libraryArtist != null) {
+            val thumbnail = artistPage?.artist?.thumbnail ?: libraryArtist?.artist?.thumbnailUrl
+            val artistName = artistPage?.artist?.title ?: libraryArtist?.artist?.name
+
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier
+                        )
+                ) {
+                    if (thumbnail != null) {
+                        AsyncImage(
+                            model = thumbnail.resize(1200, 900),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .fadingEdge(
+                                    top = WindowInsets.systemBars
+                                        .asPaddingValues()
+                                        .calculateTopPadding() + AppBarHeight,
+                                    bottom = 64.dp
+                                )
+                        )
+                    }
+                    AutoResizeText(
+                        text = artistName
+                        ?: "Unknown",
+                        style = MaterialTheme.typography.displayLarge,
+                        fontSizeRange = FontSizeRange(32.sp, 58.sp),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .fadingEdge(
-                                top = WindowInsets.systemBars
-                                    .asPaddingValues()
-                                    .calculateTopPadding() + AppBarHeight,
-                                bottom = 64.dp
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = 48.dp)
+                            .then(
+                                if (thumbnail == null) {
+                                    Modifier.padding(
+                                        top = WindowInsets.systemBars
+                                            .asPaddingValues()
+                                            .calculateTopPadding() + AppBarHeight
+                                    )
+                                } else {
+                                    Modifier
+                                }
                             )
                     )
                 }
-                AutoResizeText(
-                    text = artistPage?.artist?.title ?: libraryArtist?.artist?.name ?: "Unknown",
-                    style = MaterialTheme.typography.displayLarge,
-                    fontSizeRange = FontSizeRange(32.sp, 58.sp),
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(horizontal = 48.dp)
-                        .then(
-                            if (thumbnail == null) {
-                                Modifier.padding(
-                                    top = WindowInsets.systemBars
-                                        .asPaddingValues()
-                                        .calculateTopPadding() + AppBarHeight
-                                )
-                            } else {
-                                Modifier
-                            }
-                        )
-                )
-            }
 
-            if (artistPage?.artist != null){
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.padding(12.dp)
                 ) {
-                    (artistPage.artist.shuffleEndpoint ?: artistPage.artist.playEndpoint)?.let { shuffleEndpoint ->
-                        Button(
-                            onClick = {
-                                playerConnection.playQueue(
-                                    YouTubeQueue(shuffleEndpoint),
-                                    title = artistPage.artist.title
-                                )
-                            },
-                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Shuffle,
-                                contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                    Button(
+                        onClick = {
+                            val watchEndpoint = artistPage?.artist?.shuffleEndpoint?: artistPage?.artist?.playEndpoint
+                            playerConnection.playQueue(
+                                if (!showLocal && watchEndpoint != null) YouTubeQueue(watchEndpoint)
+                                else ListQueue(
+                                    title = artistName,
+                                    items = librarySongs.shuffled().map(Song::toMediaMetadata),
+                                ),
+                                title = artistName
                             )
-                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                            Text(
-                                text = stringResource(R.string.shuffle)
-                            )
-                        }
+                        },
+                        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Shuffle,
+                            contentDescription = null,
+                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                        )
+                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                        Text(
+                            text = stringResource(R.string.shuffle)
+                        )
                     }
 
-                    artistPage.artist.radioEndpoint?.let { radioEndpoint ->
-                        OutlinedButton(
-                            onClick = {
-                                playerConnection.playQueue(
-                                    YouTubeQueue(radioEndpoint),
-                                    title = "Radio: ${artistPage.artist.title}"
+                    if (!showLocal){
+                        artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
+                            OutlinedButton(
+                                onClick = {
+                                    playerConnection.playQueue(
+                                        YouTubeQueue(radioEndpoint),
+                                        title = "Radio: ${artistPage.artist.title}"
+                                    )
+                                },
+                                contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Radio,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
-                            },
-                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Radio,
-                                contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
-                            )
-                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                            Text(stringResource(R.string.radio))
+                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                                Text(stringResource(R.string.radio))
+                            }
                         }
                     }
-            }
+                }
             }
         }
     }
@@ -536,7 +553,11 @@ fun ArtistScreen(
             lazyListState = lazyListState,
             icon = if (showLocal) Icons.Rounded.LibraryMusic else Icons.Rounded.Language,
             onClick = {
-                showLocal = showLocal.not()
+                if (isNetworkConnected){
+                    showLocal = showLocal.not()
+                    if (!showLocal && artistPage == null) viewModel.fetchArtistsFromYTM()
+                }
+                else showLocal = true
             }
         )
 
