@@ -94,6 +94,7 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.DateAgo
 import com.dd3boh.outertune.viewmodels.HistoryViewModel
+import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.utils.parseCookieString
 import java.time.format.DateTimeFormatter
 
@@ -133,7 +134,6 @@ fun HistoryScreen(
         }
     }
 
-
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
     val selection = rememberSaveable(
         saver = listSaver<MutableList<Long>, Long>(
@@ -149,7 +149,7 @@ fun HistoryScreen(
         BackHandler(onBack = onExitSelectionMode)
     }
 
-    // no multiselect for remote hisory (yet)
+    // no multiselect for remote history (yet)
     val historyPage by viewModel.historyPage
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
@@ -259,11 +259,11 @@ fun HistoryScreen(
                     },
                     currentValue = historySource,
                     onValueUpdate = {
-                    viewModel.historySource.value = it
-                    if (it == HistorySource.REMOTE){
-                        viewModel.fetchRemoteHistory()
+                        viewModel.historySource.value = it
+                        if (it == HistorySource.REMOTE) {
+                            viewModel.fetchRemoteHistory()
+                        }
                     }
-                }
                 )
             }
 
@@ -278,105 +278,103 @@ fun HistoryScreen(
                         )
                     }
 
-                items(
-                    items = section.songs,
-                    key = { it.id }
-                ) { song ->
-                    val enabled = downloads[song.id]?.isAvailableOffline() ?: false || isNetworkConnected
+                    items(
+                        items = section.songs,
+                        key = { it.id }
+                    ) { song ->
+                        val enabled = downloads[song.id]?.isAvailableOffline() ?: false || isNetworkConnected
 
-                    val content: @Composable () -> Unit = {
-                        YouTubeListItem(
-                            item = song,
-                            isActive = song.id == mediaMetadata?.id,
-                            isPlaying = isPlaying,
-                            trailingContent = {
-                                IconButton(
-                                    onClick = {
-                                        menuState.show {
-                                            YouTubeSongMenu(
-                                                song = song,
-                                                navController = navController,
-                                                onDismiss = menuState::dismiss
-                                            )
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Rounded.MoreVert,
-                                        contentDescription = null
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = {
-                                        if (enabled) {
-                                            if (song.id == mediaMetadata?.id) {
-                                                playerConnection.player.togglePlayPause()
-                                            } else if (song.id.startsWith("LA")) {
-                                                playerConnection.playQueue(
-                                                    ListQueue(
-                                                        title = "History",
-                                                        items = section.songs.map { it.toMediaMetadata() }
-                                                    )
-                                                )
-                                            } else {
-                                                playerConnection.playQueue(
-                                                    if (isNetworkConnected){
-                                                        YouTubeQueue(
-                                                            endpoint = WatchEndpoint(videoId = song.id),
-                                                            preloadItem = song.toMediaMetadata()
-                                                        )
-                                                    }
-                                                    else {
-                                                        ListQueue(
-                                                            title = "${context.getString(R.string.queue_searched_songs)} $viewModel.query",
-                                                            items = listOf(song.toMediaMetadata())
-                                                        )
-                                                    }
+                        val content: @Composable () -> Unit = {
+                            YouTubeListItem(
+                                item = song,
+                                isActive = song.id == mediaMetadata?.id,
+                                isPlaying = isPlaying,
+                                trailingContent = {
+                                    IconButton(
+                                        onClick = {
+                                            menuState.show {
+                                                YouTubeSongMenu(
+                                                    song = song,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss
                                                 )
                                             }
                                         }
-                                    },
-                                    onLongClick = {
-                                        menuState.show {
-                                            YouTubeSongMenu(
-                                                song = song,
-                                                navController = navController,
-                                                onDismiss = menuState::dismiss
-                                            )
-                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Rounded.MoreVert,
+                                            contentDescription = null
+                                        )
                                     }
-                                )
-                                .animateItem()
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (enabled) {
+                                                if (song.id == mediaMetadata?.id) {
+                                                    playerConnection.player.togglePlayPause()
+                                                } else if (song.id.startsWith("LA")) {
+                                                    playerConnection.playQueue(
+                                                        ListQueue(
+                                                            title = "History",
+                                                            items = section.songs.map { it.toMediaMetadata() }
+                                                        )
+                                                    )
+                                                } else {
+                                                    playerConnection.playQueue(
+                                                        if (isNetworkConnected) {
+                                                            YouTubeQueue(
+                                                                endpoint = WatchEndpoint(videoId = song.id),
+                                                                preloadItem = song.toMediaMetadata()
+                                                            )
+                                                        } else {
+                                                            ListQueue(
+                                                                title = "${context.getString(R.string.queue_searched_songs)} $viewModel.query",
+                                                                items = listOf(song.toMediaMetadata())
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onLongClick = {
+                                            menuState.show {
+                                                YouTubeSongMenu(
+                                                    song = song,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss
+                                                )
+                                            }
+                                        }
+                                    )
+                            )
+                        }
+
+                        SwipeToQueueBox(
+                            enabled = enabled,
+                            item = song.toMediaItem(),
+                            content = { content() },
+                            snackbarHostState = snackbarHostState
                         )
                     }
-
-                    SwipeToQueueBox(
-                        enabled = enabled,
-                        item = song.toMediaItem(),
-                        content = { content() },
-                        snackbarHostState = snackbarHostState
-                    )
                 }
-            }
-        } else {
-            events.forEach { (dateAgo, eventsGroup) ->
-                stickyHeader {
-                    NavigationTitle(
-                        title = dateAgoToString(dateAgo),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        Spacer(modifier = Modifier.width(16.dp)) // why compose no margin...
+            } else {
+                eventsMap.forEach { (dateAgo, eventsGroup) ->
+                    stickyHeader {
+                        NavigationTitle(
+                            title = dateAgoToString(dateAgo),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            Spacer(modifier = Modifier.width(16.dp)) // why compose no margin...
 
                             if (inSelectMode) {
                                 SelectHeader(
@@ -421,80 +419,80 @@ fun HistoryScreen(
                             }
                         }
 
-                    val enabled = event.song.song.isAvailableOffline() || isNetworkConnected
+                        val enabled = event.song.song.isAvailableOffline() || isNetworkConnected
 
-                    val content: @Composable () -> Unit = {
-                        SongListItem(
-                            song = event.song,
-                            isActive = event.song.id == mediaMetadata?.id,
-                            isPlaying = isPlaying,
-                            showInLibraryIcon = true,
-                            trailingContent = {
-                                if (inSelectMode) {
-                                    Checkbox(
-                                        checked = event.event.id in selection,
-                                        onCheckedChange = onCheckedChange
-                                    )
-                                } else {
-                                    IconButton(
-                                        onClick = {
-                                            menuState.show {
-                                                SongMenu(
-                                                    originalSong = event.song,
-                                                    event = event.event,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss
-                                                )
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            Icons.Rounded.MoreVert,
-                                            contentDescription = null
+                        val content: @Composable () -> Unit = {
+                            SongListItem(
+                                song = event.song,
+                                isActive = event.song.id == mediaMetadata?.id,
+                                isPlaying = isPlaying,
+                                showInLibraryIcon = true,
+                                trailingContent = {
+                                    if (inSelectMode) {
+                                        Checkbox(
+                                            checked = event.event.id in selection,
+                                            onCheckedChange = onCheckedChange
                                         )
-                                    }
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = {
-                                        if (inSelectMode) {
-                                            onCheckedChange(event.event.id !in selection)
-                                        } else if (enabled) {
-                                            if (event.song.id == mediaMetadata?.id) {
-                                                playerConnection.player.togglePlayPause()
-                                            } else {
-                                                playerConnection.playQueue(
-                                                    ListQueue(
-                                                        title = dateAgoToString(dateAgo),
-                                                        items = eventsGroup.map { it.song.toMediaMetadata() },
-                                                        startIndex = index
+                                    } else {
+                                        IconButton(
+                                            onClick = {
+                                                menuState.show {
+                                                    SongMenu(
+                                                        originalSong = event.song,
+                                                        event = event.event,
+                                                        navController = navController,
+                                                        onDismiss = menuState::dismiss
                                                     )
-                                                )
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Rounded.MoreVert,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (inSelectMode) {
+                                                onCheckedChange(event.event.id !in selection)
+                                            } else if (enabled) {
+                                                if (event.song.id == mediaMetadata?.id) {
+                                                    playerConnection.player.togglePlayPause()
+                                                } else {
+                                                    playerConnection.playQueue(
+                                                        ListQueue(
+                                                            title = dateAgoToString(dateAgo),
+                                                            items = eventsGroup.map { it.song.toMediaMetadata() },
+                                                            startIndex = index
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!inSelectMode) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                inSelectMode = true
+                                                onCheckedChange(true)
                                             }
                                         }
-                                    },
-                                    onLongClick = {
-                                        if (!inSelectMode) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            inSelectMode = true
-                                            onCheckedChange(true)
-                                        }
-                                    }
-                                )
-                                .animateItem()
+                                    )
+                            )
+                        }
+                        SwipeToQueueBox(
+                            enabled = enabled,
+                            item = event.song.toMediaItem(),
+                            content = { content() },
+                            snackbarHostState = snackbarHostState
                         )
                     }
-                    SwipeToQueueBox(
-                        enabled = enabled,
-                        item = event.song.toMediaItem(),
-                        content = { content() },
-                        snackbarHostState = snackbarHostState
-                    )
-                )
+                }
             }
-        )
+        }
     }
 
     TopAppBar(

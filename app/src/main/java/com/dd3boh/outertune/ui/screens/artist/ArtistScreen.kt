@@ -142,10 +142,9 @@ fun ArtistScreen(
         }
     }
 
-    LaunchedEffect(isNetworkConnected) {
-        if (!showLocal) {
-            showLocal = true
-        }
+    LaunchedEffect(isNetworkConnected, libraryArtist) {
+        // always show local page for local artists. Show local page remote artist when offline
+        showLocal = !isNetworkConnected || libraryArtist?.artist?.isLocalArtist == true
     }
 
     val artistHead = @Composable {
