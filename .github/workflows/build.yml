@@ -27,12 +27,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 35
+          build-tools: '35.0.0' 
+
+      - name: Verify Android Build Tools
+        run: |
+          echo "ANDROID_HOME is set to $ANDROID_HOME"
+          ls $ANDROID_HOME/build-tools
+          if [ ! -d "$ANDROID_HOME/build-tools/35.0.0" ]; then
+            echo "Build tools 35.0.0 not found! Installing..."
+            sdkmanager "build-tools;35.0.0"
+          fi
 
       - name: Set Up Gradle
         uses: gradle/actions/setup-gradle@v4
