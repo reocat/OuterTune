@@ -55,6 +55,7 @@ jobs:
           keyAlias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          buildToolsVersion: 35.0.0
 
       - name: Move signed APK
         run: |
