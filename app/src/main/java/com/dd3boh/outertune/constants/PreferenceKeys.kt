@@ -48,7 +48,7 @@ val EnableDiscordRPCKey = booleanPreferencesKey("discordRPCEnable")
  */
 val AudioQualityKey = stringPreferencesKey("audioQuality")
 enum class AudioQuality {
-    AUTO, HIGH, LOW
+    AUTO, MAX, HIGH, LOW
 }
 val AudioOffload = booleanPreferencesKey("enableOffload")
 
