@@ -204,6 +204,7 @@
     <string name="proxy_type">نوع الوكيل</string>
     <string name="proxy_url">رابط الوكيل</string>
     <string name="restart_to_take_effect">أعد التشغيل للتفعيل</string>
+    <string name="audio_quality_max">أعلي إرتفاع (تجريبي)</string>
     <string name="audio_quality_high">عالي</string>
     <string name="audio_quality_low">منخفض</string>
     <string name="queue">قائمة الانتظار</string>
