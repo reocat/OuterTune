@@ -55,6 +55,8 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AudioNormalizationKey
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
+import com.dd3boh.outertune.constants.AudioOffload
+import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
 import com.dd3boh.outertune.constants.KeepAliveKey
@@ -83,6 +85,7 @@ import com.dd3boh.outertune.extensions.collectLatest
 import com.dd3boh.outertune.extensions.currentMetadata
 import com.dd3boh.outertune.extensions.findNextMediaItemById
 import com.dd3boh.outertune.extensions.metadata
+import com.dd3boh.outertune.extensions.setOffloadEnabled
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.lyrics.LyricsHelper
 import com.dd3boh.outertune.models.QueueBoard
@@ -251,6 +254,8 @@ class MusicService : MediaLibraryService(),
             .build()
             .apply {
                 addListener(this@MusicService)
+
+                setOffloadEnabled(dataStore.get(AudioOffload, true))
 
                 // handle on error
                 addListener(object : Player.Listener {
