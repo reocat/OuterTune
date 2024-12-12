@@ -19,7 +19,7 @@ data class QueueEntity(
     companion object {
         fun generateQueueId(): Long {
             // Generate a random alphanumeric string, then convert to Long if possible.
-            return RandomStringUtil.random(8, false, true).toLongOrNull() ?: 0L
+            return RandomStringUtil.random(8, includeLetters = false, includeNumbers = true).toLongOrNull() ?: 0L
         }
     }
 }

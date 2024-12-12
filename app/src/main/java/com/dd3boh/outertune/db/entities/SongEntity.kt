@@ -100,7 +100,7 @@ data class SongEntity(
 
     companion object {
         fun generateSongId(): String {
-            return "LA" + RandomStringUtil.random(8, true, false)
+            return "LA" + RandomStringUtil.random(8, includeLetters = true, includeNumbers = false)
         }
     }
 
