@@ -840,7 +840,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             bottomBar = {
-                                Box() {
+                                Box {
                                     if (firstSetupPassed) {
                                         BottomSheetPlayer(
                                             state = playerBottomSheetState,

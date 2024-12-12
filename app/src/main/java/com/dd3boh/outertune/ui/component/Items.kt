@@ -999,7 +999,7 @@ fun QueueListItem(
     modifier: Modifier = Modifier,
     number: Int? = null,
 ) = ListItem(
-    title = (if (number != null) "$number. " else "") + (queue.title ?: "Queue"),
+    title = (if (number != null) "$number. " else "") + queue.title,
     subtitle = joinByBullet(
         pluralStringResource(R.plurals.n_song, queue.getCurrentQueueShuffled().size, queue.getCurrentQueueShuffled().size),
         makeTimeString(queue.getDuration() * 1000L)
