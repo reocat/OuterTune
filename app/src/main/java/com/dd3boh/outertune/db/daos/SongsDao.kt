@@ -40,6 +40,7 @@ interface SongsDao {
     @Query("SELECT * FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL")
     fun allLocalSongs(): Flow<List<Song>>
 
+    @Transaction
     @Query("""
         SELECT * FROM song
         WHERE localPath IN (
@@ -66,15 +67,19 @@ interface SongsDao {
     """)
     fun mostPlayedSongs(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT sum(count) from playCount WHERE song = :songId")
     fun getLifetimePlayCount(songId: String?): Flow<Int>
 
+    @Transaction
     @Query("SELECT sum(count) from playCount WHERE song = :songId AND year = :year")
     fun getPlayCountByYear(songId: String?, year: Int): Flow<Int>
 
+    @Transaction
     @Query("SELECT count from playCount WHERE song = :songId AND year = :year AND month = :month")
     fun getPlayCountByMonth(songId: String?, year: Int, month: Int): Flow<Int>
 
+    @Transaction
     @Query("SELECT * FROM song WHERE liked AND dateDownload IS NULL")
     fun likedSongsNotDownloaded(): Flow<List<Song>>
 
@@ -140,6 +145,7 @@ interface SongsDao {
     // endregion
 
     // region Liked Songs Sort
+    @Transaction
     @Query("SELECT COUNT(1) FROM song WHERE liked")
     fun likedSongsCount(): Flow<Int>
 
@@ -264,9 +270,11 @@ interface SongsDao {
     @Update
     fun update(song: SongEntity)
 
+    @Transaction
     @Query("UPDATE song SET totalPlayTime = totalPlayTime + :playTime WHERE id = :songId")
     fun incrementTotalPlayTime(songId: String, playTime: Long)
 
+    @Transaction
     @Query("UPDATE playCount SET count = count + 1 WHERE song = :songId AND year = :year AND month = :month")
     fun incrementPlayCount(songId: String, year: Int, month: Int)
 
@@ -291,15 +299,19 @@ interface SongsDao {
         }
     }
 
+    @Transaction
     @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId AND inLibrary IS NULL")
     fun inLibrary(songId: String, inLibrary: LocalDateTime?)
 
+    @Transaction
     @Query("UPDATE song SET liked = 0, likedDate = null WHERE id = :songId")
     fun removeLike(songId: String)
 
+    @Transaction
     @Query("UPDATE song SET inLibrary = null WHERE localPath = null")
     fun disableInvalidLocalSongs()
 
+    @Transaction
     @Query("UPDATE song SET inLibrary = null, localPath = null WHERE id = :songId")
     fun disableLocalSong(songId: String)
 
@@ -309,9 +321,11 @@ interface SongsDao {
         }
     }
 
+    @Transaction
     @Query("UPDATE song SET inLibrary = :inLibrary, localPath = :localPath WHERE id = :songId")
     fun _updateLSP(songId: String, inLibrary: LocalDateTime?, localPath: String)
 
+    @Transaction
     @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
     suspend fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
     // endregion
