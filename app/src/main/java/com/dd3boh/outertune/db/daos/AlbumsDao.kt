@@ -135,6 +135,7 @@ interface AlbumsDao : ArtistsDao {
     """)
     fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Album>>
 
+    @Transaction
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album_artist_map 

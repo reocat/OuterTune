@@ -27,6 +27,9 @@ class GenreEntity(
     val isLocalGenre: Boolean
         get() = id.startsWith("LG")
     companion object {
-        fun generateGenreId() = "LG" + RandomStringUtil.random(8, true, false)
+        fun generateGenreId() = "LG" + RandomStringUtil.random(8,
+            includeLetters = true,
+            includeNumbers = false
+        )
     }
 }

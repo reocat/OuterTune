@@ -1,5 +1,3 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package com.dd3boh.outertune.ui.utils
 
 import androidx.compose.foundation.ExperimentalFoundationApi

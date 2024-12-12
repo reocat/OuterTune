@@ -11,7 +11,6 @@ import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
 import timber.log.Timber
 import java.io.File
-import java.lang.Integer.parseInt
 import java.lang.Long.parseLong
 import java.time.Instant
 import java.time.LocalDate
@@ -87,12 +86,12 @@ class FFMpegScanner : MetadataScanner {
 
         // Fix for title parsing
         val title = when {
-            !rawTitle.isNullOrBlank() -> rawTitle.trim()
+            !rawTitle.isNullOrBlank() -> rawTitle!!.trim()
             else -> path.substringAfterLast('/').substringBeforeLast('.')
         }
 
         val duration: Long = try {
-            (parseLong(rawDuration?.trim()) / toSeconds).roundToLong()
+            (parseLong(rawDuration?.trim() ?: "0") / toSeconds).roundToLong()
         } catch (e: Exception) {
             -1L
         }
@@ -116,7 +115,7 @@ class FFMpegScanner : MetadataScanner {
         val albumEntity = if (!albumName.isNullOrBlank() && albumId != null) {
             AlbumEntity(
                 id = albumId,
-                title = albumName,
+                title = albumName!!,
                 songCount = 1,
                 duration = duration.toInt()
             )
@@ -143,13 +142,13 @@ class FFMpegScanner : MetadataScanner {
             try {
                 // Try to parse as full date first
                 parsedDate = try {
-                    LocalDate.parse(rawDate.substringAfter(';').trim()).atStartOfDay()
+                    LocalDate.parse(rawDate!!.substringAfter(';').trim()).atStartOfDay()
                 } catch (e: Exception) {
                     null
                 }
                 
                 // If date parsing failed, try to parse year
-                year = parsedDate?.year ?: rawDate.trim().toIntOrNull()
+                year = parsedDate?.year ?: rawDate!!.trim().toIntOrNull()
             } catch (e: Exception) {
                 // Invalid date format, both attempts failed
             }
