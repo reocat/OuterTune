@@ -41,7 +41,8 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
+      - name: Clone ffmpeg
+        run: git clone https://github.com/plushie-neko/ffmpeg-android-maker ffMetadataEx/src/main/cpp/ffmpeg-android-maker --depth=1 -j$(nproc --all)
       - name: Build APK for ABI
         run: ./gradlew assemble${{ matrix.abi }}Release
         env:
