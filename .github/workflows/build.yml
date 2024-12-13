@@ -43,6 +43,10 @@ jobs:
         run: chmod +x gradlew
       - name: Clone ffmpeg
         run: git clone https://github.com/plushie-neko/ffmpeg-android-maker ffMetadataEx/src/main/cpp/ffmpeg-android-maker --depth=1 -j$(nproc --all)
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+      - name: Accept SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
       - name: Build APK for ABI
         run: ./gradlew assemble${{ matrix.abi }}Release
         env:
