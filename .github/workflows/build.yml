@@ -41,21 +41,36 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Clone ffmpeg
-        run: git clone https://github.com/plushie-neko/ffmpeg-android-maker ffMetadataEx/src/main/cpp/ffmpeg-android-maker --depth=1 -j$(nproc --all)
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
+
       - name: Accept SDK Licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-      - name: Setup the environment
-        run: |
-          sudo apt install meson nasm ninja-build
-      - name: Executing the script
+
+      - name: Setup build dependencies
+        run: sudo apt install meson nasm ninja-build
+
+      - name: Cache CMake and FFmpeg build artifacts
+        uses: actions/cache@v4
+        id: cmake-cache
+        with:
+          path: ffMetadataEx/src/main/cpp/ffmpeg-android-maker/build
+          key: cmake-build-${{ matrix.abi }}-${{ runner.os }}-cache
+          restore-keys: |
+            cmake-build-${{ matrix.abi }}-
+            cmake-build-
+
+      - name: Clone ffmpeg
+        run: git clone https://github.com/plushie-neko/ffmpeg-android-maker ffMetadataEx/src/main/cpp/ffmpeg-android-maker --depth=1 -j$(nproc --all)
+
+      - name: Build or restore FFmpeg using CMake cache
         run: |
           export ANDROID_SDK_HOME=$ANDROID_HOME
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
           ./ffmpeg-android-maker.sh -all-free -all-gpl -android=24
         working-directory: ffMetadataEx/src/main/cpp/ffmpeg-android-maker
+
       - name: Build APK for ABI
         run: ./gradlew assemble${{ matrix.abi }}Release
         env:
