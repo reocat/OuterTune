@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.graphics.drawable.BitmapDrawable
 import android.os.PowerManager
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -233,12 +235,74 @@ fun BottomSheetPlayer(
             )
         }
     ) {
+        val actionButtons: @Composable RowScope.() -> Unit = {
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Box(
+                modifier = Modifier
+                    .offset(y = 5.dp)
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                ResizableIconButton(
+                    icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(24.dp),
+                    onClick = playerConnection::toggleLike
+                )
+            }
+
+            Spacer(modifier = Modifier.width(7.dp))
+
+            Box(
+                modifier = Modifier
+                    .offset(y = 5.dp)
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                ResizableIconButton(
+                    icon = Icons.Rounded.MoreVert,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.Center),
+                    onClick = {
+                        menuState.show {
+                            PlayerMenu(
+                                mediaMetadata = mediaMetadata,
+                                navController = navController,
+                                playerBottomSheetState = state,
+                                onDismiss = menuState::dismiss
+                            )
+                        }
+                    }
+                )
+            }
+        }
+
         val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
             val playPauseRoundness by animateDpAsState(
                 targetValue = if (isPlaying) 24.dp else 36.dp,
                 animationSpec = tween(durationMillis = 100, easing = LinearEasing),
                 label = "playPauseRoundness"
             )
+
+            // action buttons for landscape (above title)
+            if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                Row (
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = PlayerHorizontalPadding, end = PlayerHorizontalPadding, bottom = 16.dp)
+                ) {
+                    actionButtons()
+                }
+            }
 
             Row(
                 horizontalArrangement = Arrangement.Start,
@@ -247,10 +311,7 @@ fun BottomSheetPlayer(
                     .padding(horizontal = PlayerHorizontalPadding)
             ) {
                 Row {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                    ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = mediaMetadata.title,
                             style = MaterialTheme.typography.titleLarge,
@@ -269,16 +330,19 @@ fun BottomSheetPlayer(
                                 }
                         )
 
-                        Row(
-                            modifier = Modifier.offset(y = 25.dp)
-                        ) {
+                        Row {
                             mediaMetadata.artists.fastForEachIndexed { index, artist ->
                                 Text(
                                     text = artist.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     color = onBackgroundColor,
                                     maxLines = 1,
-                                    modifier = Modifier.clickable(enabled = artist.id != null) {
+                                    modifier = Modifier
+                                        .basicMarquee(
+                                            iterations = 1,
+                                            initialDelayMillis = 5000
+                                        )
+                                        .clickable(enabled = artist.id != null) {
                                         navController.navigate("artist/${artist.id}")
                                         state.collapseSoft()
                                     }
@@ -295,51 +359,9 @@ fun BottomSheetPlayer(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .offset(y = 5.dp)
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                    ) {
-                        ResizableIconButton(
-                            icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(24.dp),
-                            onClick = playerConnection::toggleLike
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(7.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .offset(y = 5.dp)
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                    ) {
-                        ResizableIconButton(
-                            icon = Icons.Rounded.MoreVert,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.Center),
-                            onClick = {
-                                menuState.show {
-                                    PlayerMenu(
-                                        mediaMetadata = mediaMetadata,
-                                        navController = navController,
-                                        playerBottomSheetState = state,
-                                        onDismiss = menuState::dismiss
-                                    )
-                                }
-                            }
-                        )
+                    // action buttons for portrait (inline with title)
+                    if (LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                        actionButtons()
                     }
                 }
             }
@@ -432,7 +454,8 @@ fun BottomSheetPlayer(
 
                 Box(
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(if (showLyrics) 56.dp else 72.dp)
+                        .animateContentSize()
                         .clip(RoundedCornerShape(playPauseRoundness))
                         .background(MaterialTheme.colorScheme.primary)
                         .clickable {
@@ -543,10 +566,13 @@ fun BottomSheetPlayer(
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
                         .padding(bottom = queueSheetState.collapsedBound)
+                        .fillMaxSize()
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(if (showLyrics) 0.6f else 1f, false)
+                            .animateContentSize()
                     ) {
                         Thumbnail(
                             sliderPositionProvider = { sliderPosition },
@@ -559,7 +585,8 @@ fun BottomSheetPlayer(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(if (showLyrics) 0.4f else 1f, false)
+                            .animateContentSize()
                             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
                     ) {
                         Spacer(Modifier.weight(1f))
