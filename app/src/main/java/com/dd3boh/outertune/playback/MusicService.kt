@@ -92,6 +92,7 @@ import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.playback.queues.Queue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.utils.CoilBitmapLoader
+import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.DiscordRPC
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.enumPreference
@@ -110,6 +111,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -163,7 +166,10 @@ class MusicService : MediaLibraryService(),
     var queuePlaylistId: String? = null
     private var lastMediaItemIndex = -1
 
+    private lateinit var networkConnectivityObserver: NetworkConnectivityObserver
     val currentMediaMetadata = MutableStateFlow<com.dd3boh.outertune.models.MediaMetadata?>(null)
+    val waitingForNetworkConnection = MutableStateFlow(false)
+    private val isNetworkConnected = MutableStateFlow(false)
 
     private val currentSong = currentMediaMetadata.flatMapLatest { mediaMetadata ->
         database.song(mediaMetadata?.id)
@@ -215,6 +221,20 @@ class MusicService : MediaLibraryService(),
             }
         }
 
+        networkConnectivityObserver = NetworkConnectivityObserver(this)
+        scope.launch {
+            networkConnectivityObserver.networkStatus.collect { isConnected ->
+                isNetworkConnected.value = isConnected
+
+                if (isConnected && waitingForNetworkConnection.value){
+                    waitingForNetworkConnection.value = false
+                    player.prepare()
+                    player.play()
+                }
+            }
+        }
+
+
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(DefaultMediaSourceFactory(createDataSourceFactory()))
             .setRenderersFactory(createRenderersFactory())
@@ -232,7 +252,7 @@ class MusicService : MediaLibraryService(),
             .apply {
                 addListener(this@MusicService)
 
-                // skip on error
+                // handle on error
                 addListener(object : Player.Listener {
                     override fun onPlayerError(error: PlaybackException) {
                         super.onPlayerError(error)
@@ -241,6 +261,15 @@ class MusicService : MediaLibraryService(),
                         }
 
                         consecutivePlaybackErr += 2
+
+                        // If connection lost, stop playing
+                        val noConnectionError = (error.cause?.cause is PlaybackException) && (error.cause?.cause as PlaybackException).errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+                        if (!isNetworkConnected.value || noConnectionError) {
+                            player.pause()
+                            waitingForNetworkConnection.value = true
+                            Toast.makeText(this@MusicService, getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show()
+                            return
+                        }
 
                         Toast.makeText(
                             this@MusicService,

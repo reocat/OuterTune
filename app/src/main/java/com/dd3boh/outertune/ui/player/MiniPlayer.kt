@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -31,6 +32,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -131,6 +134,9 @@ fun MiniMediaInfo(
     error: PlaybackException?,
     modifier: Modifier = Modifier,
 ) {
+    val playerConnection = LocalPlayerConnection.current
+    val isWaitingForNetwork by playerConnection?.waitingForNetworkConnection?.collectAsState(initial = false) ?: remember { mutableStateOf(false) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -159,7 +165,7 @@ fun MiniMediaInfo(
                 )
             }
             androidx.compose.animation.AnimatedVisibility(
-                visible = error != null,
+                visible = error != null || isWaitingForNetwork,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -171,13 +177,23 @@ fun MiniMediaInfo(
                             shape = RoundedCornerShape(ThumbnailCornerRadius)
                         )
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                    )
+                    if (isWaitingForNetwork) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+                    }
                 }
             }
         }
