@@ -325,7 +325,7 @@ fun LocalPlayerSettings(
                     scannerFailure = false
 
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = getScanner()
+                        val scanner = getScanner(context)
                         // full rescan
                         if (fullRescan) {
                             try {
@@ -335,12 +335,10 @@ fun LocalPlayerSettings(
                                         scanPaths.split('\n'),
                                         excludedScanPaths.split('\n')
                                     ).value
-                                scanner.syncDB(
-                                    database,
-                                    directoryStructure.toList(),
-                                    scannerSensitivity,
-                                    strictExtensions,
-                                    refreshExisting = true,
+
+                                scanner.fullSync(
+                                    database, directoryStructure.toList(), scannerSensitivity,
+                                    strictExtensions
                                 )
 
                                 // start artist linking job
