@@ -14,6 +14,8 @@ import com.dd3boh.outertune.db.entities.SongGenreMap
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_DEBUG
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
 import com.dd3boh.outertune.ui.utils.SCANNER_DEBUG
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import com.dd3boh.outertune.ui.utils.SYNC_SCANNER
