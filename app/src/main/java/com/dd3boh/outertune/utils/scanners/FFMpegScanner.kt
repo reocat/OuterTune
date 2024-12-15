@@ -9,6 +9,9 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
+import com.dd3boh.outertune.ui.utils.DEBUG_SAVE_OUTPUT
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_DEBUG
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
 import timber.log.Timber
 import java.io.File
 import java.lang.Long.parseLong
@@ -18,9 +21,6 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.math.roundToLong
 
-const val EXTRACTOR_DEBUG = true
-const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
-const val EXTRACTOR_TAG = "FFMpegExtractor"
 const val toSeconds = 1000 * 60 * 16.7 // convert FFmpeg duration to seconds
 
 class FFMpegScanner : MetadataScanner {
