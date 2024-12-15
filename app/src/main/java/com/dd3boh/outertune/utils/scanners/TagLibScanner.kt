@@ -12,6 +12,7 @@ import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
 import com.dd3boh.outertune.ui.utils.DEBUG_SAVE_OUTPUT
 import com.dd3boh.outertune.ui.utils.EXTRACTOR_DEBUG
 import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
+import com.dd3boh.outertune.ui.utils.SCANNER_DEBUG
 import com.kyant.taglib.TagLib
 import timber.log.Timber
 import java.io.File
@@ -46,7 +47,8 @@ class TagLibScanner : MetadataScanner {
             val songId = SongEntity.generateSongId()
             var rawTitle: String? = null
             var albumName: String? = null
-            var rawDate: String = ""
+            var year: Int? = null
+            var date: LocalDateTime? = null
             var codec: String? = null
             var type: String? = null
             var bitrate: Int
@@ -104,7 +106,28 @@ class TagLibScanner : MetadataScanner {
                             }
                         }
                         // date can have multiple list elements, though let it parse via string regardless
-                        "DATE", "date" -> rawDate += it
+                        "DATE", "date" -> {
+                            try {
+                                if (date == null) {
+                                    date = LocalDate.parse(it.trim()).atStartOfDay()
+                                }
+                            } catch (e: Exception) {
+                                if (SCANNER_DEBUG) {
+                                    println("Could not parse date, trying to parse year...")
+                                    e.printStackTrace()
+                                }
+                                try {
+                                    if (year == null) {
+                                        year = date?.year ?: parseInt(it.trim())
+                                    }
+                                } catch (e: Exception) {
+                                    if (SCANNER_DEBUG) {
+                                        println("Could not parse year")
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
+                        }
                         else -> {}
                     }
                 }
@@ -141,9 +164,6 @@ class TagLibScanner : MetadataScanner {
              * Parse the more complicated structures
              */
 
-            var year: Int? = null
-            var date: LocalDateTime? = null
-
             // parse album
             val albumEntity = if (albumName != null && albumId != null) AlbumEntity(
                 id = albumId,
@@ -151,21 +171,6 @@ class TagLibScanner : MetadataScanner {
                 songCount = 1,
                 duration = duration.toInt()
             ) else null
-
-
-            // parse date and year
-            try {
-                if (rawDate.isNotBlank()) {
-                    try {
-                        date = LocalDate.parse(rawDate.substringAfter("\\").trim()).atStartOfDay()
-                    } catch (e: Exception) {
-                    }
-
-                    year = date?.year ?: parseInt(rawDate.trim())
-                }
-            } catch (e: Exception) {
-                // user error at this point. I am not parsing all the weird ways the string can come in
-            }
 
 
             // deduplicate
