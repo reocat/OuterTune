@@ -182,4 +182,6 @@ dependencies {
      */
       implementation(files("prebuilt/ffMetadataEx-release.aar")) // prebuilt
 //     implementation(project(":ffMetadataEx")) // self built
+
+    implementation(libs.taglib)
 }

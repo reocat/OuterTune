@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.math.roundToLong
 
-const val EXTRACTOR_DEBUG = false
+const val EXTRACTOR_DEBUG = true
 const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
 const val EXTRACTOR_TAG = "FFMpegExtractor"
 const val toSeconds = 1000 * 60 * 16.7 // convert FFmpeg duration to seconds
@@ -42,7 +42,7 @@ class FFMpegScanner : MetadataScanner {
      *
      * @param path Full file path
      */
-    override fun getAllMetadata(path: String): SongTempData {
+    override fun getAllMetadataFromPath(path: String): SongTempData {
         if (EXTRACTOR_DEBUG)
             Timber.tag(EXTRACTOR_TAG).d("Starting Full Extractor session on: $path")
         val ffmpeg = FFMpegWrapper()
@@ -191,6 +191,16 @@ class FFMpegScanner : MetadataScanner {
                 playbackUrl = null
             )
         )
+    }
+
+    /**
+     * Given a path to a file, extract necessary metadata. For fields FFmpeg is
+     * unable to extract, use the provided FormatEntity data.
+     *
+     * @param file Full file path
+     */
+    override fun getAllMetadataFromFile(file: File): SongTempData {
+        return getAllMetadataFromPath(file.path)
     }
 
 }

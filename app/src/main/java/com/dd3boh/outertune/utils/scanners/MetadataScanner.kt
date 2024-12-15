@@ -2,6 +2,7 @@ package com.dd3boh.outertune.utils.scanners
 
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.SongTempData
+import java.io.File
 
 
 /**
@@ -10,13 +11,19 @@ import com.dd3boh.outertune.models.SongTempData
 interface MetadataScanner {
 
     /**
-     * Given a path to a file, extract necessary metadata. For fields FFmpeg is
-     * unable to extract, use the provided FormatEntity data.
+     * Given a path to a file, extract necessary metadata.
      *
      * @param path Full file path
-     * @param og Initial FormatEntity data to build upon
      */
-    fun getAllMetadata(path: String): SongTempData
+    fun getAllMetadataFromPath(path: String): SongTempData
+
+
+    /**
+     * Given a path to a file, extract necessary metadata.
+     *
+     * @param file Full file path
+     */
+    fun getAllMetadataFromFile(file: File): SongTempData
 }
 
 /**
