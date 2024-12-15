@@ -3,6 +3,7 @@ package com.dd3boh.outertune.utils.scanners
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.Environment
+import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -38,7 +39,16 @@ import java.time.LocalDateTime
 import java.util.Locale
 
 
-class LocalMediaScanner(val context: Context) {
+class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
+    private var advancedScannerImpl: MetadataScanner = when (scannerImpl) {
+        ScannerImpl.TAGLIB -> TagLibScanner()
+        ScannerImpl.FFMPEG_EXT -> FFMpegScanner()
+    }
+
+    init {
+        if (EXTRACTOR_DEBUG)
+            Timber.tag(EXTRACTOR_TAG).d("Creating scanner instance with scannerImpl: $scannerImpl")
+    }
 
     /**
      * Compiles a song with all it's necessary metadata. Unlike MediaStore,
@@ -55,13 +65,10 @@ class LocalMediaScanner(val context: Context) {
             testPlayer.release()
 
             // decide which scanner to use
-            val scanner = getAdvancedScanner()
-                ?: throw NullPointerException("Advanced Extractor is null") // debug
-
-            val ffmpegData = if (scanner is FFMpegScanner) {
-                scanner.getAllMetadataFromPath(path)
-            } else if (scanner is TagLibScanner) {
-                scanner.getAllMetadataFromFile(File(path))
+            val ffmpegData = if (advancedScannerImpl is FFMpegScanner) {
+                advancedScannerImpl.getAllMetadataFromPath(path)
+            } else if (advancedScannerImpl is TagLibScanner) {
+                advancedScannerImpl.getAllMetadataFromFile(File(path))
             } else {
                 throw RuntimeException("Unsupported extractor")
             }
@@ -695,7 +702,7 @@ class LocalMediaScanner(val context: Context) {
         const val TAG = "LocalMediaScanner"
 
         private var localScanner: LocalMediaScanner? = null
-        private var advancedScannerImpl: MetadataScanner? = null
+
 
         /**
          * TODO: Create a lock for background jobs like youtubeartists and etc
@@ -713,9 +720,9 @@ class LocalMediaScanner(val context: Context) {
         /**
          * Trust me bro, it should never be null
          */
-        fun getScanner(context: Context): LocalMediaScanner {
+        fun getScanner(context: Context, scannerImpl: ScannerImpl): LocalMediaScanner {
             if (localScanner == null) {
-                localScanner = LocalMediaScanner(context)
+                localScanner = LocalMediaScanner(context, scannerImpl)
             }
 
             return localScanner!!
@@ -723,19 +730,8 @@ class LocalMediaScanner(val context: Context) {
 
         fun destroyScanner() {
             localScanner = null
-            unloadAdvancedScanner()
-        }
-
-        /**
-         * TODO: Docs here
-         */
-        fun getAdvancedScanner(): MetadataScanner? {
-            // kotlin won't let me return MetadataScanner even if it cant possibly be null broooo
-            return if (advancedScannerImpl != null) advancedScannerImpl else TagLibScanner()
-        }
-
-        fun unloadAdvancedScanner() {
-            advancedScannerImpl = null
+            if (EXTRACTOR_DEBUG)
+                Timber.tag(EXTRACTOR_TAG).d("Scanner instance destroyed")
         }
 
 
