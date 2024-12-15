@@ -13,6 +13,7 @@ ktor = "3.0.3"
 ksp = "2.1.0-1.0.29"
 multidex = "2.0.1"
 newpipe = "235c899bf2e412d3c2851f05860707511ab31e02"
+taglib = "1.0.0-alpha25"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -36,6 +37,7 @@ compose-animation = { group = "androidx.compose.animation", name = "animation-gr
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version = "2.4.2" }
 compose-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.7.6" }
 
+taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
 viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 

@@ -110,7 +110,7 @@ fun ExperimentalSettings(
                 onClick = {
                     Toast.makeText(context, "Starting migration...", Toast.LENGTH_SHORT).show()
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = LocalMediaScanner.getScanner()
+                        val scanner = LocalMediaScanner.getScanner(context)
                         Timber.tag("Settings").d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
                         scanner.localToRemoteArtist(database)
                     }
