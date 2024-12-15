@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Button
@@ -61,6 +62,8 @@ import com.dd3boh.outertune.constants.ExcludedScanPathsKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
 import com.dd3boh.outertune.constants.ScanPathsKey
+import com.dd3boh.outertune.constants.ScannerImpl
+import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.constants.ScannerSensitivityKey
 import com.dd3boh.outertune.constants.ScannerStrictExtKey
@@ -78,11 +81,11 @@ import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.utils.purgeCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerActive
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerFinished
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRequestCancel
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.unloadAdvancedScanner
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -122,6 +125,10 @@ fun LocalPlayerSettings(
     val (scannerSensitivity, onScannerSensitivityChange) = rememberEnumPreference(
         key = ScannerSensitivityKey,
         defaultValue = ScannerMatchCriteria.LEVEL_2
+    )
+    val (scannerImpl, onScannerImplChange) = rememberEnumPreference(
+        key = ScannerImplKey,
+        defaultValue = ScannerImpl.TAGLIB
     )
     val (strictExtensions, onStrictExtensionsChange) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
     val (autoScan, onAutoScanChange) = rememberPreference(AutomaticScannerKey, defaultValue = false)
@@ -325,7 +332,7 @@ fun LocalPlayerSettings(
                     scannerFailure = false
 
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = getScanner(context)
+                        val scanner = getScanner(context, scannerImpl)
                         // full rescan
                         if (fullRescan) {
                             try {
@@ -366,7 +373,7 @@ fun LocalPlayerSettings(
                                     Toast.LENGTH_LONG
                                 ).show()
                             } finally {
-                                unloadAdvancedScanner()
+                                destroyScanner()
                             }
                         } else {
                             // quick scan
@@ -407,7 +414,7 @@ fun LocalPlayerSettings(
                                     Toast.LENGTH_LONG
                                 ).show()
                             } finally {
-                                unloadAdvancedScanner()
+                                destroyScanner()
                             }
                         }
 
@@ -528,6 +535,21 @@ fun LocalPlayerSettings(
             checked = strictExtensions,
             onCheckedChange = onStrictExtensionsChange
         )
+        // scanner type
+        if (true) { // todo: detect if ext library is installed
+            EnumListPreference(
+                title = { Text(stringResource(R.string.scanner_type_title)) },
+                icon = { Icon(Icons.Rounded.Speed, null) },
+                selectedValue = scannerImpl,
+                onValueSelected = onScannerImplChange,
+                valueText = {
+                    when (it) {
+                        ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
+                        ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
+                    }
+                }
+            )
+        }
     }
 
 

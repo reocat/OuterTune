@@ -41,11 +41,14 @@ import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
+import com.dd3boh.outertune.constants.ScannerImpl
+import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
+import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +71,11 @@ fun ExperimentalSettings(
     // state variables and such
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
+
+    val (scannerImpl) = rememberEnumPreference(
+        key = ScannerImplKey,
+        defaultValue = ScannerImpl.TAGLIB
+    )
 
     var nukeEnabled by remember {
         mutableStateOf(false)
@@ -110,7 +118,7 @@ fun ExperimentalSettings(
                 onClick = {
                     Toast.makeText(context, "Starting migration...", Toast.LENGTH_SHORT).show()
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = LocalMediaScanner.getScanner(context)
+                        val scanner = LocalMediaScanner.getScanner(context, scannerImpl)
                         Timber.tag("Settings").d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
                         scanner.localToRemoteArtist(database)
                     }
