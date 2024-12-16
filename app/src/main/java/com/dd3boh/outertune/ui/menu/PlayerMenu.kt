@@ -414,6 +414,7 @@ fun PlayerMenu(
                     database.transaction {
                         insert(mediaMetadata)
                     }
+                    downloadUtil.download(mediaMetadata)
                 },
                 onRemoveDownload = {
                     DownloadService.sendRemoveDownload(
