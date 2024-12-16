@@ -457,7 +457,7 @@ fun ImportFromSpotifyScreen(
                         text = buildAnnotatedString {
                             append("Now, click the ")
                             withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                                append("Authorize")
+                                append("Authenticate with Spotify")
                             }
                             append(" button below and login with your account from which you want to import from, and authorize, which will redirect you to a site which should start from ")
                             withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
@@ -469,7 +469,7 @@ fun ImportFromSpotifyScreen(
                             }
                             append(" and click the ")
                             withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                                append("Authenticate")
+                                append("Authorize and Continue")
                             }
                             append(" button.")
                         })
@@ -560,7 +560,7 @@ fun ImportFromSpotifyScreen(
                     .fillMaxWidth()
                     .padding(start = 15.dp, end = 15.dp)
             ) {
-                Text(text = "Authorize")
+                Text(text = "Authenticate with Spotify")
             }
             HorizontalDivider(
                 modifier = Modifier
@@ -608,7 +608,7 @@ fun ImportFromSpotifyScreen(
                         .fillMaxWidth()
                         .padding(start = 15.dp, bottom = 15.dp, end = 15.dp)
                 ) {
-                    Text(text = "Authenticate")
+                    Text(text = "Authorize and Continue")
                 }
             } else {
                 LinearProgressIndicator(
