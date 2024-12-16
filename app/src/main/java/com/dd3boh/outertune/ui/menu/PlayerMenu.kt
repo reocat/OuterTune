@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -234,7 +235,7 @@ fun PlayerMenu(
     }
 
     var sleepTimerValue by remember {
-        mutableStateOf(30f)
+        mutableFloatStateOf(30f)
     }
 
     if (showSleepTimerDialog) {
@@ -320,7 +321,7 @@ fun PlayerMenu(
                 ) {
                     listOf(
                         stringResource(R.string.song_title) to mediaMetadata.title,
-                        stringResource(R.string.song_artists) to mediaMetadata.artists?.joinToString { it.name },
+                        stringResource(R.string.song_artists) to mediaMetadata.artists.joinToString { it.name },
                         stringResource(R.string.sort_by_date_released) to mediaMetadata.getDateString(),
                         stringResource(R.string.sort_by_date_modified) to mediaMetadata.getDateModifiedString(),
                         stringResource(R.string.media_id) to mediaMetadata.id,
@@ -387,7 +388,7 @@ fun PlayerMenu(
             bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
         )
     ) {
-        if (mediaMetadata.isLocal != true)
+        if (!mediaMetadata.isLocal)
             GridMenuItem(
                 icon = Icons.Rounded.Radio,
                 title = R.string.start_radio
@@ -407,7 +408,7 @@ fun PlayerMenu(
         ) {
             showChoosePlaylistDialog = true
         }
-        if (mediaMetadata.isLocal != true)
+        if (!mediaMetadata.isLocal)
             DownloadGridMenu(
                 state = download?.state,
                 onDownload = {
@@ -468,7 +469,7 @@ fun PlayerMenu(
             }
         }
 
-        if (mediaMetadata.isLocal != true)
+        if (!mediaMetadata.isLocal)
             GridMenuItem(
                 icon = Icons.Rounded.Share,
                 title = R.string.share
@@ -509,10 +510,10 @@ fun PitchTempoDialog(
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     var tempo by remember {
-        mutableStateOf(playerConnection.player.playbackParameters.speed)
+        mutableFloatStateOf(playerConnection.player.playbackParameters.speed)
     }
     var transposeValue by remember {
-        mutableStateOf(round(12 * log2(playerConnection.player.playbackParameters.pitch)).toInt())
+        androidx.compose.runtime.mutableIntStateOf(round(12 * log2(playerConnection.player.playbackParameters.pitch)).toInt())
     }
     val updatePlaybackParameters = {
         playerConnection.player.playbackParameters = PlaybackParameters(tempo, 2f.pow(transposeValue.toFloat() / 12))
