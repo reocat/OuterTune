@@ -181,8 +181,8 @@ fun SearchBar(
 
         Surface(
             shape = animatedShape,
-            color = colors.containerColor,
-            contentColor = contentColorFor(colors.containerColor),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceVariant),
             tonalElevation = tonalElevation,
             modifier = Modifier
                 .padding(
