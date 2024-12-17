@@ -1,5 +1,6 @@
 [versions]
 androidGradlePlugin = "8.9.0-alpha05"
+annotation = "1.9.1"
 json = "20240303"
 kotlin = "2.1.0"
 compose = "1.7.6"
@@ -13,6 +14,7 @@ ksp = "2.1.0-1.0.29"
 multidex = "2.0.1"
 
 [libraries]
+annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version = "2.36.0" }
 guava = { group = "com.google.guava", name = "guava", version = "33.3.1-android" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.9.0" }
