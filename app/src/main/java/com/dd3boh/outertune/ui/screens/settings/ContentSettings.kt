@@ -86,7 +86,7 @@ fun ContentSettings(
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
         PreferenceGroupTitle(
-            title = "ACCOUNT"
+            title = stringResource(R.string.account)
         )
         PreferenceEntry(
             title = { Text(if (isLoggedIn) accountName else stringResource(R.string.login)) },
@@ -129,7 +129,7 @@ fun ContentSettings(
         )
 
         PreferenceGroupTitle(
-            title = "LOCALIZATION"
+            title = stringResource(R.string.localization)
         )
         ListPreference(
             title = { Text(stringResource(R.string.content_language)) },
@@ -157,7 +157,7 @@ fun ContentSettings(
         )
 
         PreferenceGroupTitle(
-            title = "PROXY"
+            title = stringResource(R.string.proxy)
         )
 
         SwitchPreference(

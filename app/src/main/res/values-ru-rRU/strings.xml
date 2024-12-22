@@ -252,6 +252,7 @@
     <string name="dark_theme_follow_system">Использовать настройки системы</string>
     <string name="pure_black">Режим чистого черного цвета</string>
     <string name="customize_navigation_tabs">Настройка вкладок навигации</string>
+    <string name="arrange_tabs">Расположить вкладки</string>
     <string name="player">Плеер</string>
     <string name="player_text_alignment">Выравнивание текста плеера</string>
     <string name="lyrics_text_position">Расположение текста песни</string>
@@ -271,19 +272,23 @@
     <string name="content">Контент</string>
     <string name="login">Логин</string>
     <string name="not_logged_in">Не авторизовано</string>
+    <string name="localization">Локализация</string>
     <string name="content_language">Язык контента</string>
     <string name="content_country">Страна контента</string>
     <string name="system_default">По умолчанию системы</string>
+    <string name="proxy">Прокси</string>
     <string name="enable_proxy">Включить прокси</string>
     <string name="proxy_type">Тип прокси</string>
     <string name="proxy_url">URL прокси</string>
     <string name="restart_to_take_effect">Перезапуск приложения</string>
 
     <string name="player_and_audio">Плеер и аудио</string>
+    <string name="iface">Интерфейс</string>
     <string name="audio_quality">Качество аудио</string>
     <string name="audio_quality_auto">Авто</string>
     <string name="audio_quality_high">Высокое</string>
     <string name="audio_quality_low">Низкое</string>
+    <string name="audio">Аудио</string>
     <string name="queue">Очередь</string>
     <string name="persistent_queue">Постоянная очередь</string>
     <string name="persistent_queue_desc">Восстанавливать последнюю очередь при запуске приложения</string>
@@ -318,6 +323,7 @@
     <string name="pause_search_history">Приостановить историю поиска</string>
     <string name="clear_search_history">Очистить историю поиска</string>
     <string name="clear_search_history_confirm">Вы уверены, что хотите очистить всю историю поиска?</string>
+    <string name="use_login_for_browse_desc">Влияет на отображаемый контент, например показываются альбомы, доступные только для аккаунтов с Premium, если таковой имеется на аккаунте</string>
     <string name="disable_screenshot">Отключить снимок экрана</string>
     <string name="disable_screenshot_desc">При включении этой опции скриншоты и отображение приложения в списке последних отключаются.</string>
     <string name="enable_lrclib">Включить провайдера текстов LrcLib</string>
@@ -333,11 +339,12 @@
     <string name="restore_failed">Не удалось восстановить резервную копию</string>
 
     <string name="discord_integration">Интеграция с Discord</string>
-    <string name="discord_information">InnerTune использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.\n\nInnerTune будет извлекать только ваш токен, а все остальное хранится локально.</string>
+    <string name="discord_information">OuterTune использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.\n\nOuterTune будет извлекать только ваш токен, а все остальное хранится локально.</string>
     <string name="dismiss">Закрыть</string>
     <string name="options">Настройки</string>
     <string name="preview">Предпросмотр</string>
     <string name="login_failed">Ошибка входа</string>
+    <string name="settings_debug">Отладка</string>
     <string name="logout">Выйти</string>
     <string name="enable_discord_rpc">Включить Rich Presence</string>
 
@@ -345,6 +352,33 @@
     <string name="app_version">Версия приложения</string>
 
     <string name="new_version_available">Доступна новая версия</string>
+    <string name="dev_settings_description">Открывает дополнительные настройки, используемые во время разработки</string>
     <string name="translation_models">Модели перевода</string>
     <string name="clear_translation_models">Очистить модели перевода</string>
+    <string name="off">ВЫКЛ</string>
+    <string name="on">ВКЛ</string>
+    <string name="show_liked_and_downloaded_playlist">Показывать любимые треки и загруженную музыку в библиотеке</string>
+    <string name="slim_navbar">Убрать подписи с панели навигации</string>
+    <string name="ytm_sync">Авто-синхронизация с аккаунтом YouTube Music</string>
+    <string name="like_autodownload">Автоматически скачивать понравившиеся песни</string>
+    <string name="wifi_only">Только по Wi-Fi</string>
+    <string name="player_background_default">Следовать теме</string>
+    <string name="player_background_gradient">Градиент</string>
+    <string name="player_background_blur">Размытие</string>
+    <string name="experimental_settings_title">Экспериментальные настройки</string>
+    <string name="dev_settings_title">Включить настройки для разработчиков</string>
+    <string name="import_innertune_tooltip">Восстановление резервных копий OuterTune поддерживается, однако возможны проблемы в связи с техническими ограничениями</string>
+    <string name="import_m3u">Импортировать плейлист (m3u)</string>
+    <string name="m3u_import_failed">Не удалось импортировать плейлист</string>
+    <string name="auto_scanner_title">Сканировать автоматически</string>
+    <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
+    <string name="folders">Папки</string>
+    <string name="library">Библиотека</string>
+    <string name="create_queue">Новая очередь</string>
+    <string name="player_background_style">Стиль фона плеера</string>
+    <string name="new_interface">Новая раскладка интерфейса</string>
+    <string name="tab_arrangement">Расположение вкладок</string>
+    <string name="manual_scanner_title">Ручное сканироваие</string>
+    <string name="lyrics_settings_title">Текст</string>
+    <string name="use_login_for_browse">Использовать аккаунт для просмотра контента</string>
 </resources>
