@@ -237,6 +237,9 @@
     <string name="dark_theme_follow_system">Follow system</string>
     <string name="pure_black">Pure black</string>
     <string name="customize_navigation_tabs">Customize navigation tabs</string>
+    <string name="tab_arrangement">Tab arrangement</string>
+    <string name="arrange_tabs">Arrange tabs</string>
+    <string name="layout">Layout</string>
     <string name="player">Player</string>
     <string name="player_text_alignment">Player text alignment</string>
     <string name="lyrics_text_position">Lyrics text position</string>
@@ -256,19 +259,23 @@
     <string name="content">Content</string>
     <string name="login">Login</string>
     <string name="not_logged_in">Not logged in</string>
+    <string name="localization">Localization</string>
     <string name="content_language">Default content language</string>
     <string name="content_country">Default content country</string>
     <string name="system_default">System default</string>
+    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Enable proxy</string>
     <string name="proxy_type">Proxy type</string>
     <string name="proxy_url">Proxy URL</string>
     <string name="restart_to_take_effect">Restart to take effect</string>
 
     <string name="player_and_audio">Player and audio</string>
+    <string name="iface">Interface</string>
     <string name="audio_quality">Audio quality</string>
     <string name="audio_quality_auto">Auto</string>
     <string name="audio_quality_high">High</string>
     <string name="audio_quality_low">Low</string>
+    <string name="audio">Audio</string>
     <string name="queue">Queue</string>
     <string name="persistent_queue">Persistent queue</string>
 <!-- OuterTune: Keep this one below as is-->
@@ -321,7 +328,7 @@
     <string name="restore_failed">Failed to restore backup</string>
  
     <string name="discord_integration">Discord Integration</string>
-    <string name="discord_information">InnerTune uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.\n\nInnerTune will only extract your token, and everything else is stored locally.</string>
+    <string name="discord_information">OuterTune uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.  OuterTune will only extract your token, and everything else is stored locally.</string>
     <string name="dismiss">Dismiss</string>
     <string name="options">Options</string>
     <string name="preview">Preview</string>
@@ -386,7 +393,7 @@
     <!-- Content settings -->
     <string name="ytm_sync">Automatically sync with your YouTube Music account</string>
     <string name="like_autodownload">Automatically download your liked songs</string>
-    <string name="wifi_only">Wifi only</string>
+    <string name="wifi_only">Wi-Fi only</string>
 
     <!-- Player settings -->
     <string name="audio_offload">Enable offload</string>
@@ -407,7 +414,7 @@
     <string name="flat_subfolders_title">Flatten subfolders</string>
     <string name="flat_subfolders_description">Disable to preserve the file structure as on disk</string>
 
-    <string name="import_innertune_tooltip">Restoring InnerTune backups are supported, albeit a possibility of anomalies due to technical limitations</string>
+    <string name="import_innertune_tooltip">Restoring OuterTune backups are supported, albeit a possibility of anomalies due to technical limitations</string>
     <string name="import_m3u">Import a playlist (m3u)</string>
     <string name="m3u_import_failed">Failed to import playlist</string>
 
