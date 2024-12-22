@@ -705,7 +705,7 @@ fun SetupWizard(
                     // local media
                     3 -> {
                         Text(
-                            text = "Local Media",
+                            text = "Local media",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
