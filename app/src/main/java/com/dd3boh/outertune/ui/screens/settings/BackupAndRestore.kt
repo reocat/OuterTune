@@ -136,7 +136,7 @@ fun BackupAndRestore(
         )
         AddToPlaylistDialog(
             isVisible = showChoosePlaylistDialog,
-            noSyncing = true,
+            allowSyncing = false,
             initialTextFieldValue = importedTitle,
             onGetSong = { importedSongs.map { it.id } },
             onDismiss = { showChoosePlaylistDialog = false }
