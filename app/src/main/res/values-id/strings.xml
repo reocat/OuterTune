@@ -282,9 +282,9 @@
     <string name="disable_screenshot_desc">Jika opsi ini aktif, tangkapan layar dan tampilan aplikasi di Terbaru akan dinonaktifkan.</string>
     <string name="enable_lrclib">Aktifkan penyedia lirik LrcLib</string>
     <string name="discord_integration">Integrasi Discord</string>
-    <string name="discord_information">InnerTune adalah aplikasi yang bisa mengatur akun Discord kamu. Aplikasi ini menggunakan cara khusus (KizzyRPC) yang mungkin melanggar aturan Discord. Meski begitu, belum ada pengguna yang kena masalah karena hal ini. Tapi, tetap hati-hati ya kalau mau pakai.
+    <string name="discord_information">OuterTune adalah aplikasi yang bisa mengatur akun Discord kamu. Aplikasi ini menggunakan cara khusus (KizzyRPC) yang mungkin melanggar aturan Discord. Meski begitu, belum ada pengguna yang kena masalah karena hal ini. Tapi, tetap hati-hati ya kalau mau pakai.
 \n
-\nInnerTune cuma akan mengambil data khusus (token) dari akun Discord kamu, data lainnya disimpan di perangkat kamu sendiri.</string>
+\nOuterTune cuma akan mengambil data khusus (token) dari akun Discord kamu, data lainnya disimpan di perangkat kamu sendiri.</string>
     <string name="dismiss">Membubarkan</string>
     <string name="preview">Pratinjau</string>
     <string name="enable_discord_rpc">Aktifkan Fitur Discord</string>

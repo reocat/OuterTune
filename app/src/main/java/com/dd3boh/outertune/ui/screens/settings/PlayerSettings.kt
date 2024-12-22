@@ -7,11 +7,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -52,9 +52,9 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AudioNormalizationKey
+import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
-import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.SkipOnErrorKey
@@ -188,7 +188,7 @@ fun PlayerSettings(
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
         PreferenceGroupTitle(
-            title = "Interface"
+            title = stringResource(R.string.iface)
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.persistent_queue)) },
@@ -210,7 +210,7 @@ fun PlayerSettings(
         )
 
         PreferenceGroupTitle(
-            title = "Audio"
+            title = stringResource(R.string.audio)
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
@@ -246,7 +246,7 @@ fun PlayerSettings(
         )
 
         PreferenceGroupTitle(
-            title = "Advanced"
+            title = stringResource(R.string.misc)
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.stop_music_on_task_clear)) },

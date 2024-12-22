@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -199,7 +199,7 @@ fun AppearanceSettings(
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
         PreferenceGroupTitle(
-            title = "Theme"
+            title = stringResource(R.string.theme)
         )
 
         SwitchPreference(
@@ -243,7 +243,7 @@ fun AppearanceSettings(
         )
 
         PreferenceGroupTitle(
-            title = "Layout"
+            title = stringResource(R.string.layout)
         )
 
         SwitchPreference(
@@ -268,7 +268,7 @@ fun AppearanceSettings(
         )
 
         PreferenceEntry(
-            title = { Text("Tab arrangement") },
+            title = { Text(stringResource(R.string.tab_arrangement)) },
             icon = { Icon(Icons.Rounded.Reorder, null) },
             onClick = {
                 showTabArrangement = true
@@ -277,7 +277,7 @@ fun AppearanceSettings(
 
         if (showTabArrangement)
             ActionPromptDialog(
-                title = "Arrange tabs",
+                title = stringResource(R.string.arrange_tabs),
                 onDismiss = { showTabArrangement = false },
                 onConfirm = {
                     var encoded = encodeTabString(mutableTabs)
