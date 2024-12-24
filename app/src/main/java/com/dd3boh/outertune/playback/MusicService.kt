@@ -799,10 +799,13 @@ class MusicService : MediaLibraryService(),
             }
             scope.launch(Dispatchers.IO) { recoverSong(mediaId, playerResponse) }
 
-            songUrlCache[mediaId] = format.findUrl() to playerResponse.streamingData!!.expiresInSeconds * 1000L
-            dataSpec.withUri(format.findUrl().toUri()).subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
+            val streamUrl = format.findUrl()
+
+            songUrlCache[mediaId] = streamUrl!! to playerResponse.streamingData!!.expiresInSeconds * 1000L
+            dataSpec.withUri(streamUrl.toUri()).subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
         }
     }
+
 
     private fun createRenderersFactory() = object : DefaultRenderersFactory(this) {
         override fun buildAudioSink(

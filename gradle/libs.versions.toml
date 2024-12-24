@@ -12,6 +12,7 @@ hilt = "2.54"
 ktor = "3.0.3"
 ksp = "2.1.0-1.0.29"
 multidex = "2.0.1"
+newpipe = "235c899bf2e412d3c2851f05860707511ab31e02"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -76,6 +77,10 @@ junit = { group = "junit", name = "junit", version = "4.13.2" }
 timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" }
 
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
+
+#newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor", version = "v0.24.3" }
+# Use fork of NewPipeExtractor until https://github.com/TeamNewPipe/NewPipeExtractor/pull/1253 is merged
+newpipe-extractor = { group = "com.github.gechoto", name = "NewPipeExtractor", version.ref = "newpipe" }
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
