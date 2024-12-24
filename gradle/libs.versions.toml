@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "8.9.0-alpha06"
+androidGradlePlugin = "8.9.0-alpha07"
 annotation = "1.9.1"
 json = "20240303"
 kotlin = "2.1.0"
