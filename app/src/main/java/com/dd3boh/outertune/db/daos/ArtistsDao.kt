@@ -63,6 +63,7 @@ interface ArtistsDao {
     """)
     fun searchArtists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Artist>>
 
+    @Transaction
     @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE song_artist_map.artistId IN (SELECT id FROM artist WHERE name LIKE '%' || :query || '%') LIMIT :previewSize")
     fun searchArtistSongs(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
 
@@ -146,12 +147,15 @@ interface ArtistsDao {
     // endregion
 
     // region Artist Songs Sort
+    @Transaction
     @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY inLibrary")
     fun artistSongsByCreateDateAsc(artistId: String): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
     fun artistSongsByNameAsc(artistId: String): Flow<List<Song>>
 
+    @Transaction
     @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY totalPlayTime")
     fun artistSongsByPlayTimeAsc(artistId: String): Flow<List<Song>>
 

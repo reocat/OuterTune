@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.map
 interface PlaylistsDao {
 
     // region Gets
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -43,6 +44,7 @@ interface PlaylistsDao {
     """)
     fun playlist(playlistId: String): Flow<Playlist?>
 
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -56,6 +58,7 @@ interface PlaylistsDao {
     """)
     fun playlistByBrowseId(browseId: String): Flow<Playlist?>
 
+    @Transaction
     @Query("""
         SELECT 
             p.*, 
@@ -70,6 +73,7 @@ interface PlaylistsDao {
     """)
     fun searchPlaylists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Playlist>>
 
+    @Transaction
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId ORDER BY position")
     fun playlistSongs(playlistId: String): Flow<List<PlaylistSong>>
 
@@ -82,6 +86,7 @@ interface PlaylistsDao {
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId AND position >= :from ORDER BY position")
     fun songMapsToPlaylist(playlistId: String, from: Int): List<PlaylistSongMap>
 
+    @Transaction
     @Query("""
         SELECT 
             p.*, 

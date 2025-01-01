@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao {
 
+    @Transaction
     @Query("""
         SELECT song.*
         FROM (SELECT *, COUNT(1) AS referredCount
@@ -78,6 +79,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
     @Query("SELECT * FROM lyrics WHERE id = :id")
     fun lyrics(id: String?): Flow<LyricsEntity?>
 
+    @Transaction
     @Query("SELECT * FROM event ORDER BY rowId DESC")
     fun events(): Flow<List<EventWithSong>>
 
