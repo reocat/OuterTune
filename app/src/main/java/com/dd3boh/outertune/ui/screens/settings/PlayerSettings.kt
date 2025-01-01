@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.ClearAll
+import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Lyrics
@@ -59,6 +60,8 @@ import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.SkipOnErrorKey
+import com.dd3boh.outertune.constants.PlayerOnErrorActionKey
+import com.dd3boh.outertune.constants.PlayerOnErrorPref
 import com.dd3boh.outertune.constants.SkipSilenceKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.constants.minPlaybackDurKey
@@ -83,6 +86,7 @@ fun PlayerSettings(
     val context = LocalContext.current
 
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(key = AudioQualityKey, defaultValue = AudioQuality.AUTO)
+    val (playerOnErrorAction, onPlayerOnErrorAction) = rememberEnumPreference(key = PlayerOnErrorActionKey, defaultValue = PlayerOnErrorPref.PAUSE)
     val (persistentQueue, onPersistentQueueChange) = rememberPreference(key = PersistentQueueKey, defaultValue = true)
     val (skipSilence, onSkipSilenceChange) = rememberPreference(key = SkipSilenceKey, defaultValue = false)
     val (skipOnErrorKey, onSkipOnErrorChange) = rememberPreference(key = SkipOnErrorKey, defaultValue = true)
@@ -238,12 +242,17 @@ fun PlayerSettings(
             checked = skipSilence,
             onCheckedChange = onSkipSilenceChange
         )
-        SwitchPreference(
-            title = { Text(stringResource(R.string.auto_skip_next_on_error)) },
-            description = stringResource(R.string.auto_skip_next_on_error_desc),
-            icon = { Icon(Icons.Rounded.FastForward, null) },
-            checked = skipOnErrorKey,
-            onCheckedChange = onSkipOnErrorChange
+        EnumListPreference(
+            title = { Text(stringResource(R.string.on_error)) },
+            icon = { Icon(Icons.Rounded.Error, null) },
+            selectedValue = playerOnErrorAction,
+            onValueSelected = onPlayerOnErrorAction,
+            valueText = {
+                when (it) {
+                    PlayerOnErrorPref.PAUSE -> stringResource(R.string.pause)
+                    PlayerOnErrorPref.SKIP -> stringResource(R.string.play_next)
+                }
+            }
         )
 
         PreferenceGroupTitle(
