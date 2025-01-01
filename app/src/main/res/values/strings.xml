@@ -206,6 +206,9 @@
     <string name="error_no_internet">No network connection</string>
     <string name="error_timeout">Timeout</string>
     <string name="error_unknown">Unknown error</string>
+    <string name="on_error">On error</string>
+    <string name="pause">Pause</string>
+    <string name="wait_to_reconnect">Wait to reconnect</string>">
 
     <!-- Player action -->
     <string name="action_like">Like</string>

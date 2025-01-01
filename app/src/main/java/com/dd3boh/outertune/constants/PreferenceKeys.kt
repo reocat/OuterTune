@@ -64,7 +64,15 @@ val RepeatModeKey = intPreferencesKey("repeatMode")
 val LastPosKey = longPreferencesKey("lastPosKey")
 val LockQueueKey = booleanPreferencesKey("lockQueue")
 val minPlaybackDurKey = intPreferencesKey("minPlaybackDur")
+val PlayerOnErrorActionKey = stringPreferencesKey("PlayerOnError")
 
+enum class PlayerOnError { // TODO: move somewhere else later
+    PAUSE, SKIP, WAIT_TO_RECONNECT
+}
+
+enum class PlayerOnErrorPref {
+    PAUSE, SKIP
+}
 
 /**
  * Lyrics
