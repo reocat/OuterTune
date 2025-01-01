@@ -9,14 +9,14 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.request.CachePolicy
-import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.models.YouTubeLocale
-import com.zionhuang.kugou.KuGou
 import com.dd3boh.outertune.constants.*
 import com.dd3boh.outertune.extensions.*
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
+import com.zionhuang.innertube.YouTube
+import com.zionhuang.innertube.models.YouTubeLocale
+import com.zionhuang.kugou.KuGou
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -84,7 +84,15 @@ class App : Application(), ImageLoaderFactory {
                 .map { it[InnerTubeCookieKey] }
                 .distinctUntilChanged()
                 .collect { cookie ->
-                    YouTube.cookie = cookie
+                    try {
+                        YouTube.cookie = cookie
+                    } catch (e: Exception) {
+                        // we now allow user input now, here be the demons. This serves as a last ditch effort to avoid a crash loop
+                        Timber.e("Could not parse cookie. Clearing existing cookie. %s", e.message)
+                        dataStore.edit { settings ->
+                            settings[InnerTubeCookieKey] = ""
+                        }
+                    }
                 }
         }
     }
