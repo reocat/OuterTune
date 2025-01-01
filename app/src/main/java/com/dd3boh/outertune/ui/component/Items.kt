@@ -831,18 +831,19 @@ fun AutoPlaylistGridItem(
     playlist: PlaylistEntity,
     thumbnail: ImageVector,
     modifier: Modifier = Modifier,
-    badges: @Composable RowScope.() -> Unit = { },
     fillMaxWidth: Boolean = false,
 ) = GridItem(
     title = playlist.name,
     subtitle = stringResource(id = R.string.auto_playlist),
-    badges = badges,
     thumbnailContent = {
         val width = maxWidth
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
+                .background(
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+                    shape = RoundedCornerShape(ThumbnailCornerRadius)
+                )
         ) {
             Icon(
                 imageVector = thumbnail,
