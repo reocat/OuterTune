@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.DeveloperMode
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
+import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
@@ -52,6 +54,7 @@ fun ExperimentalSettings(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
+    val syncUtils = LocalSyncUtils.current
     val coroutineScope = rememberCoroutineScope()
 
     // state variables and such
@@ -71,6 +74,18 @@ fun ExperimentalSettings(
             icon = { Icon(Icons.Rounded.DeveloperMode, null) },
             checked = devSettings,
             onCheckedChange = onDevSettingsChange
+        )
+
+        PreferenceEntry(
+            title = { Text("Trigger manual sync") },
+            icon = { Icon(Icons.Rounded.Sync, null) },
+            onClick = {
+                Toast.makeText(context, "Syncing with YouTube account...", Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch(Dispatchers.Main) {
+                        syncUtils.syncAll()
+                        Toast.makeText(context, "Sync complete", Toast.LENGTH_SHORT).show()
+                    }
+            }
         )
 
         if (devSettings) {
