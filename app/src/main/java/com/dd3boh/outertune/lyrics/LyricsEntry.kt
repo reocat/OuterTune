@@ -1,11 +1,11 @@
 package com.dd3boh.outertune.lyrics
 
 data class LyricsEntry(
-    val time: Long,
-    val text: String,
+    val timeStamp: Long,
+    val content: String,
     var isTranslation: Boolean = false
 ) : Comparable<LyricsEntry> {
-    override fun compareTo(other: LyricsEntry): Int = (time - other.time).toInt()
+    override fun compareTo(other: LyricsEntry): Int = (timeStamp - other.timeStamp).toInt()
 
     companion object {
         val HEAD_LYRICS_ENTRY = LyricsEntry(0L, "")
