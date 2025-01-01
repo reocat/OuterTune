@@ -61,8 +61,9 @@ import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.dd3boh.outertune.lyrics.LyricsEntry
 import com.dd3boh.outertune.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
+import com.dd3boh.outertune.lyrics.LyricsUtils
 import com.dd3boh.outertune.lyrics.LyricsUtils.findCurrentLineIndex
-import com.dd3boh.outertune.lyrics.LyricsUtils.parseLyrics
+import com.dd3boh.outertune.lyrics.LyricsUtils.loadAndParseLyricsString
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.LyricsMenu
@@ -103,10 +104,10 @@ fun Lyrics(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    val lines = remember(lyrics) {
+    val lines: List<LyricsEntry> = remember(lyrics) {
         if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
         else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
-                parseLyrics(lyrics, lyricTrim.value, multilineLrc.value)
+                loadAndParseLyricsString(lyrics, LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
         else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
     }
     val isSynced = remember(lyrics) {
@@ -173,9 +174,9 @@ fun Lyrics(
          */
         fun calculateOffset() = with(density) {
             if (landscapeOffset) {
-                16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].text) // landscape sits higher by default
+                16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content) // landscape sits higher by default
             } else {
-                20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].text)
+                20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
             }
         }
 
@@ -248,7 +249,7 @@ fun Lyrics(
                     items = lines
                 ) { index, item ->
                     Text(
-                        text = item.text,
+                        text = item.content,
                         fontSize = 20.sp,
                         color = textColor,
                         textAlign = when (lyricsTextPosition) {
@@ -260,7 +261,7 @@ fun Lyrics(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable(enabled = isSynced) {
-                                playerConnection.player.seekTo(item.time)
+                                playerConnection.player.seekTo(item.timeStamp)
                                 lastPreviewTime = 0L
                             }
                             .padding(horizontal = 24.dp, vertical = 8.dp)
