@@ -100,7 +100,7 @@ object YouTube {
         set(value) {
             innerTube.useLoginForBrowse = value
         }
-    
+
     suspend fun searchSuggestions(query: String): Result<SearchSuggestions> = runCatching {
         val response = innerTube.getSearchSuggestions(WEB_REMIX, query).body<GetSearchSuggestionsResponse>()
         SearchSuggestions(
@@ -237,7 +237,8 @@ object YouTube {
             sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                 ?.tabRenderer?.content?.sectionListRenderer?.contents
                 ?.mapNotNull(ArtistPage::fromSectionListRendererContent)!!,
-            description = response.header?.musicImmersiveHeaderRenderer?.description?.runs?.firstOrNull()?.text        )
+            description = response.header?.musicImmersiveHeaderRenderer?.description?.runs?.firstOrNull()?.text
+        )
     }
 
     suspend fun artistItems(endpoint: BrowseEndpoint): Result<ArtistItemsPage> = runCatching {
@@ -286,7 +287,7 @@ object YouTube {
             ArtistItemsContinuationPage(
                 items = response.continuationContents?.musicPlaylistShelfContinuation?.contents?.mapNotNull {
                     ArtistItemsPage.fromMusicResponsiveListItemRenderer(it.musicResponsiveListItemRenderer)
-            }!!,
+                }!!,
                 continuation = response.continuationContents.musicPlaylistShelfContinuation.continuations?.getContinuation()
             )
         }
@@ -495,11 +496,11 @@ object YouTube {
         val tabs = response.contents?.singleColumnBrowseResultsRenderer?.tabs
 
         val contents = if (tabs != null && tabs.size >= tabIndex) {
-                tabs[tabIndex].tabRenderer.content?.sectionListRenderer?.contents?.firstOrNull()
-            }
-            else {
-                null
-            }
+            tabs[tabIndex].tabRenderer.content?.sectionListRenderer?.contents?.firstOrNull()
+        }
+        else {
+            null
+        }
 
         when {
             contents?.gridRenderer != null -> {
@@ -508,7 +509,7 @@ object YouTube {
                         .mapNotNull (GridRenderer.Item::musicTwoRowItemRenderer)
                         .mapNotNull { LibraryPage.fromMusicTwoRowItemRenderer(it) },
                     continuation = contents.gridRenderer.continuations?.firstOrNull()?.
-                        nextContinuationData?.continuation
+                    nextContinuationData?.continuation
                 )
             }
 
@@ -518,7 +519,7 @@ object YouTube {
                         .mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
                         .mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) },
                     continuation = contents.musicShelfRenderer.continuations?.firstOrNull()?.
-                        nextContinuationData?.continuation
+                    nextContinuationData?.continuation
                 )
             }
         }
@@ -540,7 +541,7 @@ object YouTube {
                         .mapNotNull (GridRenderer.Item::musicTwoRowItemRenderer)
                         .mapNotNull { LibraryPage.fromMusicTwoRowItemRenderer(it) },
                     continuation = contents.gridContinuation.continuations?.firstOrNull()?.
-                        nextContinuationData?.continuation
+                    nextContinuationData?.continuation
                 )
             }
 
@@ -550,7 +551,7 @@ object YouTube {
                         .mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
                         .mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) },
                     continuation = contents.musicShelfContinuation.continuations?.firstOrNull()?.
-                        nextContinuationData?.continuation
+                    nextContinuationData?.continuation
                 )
             }
         }
@@ -667,25 +668,39 @@ object YouTube {
 
     suspend fun player(videoId: String, playlistId: String? = null, registerPlayback: Boolean = true): Result<PlayerResponse> = runCatching {
         var playerResponse: PlayerResponse
-        if (this.cookie != null) { // if logged in: try WEB_CREATOR client first because IOS client does not support login
-            playerResponse = innerTube.player(WEB_CREATOR, videoId, playlistId).body<PlayerResponse>()
-            if (playerResponse.playabilityStatus.status == "OK") {
-                return@runCatching playerResponse
+
+        val clients = if (cookie != null) {
+            // If logged in, try WEB_CREATOR first since IOS doesn't support login
+            listOf(WEB_CREATOR, WEB_REMIX, IOS, TVHTML5)
+        } else {
+            // If not logged in, try standard order
+            listOf(WEB_REMIX, IOS, WEB_CREATOR, TVHTML5)
+        }
+
+        // Try each client until we get a successful response
+        for (client in clients) {
+            try {
+                playerResponse = innerTube.player(client, videoId, playlistId).body<PlayerResponse>()
+                if (playerResponse.playabilityStatus.status == "OK") {
+                    if (registerPlayback) {
+                        playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl?.let { baseUrl ->
+                            registerPlayback(playlistId, baseUrl)
+                        }
+                    }
+                    return@runCatching playerResponse
+                }
+            } catch (e: Exception) {
+                // Continue to next client if this one fails
+                continue
             }
         }
-        playerResponse = innerTube.player(IOS, videoId, playlistId).body<PlayerResponse>()
-        
-        if (playerResponse.playabilityStatus.status == "OK") {
-            if (registerPlayback)
-                registerPlayback(playlistId, playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl!!)
 
-            return@runCatching playerResponse
-        }
-
+        // If all standard clients fail, try Piped as fallback
         val safePlayerResponse = innerTube.player(TVHTML5, videoId, playlistId).body<PlayerResponse>()
         if (safePlayerResponse.playabilityStatus.status != "OK") {
-            return@runCatching playerResponse
+            throw IllegalStateException("Unable to get playable response from any client")
         }
+
         val audioStreams = innerTube.pipedStreams(videoId).body<PipedResponse>().audioStreams
         safePlayerResponse.copy(
             streamingData = safePlayerResponse.streamingData?.copy(
@@ -734,15 +749,15 @@ object YouTube {
                 .watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content?.musicQueueRenderer
                 ?.content?.playlistPanelRenderer!!
         val title = response.contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer
-                .watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content?.musicQueueRenderer
-                ?.header?.musicQueueHeaderRenderer?.subtitle?.runs?.firstOrNull()?.text
+            .watchNextTabbedResultsRenderer.tabs[0].tabRenderer.content?.musicQueueRenderer
+            ?.header?.musicQueueHeaderRenderer?.subtitle?.runs?.firstOrNull()?.text
         val items = playlistPanelRenderer.contents.mapNotNull { content ->
             content.playlistPanelVideoRenderer
                 ?.let(NextPage::fromPlaylistPanelVideoRenderer)
                 ?.let { it to content.playlistPanelVideoRenderer.selected }
         }
         val songs = items.map { it.first }
-                val currentIndex = items.indexOfFirst { it.second }.takeIf { it != -1 }
+        val currentIndex = items.indexOfFirst { it.second }.takeIf { it != -1 }
 
         // load automix items
         playlistPanelRenderer.contents.lastOrNull()?.automixPreviewVideoRenderer?.content?.automixPlaylistVideoRenderer?.navigationEndpoint?.watchPlaylistEndpoint?.let { watchPlaylistEndpoint ->
@@ -854,13 +869,13 @@ object YouTube {
     value class LibraryFilter(val value: String) {
         companion object {
             val FILTER_RECENT_ACTIVITY = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpYnJhcnlfbGFuZGluZxoQZ2dNR0tnUUlCaEFCb0FZQg%3D%3D")
-            val FILTER_RECENTLY_PLAYED = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpYnJhcnlfbGFuZGluZxoQZ2dNR0tnUUlCUkFCb0FZQg%3D%3D")
+            val FILTER_RECENTLY_PLAYED = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpYnJhcnlfbGFuZGluZxoQZ2dNR0tnUUlCUkFBb0FZQg%3D%3D")
             val FILTER_PLAYLISTS_ALPHABETICAL = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpa2VkX3BsYXlsaXN0cxoQZ2dNR0tnUUlBUkFBb0FZQg%3D%3D")
             val FILTER_PLAYLISTS_RECENTLY_SAVED = LibraryFilter("4qmFsgIrEhdGRW11c2ljX2xpa2VkX3BsYXlsaXN0cxoQZ2dNR0tnUUlBQkFCb0FZQg%3D%3D")
         }
     }
 
-    const val MAX_GET_QUEUE_SIZE = 1000
+    private const val MAX_GET_QUEUE_SIZE = 1000
 
     private const val VISITOR_DATA_PREFIX = "Cgt"
 
