@@ -99,14 +99,28 @@ class PlayerConnection(
         service.playQueue(queue, replace = replace, title = title)
     }
 
-    fun playNext(item: MediaItem) = playNext(listOf(item))
-    fun playNext(items: List<MediaItem>) {
-        service.playNext(items)
+    /**
+     * Add item to queue, right after current playing item
+     */
+    fun enqueueNext(item: MediaItem) = enqueueNext(listOf(item))
+
+    /**
+     * Add items to queue, right after current playing item
+     */
+    fun enqueueNext(items: List<MediaItem>) {
+        service.enqueueNext(items)
     }
 
-    fun addToQueue(item: MediaItem) = addToQueue(listOf(item))
-    fun addToQueue(items: List<MediaItem>) {
-        service.addToQueue(items)
+    /**
+     * Add item to end of current queue
+     */
+    fun enqueueEnd(item: MediaItem) = enqueueEnd(listOf(item))
+
+    /**
+     * Add items to end of current queue
+     */
+    fun enqueueEnd(items: List<MediaItem>) {
+        service.enqueueEnd(items)
     }
 
     fun toggleLike() {

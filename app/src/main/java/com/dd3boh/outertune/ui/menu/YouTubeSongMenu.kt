@@ -71,7 +71,6 @@ import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.utils.makeTimeString
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
-import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -109,7 +108,7 @@ fun YouTubeSongMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, listOf(song.toMediaMetadata()), playerConnection,
+            queueBoard.addQueue(queueName, listOf(song.toMediaMetadata()), playerConnection,
                 forceInsert = true, delta = false)
             queueBoard.setCurrQueue(playerConnection)
         },
@@ -244,7 +243,7 @@ fun YouTubeSongMenu(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
             title = R.string.play_next
         ) {
-            playerConnection.playNext(song.toMediaItem())
+            playerConnection.enqueueNext(song.toMediaItem())
             onDismiss()
         }
         GridMenuItem(

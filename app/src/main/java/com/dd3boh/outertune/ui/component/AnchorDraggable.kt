@@ -162,7 +162,7 @@ fun SwipeToQueueBox(
             confirmValueChange = { dragValue ->
                 if (dragValue == DragAnchors.Start && !addedToQueue) {
                     addedToQueue = true
-                    playerConnection?.playNext(item)
+                    playerConnection?.enqueueNext(item)
 
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(

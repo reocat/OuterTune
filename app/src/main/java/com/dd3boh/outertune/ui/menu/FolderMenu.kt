@@ -52,7 +52,7 @@ fun FolderMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, allFolderSongs.map { it.toMediaMetadata() }, playerConnection,
+            queueBoard.addQueue(queueName, allFolderSongs.map { it.toMediaMetadata() }, playerConnection,
                 forceInsert = true, delta = false)
             queueBoard.setCurrQueue(playerConnection)
         },
@@ -91,7 +91,7 @@ fun FolderMenu(
         ) {
             onDismiss()
             allFolderSongs.forEach {
-                playerConnection.playNext(it.toMediaItem())
+                playerConnection.enqueueNext(it.toMediaItem())
             }
         }
         GridMenuItem(

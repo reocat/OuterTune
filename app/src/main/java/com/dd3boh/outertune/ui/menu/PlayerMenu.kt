@@ -128,7 +128,7 @@ fun PlayerMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, listOf(mediaMetadata), playerConnection, forceInsert = true, delta = false)
+            queueBoard.addQueue(queueName, listOf(mediaMetadata), playerConnection, forceInsert = true, delta = false)
             queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
