@@ -94,6 +94,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDateTime
 import kotlin.math.log2
 import kotlin.math.pow
@@ -322,22 +323,48 @@ fun PlayerMenu(
                         .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    listOf(
+                    val details = mutableListOf(
                         stringResource(R.string.song_title) to mediaMetadata?.title,
                         stringResource(R.string.song_artists) to mediaMetadata?.artists?.joinToString { it.name },
-                        stringResource(R.string.sort_by_date_released) to mediaMetadata?.getDateString(),
-                        stringResource(R.string.sort_by_date_modified) to mediaMetadata?.getDateModifiedString(),
                         stringResource(R.string.media_id) to mediaMetadata?.id,
-                        stringResource(R.string.play_count) to currentPlayCount.toString(),
-                        "Itag" to currentFormat?.itag?.toString(),
+                        stringResource(R.string.play_count) to currentPlayCount.toString()
+                    )
+
+                    if (!mediaMetadata.isLocal) {
+                        details.add("Itag" to currentFormat?.itag?.toString())
+                    } else {
+                        details.add(stringResource(R.string.sort_by_date_released) to mediaMetadata.getDateString())
+                        details.add(stringResource(R.string.sort_by_date_modified) to mediaMetadata.getDateModifiedString())
+                    }
+
+                    details.addAll(mutableListOf(
                         stringResource(R.string.mime_type) to currentFormat?.mimeType,
                         stringResource(R.string.codecs) to currentFormat?.codecs,
                         stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" },
                         stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
-                        stringResource(R.string.loudness) to currentFormat?.loudnessDb?.let { "$it dB" },
+                    ))
+
+                    if (!mediaMetadata.isLocal) {
+                        details.add(stringResource(R.string.loudness) to currentFormat?.loudnessDb?.let { "$it dB" })
+                    }
+
+                    details.addAll(mutableListOf(
                         stringResource(R.string.volume) to "${(playerConnection.player.volume * 100).toInt()}%",
-                        stringResource(R.string.file_size) to currentFormat?.contentLength?.let { Formatter.formatShortFileSize(context, it) }
-                    ).forEach { (label, text) ->
+                        stringResource(R.string.file_size) to currentFormat?.contentLength?.let {
+                            // TODO: This should 1024 sized not 1000
+                            if (mediaMetadata.isLocal && mediaMetadata.localPath != null && File(mediaMetadata.localPath).exists()) {
+                                Formatter.formatShortFileSize(context, File(mediaMetadata.localPath).length())
+                            } else {
+                                Formatter.formatShortFileSize(context, it)
+                            }
+                        }
+                    ))
+
+                    if (mediaMetadata.isLocal) {
+                        details.add("Path" to mediaMetadata.localPath)
+                    }
+
+                    details.forEach { (label, text) ->
                         val displayText = text ?: stringResource(R.string.unknown)
                         Text(
                             text = label,
@@ -431,7 +458,7 @@ fun PlayerMenu(
                     )
                 }
             )
-        if (librarySong?.song?.inLibrary != null) {
+        if (librarySong?.song?.inLibrary != null && !librarySong!!.song.isLocal) {
             GridMenuItem(
                 icon = Icons.Rounded.LibraryAddCheck,
                 title = R.string.remove_from_library,
