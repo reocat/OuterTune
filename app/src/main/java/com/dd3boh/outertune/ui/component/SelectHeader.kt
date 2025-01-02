@@ -35,7 +35,7 @@ fun RowScope.SelectHeader(
     ) {
         Text(
             text = "${selectedItems.size}/${totalItemCount} selected",
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f, false)
         )
 
         // option menu
