@@ -157,8 +157,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *      songs, false will add all songs
      * @param startIndex Index/position to instantiate the new queue with. This value takes no effect
      * if the queue already exists
+     *
+     * @return Boolean whether a full reload of player items should be done. In some cases it may be possible to enqueue
+     *      without interrupting playback. Currently this is only supported when adding to extension queues
      */
-    fun add(
+    fun addQueue(
         title: String,
         mediaList: List<MediaMetadata?>,
         player: MusicService,
@@ -166,7 +169,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         replace: Boolean = false,
         delta: Boolean = true,
         startIndex: Int = 0
-    ) {
+    ): Boolean {
         if (QUEUE_DEBUG)
             Timber.tag(TAG).d(
                 "Adding to queue \"$title\". medialist size = ${mediaList.size}. " +
@@ -174,7 +177,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             )
 
         if (mediaList.isEmpty()) {
-            return
+            return false
         }
 
         val match = masterQueues.firstOrNull { it.title == title } // look for matching queue. Title is uid
@@ -196,7 +199,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     }
                 }
                 bubbleUp(match, player)  // move queue to end of list so it shows as most recent
-                return
+                return true
             }
 
             // don't add songs to the queue if it's just one EXISTING song AND the new medialist is a subset of what we have
@@ -213,6 +216,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 }
 
                 bubbleUp(match, player)  // move queue to end of list so it shows as most recent
+                return true
             } else if (delta) {
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: delta additive")
@@ -233,16 +237,15 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 }
 
                 bubbleUp(match, player) // move queue to end of list so it shows as most recent
+                return true
             } else if (match.title.endsWith("+\u200B") || anyExts != null) { // this queue is an already an extension queue
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: extension queue additive")
                 // add items to existing queue unconditionally
                 if (anyExts != null) {
-                    anyExts.queue.addAll(mediaList.filterNotNull())
-                    anyExts.unShuffled.addAll(mediaList.filterNotNull())
+                    addSongsToQueue(anyExts, Int.MAX_VALUE, mediaList.filterNotNull(), player, saveToDb = false)
                 } else {
-                    match.queue.addAll(mediaList.filterNotNull())
-                    match.unShuffled.addAll(mediaList.filterNotNull())
+                    addSongsToQueue(match, Int.MAX_VALUE, mediaList.filterNotNull(), player, saveToDb = false)
                 }
 
                 // rewrite queue
@@ -254,8 +257,8 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 // don't change index
                 bubbleUp(match, player) // move queue to end of list so it shows as most recent
-            }
-            else { // make new extension queue
+                return false
+            } else { // make new extension queue
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: extension queue creation (and additive)")
                 // add items to NEW queue unconditionally (add entirely new queue)
@@ -277,7 +280,8 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     unShufQueue,
                     false,
                     match.queuePos,
-                    masterQueues.size)
+                    masterQueues.size
+                )
                 masterQueues.add(newQueue)
                 if (player.dataStore.get(PersistentQueueKey, true)) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -287,6 +291,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 // don't change index, don't move match queue to end
                 masterIndex = masterQueues.size - 1 // track the newly modified queue
+                return true
             }
         } else {
             // add entirely new queue
@@ -309,10 +314,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 }
             }
             masterIndex = masterQueues.size - 1 // track the newly modified queue
+            return true
         }
     }
 
-    fun add(
+    fun addQueue(
         title: String,
         mediaList: List<MediaMetadata?>,
         playerConnection: PlayerConnection,
@@ -320,14 +326,62 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         replace: Boolean = false,
         delta: Boolean = true,
         startIndex: Int = 0
-    ) = add(title, mediaList, playerConnection.service, forceInsert, replace, delta, startIndex)
+    ) = addQueue(title, mediaList, playerConnection.service, forceInsert, replace, delta, startIndex)
+
+
+    /**
+     * Add songs to end of CURRENT QUEUE & update it in the player
+     */
+    fun enqueueEnd(mediaList: List<MediaMetadata>, player: MusicService) {
+        getCurrentQueue()?.let {
+            addSongsToQueue(it, Int.MAX_VALUE, mediaList, player)
+        }
+    }
+
+    /**
+     * Add songs to queue object & update it in the player, given an index to insert at
+     */
+    fun addSongsToQueue(
+        q: MultiQueueObject,
+        pos: Int,
+        mediaList: List<MediaMetadata>,
+        player: MusicService,
+        saveToDb: Boolean = true
+    ) {
+        val listPos = if (pos < 0) {
+            0
+        } else if (pos >= q.queue.size) {
+            q.queue.size - 1
+        } else {
+            pos
+        }
+
+        // Add to current queue at the position. For the other queue, just add to end
+        if (q.shuffled) {
+            q.queue.addAll(listPos, mediaList)
+            q.unShuffled.addAll(q.queue.size - 1, mediaList)
+        } else {
+            q.queue.addAll(q.queue.size - 1, mediaList)
+            q.unShuffled.addAll(listPos, mediaList)
+        }
+
+        // copy so ui doesnt crash
+        player.player.replaceMediaItems(listPos, pos, mediaList.map { it.toMediaItem() })
+
+        if (saveToDb && player.dataStore.get(PersistentQueueKey, true)) {
+            CoroutineScope(Dispatchers.IO).launch {
+                player.database.rewriteQueue(q)
+            }
+        }
+    }
 
     /**
      * Removes song from the current queue
      *
      * @param index Index of item
      */
-    fun removeCurrentQueueSong(index: Int, player: MusicService) = getCurrentQueue()?.let { removeSong(it, index, player) }
+    fun removeCurrentQueueSong(index: Int, player: MusicService) =
+        getCurrentQueue()?.let { removeSong(it, index, player) }
 
     /**
      * Removes song from the queue

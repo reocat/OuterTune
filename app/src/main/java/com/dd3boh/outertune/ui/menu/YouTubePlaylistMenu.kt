@@ -93,7 +93,7 @@ fun YouTubePlaylistMenu(
                         YouTube.playlist(playlist.id).completed().getOrNull()?.songs.orEmpty()
                     }
                 }.let { songs ->
-                    queueBoard.add(queueName, songs.map { it.toMediaMetadata() }, playerConnection,
+                    queueBoard.addQueue(queueName, songs.map { it.toMediaMetadata() }, playerConnection,
                         forceInsert = true, delta = false)
                     queueBoard.setCurrQueue(playerConnection)
                 }
@@ -310,7 +310,7 @@ fun YouTubePlaylistMenu(
                         YouTube.playlist(playlist.id).completed().getOrNull()?.songs.orEmpty()
                     }
                 }.let { songs ->
-                    playerConnection.playNext(songs.map { it.toMediaItem() })
+                    playerConnection.enqueueNext(songs.map { it.toMediaItem() })
                 }
             }
             onDismiss()

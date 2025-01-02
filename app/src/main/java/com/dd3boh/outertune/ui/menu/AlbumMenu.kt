@@ -155,7 +155,7 @@ fun AlbumMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, songs.map { it.toMediaMetadata() }, playerConnection,
+            queueBoard.addQueue(queueName, songs.map { it.toMediaMetadata() }, playerConnection,
                 forceInsert = true, delta = false)
             queueBoard.setCurrQueue(playerConnection)
         },
@@ -263,7 +263,7 @@ fun AlbumMenu(
             title = R.string.play_next
         ) {
             onDismiss()
-            playerConnection.playNext(songs.map { it.toMediaItem() })
+            playerConnection.enqueueNext(songs.map { it.toMediaItem() })
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.QueueMusic,

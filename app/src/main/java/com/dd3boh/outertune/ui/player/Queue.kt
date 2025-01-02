@@ -543,7 +543,7 @@ fun Queue(
                 ) {
                     itemsIndexed(
                         items = detachedQueue,
-                        key = { _, item -> item.hashCode() }
+//                        key = { _, item -> item.} // duplicate key crash
                     ) { index, window ->
                         Row(
                             horizontalArrangement = Arrangement.Center

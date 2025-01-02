@@ -121,7 +121,7 @@ fun YouTubeAlbumMenu(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
             album?.songs?.let { song ->
-                queueBoard.add(queueName, song.map { it.toMediaMetadata() }, playerConnection,
+                queueBoard.addQueue(queueName, song.map { it.toMediaMetadata() }, playerConnection,
                     forceInsert = true, delta = false)
             }
             queueBoard.setCurrQueue(playerConnection)
@@ -242,7 +242,7 @@ fun YouTubeAlbumMenu(
         ) {
             album?.songs
                 ?.map { it.toMediaItem() }
-                ?.let(playerConnection::playNext)
+                ?.let(playerConnection::enqueueNext)
             onDismiss()
         }
         GridMenuItem(
