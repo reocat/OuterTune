@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dd3boh.outertune.constants.ContextDialogCornerRadius
 import com.dd3boh.outertune.constants.PlaylistSongSortType
 
 @Composable
@@ -62,6 +64,8 @@ inline fun <reified T : Enum<T>> SortHeader(
         DropdownMenu(
             expanded = menuExpanded,
             onDismissRequest = { menuExpanded = false },
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(ContextDialogCornerRadius),
             modifier = Modifier.widthIn(min = 172.dp)
         ) {
             enumValues<T>().forEach { type ->
