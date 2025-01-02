@@ -34,6 +34,7 @@ import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.NavigateBefore
 import androidx.compose.material.icons.automirrored.rounded.NavigateNext
+import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
@@ -80,8 +81,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.navigation.NavController
@@ -90,6 +93,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
+import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
@@ -106,10 +110,12 @@ import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.ui.component.ChipsLazyRow
 import com.dd3boh.outertune.ui.component.EnumListPreference
+import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.SwitchPreference
+import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.NavigationTab
 import com.dd3boh.outertune.utils.decodeTabString
@@ -147,8 +153,9 @@ fun SetupWizard(
     }
     val (ytmSync, onYtmSyncChange) = rememberPreference(LyricTrimKey, defaultValue = true)
 
-
+    // local media prefs
     val (localLibEnable, onLocalLibEnableChange) = rememberPreference(LocalLibraryEnableKey, defaultValue = true)
+    val (autoScan, onAutoScanChange) = rememberPreference(AutomaticScannerKey, defaultValue = false)
 
     var position by remember {
         mutableIntStateOf(0)
@@ -664,6 +671,14 @@ fun SetupWizard(
 
                     // account
                     2 -> {
+                        var showToken: Boolean by remember {
+                            mutableStateOf(false)
+                        }
+
+                        var showTokenEditor by remember {
+                            mutableStateOf(false)
+                        }
+
                         Text(
                             text = "Account",
                             style = MaterialTheme.typography.headlineLarge,
@@ -692,6 +707,51 @@ fun SetupWizard(
                                 }
                             )
                         }
+                        if (showTokenEditor) {
+                            TextFieldDialog(
+                                modifier = Modifier,
+                                initialTextFieldValue = TextFieldValue(innerTubeCookie),
+                                onDone = { onInnerTubeCookieChange(it) },
+                                onDismiss = { showTokenEditor = false },
+                                singleLine = false,
+                                maxLines = 20,
+                                isInputValid = {
+                                    it.isNotEmpty() &&
+                                            try {
+                                                "SAPISID" in parseCookieString(it)
+                                                true
+                                            } catch (e: Exception) {
+                                                false
+                                            }
+                                },
+                                extraContent = {
+                                    InfoLabel(text = stringResource(R.string.token_adv_login_description))
+                                }
+                            )
+                        }
+                        PreferenceEntry(
+                            title = {
+                                if (showToken) {
+                                    Text(stringResource(R.string.token_shown))
+                                    Text(
+                                        text = if (isLoggedIn) innerTubeCookie else stringResource(R.string.not_logged_in),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Light,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1 // just give a preview so user knows it's at least there
+                                    )
+                                } else {
+                                    Text(stringResource(R.string.token_hidden))
+                                }
+                            },
+                            onClick = {
+                                if (showToken == false) {
+                                    showToken = true
+                                } else {
+                                    showTokenEditor = true
+                                }
+                            },
+                        )
                         SwitchPreference(
                             title = { Text(stringResource(R.string.ytm_sync)) },
                             icon = { Icon(Icons.Rounded.Lyrics, null) },
@@ -721,6 +781,17 @@ fun SetupWizard(
                             checked = localLibEnable,
                             onCheckedChange = onLocalLibEnableChange
                         )
+
+                        // automatic scanner
+                        SwitchPreference(
+                            title = { Text(stringResource(R.string.auto_scanner_title)) },
+                            description = stringResource(R.string.auto_scanner_description),
+                            icon = { Icon(Icons.Rounded.Autorenew, null) },
+                            checked = autoScan,
+                            onCheckedChange = onAutoScanChange,
+                            isEnabled = localLibEnable
+                        )
+
 
                         PreferenceEntry(
                             title = { Text("Click here to scan for songs") },
