@@ -53,7 +53,6 @@ fun AddToQueueDialog(
     if (isVisible) {
         ListDialog(
             onDismiss = onDismiss,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
         ) {
             item {
                 ListItem(

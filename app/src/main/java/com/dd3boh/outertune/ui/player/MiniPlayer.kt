@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -71,10 +72,11 @@ fun MiniPlayer(
             .fillMaxWidth()
             .height(MiniPlayerHeight)
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
     ) {
         LinearProgressIndicator(
             progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
+            drawStopIndicator = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(2.dp)

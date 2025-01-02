@@ -58,6 +58,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -532,7 +533,7 @@ class MainActivity : ComponentActivity() {
 
                     val playerBottomSheetState = rememberBottomSheetState(
                         dismissedBound = 0.dp,
-                        collapsedBound = bottomInset + getNavPadding() + MiniPlayerHeight + 4.dp,
+                        collapsedBound = bottomInset + getNavPadding() + MiniPlayerHeight,
                         expandedBound = maxHeight,
                     )
 
@@ -856,7 +857,7 @@ class MainActivity : ComponentActivity() {
                                                     )
                                                 }
                                             }
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
                                     ) {
                                         navigationItems.fastForEach { screen ->
                                             NavigationBarItem(
