@@ -368,7 +368,7 @@ class MainActivity : ComponentActivity() {
             val (excludedScanPaths) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
             val (strictExtensions) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
             val (lookupYtmArtists) = rememberPreference(LookupYtmArtistsKey, defaultValue = true)
-            val (autoScan) = rememberPreference(AutomaticScannerKey, defaultValue = true)
+            val (autoScan) = rememberPreference(AutomaticScannerKey, defaultValue = false)
             LaunchedEffect(Unit) {
                 downloadUtil.resumeDownloadsOnStart()
 
