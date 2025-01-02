@@ -107,7 +107,8 @@ fun Lyrics(
     val lines: List<LyricsEntry> = remember(lyrics) {
         if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
         else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
-                loadAndParseLyricsString(lyrics, LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
+                loadAndParseLyricsString(LyricsUtils.uncompressLyrics(lyrics),
+                    LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
         else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
     }
     val isSynced = remember(lyrics) {
