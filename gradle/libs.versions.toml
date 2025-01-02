@@ -1,24 +1,24 @@
 [versions]
-androidGradlePlugin = "8.7.2"
+androidGradlePlugin = "8.7.3"
 kotlin = "2.0.21"
-compose = "1.7.5"
+compose = "1.7.6"
 lifecycle = "2.8.7"
 material3 = "1.3.1"
-media3 = "1.5.0"
+media3 = "1.5.1"
 room = "2.6.1"
-hilt = "2.53.1"
-ktor = "3.0.2"
+hilt = "2.54"
+ktor = "3.0.3"
 ksp = "2.0.21-1.0.26"
 
 [libraries]
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version = "2.36.0" }
-guava = { group = "com.google.guava", name = "guava", version = "33.3.1-android" }
-coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.9.0" }
+guava = { group = "com.google.guava", name = "guava", version = "33.4.0-android" }
+coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.10.1" }
 concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.2.0" }
 
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 activity = { group = "androidx.activity", name = "activity-compose", version = "1.9.3" }
-navigation = { group = "androidx.navigation", name = "navigation-compose", version = "2.8.4" }
+navigation = { group = "androidx.navigation", name = "navigation-compose", version = "2.8.5" }
 hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version = "1.1.1" }
 
@@ -28,7 +28,7 @@ compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compos
 compose-ui-util = { group = "androidx.compose.ui", name = "ui-util", version.ref = "compose" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 compose-animation = { group = "androidx.compose.animation", name = "animation-graphics", version.ref = "compose" }
-compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version = "2.4.0" }
+compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version = "2.4.2" }
 compose-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose" }
 
 viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
@@ -63,7 +63,7 @@ ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlin
 
 brotli = { group = "org.brotli", name = "dec", version = "0.1.2" }
 
-desugaring = { group = "com.android.tools", name = "desugar_jdk_libs", version = "2.1.3" }
+desugaring = { group = "com.android.tools", name = "desugar_jdk_libs", version = "2.1.4" }
 
 junit = { group = "junit", name = "junit", version = "4.13.2" }
 
