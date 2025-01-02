@@ -135,9 +135,11 @@ fun SongMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.add(queueName, listOf(song.toMediaMetadata()), playerConnection,
+            val shouldReload = queueBoard.addQueue(queueName, listOf(song.toMediaMetadata()), playerConnection,
                 forceInsert = true, delta = false)
-            queueBoard.setCurrQueue(playerConnection)
+            if (shouldReload) {
+                queueBoard.setCurrQueue(playerConnection)
+            }
         },
         onDismiss = {
             showChooseQueueDialog = false
@@ -269,7 +271,7 @@ fun SongMenu(
             title = R.string.play_next
         ) {
             onDismiss()
-            playerConnection.playNext(song.toMediaItem())
+            playerConnection.enqueueNext(song.toMediaItem())
         }
         GridMenuItem(
             icon = Icons.Rounded.Edit,

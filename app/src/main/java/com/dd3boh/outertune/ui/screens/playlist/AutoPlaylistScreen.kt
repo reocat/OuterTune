@@ -397,7 +397,7 @@ fun AutoPlaylistScreen(
 
                                     IconButton(
                                         onClick = {
-                                            playerConnection.addToQueue(
+                                            playerConnection.enqueueEnd(
                                                 items = songs.map { it.toMediaItem() }
                                             )
                                         }

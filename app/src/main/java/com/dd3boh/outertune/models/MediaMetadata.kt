@@ -24,7 +24,8 @@ data class MediaMetadata(
     val setVideoId: String? = null,
     val isLocal: Boolean = false,
     val localPath: String? = null,
-    val liked: Boolean = false
+    val liked: Boolean = false,
+    val composeUidWorkaround: Double = Math.random() // compose will crash without this hax
 ) : Serializable {
     data class Artist(
         val id: String?,
