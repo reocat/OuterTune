@@ -1,6 +1,10 @@
 package com.dd3boh.outertune.ui.component
 
+import android.text.format.Formatter
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,13 +15,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,7 +48,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,7 +60,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DialogCornerRadius
+import com.dd3boh.outertune.db.entities.FormatEntity
+import com.dd3boh.outertune.models.MediaMetadata
 import kotlinx.coroutines.delay
+import java.io.File
 
 @Composable
 fun DefaultDialog(
@@ -301,6 +316,109 @@ fun ActionPromptDialog(
         }
     }
 )
+
+@Composable
+fun DetailsDialog(
+    mediaMetadata: MediaMetadata,
+    currentFormat: FormatEntity?,
+    currentPlayCount: Int?,
+    volume: Float,
+    clipboardManager: ClipboardManager,
+    setVisibility: (newState: Boolean) -> Unit,
+) {
+    val context = LocalContext.current
+
+    AlertDialog(
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        onDismissRequest = { setVisibility(false) },
+        icon = {
+            Icon(
+                imageVector = Icons.Rounded.Info,
+                contentDescription = null
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { setVisibility(false) }
+            ) {
+                Text(stringResource(android.R.string.ok))
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                val details = mutableListOf(
+                    stringResource(R.string.song_title) to mediaMetadata?.title,
+                    stringResource(R.string.song_artists) to mediaMetadata?.artists?.joinToString { it.name },
+                    stringResource(R.string.media_id) to mediaMetadata?.id,
+                    stringResource(R.string.play_count) to currentPlayCount.toString()
+                )
+
+                if (!mediaMetadata.isLocal) {
+                    details.add("Itag" to currentFormat?.itag?.toString())
+                } else {
+                    details.add(stringResource(R.string.sort_by_date_released) to mediaMetadata.getDateString())
+                    details.add(stringResource(R.string.sort_by_date_modified) to mediaMetadata.getDateModifiedString())
+                }
+
+                details.addAll(
+                    mutableListOf(
+                        stringResource(R.string.mime_type) to currentFormat?.mimeType,
+                        stringResource(R.string.codecs) to currentFormat?.codecs,
+                        stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" },
+                        stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
+                    )
+                )
+
+                if (!mediaMetadata.isLocal) {
+                    details.add(stringResource(R.string.loudness) to currentFormat?.loudnessDb?.let { "$it dB" })
+                }
+
+                details.addAll(mutableListOf(
+                    stringResource(R.string.volume) to "${(volume * 100).toInt()}%",
+                    stringResource(R.string.file_size) to currentFormat?.contentLength?.let {
+                        // TODO: This should 1024 sized not 1000
+                        if (mediaMetadata.isLocal && mediaMetadata.localPath != null && File(mediaMetadata.localPath).exists()) {
+                            Formatter.formatShortFileSize(context, File(mediaMetadata.localPath).length())
+                        } else {
+                            Formatter.formatShortFileSize(context, it)
+                        }
+                    }
+                ))
+
+                if (mediaMetadata.isLocal) {
+                    details.add("Path" to mediaMetadata.localPath)
+                }
+
+                details.forEach { (label, text) ->
+                    val displayText = text ?: stringResource(R.string.unknown)
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Text(
+                        text = displayText,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(displayText))
+                                Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(DialogCornerRadius)
+    )
+}
 
 @Composable
 fun InfoLabel(
