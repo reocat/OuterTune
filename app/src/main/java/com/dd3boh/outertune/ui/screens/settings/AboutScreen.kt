@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings
 
+import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -151,6 +153,52 @@ fun AboutScreen(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.secondary
         )
+
+        // debug info
+        if (BuildConfig.DEBUG) {
+            Spacer(Modifier.height(400.dp))
+            Row(
+                verticalAlignment = Alignment.Top,
+            ) {
+                Text(
+                    text = "Device info (Debug)",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                )
+            }
+
+            val info = listOf<String>(
+                "Device: ${Build.BRAND} ${Build.DEVICE} (${Build.MODEL})",
+                "Manufacturer: ${Build.MANUFACTURER}",
+                "HW: ${Build.BOARD} (${Build.HARDWARE})",
+                "ABIs: ${Build.SUPPORTED_ABIS.joinToString()})",
+                "Android: ${Build.VERSION.SDK_INT} (${Build.ID})",
+                Build.DISPLAY,
+                Build.PRODUCT,
+                Build.FINGERPRINT,
+                Build.VERSION.SECURITY_PATCH
+
+//                needs sdk 29 or 31
+//                Build.SKU ,
+//                Build.ODM_SKU ,
+//                Build.SOC_MODEL ,
+//                Build.SOC_MANUFACTURER ,
+            )
+
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                info.forEach {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Red,
+                    )
+                }
+            }
+        }
 
     }
 

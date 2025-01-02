@@ -74,6 +74,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -297,7 +298,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @SuppressLint(
         "UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition",
-        "StateFlowValueCalledInComposition"
+        "StateFlowValueCalledInComposition", "UnusedBoxWithConstraintsScope"
     )
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -815,6 +816,36 @@ class MainActivity : ComponentActivity() {
                                                 )
                                             }
                                         }
+                                    }
+                                }
+
+                                if (BuildConfig.DEBUG) {
+                                    val debugColour = Color.Red
+                                    Column(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .offset(y = 100.dp)
+                                    ) {
+                                        Text(
+                                            text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                        Text(
+                                            text = "${BuildConfig.APPLICATION_ID} | ${BuildConfig.BUILD_TYPE}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                        Text(
+                                            text = "${Build.BRAND} ${Build.DEVICE} (${Build.MODEL})",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                        Text(
+                                            text = "${Build.VERSION.SDK_INT} (${Build.ID})",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
                                     }
                                 }
                             },
