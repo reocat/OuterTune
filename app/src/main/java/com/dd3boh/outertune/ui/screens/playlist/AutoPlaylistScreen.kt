@@ -473,22 +473,17 @@ fun AutoPlaylistScreen(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         if (inSelectMode) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                SelectHeader(
-                                    selectedItems = selection.map { songs[it] }.map { it.toMediaMetadata() },
-                                    totalItemCount = songs.size,
-                                    onSelectAll = {
-                                        selection.clear()
-                                        selection.addAll(songs.indices)
-                                    },
-                                    onDeselectAll = { selection.clear() },
-                                    menuState = menuState,
-                                    onDismiss = onExitSelectionMode
-                                )
-                            }
+                            SelectHeader(
+                                selectedItems = selection.map { songs[it] }.map { it.toMediaMetadata() },
+                                totalItemCount = songs.size,
+                                onSelectAll = {
+                                    selection.clear()
+                                    selection.addAll(songs.indices)
+                                },
+                                onDeselectAll = { selection.clear() },
+                                menuState = menuState,
+                                onDismiss = onExitSelectionMode
+                            )
                         } else {
                             SortHeader(
                                 sortType = sortType,
@@ -506,14 +501,15 @@ fun AutoPlaylistScreen(
                                     }
                                 }
                             )
-                        }
-                        Spacer(Modifier.weight(1f))
 
-                        Text(
-                            text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
+                            Spacer(Modifier.weight(1f))
+
+                            Text(
+                                text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
                     }
                 }
             } else {

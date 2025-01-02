@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -152,10 +151,7 @@ fun ArtistItemsScreen(
 
     if (itemsPage?.items?.firstOrNull() is SongItem) {
         if (inSelectMode) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
+            Row {
                 SelectHeader(
                     selectedItems = selection.mapNotNull { songId ->
                         songIndex[songId]
