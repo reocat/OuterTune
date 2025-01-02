@@ -45,6 +45,9 @@ interface ArtistsDao {
     """)
     fun artist(id: String): Flow<Artist?>
 
+    @Query("SELECT * FROM artist WHERE id = :id")
+    fun artistById(id: String): ArtistEntity?
+
     @Query("SELECT * FROM artist WHERE name = :name")
     fun artistByName(name: String): ArtistEntity?
 

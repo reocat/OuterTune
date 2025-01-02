@@ -17,6 +17,7 @@ import com.dd3boh.outertune.ui.utils.SYNC_SCANNER
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.scannerSession
 import com.dd3boh.outertune.utils.closestMatch
+import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -450,7 +451,6 @@ class LocalMediaScanner {
     fun localToRemoteArtist(database: MusicDatabase) {
         runBlocking(Dispatchers.IO) {
             val allLocal = database.allLocalArtists().first()
-            val scannerJobs = ArrayList<Deferred<Unit?>>()
 
             allLocal.forEach { element ->
                 val artistVal = element.name.trim()
@@ -468,35 +468,37 @@ class LocalMediaScanner {
                     Timber.tag(TAG)
                         .d("ARTIST FOUND IN DB??? Results size: ${databaseArtistMatch.size}")
 
-                scannerJobs.add(
-                    async(scannerSession) {
-                        // cancel here since this is where the real heavy action is
-                        if (scannerRequestCancel) {
-                            if (SCANNER_DEBUG)
-                                Timber.tag(TAG).d("WARNING: Requested to cancel youtubeArtistLookup job. Aborting.")
-                            throw ScannerAbortException("Scanner canceled during youtubeArtistLookup job")
-                        }
+                // cancel here since this is where the real heavy action is
+                if (scannerRequestCancel) {
+                    if (SCANNER_DEBUG)
+                        Timber.tag(TAG).d("WARNING: Requested to cancel youtubeArtistLookup job. Aborting.")
+                    throw ScannerAbortException("Scanner canceled during youtubeArtistLookup job")
+                }
 
-                        // resolve artist from YTM if not found in DB
-                        if (databaseArtistMatch.isEmpty()) {
+                // resolve artist from YTM if not found in DB
+                if (databaseArtistMatch.isEmpty()) {
+                    try {
+                        youtubeArtistLookup(artistVal)?.let {
+                            // add new artist, switch all old references, then delete old one
+                            database.insert(it)
                             try {
-                                youtubeArtistLookup(artistVal)?.let {
-                                    // add new artist, switch all old references, then delete old one
-                                    database.insert(it)
-                                    swapArtists(element, it, database)
-                                }
+                                swapArtists(element, it, database)
                             } catch (e: Exception) {
-                                // don't touch anything if ytm fails --> keep old artist
+                                reportException(e)
                             }
-                        } else {
-                            // swap with database artist
-                            swapArtists(element, databaseArtistMatch.first(), database)
                         }
+                    } catch (e: Exception) {
+                        // don't touch anything if ytm fails --> keep old artist
                     }
-                )
+                } else {
+                    // swap with database artist
+                    try {
+                        swapArtists(element, databaseArtistMatch.first(), database)
+                    } catch (e: Exception) {
+                        reportException(e)
+                    }
+                }
             }
-
-            scannerJobs.awaitAll()
 
             if (scannerRequestCancel) {
                 if (SCANNER_DEBUG)
@@ -823,11 +825,11 @@ class LocalMediaScanner {
          * p.s. This is here instead of DatabaseDao because it won't compile there because
          * "oooga boooga error in generated code"
          */
-        suspend fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase) {
-            if (database.artist(old.id).first() == null) {
+        fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase) {
+            if (database.artistById(old.id) == null) {
                 throw Exception("Attempting to swap with non-existent old artist in database with id: ${old.id}")
             }
-            if (database.artist(new.id).first() == null) {
+            if (database.artistById(new.id) == null) {
                 throw Exception("Attempting to swap with non-existent new artist in database with id: ${new.id}")
             }
 
