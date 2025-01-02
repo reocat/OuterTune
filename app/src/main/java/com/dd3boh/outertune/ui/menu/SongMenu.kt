@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.LibraryAddCheck
 import androidx.compose.material.icons.rounded.PlaylistRemove
@@ -42,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +70,7 @@ import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
+import com.dd3boh.outertune.ui.component.DetailsDialog
 import com.dd3boh.outertune.ui.component.DownloadGridMenu
 import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
@@ -75,7 +78,6 @@ import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -91,11 +93,16 @@ fun SongMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
+    val clipboardManager = LocalClipboardManager.current
+
     val playerConnection = LocalPlayerConnection.current ?: return
     val songState = database.song(originalSong.id).collectAsState(initial = originalSong)
     val song = songState.value ?: originalSong
     val download by LocalDownloadUtil.current.getDownload(originalSong.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
+
+    val currentFormat by playerConnection.currentFormat.collectAsState(initial = null)
+    val currentPlayCount by playerConnection.currentPlayCount.collectAsState(initial = null)
 
     var showEditDialog by rememberSaveable {
         mutableStateOf(false)
@@ -201,6 +208,21 @@ fun SongMenu(
                 }
             }
         }
+    }
+
+    var showDetailsDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (showDetailsDialog) {
+        DetailsDialog(
+            mediaMetadata = song.toMediaMetadata(),
+            currentFormat = currentFormat,
+            currentPlayCount = currentPlayCount,
+            volume = playerConnection.player.volume,
+            clipboardManager = clipboardManager,
+            setVisibility = {showDetailsDialog = it }
+        )
     }
 
     SongListItem(
@@ -340,6 +362,12 @@ fun SongMenu(
                 }
                 context.startActivity(Intent.createChooser(intent, null))
             }
+        GridMenuItem(
+            icon = Icons.Rounded.Info,
+            title = R.string.details
+        ) {
+            showDetailsDialog = true
+        }
         if (!song.song.isLocal) {
             if (song.song.inLibrary == null) {
                 GridMenuItem(
