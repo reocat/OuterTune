@@ -271,6 +271,10 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
     fun nukeLocalGenre()
 
     @Transaction
+    @Query("DELETE FROM format")
+    fun nukeFormatEntities()
+
+    @Transaction
     fun nukeLocalData() {
         nukeLocalSongs()
         nukeLocalArtists()
