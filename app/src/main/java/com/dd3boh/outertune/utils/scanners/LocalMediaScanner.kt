@@ -253,7 +253,12 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         Timber.tag(TAG).d("Entries to process: ${newSongs.size}. After dedup: ${finalSongs.size}")
 
         // sync
+        var runs = 0
         finalSongs.forEach { song ->
+            runs ++
+            if (runs % 20 == 0) {
+                Timber.tag(TAG).d("------------ SYNC: Local Library Sync: $runs/${finalSongs.size} processed ------------")
+            }
             if (scannerRequestCancel) {
                 if (SCANNER_DEBUG)
                     Timber.tag(TAG).d("WARNING: Requested to cancel Local Library Sync. Aborting.")
@@ -581,10 +586,17 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
      * Converts all local artists to remote artists if possible
      */
     fun localToRemoteArtist(database: MusicDatabase) {
+        var runs = 0
+        Timber.tag(TAG).d("------------ SYNC: Starting youtubeArtistLookup job ------------")
         runBlocking(Dispatchers.IO) {
             val allLocal = database.allLocalArtists().first()
 
             allLocal.forEach { element ->
+                runs ++
+                if (runs % 20 == 0) {
+                    Timber.tag(TAG).d("------------ SYNC: youtubeArtistLookup job: $runs artists processed ------------")
+                }
+
                 val artistVal = element.name.trim()
 
                 // check if this artist exists in DB already
@@ -638,6 +650,8 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 throw ScannerAbortException("Scanner canceled during localToRemoteArtist")
             }
         }
+
+        Timber.tag(TAG).d("------------ SYNC: youtubeArtistLookup job ended------------")
     }
 
 
