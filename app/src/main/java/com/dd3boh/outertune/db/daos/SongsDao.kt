@@ -141,6 +141,7 @@ interface SongsDao {
             SongSortType.NAME -> songsByNameAsc()
             SongSortType.ARTIST -> songsByArtistAsc()
             SongSortType.PLAY_TIME -> songsByPlayTimeAsc()
+            SongSortType.PLAY_COUNT -> songsByPlayCountAsc()
         }.map { it.reversed(descending) }
     // endregion
 
@@ -205,6 +206,7 @@ interface SongsDao {
             SongSortType.NAME -> likedSongsByNameAsc()
             SongSortType.ARTIST -> likedSongsByArtistAsc()
             SongSortType.PLAY_TIME -> likedSongsByPlayTimeAsc()
+            SongSortType.PLAY_COUNT -> likedSongsByPlayCountAsc()
         }.map { it.reversed(descending) }
     // endregion
 
@@ -246,6 +248,18 @@ interface SongsDao {
     @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY totalPlayTime")
     fun downloadSongsByPlayTimeAsc(): Flow<List<Song>>
 
+    @RewriteQueriesToDropUnusedColumns
+    @Transaction
+    @Query("""
+        SELECT song.*, (SELECT SUM(playCount.count) 
+            FROM playCount 
+            WHERE playCount.song = song.id) AS pc 
+        FROM song 
+        WHERE isLocal OR dateDownload IS NOT NULL
+        ORDER BY pc ASC
+    """)
+    fun downloadSongsByPlayCountAsc(): Flow<List<Song>>
+
     fun downloadSongs(sortType: SongSortType, descending: Boolean) =
         when (sortType) {
             SongSortType.CREATE_DATE -> downloadSongsByCreateDateAsc()
@@ -254,6 +268,7 @@ interface SongsDao {
             SongSortType.NAME -> downloadSongsByNameAsc()
             SongSortType.ARTIST -> downloadSongsByArtistAsc()
             SongSortType.PLAY_TIME -> downloadSongsByPlayTimeAsc()
+            SongSortType.PLAY_COUNT -> downloadSongsByPlayCountAsc()
         }.map { it.reversed(descending) }
     // endregion
     // endregion

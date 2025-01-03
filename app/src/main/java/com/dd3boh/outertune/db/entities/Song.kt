@@ -41,6 +41,13 @@ data class Song @JvmOverloads constructor(
         )
     )
     val genre: List<GenreEntity>? = null,
+
+    @Relation(
+        entity = PlayCountEntity::class,
+        entityColumn = "song",
+        parentColumn = "id",
+    )
+    val playCount: List<PlayCountEntity>? = null,
 ) : LocalItem() {
     override val id: String
         get() = song.id

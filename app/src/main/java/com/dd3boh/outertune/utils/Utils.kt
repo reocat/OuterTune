@@ -69,3 +69,37 @@ fun closestMatch(query: String, stringList: List<Artist>): Artist? {
 
     return null
 }
+
+/**
+ * Convert a number to a string representation
+ *
+ * The value of the number is denoted with characters from A through J. A being 0, and J being 9. This is prefixed by
+ * number of digits the number has (always 2 digits, in the same representation) and succeeded with a null terminator "0"
+ * In format:
+ * <digit tens><digit ones><value in string form>0
+ *
+ *
+ * For example:
+ * 100          -> ADBAA0 ("AD" is "03", which represents this is a AD 3 digit number, "BAA" is "100")
+ * 101          -> ADBAB0
+ * 1013         -> AEBABD0
+ * 9            -> ABJ0
+ * 111222333444 -> BCBBBCCCDDDEEE0
+ */
+fun numberToAlpha(l: Long): String {
+    val alphabetMap = ('A'..'J').toList()
+    val weh = l.toString()
+    val lengthStr = if (weh.length.toInt() < 10) {
+        "0" + weh.length.toInt()
+    } else {
+        weh.length.toInt().toString()
+    }
+
+    return (lengthStr + weh + "\u0000").map {
+        if (it == '\u0000') {
+            "0"
+        } else {
+            alphabetMap[it.digitToInt()]
+        }
+    }.joinToString("")
+}
