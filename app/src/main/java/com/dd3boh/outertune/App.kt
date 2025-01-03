@@ -90,7 +90,8 @@ class App : Application(), ImageLoaderFactory {
                         // we now allow user input now, here be the demons. This serves as a last ditch effort to avoid a crash loop
                         Timber.e("Could not parse cookie. Clearing existing cookie. %s", e.message)
                         dataStore.edit { settings ->
-                            settings[InnerTubeCookieKey] = ""
+                            settings.remove(InnerTubeCookieKey)
+                            settings.remove(VisitorDataKey)
                         }
                     }
                 }
