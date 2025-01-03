@@ -292,6 +292,13 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     // always ensure inLibrary and local path values are valid
                     if (!refreshExisting && (oldSong.inLibrary == null || oldSong.localPath == null)) {
                         database.update(songToUpdate)
+
+                        // update format
+                        if (song.format != null) {
+                            database.query {
+                                upsert(song.format.copy(id = songToUpdate.id))
+                            }
+                        }
                     }
 
                     if (!refreshExisting) { // below is only for when rescan is enabled
