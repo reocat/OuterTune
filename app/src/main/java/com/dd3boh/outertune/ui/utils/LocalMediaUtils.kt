@@ -29,7 +29,7 @@ val scannerSession = Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_JOBS)
 // stuff to make this work
 const val STORAGE_ROOT = "/storage/"
 const val DEFAULT_SCAN_PATH = "/tree/primary:Music\n"
-val ARTIST_SEPARATORS = Regex("\\s*;\\s*|\\s*ft\\.\\s*|\\s*feat\\.\\s*|\\s*&\\s*", RegexOption.IGNORE_CASE)
+val ARTIST_SEPARATORS = Regex("\\s*;\\s*|\\s*ft\\.\\s*|\\s*feat\\.\\s*|\\s*&\\s*|\\s*,\\s*", RegexOption.IGNORE_CASE)
 private var cachedDirectoryTree: DirectoryTree? = null
 
 
