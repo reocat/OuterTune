@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.db.entities.PlaylistEntity
-import com.dd3boh.outertune.extensions.isSyncEnabled
+import com.dd3boh.outertune.extensions.isUserLoggedIn
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -67,7 +67,7 @@ fun CreatePlaylistDialog(
             }
         },
         extraContent = {
-            if (allowSyncing && context.isSyncEnabled()){
+            if (allowSyncing && context.isUserLoggedIn()){
                 Row(
                     modifier = Modifier.padding(vertical = 16.dp, horizontal = 40.dp)
                 ) {
