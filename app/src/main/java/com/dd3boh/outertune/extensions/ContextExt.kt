@@ -15,8 +15,14 @@ import kotlinx.coroutines.runBlocking
 fun Context.isSyncEnabled(): Boolean {
     return runBlocking {
         val ytmSync = dataStore[YtmSyncKey] ?: true
+        ytmSync && isUserLoggedIn()
+    }
+}
+
+fun Context.isUserLoggedIn(): Boolean {
+    return runBlocking {
         val cookie = dataStore[InnerTubeCookieKey] ?: ""
-        ytmSync && "SAPISID" in parseCookieString(cookie) && isInternetConnected()
+        "SAPISID" in parseCookieString(cookie) && isInternetConnected()
     }
 }
 
