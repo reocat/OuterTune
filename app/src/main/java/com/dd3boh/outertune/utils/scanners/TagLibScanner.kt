@@ -68,7 +68,7 @@ class TagLibScanner : MetadataScanner {
             rawDuration = audioProperties.length
             channels = audioProperties.channels
             sampleRate = audioProperties.sampleRate
-            bitrate = audioProperties.bitrate
+            bitrate = audioProperties.bitrate * 1000
 
 
             // Read metadata
@@ -201,8 +201,8 @@ class TagLibScanner : MetadataScanner {
                 FormatEntity(
                     id = songId,
                     itag = -1,
-                    mimeType = mime,
-                    codecs = codec?.trim() ?: "Unknown",
+                    mimeType = "Not implemented", // mime,
+                    codecs = "Not implemented", //codec?.trim() ?: "Unknown",
                     bitrate = bitrate,
                     sampleRate = sampleRate,
                     contentLength = duration.toLong(),
