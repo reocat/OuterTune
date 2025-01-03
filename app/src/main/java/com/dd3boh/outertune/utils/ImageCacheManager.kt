@@ -15,7 +15,8 @@ var bitmapCache = ArrayDeque<CachedBitmap>()
  * Retrieves an image from the cache
  */
 fun retrieveImage(path: String): CachedBitmap? {
-    return bitmapCache.firstOrNull { it.path == path }
+    // do not remove the null check regardless of what kotlin or IDE tells you. it?.path
+    return bitmapCache.firstOrNull { it?.path == path }
 }
 
 /**
