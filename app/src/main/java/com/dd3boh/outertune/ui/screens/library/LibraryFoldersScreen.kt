@@ -47,6 +47,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastSumBy
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -76,6 +77,7 @@ import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.SwipeToQueueBox
 import com.dd3boh.outertune.ui.menu.SongMenu
+import com.dd3boh.outertune.utils.numberToAlpha
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibrarySongsViewModel
@@ -174,12 +176,13 @@ fun LibraryFoldersScreen(
         // sort songs
         tempList.sortBy {
             when (sortType) {
-                SongSortType.CREATE_DATE -> it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC).toString()
-                SongSortType.MODIFIED_DATE -> it.song.getDateModifiedLong().toString()
-                SongSortType.RELEASE_DATE -> it.song.getDateLong().toString()
+                SongSortType.CREATE_DATE -> numberToAlpha(it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC)?: -1L)
+                SongSortType.MODIFIED_DATE -> numberToAlpha(it.song.getDateModifiedLong()?: -1L)
+                SongSortType.RELEASE_DATE -> numberToAlpha(it.song.getDateLong()?: -1L)
                 SongSortType.NAME -> it.song.title.lowercase()
                 SongSortType.ARTIST -> it.artists.joinToString { artist -> artist.name }.lowercase()
-                SongSortType.PLAY_TIME -> it.song.totalPlayTime.toString()
+                SongSortType.PLAY_TIME -> numberToAlpha(it.song.totalPlayTime)
+                SongSortType.PLAY_COUNT -> numberToAlpha((it.playCount?.fastSumBy { it.count })?.toLong() ?: 0L)
             }
         }
         // sort folders
@@ -249,6 +252,7 @@ fun LibraryFoldersScreen(
                                         SongSortType.NAME -> R.string.sort_by_name
                                         SongSortType.ARTIST -> R.string.sort_by_artist
                                         SongSortType.PLAY_TIME -> R.string.sort_by_play_time
+                                        SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
                                     }
                                 }
                             )

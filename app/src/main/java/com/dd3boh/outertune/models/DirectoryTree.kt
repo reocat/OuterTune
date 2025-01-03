@@ -184,6 +184,7 @@ class DirectoryTree(path: String) {
                 SongSortType.NAME -> it.song.title
                 SongSortType.ARTIST -> it.artists.firstOrNull()?.name
                 SongSortType.PLAY_TIME -> it.song.totalPlayTime.toString()
+                SongSortType.PLAY_COUNT -> it.song.totalPlayTime.toString() // TODO: This properly
             }
         }
 
