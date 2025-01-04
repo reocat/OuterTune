@@ -214,6 +214,17 @@ interface ArtistsDao {
     @Delete
     fun delete(artist: ArtistEntity)
 
+   @Query("""
+        DELETE FROM Artist
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM song_artist_map
+            WHERE song_artist_map.artistId = :artistId
+        )
+        AND id = :artistId
+    """)
+    fun safeDeleteArtist(artistId: String)
+
     @Transaction
     @Query("DELETE FROM artist WHERE isLocal = 1")
     fun nukeLocalArtists()

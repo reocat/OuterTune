@@ -974,7 +974,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 database.updateAlbumArtistMap(old.id, new.id)
 
                 // nuke old artist
-                database.delete(old)
+                database.safeDeleteArtist(old.id)
             }
         }
     }
