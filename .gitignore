@@ -97,8 +97,6 @@ lint/tmp/
 
 # misc
 .DS_Store
-app/src/main/java/com/dd3boh/outertune/utils/scanners/jni/ffmpeg-android-maker
-app/src/main/java/com/dd3boh/outertune/utils/scanners/jni/src/
 
 # patches
 *.patch

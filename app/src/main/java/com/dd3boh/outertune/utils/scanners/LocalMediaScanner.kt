@@ -44,7 +44,7 @@ import java.util.Locale
 class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     private var advancedScannerImpl: MetadataScanner = when (scannerImpl) {
         ScannerImpl.TAGLIB -> TagLibScanner()
-        ScannerImpl.FFMPEG_EXT -> FFMpegScanner()
+        ScannerImpl.FFMPEG_EXT -> FFMpegScanner(context)
     }
 
     init {
@@ -982,3 +982,4 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
 class InvalidAudioFileException(message: String) : Throwable(message)
 class ScannerAbortException(message: String) : Throwable(message)
+class ScannerCriticalFailureException(message: String) : Throwable(message)
