@@ -59,7 +59,7 @@ recommend [Pano Scrobbler](https://play.google.com/store/apps/details?id=com.arn
 
 ## Building & Contributing
 
-We are looking for contrubutors, translators, and maintainers! If you would like to help out, or just wish to build the app yourself, please see the [building and contribution notes](./CONTRIBUTING.md).
+We are looking for contributors, translators, and maintainers! If you would like to help out, or just wish to build the app yourself, please see the [building and contribution notes](./CONTRIBUTING.md).
 
 ## Donate
 

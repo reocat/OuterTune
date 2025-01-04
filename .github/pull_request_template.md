@@ -7,7 +7,7 @@
 - [ ] Translations
 - [ ] Codebase improvements or refactors (dev facing)
 - [ ] Other
-<!-- If you selected Translations, please this pull request only contains tranlations changes, and NO code changes (unless it is absolutely nessesary, please provide a description of why). Please ensure your are able to build and run the app. You can simply delete the next 4 sections as they do not apply. -->
+<!-- If you selected Translations, please this pull request only contains translations changes, and NO code changes (unless it is absolutely necessary, please provide a description of why). Please ensure your are able to build and run the app. You can simply delete the next 4 sections as they do not apply. -->
 
 #### Description of the changes in your PR
 <!-- While bullet points are the norm in this section, feel free to write free-form text instead of a list -->

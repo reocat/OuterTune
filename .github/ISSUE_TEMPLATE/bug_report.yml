@@ -52,7 +52,7 @@ body:
       required: true
 
   - type: textarea
-    id: sreen-media
+    id: screen-media
     attributes:
       label: Screenshots/Screen recordings
       description: |
@@ -85,7 +85,7 @@ body:
     attributes:
       label: Device & Android version
       description: |
-        You can find this somewhere in your Android settings.
+        You can find this somewhere in your Android settings. Alternatively, you can install the debug variant of the app from Github actions, navigate to settings -> about, and upload a screenshot of the debug info.
       placeholder: |
         Example: "Asus Zenfone 8, Android 12"
     validations:

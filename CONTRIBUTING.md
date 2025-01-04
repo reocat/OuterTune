@@ -44,7 +44,7 @@ However, should you choose to opt for self built libraries and/or work on the ex
 # Contributing to OuterTune
 
 ## Submitting a pull request
-To make eveyone's life easier, there are a set of guidlines that are to be followed when submitting pull requests.
+To make everyone's life easier, there are a set of guidelines that are to be followed when submitting pull requests.
 
 - One pull request for one feature/issue, please refrain from tackling many features/issues in one pull request
 - Write a descriptive title and a meaningful description
@@ -120,6 +120,6 @@ To make eveyone's life easier, there are a set of guidlines that are to be follo
     - The generate json JSON, Entity classes, migration conflict resolution, etc.
 
 ## Translations
-Follow the [instructions](https://developer.android.com/guide/topics/resources/localization) to add tranlation strings, and then
+Follow the [instructions](https://developer.android.com/guide/topics/resources/localization) to add translation strings, and then
 create a pull request. **You are also required to build the app beforehand** and make sure there is no error
 before you create a pull request.
