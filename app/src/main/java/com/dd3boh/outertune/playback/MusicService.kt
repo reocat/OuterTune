@@ -230,7 +230,7 @@ class MusicService : MediaLibraryService(),
             .apply {
                 addListener(this@MusicService)
 
-                setOffloadEnabled(dataStore.get(AudioOffload, true))
+                setOffloadEnabled(dataStore.get(AudioOffload, false))
 
                 // skip on error
                 addListener(object : Player.Listener {
