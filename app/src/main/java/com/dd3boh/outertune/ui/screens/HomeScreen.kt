@@ -402,6 +402,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(60.dp * 4)
+                            .padding(6.dp)
                     ) {
                         items(
                             items = recentActivity!!,
