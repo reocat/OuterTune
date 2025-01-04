@@ -1212,7 +1212,7 @@ fun YouTubeCardItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .height(60.dp)
-            .width(screenWidthDp.dp / 2)
+            .width((screenWidthDp.dp - 12.dp) / 2)
             .padding(6.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
