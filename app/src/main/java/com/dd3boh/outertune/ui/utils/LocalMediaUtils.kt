@@ -19,7 +19,7 @@ const val SYNC_SCANNER = false // true will not use multithreading for scanner
 const val MAX_CONCURRENT_JOBS = 4
 const val SCANNER_DEBUG = false
 
-const val EXTRACTOR_DEBUG = true
+const val EXTRACTOR_DEBUG = false
 const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
 const val EXTRACTOR_TAG = "MetadataExtractor"
 

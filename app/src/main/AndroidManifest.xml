@@ -19,6 +19,12 @@
         <intent>
             <action android:name="android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL" />
         </intent>
+
+        <package android:name="wah.mikooomich.ffMetadataEx" />
+        <intent>
+            <action android:name="wah.mikooomich.ffMetadataEx.ACTION_EXTRACT_METADATA"/>
+            <category android:name="android.intent.category.DEFAULT"/>
+        </intent>
     </queries>
     <application
         android:name=".App"
