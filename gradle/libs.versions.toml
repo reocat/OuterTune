@@ -12,7 +12,7 @@ hilt = "2.54"
 ktor = "3.0.3"
 ksp = "2.1.0-1.0.29"
 multidex = "2.0.1"
-newpipe = "235c899bf2e412d3c2851f05860707511ab31e02"
+newpipe = "a4b0ee902e9717144aa9504df2d85cdd16476b90"
 taglib = "1.0.0-alpha25"
 
 [libraries]
