@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.compose.ui.util.fastSumBy
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -104,7 +105,6 @@ fun SongMenu(
     val coroutineScope = rememberCoroutineScope()
 
     val currentFormat by playerConnection.currentFormat.collectAsState(initial = null)
-    val currentPlayCount by playerConnection.currentPlayCount.collectAsState(initial = null)
 
     var showEditDialog by rememberSaveable {
         mutableStateOf(false)
@@ -222,7 +222,7 @@ fun SongMenu(
         DetailsDialog(
             mediaMetadata = song.toMediaMetadata(),
             currentFormat = currentFormat,
-            currentPlayCount = currentPlayCount,
+            currentPlayCount = song.playCount?.fastSumBy { it.count }?: 0,
             volume = playerConnection.player.volume,
             clipboardManager = clipboardManager,
             setVisibility = {showDetailsDialog = it }
