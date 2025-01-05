@@ -1,7 +1,9 @@
 package com.dd3boh.outertune.utils.scanners
 
+import android.content.Context
 import android.media.MediaPlayer
 import android.os.Environment
+import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -10,7 +12,10 @@ import com.dd3boh.outertune.db.entities.SongArtistMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.db.entities.SongGenreMap
 import com.dd3boh.outertune.models.DirectoryTree
+import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_DEBUG
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
 import com.dd3boh.outertune.ui.utils.SCANNER_DEBUG
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import com.dd3boh.outertune.ui.utils.SYNC_SCANNER
@@ -36,7 +41,16 @@ import java.time.LocalDateTime
 import java.util.Locale
 
 
-class LocalMediaScanner {
+class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
+    private var advancedScannerImpl: MetadataScanner = when (scannerImpl) {
+        ScannerImpl.TAGLIB -> TagLibScanner()
+        ScannerImpl.FFMPEG_EXT -> FFMpegScanner(context)
+    }
+
+    init {
+        if (EXTRACTOR_DEBUG)
+            Timber.tag(EXTRACTOR_TAG).d("Creating scanner instance with scannerImpl: $scannerImpl")
+    }
 
     /**
      * Compiles a song with all it's necessary metadata. Unlike MediaStore,
@@ -44,8 +58,7 @@ class LocalMediaScanner {
      */
     private fun advancedScan(
         path: String,
-        database: MusicDatabase,
-    ): Song {
+    ): SongTempData {
         try {
             // test if system can play
             val testPlayer = MediaPlayer()
@@ -54,21 +67,24 @@ class LocalMediaScanner {
             testPlayer.release()
 
             // decide which scanner to use
-            val scanner = getAdvancedScanner()
-                ?: throw NullPointerException("Advanced Extractor is null") // debug
-            val ffmpegData = scanner.getAllMetadata(path)
-
-            // file format info
-            database.query {
-                upsert(
-                    ffmpegData.format
-                )
+            val ffmpegData = if (advancedScannerImpl is FFMpegScanner) {
+                advancedScannerImpl.getAllMetadataFromPath(path)
+            } else if (advancedScannerImpl is TagLibScanner) {
+                advancedScannerImpl.getAllMetadataFromFile(File(path))
+            } else {
+                throw RuntimeException("Unsupported extractor")
             }
-            return ffmpegData.song
+
+            return ffmpegData
         } catch (e: Exception) {
             when (e) {
-                is IOException, is IllegalArgumentException, is IllegalStateException ->
+                is IOException, is IllegalArgumentException, is IllegalStateException -> {
+                    if (SCANNER_DEBUG) {
+                        e.printStackTrace()
+                    }
                     throw InvalidAudioFileException("Not in a playable format: ${e.message} for: $path")
+                }
+
                 else -> {
                     if (SCANNER_DEBUG) {
                         Timber.tag(TAG).d(
@@ -78,16 +94,20 @@ class LocalMediaScanner {
                     }
 
                     // we still want the song to be playable even if metadata extractor fails
-                    return Song(
-                        SongEntity(
-                            SongEntity.generateSongId(),
-                            path.substringAfterLast('/'),
-                            thumbnailUrl = path,
-                            isLocal = true,
-                            inLibrary = LocalDateTime.now(),
-                            localPath = path
+                    return SongTempData(
+                        Song(
+                            SongEntity(
+                                SongEntity.generateSongId(),
+                                path.substringAfterLast('/'),
+                                thumbnailUrl = path,
+                                isLocal = true,
+                                inLibrary = LocalDateTime.now(),
+                                localPath = path
+                            ),
+                            artists = ArrayList()
                         ),
-                        artists = ArrayList())
+                        null
+                    )
                 }
             }
         }
@@ -113,7 +133,7 @@ class LocalMediaScanner {
         val newDirectoryStructure = DirectoryTree(STORAGE_ROOT)
         Timber.tag(TAG).d("------------ SCAN: Starting Full Scanner ------------")
 
-        val scannerJobs = ArrayList<Deferred<Song?>>()
+        val scannerJobs = ArrayList<Deferred<SongTempData?>>()
         runBlocking {
             getScanPaths(scanPaths, excludedScanPaths).forEach { path ->
                 // we can expect lrc is not a song
@@ -147,7 +167,7 @@ class LocalMediaScanner {
                                 throw ScannerAbortException("")
                             }
                             try {
-                                advancedScan(path, database)
+                                advancedScan(path)
                             } catch (e: InvalidAudioFileException) {
                                 null
                             }
@@ -162,10 +182,10 @@ class LocalMediaScanner {
                     }
 
                     // force synchronous scanning of songs. Do not catch errors
-                    val toInsert = advancedScan(path, database)
-                    toInsert.song.localPath?.let { s ->
+                    val toInsert = advancedScan(path)
+                    toInsert.song.song.localPath?.let { s ->
                         newDirectoryStructure.insert(
-                            s.substringAfter(STORAGE_ROOT), toInsert
+                            s.substringAfter(STORAGE_ROOT), toInsert.song
                         )
                     }
                 }
@@ -188,9 +208,9 @@ class LocalMediaScanner {
         scannerJobs.forEach {
             val song = it.getCompleted()
 
-            song?.song?.localPath?.let { s ->
+            song?.song?.song?.localPath?.let { s ->
                 newDirectoryStructure.insert(
-                    s.substringAfter(STORAGE_ROOT), song
+                    s.substringAfter(STORAGE_ROOT), song.song
                 )
             }
         }
@@ -216,7 +236,7 @@ class LocalMediaScanner {
      */
     fun syncDB(
         database: MusicDatabase,
-        newSongs: List<Song>,
+        newSongs: java.util.ArrayList<SongTempData>,
         matchStrength: ScannerMatchCriteria,
         strictFileNames: Boolean,
         refreshExisting: Boolean = false,
@@ -224,16 +244,21 @@ class LocalMediaScanner {
     ) {
         Timber.tag(TAG).d("------------ SYNC: Starting Local Library Sync ------------")
         // deduplicate
-        val finalSongs = ArrayList<Song>()
+        val finalSongs = ArrayList<SongTempData>()
         newSongs.forEach { song ->
-            if (finalSongs.none { s -> compareSong(song, s, matchStrength, strictFileNames) }) {
+            if (finalSongs.none { s -> compareSong(song.song, s.song, matchStrength, strictFileNames) }) {
                 finalSongs.add(song)
             }
         }
         Timber.tag(TAG).d("Entries to process: ${newSongs.size}. After dedup: ${finalSongs.size}")
 
         // sync
+        var runs = 0
         finalSongs.forEach { song ->
+            runs ++
+            if (runs % 20 == 0) {
+                Timber.tag(TAG).d("------------ SYNC: Local Library Sync: $runs/${finalSongs.size} processed ------------")
+            }
             if (scannerRequestCancel) {
                 if (SCANNER_DEBUG)
                     Timber.tag(TAG).d("WARNING: Requested to cancel Local Library Sync. Aborting.")
@@ -247,7 +272,7 @@ class LocalMediaScanner {
             runBlocking(Dispatchers.IO) {
                 // check if this song is known to the library
                 val songMatch = querySong.first().filter {
-                    return@filter compareSong(it, song, matchStrength, strictFileNames)
+                    return@filter compareSong(it, song.song, matchStrength, strictFileNames)
                 }
 
                 if (SCANNER_DEBUG) {
@@ -266,12 +291,19 @@ class LocalMediaScanner {
                             .d("Found in database, updating song: ${song.song.title} rescan = $refreshExisting")
 
                     val oldSong = songMatch.first().song
-                    val songToUpdate = song.song.copy(id = oldSong.id, localPath = song.song.localPath)
+                    val songToUpdate = song.song.song.copy(id = oldSong.id, localPath = song.song.song.localPath)
 
                     // don't run if we will update these values in rescan anyways
                     // always ensure inLibrary and local path values are valid
                     if (!refreshExisting && (oldSong.inLibrary == null || oldSong.localPath == null)) {
                         database.update(songToUpdate)
+
+                        // update format
+                        if (song.format != null) {
+                            database.query {
+                                upsert(song.format.copy(id = songToUpdate.id))
+                            }
+                        }
                     }
 
                     if (!refreshExisting) { // below is only for when rescan is enabled
@@ -289,8 +321,9 @@ class LocalMediaScanner {
 
                     // update artists
                     var artistPos = 0
-                    song.artists.forEach {
-                        val dbQuery = database.searchArtists(it.name).firstOrNull()?.sortedBy { item -> item.artist.name.length }
+                    song.song.artists.forEach {
+                        val dbQuery =
+                            database.searchArtists(it.name).firstOrNull()?.sortedBy { item -> item.artist.name.length }
                         val dbArtist = dbQuery?.let { item -> closestMatch(it.name, item) }
 
                         database.transaction {
@@ -308,7 +341,7 @@ class LocalMediaScanner {
                     }
 
                     artistPos = 0 // reuse this var for genres
-                    song.genre?.forEach {
+                    song.song.genre?.forEach {
                         val dbGenre = database.genreByAproxName(it.title).firstOrNull()?.firstOrNull()
 
                         database.transaction {
@@ -325,19 +358,25 @@ class LocalMediaScanner {
                         artistPos++
                     }
 
+                    // update format
+                    if (song.format != null) {
+                        database.query {
+                            upsert(song.format.copy(id = songToUpdate.id))
+                        }
+                    }
+
                 } else { // new song
                     if (SCANNER_DEBUG)
-                        Timber.tag(TAG)
-                            .d("NOT found in database, adding song: ${song.song.title}")
+                        Timber.tag(TAG).d("NOT found in database, adding song: ${song.song.title}")
 
-                    database.insert(song.toMediaMetadata())
+                    database.insert(song.song.toMediaMetadata())
                 }
             }
         }
 
         // do not delete songs from database automatically, we just disable them
         if (!noDisable) {
-            finalize(finalSongs, database)
+            finalize(finalSongs.map { it.song }, database)
         }
         Timber.tag(TAG).d("------------ SYNC: Finished Local Library Sync ------------")
     }
@@ -372,8 +411,8 @@ class LocalMediaScanner {
                 allSongs.any { dbSong -> compareSong(it, dbSong, matchCriteria, true) } // ignore user strictFileNames prefs for initial matching
             }
 
-            val finalSongs = ArrayList<Song>()
-            val scannerJobs = ArrayList<Deferred<Song?>>()
+            val finalSongs = ArrayList<SongTempData>()
+            val scannerJobs = ArrayList<Deferred<SongTempData?>>()
             runBlocking {
                 // Get song basic metadata
                 delta.forEach { s ->
@@ -408,7 +447,7 @@ class LocalMediaScanner {
                                     throw ScannerAbortException("")
                                 }
                                 try {
-                                    advancedScan(path, database)
+                                    advancedScan(path)
                                 } catch (e: InvalidAudioFileException) {
                                     null
                                 }
@@ -416,7 +455,7 @@ class LocalMediaScanner {
                         )
                     } else {
                         // force synchronous scanning of songs. Do not catch errors
-                        finalSongs.add(advancedScan(path, database))
+                        finalSongs.add(advancedScan(path))
                     }
                 }
             }
@@ -445,14 +484,119 @@ class LocalMediaScanner {
         Timber.tag(TAG).d("------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
     }
 
+
+    /**
+     * Run a full scan and ful database update. This will update all song data in the
+     * database of all songs, and also disable inacessable songs
+     *
+     * No remote artist lookup is done
+     *
+     * WARNING: cachedDirectoryTree is not refreshed and may lead to inconsistencies.
+     * It is highly recommend to rebuild the tree after scanner operation
+     *
+     * @param newSongs List of songs. This is expecting a barebones DirectoryTree
+     * (only paths are necessary), thus you may use the output of refreshLocal().toList()
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun fullSync(
+        database: MusicDatabase,
+        newSongs: List<Song>,
+        matchCriteria: ScannerMatchCriteria,
+        strictFileNames: Boolean,
+    ) {
+        Timber.tag(TAG).d("------------ SYNC: Starting FULL Library Sync ------------")
+        Timber.tag(TAG).d("Entries to process: ${newSongs.size}")
+
+        runBlocking(Dispatchers.IO) {
+            val finalSongs = ArrayList<SongTempData>()
+            val scannerJobs = ArrayList<Deferred<SongTempData?>>()
+            runBlocking {
+                // Get song basic metadata
+                newSongs.forEach { s ->
+                    if (scannerRequestCancel) {
+                        if (SCANNER_DEBUG)
+                            Timber.tag(TAG).d("WARNING: Requested to cancel. Aborting.")
+                        scannerRequestCancel = false
+                        throw ScannerAbortException("Scanner canceled during FULL Library Sync")
+                    }
+
+                    // we can expect lrc is not a song
+                    if (s.song.localPath?.substringAfterLast('.') == "lrc") {
+                        return@forEach
+                    }
+
+                    val path = "" + s.song.localPath
+
+                    if (SCANNER_DEBUG)
+                        Timber.tag(TAG).d("PATH: $path")
+
+                    /**
+                     * TODO: do not link album (and whatever song id) with youtube yet, figure that out later
+                     */
+
+                    if (!SYNC_SCANNER) {
+                        // use async scanner
+                        scannerJobs.add(
+                            async(scannerSession) {
+                                if (scannerRequestCancel) {
+                                    if (SCANNER_DEBUG)
+                                        Timber.tag(TAG).d("WARNING: Canceling advanced scanner job.")
+                                    throw ScannerAbortException("")
+                                }
+                                try {
+                                    advancedScan(path)
+                                } catch (e: InvalidAudioFileException) {
+                                    null
+                                }
+                            }
+                        )
+                    } else {
+                        // force synchronous scanning of songs. Do not catch errors
+                        finalSongs.add(advancedScan(path))
+                    }
+                }
+            }
+
+            if (!SYNC_SCANNER) {
+                // use async scanner
+                scannerJobs.awaitAll()
+            }
+
+            // add to finished list
+            scannerJobs.forEach {
+                val song = it.getCompleted()
+                song?.song?.let { finalSongs.add(song) }
+            }
+
+            if (finalSongs.isNotEmpty()) {
+                /**
+                 * TODO: Delete all local format entity before scan
+                 */
+                syncDB(database, finalSongs, matchCriteria, strictFileNames, refreshExisting = true)
+            } else {
+                if (SCANNER_DEBUG)
+                    Timber.tag(TAG).d("Not syncing, no valid songs found!")
+            }
+        }
+        Timber.tag(TAG).d("------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
+    }
+
+
     /**
      * Converts all local artists to remote artists if possible
      */
     fun localToRemoteArtist(database: MusicDatabase) {
+        var runs = 0
+        Timber.tag(TAG).d("------------ SYNC: Starting youtubeArtistLookup job ------------")
         runBlocking(Dispatchers.IO) {
             val allLocal = database.allLocalArtists().first()
 
             allLocal.forEach { element ->
+                runs ++
+                if (runs % 20 == 0) {
+                    Timber.tag(TAG).d("------------ SYNC: youtubeArtistLookup job: $runs artists processed ------------")
+                }
+
                 val artistVal = element.name.trim()
 
                 // check if this artist exists in DB already
@@ -506,6 +650,8 @@ class LocalMediaScanner {
                 throw ScannerAbortException("Scanner canceled during localToRemoteArtist")
             }
         }
+
+        Timber.tag(TAG).d("------------ SYNC: youtubeArtistLookup job ended------------")
     }
 
 
@@ -579,7 +725,7 @@ class LocalMediaScanner {
         const val TAG = "LocalMediaScanner"
 
         private var localScanner: LocalMediaScanner? = null
-        private var advancedScannerImpl: MetadataScanner? = null
+
 
         /**
          * TODO: Create a lock for background jobs like youtubeartists and etc
@@ -597,9 +743,9 @@ class LocalMediaScanner {
         /**
          * Trust me bro, it should never be null
          */
-        fun getScanner(): LocalMediaScanner {
+        fun getScanner(context: Context, scannerImpl: ScannerImpl): LocalMediaScanner {
             if (localScanner == null) {
-                localScanner = LocalMediaScanner()
+                localScanner = LocalMediaScanner(context, scannerImpl)
             }
 
             return localScanner!!
@@ -607,19 +753,8 @@ class LocalMediaScanner {
 
         fun destroyScanner() {
             localScanner = null
-            unloadAdvancedScanner()
-        }
-
-        /**
-         * TODO: Docs here
-         */
-        fun getAdvancedScanner(): MetadataScanner? {
-            // kotlin won't let me return MetadataScanner even if it cant possibly be null broooo
-            return if (advancedScannerImpl is FFMpegScanner) advancedScannerImpl else FFMpegScanner()
-        }
-
-        fun unloadAdvancedScanner() {
-            advancedScannerImpl = null
+            if (EXTRACTOR_DEBUG)
+                Timber.tag(EXTRACTOR_TAG).d("Scanner instance destroyed")
         }
 
 
@@ -839,7 +974,7 @@ class LocalMediaScanner {
                 database.updateAlbumArtistMap(old.id, new.id)
 
                 // nuke old artist
-                database.delete(old)
+                database.safeDeleteArtist(old.id)
             }
         }
     }
@@ -847,3 +982,4 @@ class LocalMediaScanner {
 
 class InvalidAudioFileException(message: String) : Throwable(message)
 class ScannerAbortException(message: String) : Throwable(message)
+class ScannerCriticalFailureException(message: String) : Throwable(message)

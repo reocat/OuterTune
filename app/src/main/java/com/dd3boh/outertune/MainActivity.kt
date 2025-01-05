@@ -128,6 +128,8 @@ import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.ScanPathsKey
+import com.dd3boh.outertune.constants.ScannerImpl
+import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.constants.ScannerSensitivityKey
 import com.dd3boh.outertune.constants.ScannerStrictExtKey
@@ -202,6 +204,7 @@ import com.dd3boh.outertune.ui.utils.appBarScrollBehavior
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.getLocalThumbnail
 import com.dd3boh.outertune.ui.utils.resetHeightOffset
+import com.dd3boh.outertune.utils.ActivityLauncherHelper
 import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.dataStore
@@ -211,7 +214,7 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.unloadAdvancedScanner
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.urlEncode
 import com.valentinilk.shimmer.LocalShimmerTheme
@@ -237,6 +240,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var syncUtils: SyncUtils
+
+    lateinit var activityLauncher: ActivityLauncherHelper
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
     private val serviceConnection = object : ServiceConnection {
@@ -305,6 +310,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        activityLauncher = ActivityLauncherHelper(this)
 
         setContent {
             val connectivityObserver = NetworkConnectivityObserver(this)
@@ -365,6 +371,10 @@ class MainActivity : ComponentActivity() {
                 key = ScannerSensitivityKey,
                 defaultValue = ScannerMatchCriteria.LEVEL_2
             )
+            val (scannerImpl) = rememberEnumPreference(
+                key = ScannerImplKey,
+                defaultValue = ScannerImpl.TAGLIB
+            )
             val (scanPaths) = rememberPreference(ScanPathsKey, defaultValue = DEFAULT_SCAN_PATH)
             val (excludedScanPaths) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
             val (strictExtensions) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
@@ -377,7 +387,7 @@ class MainActivity : ComponentActivity() {
                     // Check if the permissions for local media access
                     if (firstSetupPassed && localLibEnable && autoScan
                         && checkSelfPermission(MEDIA_PERMISSION_LEVEL) == PackageManager.PERMISSION_GRANTED) {
-                        val scanner = LocalMediaScanner.getScanner()
+                        val scanner = LocalMediaScanner.getScanner(this@MainActivity, scannerImpl)
 
                         // equivalent to (quick scan)
                         try {
@@ -415,7 +425,7 @@ class MainActivity : ComponentActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
                         } finally {
-                            unloadAdvancedScanner()
+                            destroyScanner()
                         }
                         purgeCache() // juuuust to be sure
                         cacheDirectoryTree(null)

@@ -123,7 +123,6 @@ fun LibraryFoldersScreen(
 
     // initialize with first directory
     if (folderStack.isEmpty()) {
-        println("wtrf reinti")
         viewModel.getLocalSongs(database)
 
         folderStack.push(

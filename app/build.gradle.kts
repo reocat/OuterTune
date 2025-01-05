@@ -173,13 +173,5 @@ dependencies {
 
     implementation(libs.timber)
 
-    /**
-     * Custom FFmpeg metadata extractor
-     *
-     * My boss has requested prebuilt libraries by default. Shall you choose
-     * to work on the scanner itself, switch the implementation below AND
-     * include the project (uncomment the include line) in /settings.gradle.kts
-     */
-      implementation(files("prebuilt/ffMetadataEx-release.aar")) // prebuilt
-//     implementation(project(":ffMetadataEx")) // self built
+    implementation(libs.taglib)
 }

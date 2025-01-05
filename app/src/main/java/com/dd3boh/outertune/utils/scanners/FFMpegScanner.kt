@@ -1,6 +1,10 @@
 package com.dd3boh.outertune.utils.scanners
 
-import com.dd3boh.ffMetadataEx.FFMpegWrapper
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import com.dd3boh.outertune.MainActivity
 import com.dd3boh.outertune.db.entities.AlbumEntity
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.FormatEntity
@@ -9,6 +13,13 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
+import com.dd3boh.outertune.ui.utils.DEBUG_SAVE_OUTPUT
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_DEBUG
+import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
+import com.dd3boh.outertune.utils.reportException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import timber.log.Timber
 import java.io.File
 import java.lang.Integer.parseInt
@@ -19,34 +30,58 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.math.roundToLong
 
-const val EXTRACTOR_DEBUG = false
-const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
-const val EXTRACTOR_TAG = "FFMpegExtractor"
 const val toSeconds = 1000 * 60 * 16.7 // convert FFmpeg duration to seconds
 
-class FFMpegScanner : MetadataScanner {
-    // load advanced scanner libs
-    init {
-        System.loadLibrary("avcodec")
-        System.loadLibrary("avdevice")
-        System.loadLibrary("ffmetaexjni")
-        System.loadLibrary("avfilter")
-        System.loadLibrary("avformat")
-        System.loadLibrary("avutil")
-        System.loadLibrary("swresample")
-        System.loadLibrary("swscale")
-    }
+class FFMpegScanner(context: Context) : MetadataScanner {
+    val ctx = context
 
     /**
      * Given a path to a file, extract all necessary metadata
      *
      * @param path Full file path
      */
-    override fun getAllMetadata(path: String): SongTempData {
+    override fun getAllMetadataFromPath(path: String): SongTempData {
         if (EXTRACTOR_DEBUG)
             Timber.tag(EXTRACTOR_TAG).d("Starting Full Extractor session on: $path")
-        val ffmpeg = FFMpegWrapper()
-        val data = ffmpeg.getFullAudioMetadata(path)
+
+        var data: String = ""
+        val mutex = Mutex(true)
+        val intent = Intent("wah.mikooomich.ffMetadataEx.ACTION_EXTRACT_METADATA").apply {
+            putExtra("filePath", path)
+        }
+
+        try {
+            (ctx as MainActivity).activityLauncher.launchActivityForResult(intent) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val metadata = result.data?.getStringExtra("rawExtractorData")
+                    if (metadata != null) {
+                        data = metadata
+                        mutex.unlock()
+                    } else {
+                        data = "No metadata received"
+                    }
+                } else {
+                    data = "Metadata extraction failed"
+                }
+            }
+        } catch (e: ActivityNotFoundException) {
+            throw ScannerCriticalFailureException("ffMetaDataEx extractor app not found: ${e.message}")
+        }
+
+        // wait until scanner finishes
+        runBlocking {
+            var delays = 0
+
+            // TODO: make this less cursed
+            while (mutex.isLocked) {
+                delay(100)
+                delays++
+                if (delays > 100) {
+                    reportException(Exception("Took too long to extract metadata from ffMetadataEx. Bailing. $path"))
+                    mutex.unlock()
+                }
+            }
+        }
 
         if (EXTRACTOR_DEBUG && DEBUG_SAVE_OUTPUT) {
             Timber.tag(EXTRACTOR_TAG).d("Full output for: $path \n $data")
@@ -191,6 +226,16 @@ class FFMpegScanner : MetadataScanner {
                 playbackUrl = null
             )
         )
+    }
+
+    /**
+     * Given a path to a file, extract necessary metadata. For fields FFmpeg is
+     * unable to extract, use the provided FormatEntity data.
+     *
+     * @param file Full file path
+     */
+    override fun getAllMetadataFromFile(file: File): SongTempData {
+        return getAllMetadataFromPath(file.path)
     }
 
 }
