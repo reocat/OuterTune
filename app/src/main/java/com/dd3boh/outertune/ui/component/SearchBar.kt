@@ -44,7 +44,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.tokens.MotionTokens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -183,7 +182,7 @@ fun SearchBar(
 
         Surface(
             shape = animatedShape,
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+            color = colors.containerColor,
             contentColor = contentColorFor(colors.containerColor),
             tonalElevation = tonalElevation,
             modifier = Modifier

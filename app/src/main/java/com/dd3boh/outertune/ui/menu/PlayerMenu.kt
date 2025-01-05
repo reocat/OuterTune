@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
@@ -69,7 +68,6 @@ import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.DialogCornerRadius
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
@@ -282,9 +280,7 @@ fun PlayerMenu(
                         Text(stringResource(R.string.end_of_song))
                     }
                 }
-            },
-            containerColor = MaterialTheme.colorScheme.background,
-            shape = RoundedCornerShape(DialogCornerRadius)
+            }
         )
     }
 
@@ -508,9 +504,7 @@ fun PitchTempoDialog(
                     valueText = { "${if (it > 0) "+" else ""}$it" }
                 )
             }
-        },
-        containerColor = MaterialTheme.colorScheme.background,
-        shape = RoundedCornerShape(DialogCornerRadius)
+        }
     )
 }
 

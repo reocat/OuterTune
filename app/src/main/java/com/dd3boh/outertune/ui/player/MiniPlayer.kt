@@ -76,7 +76,6 @@ fun MiniPlayer(
     ) {
         LinearProgressIndicator(
             progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
-            drawStopIndicator = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(2.dp)
