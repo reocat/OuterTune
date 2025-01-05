@@ -67,7 +67,6 @@ fun Bitmap.extractGradientColors(): List<Color> {
         .associate { it.rgb to it.population }
 
     val orderedColors = Score.score(extractedColors, 2, 0xff4285f4.toInt(), true)
-        .take(2)
         .sortedByDescending { Color(it).luminance() }
 
     return if (orderedColors.size >= 2)
