@@ -15,6 +15,8 @@
  */
 package com.google.material.color.scheme;
 
+import com.google.material.color.dynamiccolor.DynamicScheme;
+import com.google.material.color.dynamiccolor.Variant;
 import com.google.material.color.hct.Hct;
 import com.google.material.color.palettes.TonalPalette;
 import com.google.material.color.utils.MathUtils;
@@ -29,7 +31,7 @@ public class SchemeTonalSpot extends DynamicScheme {
                 Variant.TONAL_SPOT,
                 isDark,
                 contrastLevel,
-                TonalPalette.fromHueAndChroma(sourceColorHct.getHue(), 40.0),
+                TonalPalette.fromHueAndChroma(sourceColorHct.getHue(), 36.0),
                 TonalPalette.fromHueAndChroma(sourceColorHct.getHue(), 16.0),
                 TonalPalette.fromHueAndChroma(
                         MathUtils.sanitizeDegreesDouble(sourceColorHct.getHue() + 60.0), 24.0),

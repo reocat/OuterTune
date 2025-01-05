@@ -48,7 +48,7 @@ public final class QuantizerWsmeans {
 
         @Override
         public int compareTo(Distance other) {
-            return Double.compare(this.distance, other.distance);
+            return ((Double) this.distance).compareTo(other.distance);
         }
     }
 

@@ -15,6 +15,8 @@
  */
 package com.google.material.color.scheme;
 
+import com.google.material.color.dynamiccolor.DynamicScheme;
+import com.google.material.color.dynamiccolor.Variant;
 import com.google.material.color.hct.Hct;
 import com.google.material.color.palettes.TonalPalette;
 

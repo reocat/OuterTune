@@ -16,6 +16,8 @@
 
 package com.google.material.color.scheme;
 
+import static java.lang.Math.max;
+
 import com.google.material.color.dislike.DislikeAnalyzer;
 import com.google.material.color.dynamiccolor.DynamicScheme;
 import com.google.material.color.dynamiccolor.Variant;
@@ -30,22 +32,27 @@ import com.google.material.color.temperature.TemperatureCache;
  * appearance in light mode and dark mode. This adds ~5 tone in light mode, and subtracts ~5 tone in
  * dark mode.
  *
- * <p>Tertiary Container is the complement to the source color, using TemperatureCache. It also
- * maintains constant appearance.
+ * <p>Tertiary Container is an analogous color, specifically, the analog of a color wheel divided
+ * into 6, and the precise analog is the one found by increasing hue. This is a scientifically
+ * grounded equivalent to rotating hue clockwise by 60 degrees. It also maintains constant
+ * appearance.
  */
-public class SchemeFidelity extends DynamicScheme {
-    public SchemeFidelity(Hct sourceColorHct, boolean isDark, double contrastLevel) {
+public class SchemeContent extends DynamicScheme {
+    public SchemeContent(Hct sourceColorHct, boolean isDark, double contrastLevel) {
         super(
                 sourceColorHct,
-                Variant.FIDELITY,
+                Variant.CONTENT,
                 isDark,
                 contrastLevel,
                 TonalPalette.fromHueAndChroma(sourceColorHct.getHue(), sourceColorHct.getChroma()),
                 TonalPalette.fromHueAndChroma(
                         sourceColorHct.getHue(),
-                        Math.max(sourceColorHct.getChroma() - 32.0, sourceColorHct.getChroma() * 0.5)),
+                        max(sourceColorHct.getChroma() - 32.0, sourceColorHct.getChroma() * 0.5)),
                 TonalPalette.fromHct(
-                        DislikeAnalyzer.fixIfDisliked(new TemperatureCache(sourceColorHct).getComplement())),
+                        DislikeAnalyzer.fixIfDisliked(
+                                new TemperatureCache(sourceColorHct)
+                                        .getAnalogousColors(/* count= */ 3, /* divisions= */ 6)
+                                        .get(2))),
                 TonalPalette.fromHueAndChroma(sourceColorHct.getHue(), sourceColorHct.getChroma() / 8.0),
                 TonalPalette.fromHueAndChroma(
                         sourceColorHct.getHue(), (sourceColorHct.getChroma() / 8.0) + 4.0));

@@ -32,7 +32,6 @@ import com.google.material.color.utils.ColorUtils;
  * guarantees a contrast ratio >= 4.5.
  */
 
-
 /**
  * HCT, hue, chroma, and tone. A color system that provides a perceptually accurate color
  * measurement system that can also accurately render what colors will appear as in different

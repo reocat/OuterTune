@@ -1,5 +1,6 @@
 [versions]
 androidGradlePlugin = "8.7.3"
+annotation = "1.9.1"
 kotlin = "2.0.21"
 compose = "1.7.6"
 lifecycle = "2.8.7"
@@ -11,6 +12,7 @@ ktor = "3.0.3"
 ksp = "2.0.21-1.0.26"
 
 [libraries]
+annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version = "2.36.0" }
 guava = { group = "com.google.guava", name = "guava", version = "33.4.0-android" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.10.1" }

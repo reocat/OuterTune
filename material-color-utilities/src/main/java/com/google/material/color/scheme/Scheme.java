@@ -24,7 +24,12 @@ import com.google.material.color.palettes.CorePalette;
 
 /**
  * Represents a Material color scheme, a mapping of color roles to colors.
+ *
+ * @deprecated Please use dynamiccolor.DynamicScheme instead. Refer
+ * to https://github.com/material-foundation/material-color-utilities/blob/main/make_schemes.md
+ * for migration guidance.
  */
+@Deprecated
 @CheckReturnValue
 public class Scheme {
     private int primary;
@@ -122,18 +127,30 @@ public class Scheme {
         this.inversePrimary = inversePrimary;
     }
 
+    /**
+     * Creates a light theme Scheme from a source color in ARGB, i.e. a hex code.
+     */
     public static Scheme light(int argb) {
         return lightFromCorePalette(CorePalette.of(argb));
     }
 
+    /**
+     * Creates a dark theme Scheme from a source color in ARGB, i.e. a hex code.
+     */
     public static Scheme dark(int argb) {
         return darkFromCorePalette(CorePalette.of(argb));
     }
 
+    /**
+     * Creates a light theme content-based Scheme from a source color in ARGB, i.e. a hex code.
+     */
     public static Scheme lightContent(int argb) {
         return lightFromCorePalette(CorePalette.contentOf(argb));
     }
 
+    /**
+     * Creates a dark theme content-based Scheme from a source color in ARGB, i.e. a hex code.
+     */
     public static Scheme darkContent(int argb) {
         return darkFromCorePalette(CorePalette.contentOf(argb));
     }
@@ -682,9 +699,6 @@ public class Scheme {
         if (!(object instanceof Scheme)) {
             return false;
         }
-        if (!super.equals(object)) {
-            return false;
-        }
 
         Scheme scheme = (Scheme) object;
 
@@ -781,7 +795,7 @@ public class Scheme {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = System.identityHashCode(this);
         result = 31 * result + primary;
         result = 31 * result + onPrimary;
         result = 31 * result + primaryContainer;
