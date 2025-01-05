@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastSumBy
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.exoplayer.offline.DownloadService
@@ -107,7 +108,6 @@ fun PlayerMenu(
     val playerConnection = LocalPlayerConnection.current ?: return
     val playerVolume = playerConnection.service.playerVolume.collectAsState()
     val currentFormat by playerConnection.currentFormat.collectAsState(initial = null)
-    val currentPlayCount by playerConnection.currentPlayCount.collectAsState(initial = null)
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
@@ -292,7 +292,7 @@ fun PlayerMenu(
         DetailsDialog(
             mediaMetadata = mediaMetadata,
             currentFormat = currentFormat,
-            currentPlayCount = currentPlayCount,
+            currentPlayCount = librarySong?.playCount?.fastSumBy { it.count }?: 0,
             volume = playerConnection.player.volume,
             clipboardManager = clipboardManager,
             setVisibility = {showDetailsDialog = it }
