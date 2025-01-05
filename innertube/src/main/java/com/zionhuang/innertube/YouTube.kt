@@ -13,10 +13,8 @@ import com.zionhuang.innertube.models.SearchSuggestions
 import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_ATV
-import com.zionhuang.innertube.models.YouTubeClient.Companion.IOS
-import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5
+import com.zionhuang.innertube.models.YouTubeClient
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
-import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_CREATOR
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
 import com.zionhuang.innertube.models.YouTubeLocale
 import com.zionhuang.innertube.models.getContinuation
@@ -28,7 +26,6 @@ import com.zionhuang.innertube.models.response.GetQueueResponse
 import com.zionhuang.innertube.models.response.GetSearchSuggestionsResponse
 import com.zionhuang.innertube.models.response.GetTranscriptResponse
 import com.zionhuang.innertube.models.response.NextResponse
-import com.zionhuang.innertube.models.response.PipedResponse
 import com.zionhuang.innertube.models.response.PlayerResponse
 import com.zionhuang.innertube.models.response.SearchResponse
 import com.zionhuang.innertube.pages.AlbumPage
@@ -666,73 +663,8 @@ object YouTube {
         innerTube.deletePlaylist(WEB_REMIX, playlistId)
     }
 
-    suspend fun player(videoId: String, playlistId: String? = null, registerPlayback: Boolean = true): Result<PlayerResponse> = runCatching {
-        var playerResponse: PlayerResponse
-
-        val clients = if (cookie != null) {
-            // If logged in, try WEB_CREATOR first since IOS doesn't support login
-            listOf(WEB_CREATOR, WEB_REMIX, IOS, TVHTML5)
-        } else {
-            // If not logged in, try standard order
-            listOf(WEB_REMIX, IOS, WEB_CREATOR, TVHTML5)
-        }
-
-        // Try each client until we get a successful response
-        for (client in clients) {
-            try {
-                playerResponse = innerTube.player(client, videoId, playlistId).body<PlayerResponse>()
-                if (playerResponse.playabilityStatus.status == "OK") {
-                    if (registerPlayback) {
-                        playerResponse.playbackTracking?.videostatsPlaybackUrl?.baseUrl?.let { baseUrl ->
-                            registerPlayback(playlistId, baseUrl)
-                        }
-                    }
-                    return@runCatching playerResponse
-                }
-            } catch (e: Exception) {
-                // Continue to next client if this one fails
-                continue
-            }
-        }
-
-        // If all standard clients fail, try Piped as fallback
-        val safePlayerResponse = innerTube.player(TVHTML5, videoId, playlistId).body<PlayerResponse>()
-        if (safePlayerResponse.playabilityStatus.status != "OK") {
-            throw IllegalStateException("Unable to get playable response from any client")
-        }
-
-        val audioStreams = innerTube.pipedStreams(videoId).body<PipedResponse>().audioStreams
-        safePlayerResponse.copy(
-            streamingData = safePlayerResponse.streamingData?.copy(
-                adaptiveFormats = safePlayerResponse.streamingData.adaptiveFormats.mapNotNull { adaptiveFormat ->
-                    audioStreams.find { it.bitrate == adaptiveFormat.bitrate }?.let {
-                        adaptiveFormat.copy(
-                            url = it.url
-                        )
-                    }
-                }
-            )
-        )
-    }
-
-    suspend fun registerPlayback(playlistId: String? = null, playbackTracking: String) {
-        val cpn = (1..16).map {
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"[Random.Default.nextInt(
-                0,
-                64
-            )]
-        }.joinToString("")
-
-        val playbackUrl = playbackTracking.replace(
-            "https://s.youtube.com",
-            "https://music.youtube.com",
-        )
-
-        innerTube.registerPlayback(
-            url = playbackUrl,
-            playlistId = playlistId,
-            cpn = cpn
-        )
+    suspend fun player(videoId: String, playlistId: String? = null, client: YouTubeClient): Result<PlayerResponse> = runCatching {
+        innerTube.player(client, videoId, playlistId).body<PlayerResponse>()
     }
 
     suspend fun next(endpoint: WatchEndpoint, continuation: String? = null): Result<NextResult> = runCatching {
