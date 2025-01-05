@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.ui.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -103,8 +102,7 @@ fun <T> ListPreference(
     }
     if (showDialog) {
         ListDialog(
-            onDismiss = { showDialog = false },
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+            onDismiss = { showDialog = false }
         ) {
             items(values) { value ->
                 Row(
