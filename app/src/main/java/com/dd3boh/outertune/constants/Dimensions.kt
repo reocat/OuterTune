@@ -27,7 +27,6 @@ val AlbumThumbnailSize = 144.dp
 
 val ThumbnailCornerRadius = 6.dp
 val DialogCornerRadius = 32.dp
-val ContextDialogCornerRadius = 6.dp
 
 val PlayerHorizontalPadding = 32.dp
 
