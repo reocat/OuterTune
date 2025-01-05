@@ -544,7 +544,7 @@ fun BottomSheetPlayer(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Brush.verticalGradient(gradientColors))
+                        .background(Brush.verticalGradient(gradientColors), alpha = 0.8f)
                 )
             }
 
