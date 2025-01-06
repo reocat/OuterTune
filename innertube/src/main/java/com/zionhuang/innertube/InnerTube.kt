@@ -28,7 +28,6 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import org.schabi.newpipe.extractor.services.youtube.YoutubeJavaScriptPlayerManager
 import java.io.IOException
 import java.net.Proxy
 import java.util.Locale
@@ -187,7 +186,7 @@ class InnerTube {
                 playbackContext =
                     if (client.useSignatureTimestamp) {
                         PlayerBody.PlaybackContext(PlayerBody.PlaybackContext.ContentPlaybackContext(
-                            signatureTimestamp = YoutubeJavaScriptPlayerManager.getSignatureTimestamp(videoId)
+                            signatureTimestamp = NewPipeUtils.getSignatureTimestamp(videoId).getOrThrow()
                         ))
                     } else null
             )
