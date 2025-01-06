@@ -97,6 +97,7 @@ fun <T> ListPreference(
     valueText: @Composable (T) -> String,
     onValueSelected: (T) -> Unit,
     isEnabled: Boolean = true,
+    disabled: (T) -> Boolean = { false }
 ) {
     var showDialog by remember {
         mutableStateOf(false)
@@ -107,11 +108,12 @@ fun <T> ListPreference(
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             items(values) { value ->
+                val isDisabled = disabled(value)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
+                        .clickable(enabled = !isDisabled) {
                             showDialog = false
                             onValueSelected(value)
                         }
@@ -119,13 +121,16 @@ fun <T> ListPreference(
                 ) {
                     RadioButton(
                         selected = value == selectedValue,
-                        onClick = null
+                        onClick = null,
+                        enabled = !isDisabled
                     )
 
                     Text(
                         text = valueText(value),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp)
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .alpha(if (isDisabled) 0.5f else 1f)
                     )
                 }
             }
@@ -151,7 +156,8 @@ inline fun <reified T : Enum<T>> EnumListPreference(
     noinline valueText: @Composable (T) -> String,
     noinline onValueSelected: (T) -> Unit,
     isEnabled: Boolean = true,
-    values: List<T> = enumValues<T>().toList()
+    values: List<T> = enumValues<T>().toList(),
+    noinline disabled: (T) -> Boolean = { false }
 ) {
     ListPreference(
         modifier = modifier,
@@ -161,7 +167,8 @@ inline fun <reified T : Enum<T>> EnumListPreference(
         values = values,
         valueText = valueText,
         onValueSelected = onValueSelected,
-        isEnabled = isEnabled
+        isEnabled = isEnabled,
+        disabled = disabled
     )
 }
 
