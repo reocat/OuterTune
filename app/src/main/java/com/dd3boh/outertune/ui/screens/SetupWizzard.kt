@@ -2,11 +2,9 @@ package com.dd3boh.outertune.ui.screens
 
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +37,6 @@ import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Lyrics
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.MusicVideo
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material.icons.rounded.Palette
@@ -72,7 +69,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -125,7 +121,6 @@ import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SetupWizard(
     navController: NavController,
@@ -286,7 +281,11 @@ fun SetupWizard(
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary, BlendMode.SrcIn),
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                        NavigationBarDefaults.Elevation
+                                    )
+                                )
                                 .clickable { }
                         )
                         Column(verticalArrangement = Arrangement.Center) {
@@ -595,27 +594,13 @@ fun SetupWizard(
                                 dummySongs.forEach { song ->
                                     SongListItem(
                                         song = song,
-                                        isActive = false,
-                                        isPlaying = false,
-                                        trailingContent = {
-                                            IconButton(
-                                                onClick = {}
-                                            ) {
-                                                Icon(
-                                                    Icons.Rounded.MoreVert,
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .combinedClickable(
-                                                onClick = {
-                                                },
-                                                onLongClick = {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                }
-                                            )
+                                        onPlay = {},
+                                        onSelectedChange = {},
+                                        inSelectMode = null,
+                                        isSelected = false,
+                                        navController = navController,
+                                        enableSwipeToQueue = false,
+                                        disableShowMenu = true
                                     )
                                 }
                             }
