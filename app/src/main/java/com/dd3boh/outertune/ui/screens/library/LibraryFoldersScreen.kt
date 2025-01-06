@@ -19,13 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -43,8 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastSumBy
@@ -64,8 +58,6 @@ import com.dd3boh.outertune.constants.SongSortDescendingKey
 import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.SongSortTypeKey
 import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.extensions.toMediaItem
-import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
@@ -75,8 +67,6 @@ import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongFolderItem
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
-import com.dd3boh.outertune.ui.component.SwipeToQueueBox
-import com.dd3boh.outertune.ui.menu.SongMenu
 import com.dd3boh.outertune.utils.numberToAlpha
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -91,14 +81,11 @@ import java.util.Stack
 fun LibraryFoldersScreen(
     navController: NavController,
     viewModel: LibrarySongsViewModel = hiltViewModel(),
-    filterContent: @Composable() (() -> Unit)? = null
+    filterContent: @Composable (() -> Unit)? = null
 ) {
-    val haptic = LocalHapticFeedback.current
     val menuState = LocalMenuState.current
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val isPlaying by playerConnection.isPlaying.collectAsState()
-    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     /**
@@ -308,7 +295,7 @@ fun LibraryFoldersScreen(
             }
 
             // separator
-            if (currDir.subdirs.size > 0 && mutableSongs.size > 0) {
+            if (currDir.subdirs.isNotEmpty() && mutableSongs.isNotEmpty()) {
                 item(
                     key = "folder_songs_divider",
                 ) {
@@ -325,78 +312,29 @@ fun LibraryFoldersScreen(
                 key = { _, item -> item.id },
                 contentType = { _, _ -> CONTENT_TYPE_SONG }
             ) { index, song ->
-                val onCheckedChange: (Boolean) -> Unit = {
-                    if (it) {
-                        selection.add(song.id)
-                    } else {
-                        selection.remove(song.id)
-                    }
-                }
-
-                SwipeToQueueBox(
-                    item = song.toMediaItem(),
-                    content = {
-                        SongListItem(
-                            song = song,
-                            isActive = song.id == mediaMetadata?.id,
-                            isPlaying = isPlaying,
-                            trailingContent = {
-                                if (inSelectMode) {
-                                    Checkbox(
-                                        checked = song.id in selection,
-                                        onCheckedChange = onCheckedChange
-                                    )
-                                } else {
-                                    IconButton(
-                                        onClick = {
-                                            menuState.show {
-                                                SongMenu(
-                                                    originalSong = song,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss
-                                                )
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            Icons.Rounded.MoreVert,
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                            },
-                            isSelected = inSelectMode && song.id in selection,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = {
-                                        if (inSelectMode) {
-                                            onCheckedChange(song.id !in selection)
-                                        } else if (song.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else {
-                                            println()
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = currDir.currentDir,
-                                                    items = mutableSongs.map { it.toMediaMetadata() },
-                                                    startIndex = mutableSongs.indexOf(song)
-                                                )
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        if (!inSelectMode) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            inSelectMode = true
-                                            onCheckedChange(true)
-                                        }
-                                    }
-                                )
-                                .animateItem()
+                SongListItem(
+                    song = song,
+                    onPlay = {
+                        playerConnection.playQueue(
+                            ListQueue(
+                                title = currDir.currentDir,
+                                items = mutableSongs.map { it.toMediaMetadata() },
+                                startIndex = mutableSongs.indexOf(song)
+                            )
                         )
                     },
-                    snackbarHostState = snackbarHostState
+                    onSelectedChange = {
+                        inSelectMode = true
+                        if (it) {
+                            selection.add(song.id)
+                        } else {
+                            selection.remove(song.id)
+                        }
+                    },
+                    inSelectMode = inSelectMode,
+                    isSelected = selection.contains(song.id),
+                    navController = navController,
+                    modifier = Modifier.fillMaxWidth().animateItem()
                 )
             }
         }
