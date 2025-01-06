@@ -1,10 +1,7 @@
 package com.dd3boh.outertune.ui.screens.library
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
@@ -30,14 +27,12 @@ import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,10 +43,8 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
@@ -68,6 +61,7 @@ import com.dd3boh.outertune.constants.PlaylistViewTypeKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.extensions.isSyncEnabled
+import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsRow
@@ -77,16 +71,10 @@ import com.dd3boh.outertune.ui.component.LibraryPlaylistGridItem
 import com.dd3boh.outertune.ui.component.LibraryPlaylistListItem
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.SortHeader
-import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryPlaylistsViewModel
-import com.zionhuang.innertube.YouTube
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryPlaylistsScreen(
     navController: NavController,
@@ -95,7 +83,6 @@ fun LibraryPlaylistsScreen(
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
-    val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
 
     var filter by rememberEnumPreference(PlaylistFilterKey, PlaylistFilter.LIBRARY)
@@ -120,8 +107,7 @@ fun LibraryPlaylistsScreen(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
 
-    var showAddPlaylistDialog by rememberSaveable { mutableStateOf(false) }
-    var syncedPlaylist: Boolean by remember { mutableStateOf(false) }
+    var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { if (context.isSyncEnabled()) viewModel.syncPlaylists() }
 
@@ -135,59 +121,9 @@ fun LibraryPlaylistsScreen(
         }
     }
 
-    if (showAddPlaylistDialog) {
-        TextFieldDialog(
-            icon = { Icon(imageVector = Icons.Rounded.Add, contentDescription = null) },
-            title = { Text(text = stringResource(R.string.create_playlist)) },
-            onDismiss = { showAddPlaylistDialog = false },
-            onDone = { playlistName ->
-                viewModel.viewModelScope.launch(Dispatchers.IO) {
-                    val browseId = if (syncedPlaylist)
-                        YouTube.createPlaylist(playlistName).getOrNull()
-                    else null
-
-                    database.query {
-                        insert(
-                            PlaylistEntity(
-                                name = playlistName,
-                                browseId = browseId,
-                                bookmarkedAt = LocalDateTime.now()
-                            )
-                        )
-                    }
-                }
-            },
-            extraContent = {
-                // synced/unsynced toggle
-                Row(
-                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 40.dp)
-                ) {
-                    Column() {
-                        Text(
-                            text = "Sync Playlist",
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-
-                        Text(
-                            text = "Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.fillMaxWidth(0.7f)
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Switch(
-                            checked = syncedPlaylist,
-                            onCheckedChange = {
-                                syncedPlaylist = !syncedPlaylist
-                            },
-                        )
-                    }
-                }
-
-            }
+    if (showCreatePlaylistDialog) {
+        CreatePlaylistDialog(
+            onDismiss = { showCreatePlaylistDialog = false }
         )
     }
 
@@ -348,7 +284,7 @@ fun LibraryPlaylistsScreen(
                     lazyListState = lazyListState,
                     icon = Icons.Rounded.Add,
                     onClick = {
-                        showAddPlaylistDialog = true
+                        showCreatePlaylistDialog = true
                     }
                 )
             }
@@ -441,7 +377,7 @@ fun LibraryPlaylistsScreen(
                     lazyListState = lazyGridState,
                     icon = Icons.Rounded.Add,
                     onClick = {
-                        showAddPlaylistDialog = true
+                        showCreatePlaylistDialog = true
                     }
                 )
             }
