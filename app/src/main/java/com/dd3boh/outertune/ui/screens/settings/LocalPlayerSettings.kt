@@ -92,6 +92,15 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+private fun isPackageInstalled(packageName: String, packageManager: PackageManager): Boolean {
+    return try {
+        packageManager.getPackageInfo(packageName, 0)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
+}
+
 val MEDIA_PERMISSION_LEVEL =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
     else Manifest.permission.READ_EXTERNAL_STORAGE
@@ -536,24 +545,25 @@ fun LocalPlayerSettings(
             onCheckedChange = onStrictExtensionsChange
         )
         // scanner type
-        if (true) { // todo: detect if ext library is installed
-            EnumListPreference(
-                title = { Text(stringResource(R.string.scanner_type_title)) },
-                icon = { Icon(Icons.Rounded.Speed, null) },
-                selectedValue = scannerImpl,
-                onValueSelected = onScannerImplChange,
-                valueText = {
-                    when (it) {
-                        ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
-                        ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
-                    }
-                }
-            )
+        val isFFmpegInstalled = remember {
+            isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager)
         }
+
+        EnumListPreference(
+            title = { Text(stringResource(R.string.scanner_type_title)) },
+            icon = { Icon(Icons.Rounded.Speed, null) },
+            selectedValue = scannerImpl,
+            onValueSelected = onScannerImplChange,
+            valueText = {
+                when (it) {
+                    ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
+                    ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
+                }
+            },
+            values = ScannerImpl.entries,
+            disabled = { it == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled }
+        )
     }
-
-
-
 
     TopAppBar(
         title = { Text(stringResource(R.string.local_player_settings_title)) },
