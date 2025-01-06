@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -50,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
@@ -150,27 +152,36 @@ fun ArtistItemsScreen(
     }
 
     if (itemsPage?.items?.firstOrNull() is SongItem) {
-        if (inSelectMode) {
-            Row {
-                SelectHeader(
-                    selectedItems = selection.mapNotNull { songId ->
-                        songIndex[songId]
-                    }.map { it.toMediaMetadata() },
-                    totalItemCount = selection.size,
-                    onSelectAll = {
-                        selection.clear()
-                        selection.addAll(itemsPage?.items?.map { it.id }.orEmpty())
-                    },
-                    onDeselectAll = { selection.clear() },
-                    menuState = menuState,
-                    onDismiss = onExitSelectionMode
-                )
-            }
-        }
         LazyColumn(
             state = lazyListState,
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         ) {
+            item(
+                key = "header",
+                contentType = CONTENT_TYPE_HEADER
+            ) {
+                if (inSelectMode) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        SelectHeader(
+                            selectedItems = selection.mapNotNull { songId ->
+                                songIndex[songId]
+                            }.map { it.toMediaMetadata() },
+                            totalItemCount = selection.size,
+                            onSelectAll = {
+                                selection.clear()
+                                selection.addAll(itemsPage?.items?.map { it.id }.orEmpty())
+                            },
+                            onDeselectAll = { selection.clear() },
+                            menuState = menuState,
+                            onDismiss = onExitSelectionMode
+                        )
+                    }
+                }
+            }
+
             itemsIndexed(
                 items = itemsPage?.items?.filterIsInstance<SongItem>().orEmpty(),
                 key = { _, item -> item.hashCode() }

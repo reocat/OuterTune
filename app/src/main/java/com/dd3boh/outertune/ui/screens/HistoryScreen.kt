@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,9 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -66,13 +63,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalIsNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
-import com.dd3boh.outertune.LocalIsInternetConnected
+import com.dd3boh.outertune.LocalIsNetworkConnected
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.HistorySource
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.db.entities.EventWithSong
+import com.dd3boh.outertune.extensions.getAvailableSongs
 import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
@@ -88,7 +87,6 @@ import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SwipeToQueueBox
 import com.dd3boh.outertune.ui.component.YouTubeListItem
-import com.dd3boh.outertune.ui.menu.SongMenu
 import com.dd3boh.outertune.ui.menu.YouTubeSongMenu
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
@@ -104,12 +102,11 @@ fun HistoryScreen(
     navController: NavController,
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
-    val haptic = LocalHapticFeedback.current
     val database = LocalDatabase.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val isNetworkConnected = LocalIsInternetConnected.current
+    val isNetworkConnected = LocalIsNetworkConnected.current
     val downloads by LocalDownloadUtil.current.downloads.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
@@ -282,7 +279,7 @@ fun HistoryScreen(
                         items = section.songs,
                         key = { it.id }
                     ) { song ->
-                        val enabled = downloads[song.id]?.isAvailableOffline() ?: false || isNetworkConnected
+                        val available = downloads[song.id]?.isAvailableOffline() ?: false || isNetworkConnected
 
                         val content: @Composable () -> Unit = {
                             YouTubeListItem(
@@ -290,28 +287,30 @@ fun HistoryScreen(
                                 isActive = song.id == mediaMetadata?.id,
                                 isPlaying = isPlaying,
                                 trailingContent = {
-                                    IconButton(
-                                        onClick = {
-                                            menuState.show {
-                                                YouTubeSongMenu(
-                                                    song = song,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss
-                                                )
+                                    if (available) {
+                                        IconButton(
+                                            onClick = {
+                                                menuState.show {
+                                                    YouTubeSongMenu(
+                                                        song = song,
+                                                        navController = navController,
+                                                        onDismiss = menuState::dismiss
+                                                    )
+                                                }
                                             }
+                                        ) {
+                                            Icon(
+                                                Icons.Rounded.MoreVert,
+                                                contentDescription = null
+                                            )
                                         }
-                                    ) {
-                                        Icon(
-                                            Icons.Rounded.MoreVert,
-                                            contentDescription = null
-                                        )
                                     }
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .combinedClickable(
                                         onClick = {
-                                            if (enabled) {
+                                            if (available) {
                                                 if (song.id == mediaMetadata?.id) {
                                                     playerConnection.player.togglePlayPause()
                                                 } else if (song.id.startsWith("LA")) {
@@ -339,24 +338,29 @@ fun HistoryScreen(
                                             }
                                         },
                                         onLongClick = {
-                                            menuState.show {
-                                                YouTubeSongMenu(
-                                                    song = song,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss
-                                                )
+                                            if (available) {
+                                                menuState.show {
+                                                    YouTubeSongMenu(
+                                                        song = song,
+                                                        navController = navController,
+                                                        onDismiss = menuState::dismiss
+                                                    )
+                                                }
                                             }
                                         }
                                     )
                             )
                         }
 
-                        SwipeToQueueBox(
-                            enabled = enabled,
-                            item = song.toMediaItem(),
-                            content = { content() },
-                            snackbarHostState = snackbarHostState
-                        )
+                        if (available) {
+                            SwipeToQueueBox(
+                                item = song.toMediaItem(),
+                                content = { content() },
+                                snackbarHostState = snackbarHostState
+                            )
+                        } else {
+                            content()
+                        }
                     }
                 }
             } else {
@@ -378,14 +382,14 @@ fun HistoryScreen(
 
                             if (inSelectMode) {
                                 SelectHeader(
-                                    selectedItems = selection.mapNotNull { eventId ->
-                                        filteredEventIndex[eventId]?.song
-                                    }.map { it.toMediaMetadata() },
-                                    totalItemCount = selection.size,
+                                    selectedItems = eventsMap.flatMap {
+                                        group -> group.value.filter{ it.event.id in selection }
+                                    }.map { it.song.toMediaMetadata() },
+                                    totalItemCount = eventsMap.flatMap { group -> group.value.map { it.song }.getAvailableSongs(isNetworkConnected)}.size,
                                     onSelectAll = {
                                         selection.clear()
                                         selection.addAll(eventsMap.flatMap { group ->
-                                            group.value.map { it.event.id }
+                                            group.value.filter{ it.song.song.isAvailableOffline() || isNetworkConnected }.map { it.event.id }
                                         })
                                     },
                                     onDeselectAll = { selection.clear() },
@@ -411,88 +415,50 @@ fun HistoryScreen(
                     itemsIndexed(
                         items = eventsGroup,
                     ) { index, event ->
-                        val onCheckedChange: (Boolean) -> Unit = {
-                            if (it) {
-                                selection.add(event.event.id)
-                            } else {
-                                selection.remove(event.event.id)
-                            }
-                        }
-
-                        val enabled = event.song.song.isAvailableOffline() || isNetworkConnected
-
-                        val content: @Composable () -> Unit = {
-                            SongListItem(
-                                song = event.song,
-                                isActive = event.song.id == mediaMetadata?.id,
-                                isPlaying = isPlaying,
-                                showInLibraryIcon = true,
-                                trailingContent = {
-                                    if (inSelectMode) {
-                                        Checkbox(
-                                            checked = event.event.id in selection,
-                                            onCheckedChange = onCheckedChange
-                                        )
-                                    } else {
-                                        IconButton(
-                                            onClick = {
-                                                menuState.show {
-                                                    SongMenu(
-                                                        originalSong = event.song,
-                                                        event = event.event,
-                                                        navController = navController,
-                                                        onDismiss = menuState::dismiss
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                Icons.Rounded.MoreVert,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .combinedClickable(
-                                        onClick = {
-                                            if (inSelectMode) {
-                                                onCheckedChange(event.event.id !in selection)
-                                            } else if (enabled) {
-                                                if (event.song.id == mediaMetadata?.id) {
-                                                    playerConnection.player.togglePlayPause()
-                                                } else {
-                                                    playerConnection.playQueue(
-                                                        ListQueue(
-                                                            title = dateAgoToString(dateAgo),
-                                                            items = eventsGroup.map { it.song.toMediaMetadata() },
-                                                            startIndex = index
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        onLongClick = {
-                                            if (!inSelectMode) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                inSelectMode = true
-                                                onCheckedChange(true)
-                                            }
-                                        }
+                        SongListItem(
+                            song = event.song,
+                            onPlay = {
+                                playerConnection.playQueue(
+                                    ListQueue(
+                                        title = dateAgoToString(dateAgo),
+                                        items = eventsGroup.map { it.song.toMediaMetadata() },
+                                        startIndex = index
                                     )
-                            )
-                        }
-                        SwipeToQueueBox(
-                            enabled = enabled,
-                            item = event.song.toMediaItem(),
-                            content = { content() },
-                            snackbarHostState = snackbarHostState
+                                )
+                            },
+                            onSelectedChange = {
+                                inSelectMode = true
+                                if (it) {
+                                    selection.add(event.event.id)
+                                } else {
+                                    selection.remove(event.event.id)
+                                }
+                            },
+                            inSelectMode = inSelectMode,
+                            isSelected = selection.contains(event.event.id),
+                            navController = navController,
+                            modifier = Modifier.fillMaxWidth().animateItem()
                         )
                     }
                 }
             }
         }
+
+        HideOnScrollFAB(
+            visible = filteredEventsMap.isNotEmpty(),
+            lazyListState = lazyListState,
+            icon = R.drawable.shuffle,
+            onClick = {
+                playerConnection.playQueue(
+                    ListQueue(
+                        title = context.getString(R.string.history),
+                        items = filteredEventIndex.values
+                            .filter { it.song.song.isAvailableOffline() || isNetworkConnected }
+                            .map { it.song.toMediaMetadata() }.shuffled(),
+                    )
+                )
+            }
+        )
     }
 
     TopAppBar(

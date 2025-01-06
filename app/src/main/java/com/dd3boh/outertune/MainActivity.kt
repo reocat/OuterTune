@@ -713,7 +713,7 @@ class MainActivity : ComponentActivity() {
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
                         LocalSyncUtils provides syncUtils,
-                        LocalIsInternetConnected provides isNetworkConnected
+                        LocalIsNetworkConnected provides isNetworkConnected
                     ) {
                         Scaffold(
                             topBar = {
@@ -1296,4 +1296,4 @@ val LocalPlayerConnection = staticCompositionLocalOf<PlayerConnection?> { error(
 val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No WindowInsets provided") }
 val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No DownloadUtil provided") }
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
-val LocalIsInternetConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
+val LocalIsNetworkConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
