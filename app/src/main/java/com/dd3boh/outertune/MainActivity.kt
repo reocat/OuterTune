@@ -408,10 +408,10 @@ class MainActivity : ComponentActivity() {
                     // Check if the permissions for local media access
                     if (firstSetupPassed && localLibEnable && autoScan
                         && checkSelfPermission(MEDIA_PERMISSION_LEVEL) == PackageManager.PERMISSION_GRANTED) {
-                        val scanner = LocalMediaScanner.getScanner(this@MainActivity, scannerImpl)
 
                         // equivalent to (quick scan)
                         try {
+                            val scanner = LocalMediaScanner.getScanner(this@MainActivity, scannerImpl)
                             val directoryStructure = scanner.scanLocal(
                                 database,
                                 scanPaths.split('\n'),
