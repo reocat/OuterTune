@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +79,7 @@ import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
+import com.dd3boh.outertune.utils.isPackageInstalled
 import com.dd3boh.outertune.utils.purgeCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -92,14 +94,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-private fun isPackageInstalled(packageName: String, packageManager: PackageManager): Boolean {
-    return try {
-        packageManager.getPackageInfo(packageName, 0)
-        true
-    } catch (e: PackageManager.NameNotFoundException) {
-        false
-    }
-}
 
 val MEDIA_PERMISSION_LEVEL =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
@@ -341,10 +335,10 @@ fun LocalPlayerSettings(
                     scannerFailure = false
 
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = getScanner(context, scannerImpl)
                         // full rescan
                         if (fullRescan) {
                             try {
+                                val scanner = getScanner(context, scannerImpl)
                                 val directoryStructure =
                                     scanner.scanLocal(
                                         database,
@@ -387,6 +381,7 @@ fun LocalPlayerSettings(
                         } else {
                             // quick scan
                             try {
+                                val scanner = getScanner(context, scannerImpl)
                                 val directoryStructure = scanner.scanLocal(
                                     database,
                                     scanPaths.split('\n'),
@@ -549,11 +544,24 @@ fun LocalPlayerSettings(
             isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager)
         }
 
+        // if plugin is not found, although we reset if a scan is run, ensure the user is made aware if in settings page
+        LaunchedEffect(isFFmpegInstalled) {
+            if (scannerImpl == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled) {
+                onScannerImplChange(ScannerImpl.TAGLIB)
+            }
+        }
+
         EnumListPreference(
             title = { Text(stringResource(R.string.scanner_type_title)) },
             icon = { Icon(Icons.Rounded.Speed, null) },
             selectedValue = scannerImpl,
-            onValueSelected = onScannerImplChange,
+            onValueSelected = {
+                if (it == ScannerImpl.FFMPEG_EXT && isFFmpegInstalled) {
+                    onScannerImplChange(it)
+                } else {
+                    Toast.makeText(context, "FFmpeg extractor not detected.", Toast.LENGTH_LONG).show()
+                }
+            },
             valueText = {
                 when (it) {
                     ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
