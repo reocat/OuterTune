@@ -45,11 +45,12 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.lang.ref.WeakReference
 import java.time.LocalDateTime
 import java.util.Locale
 
 
-class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
+class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerImpl) {
     private var advancedScannerImpl: MetadataScanner = when (scannerImpl) {
         ScannerImpl.TAGLIB -> TagLibScanner()
         ScannerImpl.FFMPEG_EXT -> FFMpegScanner(context)
@@ -75,12 +76,18 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             testPlayer.release()
 
             // decide which scanner to use
-            val ffmpegData = if (advancedScannerImpl is FFMpegScanner) {
-                advancedScannerImpl.getAllMetadataFromPath(path)
-            } else if (advancedScannerImpl is TagLibScanner) {
-                advancedScannerImpl.getAllMetadataFromFile(File(path))
-            } else {
-                throw RuntimeException("Unsupported extractor")
+            val ffmpegData = when (advancedScannerImpl) {
+                is FFMpegScanner -> {
+                    advancedScannerImpl.getAllMetadataFromPath(path)
+                }
+
+                is TagLibScanner -> {
+                    advancedScannerImpl.getAllMetadataFromFile(File(path))
+                }
+
+                else -> {
+                    throw RuntimeException("Unsupported extractor")
+                }
             }
 
             return ffmpegData
@@ -242,7 +249,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
      * Inserts a song if not found
      * Updates a song information depending on if refreshExisting value
      */
-    fun syncDB(
+    private fun syncDB(
         database: MusicDatabase,
         newSongs: java.util.ArrayList<SongTempData>,
         matchStrength: ScannerMatchCriteria,
@@ -732,8 +739,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         // do not put any thing that should adhere to the scanner lock in here
         const val TAG = "LocalMediaScanner"
 
-        private var localScanner: LocalMediaScanner? = null
-
+        private var localScanner: WeakReference<LocalMediaScanner>? = null
 
         /**
          * TODO: Create a lock for background jobs like youtubeartists and etc
@@ -768,11 +774,11 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 throw ScannerAbortException("FFmpeg extractor was selected, but the package is no longer available. Reset to taglib scanner and disabled automatic scanning")
             }
 
-            if (localScanner == null) {
-                localScanner = LocalMediaScanner(context, if (isFFmpegInstalled) scannerImpl else ScannerImpl.TAGLIB)
+            if (localScanner?.get() == null) {
+                localScanner = WeakReference(LocalMediaScanner(context, scannerImpl))
             }
 
-            return localScanner!!
+            return localScanner?.get() ?: throw IllegalStateException("Scanner is null")
         }
 
         fun destroyScanner() {
@@ -885,7 +891,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          *  Both null == same artists
          *  Either null == different artists
          */
-        fun compareArtist(a: List<ArtistEntity>, b: List<ArtistEntity>): Boolean {
+        private fun compareArtist(a: List<ArtistEntity>, b: List<ArtistEntity>): Boolean {
             if (a.isEmpty() && b.isEmpty()) {
                 return true
             } else if (a.isEmpty() || b.isEmpty()) {
