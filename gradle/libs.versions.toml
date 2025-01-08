@@ -10,7 +10,7 @@ room = "2.6.1"
 hilt = "2.54"
 ktor = "3.0.3"
 ksp = "2.0.21-1.0.26"
-taglib = "1.0.0-alpha25"
+taglib = "1.0.0"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -34,7 +34,6 @@ compose-animation = { group = "androidx.compose.animation", name = "animation-gr
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version = "2.4.2" }
 compose-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose" }
 
-taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
 viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 
@@ -72,6 +71,8 @@ desugaring = { group = "com.android.tools", name = "desugar_jdk_libs", version =
 junit = { group = "junit", name = "junit", version = "4.13.2" }
 
 timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" }
+
+taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

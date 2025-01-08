@@ -173,5 +173,10 @@ dependencies {
 
     implementation(libs.timber)
 
-    implementation(libs.taglib)
+    /*
+    "JitPack builds are broken with the latest CMake version.
+    Please download the [aar](https://github.com/Kyant0/taglib/releases) manually but not use maven."
+     */
+//    implementation(libs.taglib)
+    implementation(files("../prebuilt/taglib_1.0.0.aar")) // prebuilt
 }
