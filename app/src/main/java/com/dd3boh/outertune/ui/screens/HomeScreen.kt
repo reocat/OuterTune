@@ -481,7 +481,8 @@ fun HomeScreen(
                                 inSelectMode = null,
                                 isSelected = false,
                                 navController = navController,
-                                modifier = Modifier.width(horizontalLazyGridItemWidth)
+                                modifier = Modifier.width(horizontalLazyGridItemWidth),
+                                enableSwipeToQueue = false
                             )
                         }
                     }
