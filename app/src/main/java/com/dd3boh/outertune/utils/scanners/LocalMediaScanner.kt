@@ -3,7 +3,13 @@ package com.dd3boh.outertune.utils.scanners
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.Environment
+import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.edit
+import com.dd3boh.outertune.MainActivity
+import com.dd3boh.outertune.constants.AutomaticScannerKey
+import com.dd3boh.outertune.constants.PlayerVolumeKey
 import com.dd3boh.outertune.constants.ScannerImpl
+import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -22,6 +28,8 @@ import com.dd3boh.outertune.ui.utils.SYNC_SCANNER
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.scannerSession
 import com.dd3boh.outertune.utils.closestMatch
+import com.dd3boh.outertune.utils.dataStore
+import com.dd3boh.outertune.utils.isPackageInstalled
 import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Deferred
@@ -744,8 +752,24 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * Trust me bro, it should never be null
          */
         fun getScanner(context: Context, scannerImpl: ScannerImpl): LocalMediaScanner {
+            /*
+            if the FFmpeg extractor is suddenly removed and a scan is ran, reset to taglib, disable auto scanner.
+            we don't want to run the taglib scanner fallback if the user explicitly selected FFmpeg as differences
+            can muck with the song detection. Throw the error to the ui where it can be handled there
+             */
+            val isFFmpegInstalled = isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager)
+            if (scannerImpl == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled) {
+                runBlocking {
+                    context.dataStore.edit { settings ->
+                        settings[ScannerImplKey] = ScannerImpl.TAGLIB.toString()
+                        settings[AutomaticScannerKey] = false
+                    }
+                }
+                throw ScannerAbortException("FFmpeg extractor was selected, but the package is no longer available. Reset to taglib scanner and disabled automatic scanning")
+            }
+
             if (localScanner == null) {
-                localScanner = LocalMediaScanner(context, scannerImpl)
+                localScanner = LocalMediaScanner(context, if (isFFmpegInstalled) scannerImpl else ScannerImpl.TAGLIB)
             }
 
             return localScanner!!

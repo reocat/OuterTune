@@ -2,6 +2,10 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import android.Manifest
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Looper
@@ -40,6 +44,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +84,7 @@ import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
+import com.dd3boh.outertune.utils.isPackageInstalled
 import com.dd3boh.outertune.utils.purgeCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -91,6 +98,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+
 
 val MEDIA_PERMISSION_LEVEL =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
@@ -332,10 +340,10 @@ fun LocalPlayerSettings(
                     scannerFailure = false
 
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = getScanner(context, scannerImpl)
                         // full rescan
                         if (fullRescan) {
                             try {
+                                val scanner = getScanner(context, scannerImpl)
                                 val directoryStructure =
                                     scanner.scanLocal(
                                         database,
@@ -378,6 +386,7 @@ fun LocalPlayerSettings(
                         } else {
                             // quick scan
                             try {
+                                val scanner = getScanner(context, scannerImpl)
                                 val directoryStructure = scanner.scanLocal(
                                     database,
                                     scanPaths.split('\n'),
@@ -536,24 +545,38 @@ fun LocalPlayerSettings(
             onCheckedChange = onStrictExtensionsChange
         )
         // scanner type
-        if (true) { // todo: detect if ext library is installed
-            EnumListPreference(
-                title = { Text(stringResource(R.string.scanner_type_title)) },
-                icon = { Icon(Icons.Rounded.Speed, null) },
-                selectedValue = scannerImpl,
-                onValueSelected = onScannerImplChange,
-                valueText = {
-                    when (it) {
-                        ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
-                        ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
-                    }
-                }
-            )
+        val isFFmpegInstalled = rememberFFmpegAvailability()
+
+        // if plugin is not found, although we reset if a scan is run, ensure the user is made aware if in settings page
+        LaunchedEffect(isFFmpegInstalled) {
+            if (scannerImpl == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled) {
+                onScannerImplChange(ScannerImpl.TAGLIB)
+            }
         }
+
+        EnumListPreference(
+            title = { Text(stringResource(R.string.scanner_type_title)) },
+            icon = { Icon(Icons.Rounded.Speed, null) },
+            selectedValue = scannerImpl,
+            onValueSelected = {
+                if (it == ScannerImpl.FFMPEG_EXT && isFFmpegInstalled) {
+                    onScannerImplChange(it)
+                } else {
+                    Toast.makeText(context, "FFmpeg extractor not detected.", Toast.LENGTH_LONG).show()
+                    // Explicitly revert to TagLib if FFmpeg is not available
+                    onScannerImplChange(ScannerImpl.TAGLIB)
+                }
+            },
+            valueText = {
+                when (it) {
+                    ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
+                    ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
+                }
+            },
+            values = ScannerImpl.entries,
+            disabled = { it == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled }
+        )
     }
-
-
-
 
     TopAppBar(
         title = { Text(stringResource(R.string.local_player_settings_title)) },
@@ -570,4 +593,44 @@ fun LocalPlayerSettings(
         },
         scrollBehavior = scrollBehavior
     )
+}
+
+@Composable
+fun rememberFFmpegAvailability(): Boolean {
+    val context = LocalContext.current
+    var isFFmpegInstalled by remember {
+        mutableStateOf(isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager))
+    }
+
+    DisposableEffect(context) {
+        val packageReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    Intent.ACTION_PACKAGE_REMOVED,
+                    Intent.ACTION_PACKAGE_ADDED -> {
+                        isFFmpegInstalled = context?.packageManager?.let {
+                            isPackageInstalled(
+                                "wah.mikooomich.ffMetadataEx",
+                                it
+                            )
+                        } == true
+                    }
+                }
+            }
+        }
+
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addDataScheme("package")
+        }
+
+        context.registerReceiver(packageReceiver, filter)
+
+        onDispose {
+            context.unregisterReceiver(packageReceiver)
+        }
+    }
+
+    return isFFmpegInstalled
 }
