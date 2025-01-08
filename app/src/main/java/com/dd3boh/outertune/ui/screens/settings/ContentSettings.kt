@@ -15,6 +15,7 @@ import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.rounded.VpnKey
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -29,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
@@ -54,12 +54,11 @@ import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.ui.component.EditTextPreference
 import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.component.TextFieldDialog
+import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -91,7 +90,6 @@ fun ContentSettings(
     val (proxyEnabled, onProxyEnabledChange) = rememberPreference(key = ProxyEnabledKey, defaultValue = false)
     val (proxyType, onProxyTypeChange) = rememberEnumPreference(key = ProxyTypeKey, defaultValue = Proxy.Type.HTTP)
     val (proxyUrl, onProxyUrlChange) = rememberPreference(key = ProxyUrlKey, defaultValue = "host:port")
-
 
     // temp vars
     var showToken: Boolean by remember {
@@ -137,29 +135,6 @@ fun ContentSettings(
             )
         }
 
-        if (showTokenEditor) {
-            TextFieldDialog(
-                modifier = Modifier,
-                initialTextFieldValue = TextFieldValue(innerTubeCookie),
-                onDone = { onInnerTubeCookieChange(it) },
-                onDismiss = { showTokenEditor = false },
-                singleLine = false,
-                maxLines = 20,
-                isInputValid = {
-                    it.isNotEmpty() &&
-                    try {
-                        "SAPISID" in parseCookieString(it)
-                        true
-                    } catch (e: Exception) {
-                        false
-                    }
-                },
-                extraContent = {
-                    InfoLabel(text = stringResource(R.string.token_adv_login_description))
-                }
-            )
-        }
-
         PreferenceEntry(
             title = {
                 if (showToken) {
@@ -175,14 +150,27 @@ fun ContentSettings(
                     Text(stringResource(R.string.token_hidden))
                 }
             },
+            icon = { Icon(Icons.Rounded.VpnKey, null) },
             onClick = {
-                if (showToken == false) {
+                if (!showToken) {
                     showToken = true
                 } else {
                     showTokenEditor = true
                 }
             },
         )
+
+        if (showTokenEditor) {
+            TokenEditorDialog(
+                initialValue = innerTubeCookie,
+                onDone = { newToken ->
+                    onInnerTubeCookieChange(newToken)
+                    showTokenEditor = false
+                },
+                onDismiss = { showTokenEditor = false },
+                modifier = Modifier
+            )
+        }
 
         SwitchPreference(
             title = { Text(stringResource(R.string.ytm_sync)) },
@@ -197,8 +185,8 @@ fun ContentSettings(
             values = listOf(LikedAutodownloadMode.OFF, LikedAutodownloadMode.ON, LikedAutodownloadMode.WIFI_ONLY),
             selectedValue = likedAutoDownload,
             valueText = { when (it) {
-                LikedAutodownloadMode.OFF -> stringResource(androidx.compose.ui.R.string.state_off)
-                LikedAutodownloadMode.ON -> stringResource(androidx.compose.ui.R.string.state_on)
+                LikedAutodownloadMode.OFF -> stringResource(R.string.off)
+                LikedAutodownloadMode.ON -> stringResource(R.string.on)
                 LikedAutodownloadMode.WIFI_ONLY -> stringResource(R.string.wifi_only)
             } },
             onValueSelected = onLikedAutoDownload
