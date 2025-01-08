@@ -4,11 +4,7 @@ import com.zionhuang.innertube.models.ResponseContext
 import com.zionhuang.innertube.models.Thumbnails
 import kotlinx.serialization.SerialName
 import com.zionhuang.innertube.utils.decodeCipher
-import io.ktor.http.URLBuilder
-import io.ktor.http.parseQueryString
 import kotlinx.serialization.Serializable
-import org.schabi.newpipe.extractor.exceptions.ParsingException
-import org.schabi.newpipe.extractor.services.youtube.YoutubeJavaScriptPlayerManager
 
 /**
  * PlayerResponse with [com.zionhuang.innertube.models.YouTubeClient.WEB_REMIX] client
@@ -20,8 +16,6 @@ data class PlayerResponse(
     val playerConfig: PlayerConfig?,
     val streamingData: StreamingData?,
     val videoDetails: VideoDetails?,
-    @SerialName("playbackTracking")
-    val playbackTracking: PlaybackTracking?,
 ) {
     @Serializable
     data class PlayabilityStatus(
@@ -83,49 +77,4 @@ data class PlayerResponse(
         val viewCount: String,
         val thumbnail: Thumbnails,
     )
-
-    @Serializable
-    data class PlaybackTracking(
-        @SerialName("videostatsPlaybackUrl")
-        val videostatsPlaybackUrl: VideostatsPlaybackUrl?,
-        @SerialName("videostatsWatchtimeUrl")
-        val videostatsWatchtimeUrl: VideostatsWatchtimeUrl?,
-        @SerialName("atrUrl")
-        val atrUrl: AtrUrl?,
-    ) {
-        @Serializable
-        data class VideostatsPlaybackUrl(
-            @SerialName("baseUrl")
-            val baseUrl: String?,
-        )
-
-        @Serializable
-        data class VideostatsWatchtimeUrl(
-            @SerialName("baseUrl")
-            val baseUrl: String?,
-        )
-        @Serializable
-        data class AtrUrl(
-            @SerialName("baseUrl")
-            val baseUrl: String?,
-        )
-    }
-
-    fun findUrl(itag: Int): String? {
-        this.streamingData?.adaptiveFormats?.find { it.itag == itag }?.let { format ->
-            format.url?.let {
-                return it
-            }
-            format.signatureCipher?.let { signatureCipher ->
-                val params = parseQueryString(signatureCipher)
-                val obfuscatedSignature = params["s"] ?: return null
-                val signatureParam = params["sp"] ?: return null
-                val url = params["url"]?.let { URLBuilder(it) } ?: return null
-                url.parameters[signatureParam] = YoutubeJavaScriptPlayerManager.deobfuscateSignature("", obfuscatedSignature)
-                val streamUrl = YoutubeJavaScriptPlayerManager.getUrlWithThrottlingParameterDeobfuscated("", url.toString())
-                return streamUrl
-            }
-        }
-        return null
-    }
 }
