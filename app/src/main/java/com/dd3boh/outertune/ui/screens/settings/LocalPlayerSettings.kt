@@ -563,6 +563,8 @@ fun LocalPlayerSettings(
                     onScannerImplChange(it)
                 } else {
                     Toast.makeText(context, "FFmpeg extractor not detected.", Toast.LENGTH_LONG).show()
+                    // Explicitly revert to TagLib if FFmpeg is not available
+                    onScannerImplChange(ScannerImpl.TAGLIB)
                 }
             },
             valueText = {
