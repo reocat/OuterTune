@@ -2,6 +2,10 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import android.Manifest
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Looper
@@ -40,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -540,9 +545,7 @@ fun LocalPlayerSettings(
             onCheckedChange = onStrictExtensionsChange
         )
         // scanner type
-        val isFFmpegInstalled = remember {
-            isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager)
-        }
+        val isFFmpegInstalled = rememberFFmpegAvailability()
 
         // if plugin is not found, although we reset if a scan is run, ensure the user is made aware if in settings page
         LaunchedEffect(isFFmpegInstalled) {
@@ -588,4 +591,44 @@ fun LocalPlayerSettings(
         },
         scrollBehavior = scrollBehavior
     )
+}
+
+@Composable
+fun rememberFFmpegAvailability(): Boolean {
+    val context = LocalContext.current
+    var isFFmpegInstalled by remember {
+        mutableStateOf(isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager))
+    }
+
+    DisposableEffect(context) {
+        val packageReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    Intent.ACTION_PACKAGE_REMOVED,
+                    Intent.ACTION_PACKAGE_ADDED -> {
+                        isFFmpegInstalled = context?.packageManager?.let {
+                            isPackageInstalled(
+                                "wah.mikooomich.ffMetadataEx",
+                                it
+                            )
+                        } == true
+                    }
+                }
+            }
+        }
+
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addDataScheme("package")
+        }
+
+        context.registerReceiver(packageReceiver, filter)
+
+        onDispose {
+            context.unregisterReceiver(packageReceiver)
+        }
+    }
+
+    return isFFmpegInstalled
 }
