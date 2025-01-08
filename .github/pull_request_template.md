@@ -32,7 +32,7 @@ Delete this if it doesn't apply to your PR. -->
 
 #### Due diligence
 <!-- Please mark WIP pull requests and "Draft" and only "Ready for review" once it is ready to be merged  -->
-- [ ] I read the [contribution guidelines](../CONTRIBUTING.md).
+- [ ] I read the [contribution guidelines](https://github.com/DD3Boh/OuterTune/blob/dev/CONTRIBUTING.md).
 - [ ] I understand that in the event of merge conflicts, **I may be asked to rebase my branch** on top of the dev branch, instead of resolving them by merging dev into my own branch
 
 
