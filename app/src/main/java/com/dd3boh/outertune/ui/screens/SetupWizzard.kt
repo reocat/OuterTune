@@ -88,7 +88,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -118,12 +117,11 @@ import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.ui.component.ChipsLazyRow
 import com.dd3boh.outertune.ui.component.EnumListPreference
-import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.component.TextFieldDialog
+import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.NavigationTab
 import com.dd3boh.outertune.utils.decodeTabString
@@ -891,27 +889,15 @@ private fun AccountPage(
             )
         }
 
-        // Token Editor Dialog
         if (showTokenEditor) {
-            TextFieldDialog(
-                modifier = Modifier,
-                initialTextFieldValue = TextFieldValue(innerTubeCookie),
-                onDone = { onInnerTubeCookieChange(it) },
-                onDismiss = { showTokenEditor = false },
-                singleLine = false,
-                maxLines = 20,
-                isInputValid = {
-                    it.isNotEmpty() &&
-                            try {
-                                "SAPISID" in parseCookieString(it)
-                                true
-                            } catch (e: Exception) {
-                                false
-                            }
+            TokenEditorDialog(
+                initialValue = innerTubeCookie,
+                onDone = { newToken ->
+                    onInnerTubeCookieChange(newToken)
+                    showTokenEditor = false
                 },
-                extraContent = {
-                    InfoLabel(text = stringResource(R.string.token_adv_login_description))
-                }
+                onDismiss = { showTokenEditor = false },
+                modifier = Modifier
             )
         }
     }
