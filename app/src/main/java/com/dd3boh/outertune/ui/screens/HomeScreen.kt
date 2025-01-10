@@ -168,7 +168,7 @@ fun HomeScreen(
         }
     }
 
-    val localGridItem: @Composable (LocalItem) -> Unit = {
+    val localGridItem: @Composable (LocalItem, String) -> Unit = { it, source ->
         when (it) {
             is Song -> SongGridItem(
                 song = it,
@@ -179,9 +179,19 @@ fun HomeScreen(
                             if (it.id == mediaMetadata?.id) {
                                 playerConnection.player.togglePlayPause()
                             } else {
-                                playerConnection.playQueue(
-                                    YouTubeQueue.radio(it.toMediaMetadata()),
-                                )
+                                val song = it.toMediaMetadata()
+                                if (song.isLocal) {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = source,
+                                            items = listOf(song)
+                                        )
+                                    )
+                                } else {
+                                    playerConnection.playQueue(
+                                        YouTubeQueue.radio(song),
+                                    )
+                                }
                             }
                         },
                         onLongClick = {
@@ -534,8 +544,7 @@ fun HomeScreen(
                                 .height((GridThumbnailHeight + 72.dp) * rows),
                         ) {
                             items(keepListening) {
-                                localGridItem(it)
-                            }
+                                localGridItem(it, stringResource(R.string.keep_listening))                            }
                         }
                     }
                     similarRecommendations?.forEach {
@@ -620,6 +629,7 @@ fun HomeScreen(
                 }
 
                 item {
+                    val queueTitle = stringResource(R.string.forgotten_favorites)
                     // take min in case list size is less than 4
                     val rows = min(4, forgottenFavorites.size)
                     LazyHorizontalGrid(
@@ -643,7 +653,16 @@ fun HomeScreen(
                             SongListItem(
                                 song = song!!,
                                 onPlay = {
-                                    playerConnection.playQueue(YouTubeQueue.radio(song!!.toMediaMetadata()))
+                                    if (song!!.song.isLocal) {
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                title = queueTitle,
+                                                items = listOf(song!!.toMediaMetadata())
+                                            )
+                                        )
+                                    } else {
+                                        playerConnection.playQueue(YouTubeQueue.radio(song!!.toMediaMetadata()))
+                                    }
                                 },
                                 onSelectedChange = {},
                                 inSelectMode = null,
@@ -678,7 +697,7 @@ fun HomeScreen(
                             .animateItem()
                     ) {
                         items(keepListening) {
-                            localGridItem(it)
+                            localGridItem(it, stringResource(R.string.keep_listening))
                         }
                     }
                 }
