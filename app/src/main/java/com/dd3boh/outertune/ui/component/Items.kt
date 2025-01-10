@@ -642,13 +642,23 @@ fun SongGridItem(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(GridThumbnailHeight)
         ) {
-            AsyncImage(
-                model = song.song.thumbnailUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(ThumbnailCornerRadius))
-            )
+            if (song.song.isLocal) {
+                AsyncLocalImage(
+                    image = { getLocalThumbnail(song.song.localPath, true) },
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                )
+            } else {
+                AsyncImage(
+                    model = song.song.thumbnailUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                )
+            }
             PlayingIndicatorBox(
                 isActive = isActive,
                 playWhenReady = isPlaying,
