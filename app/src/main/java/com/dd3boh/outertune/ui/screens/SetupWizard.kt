@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +38,8 @@ import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.NavigateBefore
 import androidx.compose.material.icons.automirrored.rounded.NavigateNext
 import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Check
@@ -46,9 +50,13 @@ import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.SdCard
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
@@ -63,6 +71,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ripple
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -108,9 +117,9 @@ import com.dd3boh.outertune.constants.LibraryFilter
 import com.dd3boh.outertune.constants.LibraryFilterKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LyricTrimKey
+import com.dd3boh.outertune.constants.NavigationBarHeight
 import com.dd3boh.outertune.constants.NewInterfaceKey
 import com.dd3boh.outertune.constants.PureBlackKey
-import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
@@ -118,8 +127,8 @@ import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.ui.component.ChipsLazyRow
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SongListItem
-import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
@@ -567,6 +576,27 @@ private fun InterfacePage(
         onCheckedChange = onNewInterfaceStyleChange
     )
 
+    // light/dark theme
+    EnumListPreference(
+        title = { Text(stringResource(R.string.dark_theme)) },
+        icon = { Icon(Icons.Rounded.DarkMode, null) },
+        selectedValue = darkMode,
+        onValueSelected = onDarkModeChange,
+        valueText = {
+            when (it) {
+                DarkMode.ON -> stringResource(R.string.dark_theme_on)
+                DarkMode.OFF -> stringResource(R.string.dark_theme_off)
+                DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
+            }
+        }
+    )
+    SwitchPreference(
+        title = { Text(stringResource(R.string.pure_black)) },
+        icon = { Icon(Icons.Rounded.Contrast, null) },
+        checked = pureBlack,
+        onCheckedChange = onPureBlackChange
+    )
+
     Column(
         Modifier.background(MaterialTheme.colorScheme.secondary.copy(0.2f))
     ) {
@@ -677,19 +707,13 @@ private fun InterfacePage(
                     }
                 }
             }
-        } else {
-            // for classic layout
+        }
+            // sort header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                SortHeader(
-                    sortType = SongSortType.NAME,
-                    sortDescending = true,
-                    onSortTypeChange = { },
-                    onSortDescendingChange = { },
-                    sortTypeText = { R.string.sort_by_name }
-                )
+                SortHeaderDummy()
 
                 Spacer(Modifier.weight(1f))
 
@@ -697,8 +721,7 @@ private fun InterfacePage(
                     text = pluralStringResource(R.plurals.n_song, dummySongs.size, dummySongs.size),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.secondary
-                )
-            }
+            )
         }
 
         // sample UI
@@ -719,7 +742,9 @@ private fun InterfacePage(
 
         val navigationItems =
             if (!newInterfaceStyle) Screens.getScreens("HSABL") else Screens.MainScreensNew
-        NavigationBar(Modifier) {
+        NavigationBar(
+            windowInsets = WindowInsets(0,0,0,0),
+            modifier = Modifier.height(NavigationBarHeight)) {
             navigationItems.fastForEach { screen ->
                 NavigationBarItem(
                     selected = false,
@@ -741,27 +766,6 @@ private fun InterfacePage(
             }
         }
     }
-
-    // light/dark theme
-    EnumListPreference(
-        title = { Text(stringResource(R.string.dark_theme)) },
-        icon = { Icon(Icons.Rounded.DarkMode, null) },
-        selectedValue = darkMode,
-        onValueSelected = onDarkModeChange,
-        valueText = {
-            when (it) {
-                DarkMode.ON -> stringResource(R.string.dark_theme_on)
-                DarkMode.OFF -> stringResource(R.string.dark_theme_off)
-                DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
-            }
-        }
-    )
-    SwitchPreference(
-        title = { Text(stringResource(R.string.pure_black)) },
-        icon = { Icon(Icons.Rounded.Contrast, null) },
-        checked = pureBlack,
-        onCheckedChange = onPureBlackChange
-    )
 }
 @Composable
 private fun AccountPage(
@@ -1050,6 +1054,71 @@ private fun FinalPage(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+}
+
+@Composable
+private fun SortHeaderDummy(
+    modifier: Modifier = Modifier,
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    var sortDescending by remember { mutableStateOf(false) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = "Name",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(bounded = false)
+                ) {
+                    menuExpanded = !menuExpanded
+                }
+                .padding(horizontal = 4.dp, vertical = 8.dp)
+        )
+
+        val dummyOptions = listOf("Artist", "Name", "Date added", "Date modified", "Date released")
+        DropdownMenu(
+            expanded = menuExpanded,
+            onDismissRequest = { menuExpanded = false },
+            modifier = Modifier.widthIn(min = 172.dp)
+        ) {
+
+            dummyOptions.forEach { type ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = type,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = if (type == "Name") Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
+                            contentDescription = null
+                        )
+                    },
+                    onClick = {
+                        menuExpanded = false
+                    }
+                )
+            }
+        }
+
+        ResizableIconButton(
+            icon = if (sortDescending) Icons.Rounded.ArrowDownward else Icons.Rounded.ArrowUpward,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(32.dp)
+                .padding(8.dp),
+            onClick = { sortDescending = !sortDescending }
         )
     }
 }
