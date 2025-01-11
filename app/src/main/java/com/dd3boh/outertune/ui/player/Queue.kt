@@ -594,11 +594,13 @@ fun Queue(
                                     when (dismissValue) {
                                         SwipeToDismissBoxValue.StartToEnd -> {
                                             playerConnection.player.removeMediaItem(currentItem.firstPeriodIndex)
+                                            queueBoard.removeCurrentQueueSong(currentItem.firstPeriodIndex, playerConnection.service)
                                             return@rememberSwipeToDismissBoxState true
                                         }
 
                                         SwipeToDismissBoxValue.EndToStart -> {
                                             playerConnection.player.removeMediaItem(currentItem.firstPeriodIndex)
+                                            queueBoard.removeCurrentQueueSong(currentItem.firstPeriodIndex, playerConnection.service)
                                             return@rememberSwipeToDismissBoxState true
                                         }
 
