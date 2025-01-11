@@ -17,9 +17,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,9 +95,13 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroySc
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerActive
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerFinished
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerProgressCurrent
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerProgressTotal
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRequestCancel
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerShowLoading
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -116,7 +123,11 @@ fun LocalPlayerSettings(
 
     // scanner vars
     val isScannerActive by scannerActive.collectAsState()
+    val showLoading by scannerShowLoading.collectAsState()
     val isScanFinished by scannerActive.collectAsState()
+    val scannerProgressTotal by scannerProgressTotal.collectAsState()
+    val scannerProgressCurrent by scannerProgressCurrent.collectAsState()
+
     var scannerFailure = false
     var mediaPermission by remember { mutableStateOf(true) }
 
@@ -336,7 +347,6 @@ fun LocalPlayerSettings(
                     }
 
                     scannerFinished.value = false
-                    scannerActive.value = true
                     scannerFailure = false
 
                     coroutineScope.launch(Dispatchers.IO) {
@@ -357,10 +367,13 @@ fun LocalPlayerSettings(
                                 )
 
                                 // start artist linking job
-                                if (lookupYtmArtists) {
+                                if (lookupYtmArtists && !isScannerActive) {
                                     coroutineScope.launch(Dispatchers.IO) {
+                                        Looper.prepare()
                                         try {
+                                            Toast.makeText(context, "Starting YouTube artist linking...", Toast.LENGTH_SHORT).show()
                                             scanner.localToRemoteArtist(database)
+                                            Toast.makeText(context, "YouTube artist linking job complete", Toast.LENGTH_SHORT).show()
                                         } catch (e: ScannerAbortException) {
                                             Looper.prepare()
                                             Toast.makeText(
@@ -399,12 +412,14 @@ fun LocalPlayerSettings(
                                 )
 
                                 // start artist linking job
-                                if (lookupYtmArtists) {
+                                if (lookupYtmArtists && !isScannerActive) {
                                     coroutineScope.launch(Dispatchers.IO) {
+                                        Looper.prepare()
                                         try {
+                                            Toast.makeText(context, "Starting YouTube artist linking...", Toast.LENGTH_SHORT).show()
                                             scanner.localToRemoteArtist(database)
+                                            Toast.makeText(context, "YouTube artist linking job complete", Toast.LENGTH_SHORT).show()
                                         } catch (e: ScannerAbortException) {
-                                            Looper.prepare()
                                             Toast.makeText(
                                                 context,
                                                 "Scanner (background task) failed: ${e.message}",
@@ -430,14 +445,13 @@ fun LocalPlayerSettings(
                         purgeCache()
                         cacheDirectoryTree(null)
 
-                        scannerActive.value = false
                         onLastLocalScanChange(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond())
                         scannerFinished.value = true
                     }
                 }
             ) {
                 Text(
-                    text = if (isScannerActive) {
+                    text = if (isScannerActive || showLoading) {
                         "Cancel"
                     } else if (scannerFailure) {
                         "An Error Occurred"
@@ -453,14 +467,11 @@ fun LocalPlayerSettings(
 
 
             // progress indicator
-            if (!isScannerActive) {
+            if (!showLoading) {
                 return@Row
             }
 
-            // padding hax
-            VerticalDivider(
-                modifier = Modifier.padding(5.dp)
-            )
+            Spacer(Modifier.width(8.dp))
 
             CircularProgressIndicator(
                 modifier = Modifier
@@ -468,6 +479,30 @@ fun LocalPlayerSettings(
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
+
+            Spacer(Modifier.width(8.dp))
+
+            if (scannerProgressTotal != -1) {
+                Column {
+                    val isSyncing = scannerProgressCurrent > -1
+                    Text(
+                        text = if (isSyncing) "Syncing..." else "Scanning...",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "${if (isSyncing) scannerProgressCurrent else "—"}/${
+                            pluralStringResource(
+                                R.plurals.n_song,
+                                scannerProgressTotal,
+                                scannerProgressTotal
+                            )
+                        } ${if (isSyncing) "processed" else "found"}",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
         // scanner checkboxes
         Column(

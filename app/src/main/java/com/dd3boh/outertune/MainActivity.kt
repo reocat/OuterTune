@@ -218,6 +218,7 @@ import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerActive
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.urlEncode
 import com.valentinilk.shimmer.LocalShimmerTheme
@@ -406,7 +407,7 @@ class MainActivity : ComponentActivity() {
 
                 CoroutineScope(Dispatchers.IO).launch {
                     // Check if the permissions for local media access
-                    if (firstSetupPassed && localLibEnable && autoScan
+                    if (!scannerActive.value && autoScan && firstSetupPassed && localLibEnable
                         && checkSelfPermission(MEDIA_PERMISSION_LEVEL) == PackageManager.PERMISSION_GRANTED) {
 
                         // equivalent to (quick scan)
@@ -424,7 +425,7 @@ class MainActivity : ComponentActivity() {
                             )
 
                             // start artist linking job
-                            if (lookupYtmArtists) {
+                            if (lookupYtmArtists && !scannerActive.value) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
                                         scanner.localToRemoteArtist(database)
