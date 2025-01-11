@@ -3,11 +3,8 @@ package com.dd3boh.outertune.utils.scanners
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.Environment
-import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.edit
-import com.dd3boh.outertune.MainActivity
 import com.dd3boh.outertune.constants.AutomaticScannerKey
-import com.dd3boh.outertune.constants.PlayerVolumeKey
 import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
@@ -147,6 +144,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
     ): MutableStateFlow<DirectoryTree> {
         val newDirectoryStructure = DirectoryTree(STORAGE_ROOT)
         Timber.tag(TAG).d("------------ SCAN: Starting Full Scanner ------------")
+        scannerShowLoading.value = true
 
         val scannerJobs = ArrayList<Deferred<SongTempData?>>()
         runBlocking {
@@ -176,16 +174,19 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                     // use async scanner
                     scannerJobs.add(
                         async(scannerSession) {
+                            var ret: SongTempData?
                             if (scannerRequestCancel) {
                                 if (SCANNER_DEBUG)
                                     Timber.tag(TAG).d("WARNING: Canceling advanced scanner job.")
                                 throw ScannerAbortException("")
                             }
                             try {
-                                advancedScan(path)
+                                ret = advancedScan(path)
+                                scannerProgressTotal.value ++
                             } catch (e: InvalidAudioFileException) {
-                                null
+                                ret = null
                             }
+                            ret
                         }
                     )
                 } else {
@@ -202,6 +203,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                         newDirectoryStructure.insert(
                             s.substringAfter(STORAGE_ROOT), toInsert.song
                         )
+                        scannerProgressTotal.value ++
                     }
                 }
             }
@@ -230,6 +232,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
             }
         }
 
+        scannerShowLoading.value = false
         Timber.tag(TAG).d("------------ SCAN: Finished Full Scanner ------------")
         cacheDirectoryTree(newDirectoryStructure.androidStorageWorkaround().trimRoot())
         return MutableStateFlow(newDirectoryStructure)
@@ -257,7 +260,13 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
         refreshExisting: Boolean = false,
         noDisable: Boolean = false
     ) {
+        if (scannerActive.value) {
+            Timber.tag(TAG).d("------------ SYNC: Scanner in use. Aborting Local Library Sync ------------")
+            return
+        }
         Timber.tag(TAG).d("------------ SYNC: Starting Local Library Sync ------------")
+        scannerActive.value = true
+        scannerShowLoading.value = true
         // deduplicate
         val finalSongs = ArrayList<SongTempData>()
         newSongs.forEach { song ->
@@ -266,14 +275,20 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
             }
         }
         Timber.tag(TAG).d("Entries to process: ${newSongs.size}. After dedup: ${finalSongs.size}")
+        scannerProgressTotal.value = finalSongs.size
+        scannerProgressCurrent.value = 0
 
         // sync
         var runs = 0
         finalSongs.forEach { song ->
             runs ++
-            if (runs % 20 == 0) {
+            if (SCANNER_DEBUG && runs % 20 == 0) {
                 Timber.tag(TAG).d("------------ SYNC: Local Library Sync: $runs/${finalSongs.size} processed ------------")
             }
+            if (runs % 5 == 0) {
+                scannerProgressCurrent.value += 5
+            }
+
             if (scannerRequestCancel) {
                 if (SCANNER_DEBUG)
                     Timber.tag(TAG).d("WARNING: Requested to cancel Local Library Sync. Aborting.")
@@ -393,6 +408,8 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
         if (!noDisable) {
             finalize(finalSongs.map { it.song }, database)
         }
+        scannerShowLoading.value = false
+        scannerActive.value = false
         Timber.tag(TAG).d("------------ SYNC: Finished Local Library Sync ------------")
     }
 
@@ -418,6 +435,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
     ) {
         Timber.tag(TAG).d("------------ SYNC: Starting Quick (additive delta) Library Sync ------------")
         Timber.tag(TAG).d("Entries to process: ${newSongs.size}")
+        scannerShowLoading.value = true
 
         runBlocking(Dispatchers.IO) {
             // get list of all songs in db, then get songs unknown to the database
@@ -496,6 +514,8 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
             // we handle disabling songs here instead
             finalize(newSongs, database)
         }
+
+        scannerShowLoading.value = false
         Timber.tag(TAG).d("------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
     }
 
@@ -521,6 +541,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
     ) {
         Timber.tag(TAG).d("------------ SYNC: Starting FULL Library Sync ------------")
         Timber.tag(TAG).d("Entries to process: ${newSongs.size}")
+        scannerShowLoading.value = true
 
         runBlocking(Dispatchers.IO) {
             val finalSongs = ArrayList<SongTempData>()
@@ -593,6 +614,8 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                     Timber.tag(TAG).d("Not syncing, no valid songs found!")
             }
         }
+
+        scannerShowLoading.value = false
         Timber.tag(TAG).d("------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
     }
 
@@ -601,8 +624,14 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
      * Converts all local artists to remote artists if possible
      */
     fun localToRemoteArtist(database: MusicDatabase) {
+        if (scannerActive.value) {
+            Timber.tag(TAG).d("------------ SYNC: Scanner in use. Aborting youtubeArtistLookup job ------------")
+            return
+        }
         var runs = 0
         Timber.tag(TAG).d("------------ SYNC: Starting youtubeArtistLookup job ------------")
+        scannerActive.value = true
+        scannerShowLoading.value = true
         runBlocking(Dispatchers.IO) {
             val allLocal = database.allLocalArtists().first()
 
@@ -666,6 +695,8 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
             }
         }
 
+        scannerShowLoading.value = false
+        scannerActive.value = false
         Timber.tag(TAG).d("------------ SYNC: youtubeArtistLookup job ended------------")
     }
 
@@ -744,9 +775,14 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
         /**
          * TODO: Create a lock for background jobs like youtubeartists and etc
          */
-        var scannerActive = MutableStateFlow(false)
+        var scannerActive = MutableStateFlow(false) // TODO: make this an enum. scan -> sync -> ytmartist
+        var scannerShowLoading = MutableStateFlow(false)
         var scannerFinished = MutableStateFlow(false)
         var scannerRequestCancel = false
+
+        var scannerProgressTotal = MutableStateFlow(-1)
+        var scannerProgressCurrent = MutableStateFlow(-1)
+
 
         /**
          * ==========================
@@ -776,6 +812,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
 
             if (localScanner?.get() == null) {
                 localScanner = WeakReference(LocalMediaScanner(context, scannerImpl))
+                scannerProgressTotal.value = 0
             }
 
             return localScanner?.get() ?: throw IllegalStateException("Scanner is null")
@@ -783,6 +820,12 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
 
         fun destroyScanner() {
             localScanner = null
+            scannerActive.value = false
+            scannerShowLoading.value = false
+            scannerFinished.value = false
+            scannerRequestCancel = false
+            scannerProgressTotal.value = -1
+            scannerProgressCurrent.value = -1
             if (EXTRACTOR_DEBUG)
                 Timber.tag(EXTRACTOR_TAG).d("Scanner instance destroyed")
         }
