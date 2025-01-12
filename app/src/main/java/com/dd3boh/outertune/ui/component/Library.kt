@@ -189,7 +189,7 @@ fun LibraryPlaylistListItem(
                                     title = playlist.playlist.name,
                                     author = null,
                                     songCountText = null,
-                                    thumbnail = playlist.thumbnails[0],
+                                    thumbnail = playlist.thumbnails.getOrNull(0),
                                     playEndpoint = WatchEndpoint(
                                         playlistId = browseId,
                                         params = playlist.playlist.playEndpointParams
@@ -265,7 +265,7 @@ fun LibraryPlaylistGridItem(
                                     title = playlist.playlist.name,
                                     author = null,
                                     songCountText = null,
-                                    thumbnail = playlist.thumbnails[0],
+                                    thumbnail = playlist.thumbnails.getOrNull(0),
                                     playEndpoint = WatchEndpoint(
                                         playlistId = browseId,
                                         params = playlist.playlist.playEndpointParams

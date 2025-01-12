@@ -217,8 +217,10 @@ fun PlaylistMenu(
                             delete(playlist.playlist)
                         }
 
-                        coroutineScope.launch(Dispatchers.IO) {
-                            playlist.playlist.browseId?.let { YouTube.deletePlaylist(it) }
+                        if (!playlist.playlist.isLocal) {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                playlist.playlist.browseId?.let { YouTube.deletePlaylist(it) }
+                            }
                         }
                     }
                 ) {
@@ -378,13 +380,12 @@ fun PlaylistMenu(
             ) {
                 showEditDialog = true
             }
-
-            GridMenuItem(
-                icon = Icons.Rounded.PlaylistRemove,
-                title = R.string.delete
-            ) {
-                showDeletePlaylistDialog = true
-            }
+        }
+        GridMenuItem(
+            icon = Icons.Rounded.PlaylistRemove,
+            title = R.string.delete
+        ) {
+            showDeletePlaylistDialog = true
         }
 
         playlist.playlist.shareLink?.let { shareLink ->
