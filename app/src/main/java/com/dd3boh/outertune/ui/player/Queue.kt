@@ -818,7 +818,10 @@ fun Queue(
                                 .padding(4.dp)
                                 .alpha(if (shuffleModeEnabled) 1f else 0.3f),
                             color = onBackgroundColor,
-                            onClick = { playerConnection.triggerShuffle() }
+                            onClick = {
+                                playerConnection.triggerShuffle()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
                         )
                     }
 
@@ -830,7 +833,10 @@ fun Queue(
                                 .size(32.dp)
                                 .align(Alignment.Center),
                             color = onBackgroundColor,
-                            onClick = playerConnection.player::seekToPrevious
+                            onClick = {
+                                playerConnection.player.seekToPrevious()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
                         )
                     }
 
@@ -850,6 +856,8 @@ fun Queue(
                                 } else {
                                     playerConnection.player.togglePlayPause()
                                 }
+                                // play/pause is slightly harder haptic
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             }
                         )
                     }
@@ -864,7 +872,10 @@ fun Queue(
                                 .size(32.dp)
                                 .align(Alignment.Center),
                             color = onBackgroundColor,
-                            onClick = playerConnection.player::seekToNext
+                            onClick = {
+                                playerConnection.player.seekToNext()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
                         )
                     }
 
@@ -881,7 +892,10 @@ fun Queue(
                                 .padding(4.dp)
                                 .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.3f else 1f),
                             color = onBackgroundColor,
-                            onClick = playerConnection.player::toggleRepeatMode
+                            onClick = {
+                                playerConnection.player.toggleRepeatMode()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
                         )
                     }
                 }
