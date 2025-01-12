@@ -2,10 +2,12 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,7 +21,9 @@ import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,7 +44,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,6 +71,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,9 +100,9 @@ fun ExperimentalSettings(
         defaultValue = ScannerImpl.TAGLIB
     )
 
-    var nukeEnabled by remember {
-        mutableStateOf(false)
-    }
+    var nukeEnabled by remember { mutableStateOf(false) }
+    var hapticsTestEnabled by remember { mutableStateOf(false) }
+    var colorsTestEnabled by remember { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -125,7 +132,6 @@ fun ExperimentalSettings(
             }
         )
 
-
         SyncProgressItem(stringResource(R.string.songs), isSyncingRemoteSongs)
         SyncProgressItem(stringResource(R.string.liked_songs), isSyncingRemoteLikedSongs)
         SyncProgressItem(stringResource(R.string.artists), isSyncingRemoteArtists)
@@ -145,11 +151,12 @@ fun ExperimentalSettings(
                         val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB)
                         Timber.tag("Settings").d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
                         scanner.localToRemoteArtist(database)
-                        Toast.makeText(context, "YouTube artist linking job complete", Toast.LENGTH_SHORT).show()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "YouTube artist linking job complete", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             )
-
 
             PreferenceEntry(
                 title = { Text("Enter configurator") },
@@ -204,12 +211,30 @@ fun ExperimentalSettings(
                     }
                 )
             }
-            MaterialColorsTestSection()
+            PreferenceEntry(
+                title = { Text("Haptics test") },
+                icon = { Icon(Icons.Rounded.Vibration, null) },
+                onClick = {
+                    hapticsTestEnabled = !hapticsTestEnabled
+                }
+            )
+            PreferenceEntry(
+                title = { Text("Material colors test") },
+                icon = { Icon(Icons.Rounded.Palette, null) },
+                onClick = {
+                    colorsTestEnabled = !colorsTestEnabled
+                }
+            )
+            if (hapticsTestEnabled) {
+                Spacer(modifier = Modifier.height(8.dp))
+                HapticsTestSection()
+            }
+            if (colorsTestEnabled) {
+                Spacer(modifier = Modifier.height(8.dp))
+                MaterialColorsTestSection()
+            }
         }
     }
-
-
-
 
     TopAppBar(
         title = { Text(stringResource(R.string.experimental_settings_title)) },
@@ -298,3 +323,87 @@ fun ColorRow(label: String, backgroundColor: Color, textColor: Color) {
         )
     }
 }
+
+@Composable
+fun HapticsTestSection() {
+    val haptic = LocalHapticFeedback.current
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .wrapContentHeight(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = "Haptics Test",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                textAlign = TextAlign.Center
+            )
+
+            hapticFeedbackTypes.forEach { hapticType ->
+                HapticFeedbackItem(
+                    name = hapticType.name,
+                    onClick = {
+                        haptic.performHapticFeedback(hapticType.type)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HapticFeedbackItem(
+    name: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Vibration,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+data class HapticFeedbackTypeItem(
+    val name: String,
+    val type: HapticFeedbackType
+)
+
+val hapticFeedbackTypes = listOf(
+    HapticFeedbackTypeItem("LongPress", HapticFeedbackType.LongPress),
+    HapticFeedbackTypeItem("TextHandle", HapticFeedbackType.TextHandleMove),
+    HapticFeedbackTypeItem("VirtualKey", HapticFeedbackType.VirtualKey),
+    HapticFeedbackTypeItem("GestureEnd", HapticFeedbackType.GestureEnd),
+    HapticFeedbackTypeItem("Threshold", HapticFeedbackType.GestureThresholdActivate),
+    HapticFeedbackTypeItem("Tick", HapticFeedbackType.SegmentTick),
+    HapticFeedbackTypeItem("FrequentTick", HapticFeedbackType.SegmentFrequentTick),
+    HapticFeedbackTypeItem("ContextClick", HapticFeedbackType.ContextClick),
+    HapticFeedbackTypeItem("Confirm", HapticFeedbackType.Confirm),
+    HapticFeedbackTypeItem("Reject", HapticFeedbackType.Reject),
+    HapticFeedbackTypeItem("ToggleOn", HapticFeedbackType.ToggleOn),
+    HapticFeedbackTypeItem("ToggleOff", HapticFeedbackType.ToggleOff)
+)
