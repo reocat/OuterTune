@@ -103,7 +103,6 @@ import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.isShuffleEnabled
 import com.dd3boh.outertune.playback.PlayerConnection
-import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.ui.component.AsyncLocalImage
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
@@ -455,7 +454,7 @@ fun BottomSheetPlayer(
                             .align(Alignment.Center),
                         color = onBackgroundColor,
                         onClick = {
-                            playerConnection.player::seekToPrevious
+                            playerConnection.player.seekToPrevious()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                         }
                     )
@@ -501,7 +500,7 @@ fun BottomSheetPlayer(
                             .align(Alignment.Center),
                         color = onBackgroundColor,
                         onClick = {
-                            playerConnection.player::seekToNext
+                            playerConnection.player.seekToNext()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                         }
                     )
@@ -521,7 +520,7 @@ fun BottomSheetPlayer(
                             .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.5f else 1f),
                         color = onBackgroundColor,
                         onClick = {
-                            playerConnection.player::toggleRepeatMode
+                            playerConnection.player.toggleRepeatMode()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                         }
                     )
