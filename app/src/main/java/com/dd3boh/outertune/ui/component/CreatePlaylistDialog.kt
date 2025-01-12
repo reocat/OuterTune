@@ -59,7 +59,7 @@ fun CreatePlaylistDialog(
                             name = playlistName,
                             browseId = browseId,
                             bookmarkedAt = LocalDateTime.now(),
-                            isEditable = !syncedPlaylist,
+                            isEditable = true,
                             isLocal = !syncedPlaylist // && check that all songs are non-local
                         )
                     )
