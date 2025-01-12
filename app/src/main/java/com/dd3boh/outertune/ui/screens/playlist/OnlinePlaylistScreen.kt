@@ -516,6 +516,7 @@ fun OnlinePlaylistScreen(
                         items = songs
                     ) { index, song ->
                         val onCheckedChange: (Boolean) -> Unit = {
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                             if (it) {
                                 selection.add(index)
                             } else {
