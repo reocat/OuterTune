@@ -103,6 +103,7 @@ import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.isShuffleEnabled
 import com.dd3boh.outertune.playback.PlayerConnection
+import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.ui.component.AsyncLocalImage
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
@@ -230,6 +231,7 @@ fun BottomSheetPlayer(
         onDismiss = {
             playerConnection.player.stop()
             playerConnection.player.clearMediaItems()
+            playerConnection.service.deInitQueue()
         },
         collapsedContent = {
             MiniPlayer(
