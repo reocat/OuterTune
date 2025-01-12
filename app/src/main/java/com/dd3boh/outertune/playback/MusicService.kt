@@ -172,7 +172,6 @@ class MusicService : MediaLibraryService(),
     private val audioQuality by enumPreference(this, AudioQualityKey, AudioQuality.AUTO)
     private val playerOnErrorAction by enumPreference(this, PlayerOnErrorActionKey, PlayerOnError.PAUSE)
 
-
     var queueTitle: String? = null
     var queuePlaylistId: String? = null
     private var lastMediaItemIndex = -1
@@ -203,7 +202,7 @@ class MusicService : MediaLibraryService(),
     private lateinit var mediaSession: MediaLibrarySession
 
     private var isAudioEffectSessionOpened = false
-    
+
     private var discordRpc: DiscordRPC? = null
 
     var consecutivePlaybackErr = 0
@@ -245,7 +244,6 @@ class MusicService : MediaLibraryService(),
             }
         }
 
-
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(DefaultMediaSourceFactory(createDataSourceFactory()))
             .setRenderersFactory(createRenderersFactory())
@@ -282,7 +280,6 @@ class MusicService : MediaLibraryService(),
                             ).show()
                             return
                         }
-
 
                         if (playerOnErrorAction == PlayerOnError.PAUSE) {
                             player.pause()
@@ -500,6 +497,7 @@ class MusicService : MediaLibraryService(),
                 val queue = queueBoard.getCurrentQueue()
                 if (queue != null) {
                     isShuffleEnabled.value = queue.shuffled
+                    initQueue()
                     CoroutineScope(Dispatchers.Main).launch {
                         val queuePos = queueBoard.setCurrQueue(this@MusicService, false)
                         if (queuePos != null) {
@@ -512,6 +510,27 @@ class MusicService : MediaLibraryService(),
                 }
             }
         }
+    }
+
+    fun initQueue() {
+        if (dataStore.get(PersistentQueueKey, true)) {
+            queueBoard = QueueBoard(database.readQueue().toMutableList())
+            isShuffleEnabled.value = queueBoard.getCurrentQueue()?.shuffled ?: false
+            queueBoard.initialized = true
+        }
+    }
+
+    fun deInitQueue() {
+        if (dataStore.get(PersistentQueueKey, true)) {
+            saveQueueToDisk()
+            scope.launch {
+                dataStore.edit { settings ->
+                    settings[LastPosKey] = player.currentPosition
+                }
+            }
+        }
+        // do not replace the object. Can lead to entire queue being deleted even though it is supposed to be saved already
+        queueBoard.initialized = false
     }
 
     fun updateNotification() {
@@ -594,6 +613,9 @@ class MusicService : MediaLibraryService(),
      * If both are unspecified, the title will default to "Queue".
      */
     fun playQueue(queue: Queue, playWhenReady: Boolean = true, replace: Boolean = false, title: String? = null) {
+        if (!queueBoard.initialized) {
+            initQueue()
+        }
         queueTitle = title
         queuePlaylistId = queue.playlistId
 
@@ -641,19 +663,26 @@ class MusicService : MediaLibraryService(),
     fun enqueueNext(items: List<MediaItem>) {
         val currentQueue = queueBoard.getCurrentQueue()
         if (currentQueue == null) {
-            if (items.isNotEmpty()) {
-                playQueue(
-                    ListQueue(
-                        title = items.first().mediaMetadata.title.toString(),
-                        items = items.mapNotNull { it.metadata }
-                    )
-                )
+            if (!queueBoard.initialized) {
+                // when enqueuing next when player isn't active, play as a new song
+                if (items.isNotEmpty()) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        playQueue(
+                            ListQueue(
+                                title = items.first().mediaMetadata.title.toString(),
+                                items = items.mapNotNull { it.metadata }
+                            )
+                        )
+                    }
+                }
             }
         } else {
-            queueBoard.addSongsToQueue(currentQueue, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata }, this)
+            // enqueue next
+            queueBoard.getCurrentQueue()?.let {
+                queueBoard.addSongsToQueue(it, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata }, this)
+            }
         }
     }
-
 
     /**
      * Add items to end of current queue
@@ -827,7 +856,6 @@ class MusicService : MediaLibraryService(),
         }
     }
 
-
     private fun createRenderersFactory() = object : DefaultRenderersFactory(this) {
         override fun buildAudioSink(
             context: Context, enableFloatOutput: Boolean, enableAudioTrackPlaybackParams: Boolean
@@ -966,14 +994,7 @@ class MusicService : MediaLibraryService(),
     }
 
     override fun onDestroy() {
-        if (dataStore.get(PersistentQueueKey, true)) {
-            saveQueueToDisk()
-            scope.launch {
-                dataStore.edit { settings ->
-                    settings[LastPosKey] = player.currentPosition
-                }
-            }
-        }
+        deInitQueue()
         if (discordRpc?.isRpcRunning() == true) {
             discordRpc?.closeRPC()
         }
@@ -988,14 +1009,7 @@ class MusicService : MediaLibraryService(),
     override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        if (dataStore.get(PersistentQueueKey, true)) {
-            saveQueueToDisk()
-            scope.launch {
-                dataStore.edit { settings ->
-                    settings[LastPosKey] = player.currentPosition
-                }
-            }
-        }
+        deInitQueue()
 
         super.onTaskRemoved(rootIntent)
     }

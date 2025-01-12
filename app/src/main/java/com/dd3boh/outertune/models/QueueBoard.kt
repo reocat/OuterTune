@@ -85,6 +85,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
     private val masterQueues: MutableList<MultiQueueObject> = queues
     private var masterIndex = masterQueues.size - 1 // current queue index
     var detachedHead = false
+    var initialized = false
 
 
     /**
