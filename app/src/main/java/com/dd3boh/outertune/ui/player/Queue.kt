@@ -75,8 +75,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -131,6 +133,7 @@ fun Queue(
     var lockQueue by rememberPreference(LockQueueKey, defaultValue = false)
 
     val menuState = LocalMenuState.current
+    val haptic = LocalHapticFeedback.current
 
     // player vars
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -173,7 +176,10 @@ fun Queue(
                             .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                     )
             ) {
-                IconButton(onClick = { state.expandSoft() }) {
+                IconButton(onClick = {
+                    state.expandSoft()
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }) {
                     Icon(
                         imageVector = Icons.Rounded.ExpandLess,
                         tint = onBackgroundColor,
@@ -595,12 +601,14 @@ fun Queue(
                                         SwipeToDismissBoxValue.StartToEnd -> {
                                             playerConnection.player.removeMediaItem(currentItem.firstPeriodIndex)
                                             queueBoard.removeCurrentQueueSong(currentItem.firstPeriodIndex, playerConnection.service)
+                                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                             return@rememberSwipeToDismissBoxState true
                                         }
 
                                         SwipeToDismissBoxValue.EndToStart -> {
                                             playerConnection.player.removeMediaItem(currentItem.firstPeriodIndex)
                                             queueBoard.removeCurrentQueueSong(currentItem.firstPeriodIndex, playerConnection.service)
+                                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                             return@rememberSwipeToDismissBoxState true
                                         }
 
@@ -612,6 +620,7 @@ fun Queue(
                             )
 
                             val onCheckedChange: (Boolean) -> Unit = {
+                                haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                                 if (it) {
                                     selectedItems.add(window.uid.hashCode())
                                 } else {
@@ -643,6 +652,7 @@ fun Queue(
                                                                 state.collapseSoft()
                                                             },
                                                         )
+                                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                                     }
                                                 }
                                             ) {
@@ -761,6 +771,7 @@ fun Queue(
                             enabled = !landscape,
                             onClick = {
                                 multiqueueExpand = !multiqueueExpand
+                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                             },
                             modifier = Modifier.padding(vertical = 6.dp)
                         )
@@ -918,6 +929,7 @@ fun Queue(
                             .fillMaxWidth()
                             .clickable {
                                 state.collapseSoft()
+                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                             }
                             .windowInsetsPadding(
                                 WindowInsets.systemBars
@@ -964,6 +976,7 @@ fun Queue(
                     .align(Alignment.BottomCenter)
                     .clickable {
                         state.collapseSoft()
+                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                     }
                     .windowInsetsPadding(
                         WindowInsets.systemBars

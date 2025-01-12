@@ -71,10 +71,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -128,6 +130,7 @@ fun BottomSheetPlayer(
     navController: NavController,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val menuState = LocalMenuState.current
     val context = LocalContext.current
@@ -370,6 +373,8 @@ fun BottomSheetPlayer(
                 valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
                 onValueChange = {
                     sliderPosition = it.toLong()
+                    // slider too granular for this haptic to feel right
+//                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                 },
                 onValueChangeFinished = {
                     sliderPosition?.let {
@@ -377,6 +382,7 @@ fun BottomSheetPlayer(
                         position = it
                     }
                     sliderPosition = null
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 },
                 thumb = { Spacer(modifier = Modifier.size(0.dp)) },
                 track = { sliderState ->
@@ -431,7 +437,10 @@ fun BottomSheetPlayer(
                             .align(Alignment.Center)
                             .alpha(if (shuffleModeEnabled) 1f else 0.5f),
                         color = onBackgroundColor,
-                        onClick = { playerConnection.triggerShuffle() }
+                        onClick = {
+                            playerConnection.triggerShuffle()
+                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        }
                     )
                 }
 
@@ -443,7 +452,10 @@ fun BottomSheetPlayer(
                             .size(32.dp)
                             .align(Alignment.Center),
                         color = onBackgroundColor,
-                        onClick = playerConnection.player::seekToPrevious
+                        onClick = {
+                            playerConnection.player::seekToPrevious
+                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        }
                     )
                 }
 
@@ -462,6 +474,8 @@ fun BottomSheetPlayer(
                             } else {
                                 playerConnection.player.togglePlayPause()
                             }
+                            // play/pause is slightly harder haptic
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         }
                 ) {
                     Image(
@@ -484,7 +498,10 @@ fun BottomSheetPlayer(
                             .size(32.dp)
                             .align(Alignment.Center),
                         color = onBackgroundColor,
-                        onClick = playerConnection.player::seekToNext
+                        onClick = {
+                            playerConnection.player::seekToNext
+                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        }
                     )
                 }
 
@@ -501,7 +518,10 @@ fun BottomSheetPlayer(
                             .align(Alignment.Center)
                             .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.5f else 1f),
                         color = onBackgroundColor,
-                        onClick = playerConnection.player::toggleRepeatMode
+                        onClick = {
+                            playerConnection.player::toggleRepeatMode
+                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        }
                     )
                 }
             }

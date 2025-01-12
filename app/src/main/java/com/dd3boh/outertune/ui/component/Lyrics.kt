@@ -39,11 +39,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -82,6 +84,7 @@ fun Lyrics(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val menuState = LocalMenuState.current
     val density = LocalDensity.current
@@ -263,6 +266,7 @@ fun Lyrics(
                             .clickable(enabled = isSynced) {
                                 playerConnection.player.seekTo(item.timeStamp)
                                 lastPreviewTime = 0L
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                             }
                             .padding(horizontal = 24.dp, vertical = 8.dp)
                             .alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f)

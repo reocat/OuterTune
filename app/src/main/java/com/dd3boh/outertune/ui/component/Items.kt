@@ -429,8 +429,7 @@ fun SongListItem(
                     } else {
                         IconButton(
                             onClick = {
-                                if (!disableShowMenu)
-                                {
+                                if (!disableShowMenu) {
                                     menuState.show {
                                         SongMenu(
                                             originalSong = song,
@@ -441,6 +440,8 @@ fun SongListItem(
                                         )
                                     }
                                 }
+
+                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                             }
                         ) {
                             Icon(
@@ -560,6 +561,7 @@ fun SongFolderItem(
     )
 },
     trailingContent = {
+        val haptic = LocalHapticFeedback.current
         IconButton(
             onClick = {
                 menuState.show {
@@ -569,6 +571,7 @@ fun SongFolderItem(
                         onDismiss = menuState::dismiss
                     )
                 }
+                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
             }
         ) {
             Icon(
