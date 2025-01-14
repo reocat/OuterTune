@@ -351,9 +351,9 @@ fun DetailsDialog(
                     .verticalScroll(rememberScrollState())
             ) {
                 val details = mutableListOf(
-                    stringResource(R.string.song_title) to mediaMetadata?.title,
-                    stringResource(R.string.song_artists) to mediaMetadata?.artists?.joinToString { it.name },
-                    stringResource(R.string.media_id) to mediaMetadata?.id,
+                    stringResource(R.string.song_title) to mediaMetadata.title,
+                    stringResource(R.string.song_artists) to mediaMetadata.artists?.joinToString { it.name },
+                    stringResource(R.string.media_id) to mediaMetadata.id,
                     stringResource(R.string.play_count) to currentPlayCount.toString()
                 )
 

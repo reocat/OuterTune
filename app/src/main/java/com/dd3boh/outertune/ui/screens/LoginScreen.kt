@@ -34,9 +34,8 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
-import com.zionhuang.innertube.utils.parseCookieString
 import com.zionhuang.innertube.YouTube
-import kotlin.collections.contains
+import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

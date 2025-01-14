@@ -155,7 +155,7 @@ class TagLibScanner : MetadataScanner {
             val dateModified = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneOffset.UTC)
             val albumId = if (albumName != null) AlbumEntity.generateAlbumId() else null
             val mime = if (type != null && codec != null) {
-                "${type?.trim()}/${codec?.trim()}"
+                "${type.trim()}/${codec.trim()}"
             } else {
                 "Unknown"
             }

@@ -3,7 +3,6 @@ package com.dd3boh.outertune.ui.component
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -50,7 +49,6 @@ enum class DragAnchors {
     End,
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DraggableItem(
     state: AnchoredDraggableState<DragAnchors>,
@@ -122,7 +120,6 @@ fun AddToQueueAction(modifier: Modifier) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeToQueueBox(
     item: MediaItem,

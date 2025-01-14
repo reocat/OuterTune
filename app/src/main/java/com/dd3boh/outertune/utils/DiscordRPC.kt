@@ -1,9 +1,10 @@
 package com.dd3boh.outertune.utils
 import android.content.Context
-import com.my.kizzy.rpc.KizzyRPC
-import com.my.kizzy.rpc.RpcImage
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.db.entities.Song
+import com.my.kizzy.rpc.KizzyRPC
+import com.my.kizzy.rpc.RpcImage
+
 class DiscordRPC(
     val context: Context,
     token: String,

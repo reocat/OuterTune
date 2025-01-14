@@ -2,8 +2,6 @@ package com.zionhuang.innertube.models.response
 
 import com.zionhuang.innertube.models.ResponseContext
 import com.zionhuang.innertube.models.Thumbnails
-import kotlinx.serialization.SerialName
-import com.zionhuang.innertube.utils.decodeCipher
 import kotlinx.serialization.Serializable
 
 /**
