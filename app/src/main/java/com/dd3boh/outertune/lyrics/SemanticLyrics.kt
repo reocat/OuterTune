@@ -6,7 +6,6 @@ import com.dd3boh.outertune.lyrics.SemanticLyrics.SyncedLyrics
 import com.dd3boh.outertune.lyrics.SemanticLyrics.UnsyncedLyrics
 import com.dd3boh.outertune.lyrics.SemanticLyrics.Word
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.map
 
 /**
  * Unless otherwise stated, this file is From Gramophone as of 0d46996db54a3360e832ed06bf18170bce85534f
@@ -74,7 +73,7 @@ private sealed class SyntacticLrc {
     data class Metadata(val name: String, val value: String) : SyntacticLrc()
     data class LyricText(val text: String) : SyntacticLrc()
     data class InvalidText(val text: String) : SyntacticLrc()
-    open class NewLine() : SyntacticLrc() {
+    open class NewLine : SyntacticLrc() {
         class SyntheticNewLine : NewLine()
     }
 

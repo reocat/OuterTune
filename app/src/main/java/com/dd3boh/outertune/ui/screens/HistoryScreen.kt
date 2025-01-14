@@ -67,7 +67,6 @@ import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalIsNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
-import com.dd3boh.outertune.LocalIsNetworkConnected
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.HistorySource
 import com.dd3boh.outertune.constants.InnerTubeCookieKey

@@ -3,7 +3,6 @@ package com.dd3boh.outertune.ui.component
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -60,7 +59,6 @@ fun <E> ChipsRow(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <E> ChipsLazyRow(
     chips: List<Pair<E, String>>,

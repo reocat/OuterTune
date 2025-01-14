@@ -21,6 +21,7 @@ import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.di.DownloadCache
+import com.dd3boh.outertune.extensions.getLikeAutoDownload
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.utils.YTPlayerUtils
 import com.dd3boh.outertune.utils.enumPreference
@@ -41,7 +42,6 @@ import java.time.ZoneOffset
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.dd3boh.outertune.extensions.getLikeAutoDownload
 
 @Singleton
 class DownloadUtil @Inject constructor(

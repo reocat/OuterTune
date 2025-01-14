@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.component
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -20,7 +19,7 @@ import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.menu.SelectionMediaMetadataMenu
 
 @Composable
-fun RowScope.SelectHeader(
+fun SelectHeader(
     selectedItems: List<MediaMetadata>,
     totalItemCount: Int,
     onSelectAll: () -> Unit,

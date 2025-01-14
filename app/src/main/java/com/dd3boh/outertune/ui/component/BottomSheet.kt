@@ -143,7 +143,7 @@ class BottomSheetState(
     private val onAnchorChanged: (Int) -> Unit,
     val collapsedBound: Dp,
 ) : DraggableState by draggableState {
-    val dismissedBound: Dp
+    private val dismissedBound: Dp
         get() = animatable.lowerBound!!
 
     val expandedBound: Dp
@@ -167,14 +167,14 @@ class BottomSheetState(
         1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
     }
 
-    fun collapse(animationSpec: AnimationSpec<Dp>) {
+    private fun collapse(animationSpec: AnimationSpec<Dp>) {
         onAnchorChanged(collapsedAnchor)
         coroutineScope.launch {
             animatable.animateTo(collapsedBound, animationSpec)
         }
     }
 
-    fun expand(animationSpec: AnimationSpec<Dp>) {
+    private fun expand(animationSpec: AnimationSpec<Dp>) {
         onAnchorChanged(expandedAnchor)
         coroutineScope.launch {
             animatable.animateTo(animatable.upperBound!!, animationSpec)

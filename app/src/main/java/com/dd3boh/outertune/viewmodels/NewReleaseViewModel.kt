@@ -2,11 +2,11 @@ package com.dd3boh.outertune.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.models.AlbumItem
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.utils.reportException
+import com.zionhuang.innertube.YouTube
+import com.zionhuang.innertube.models.AlbumItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

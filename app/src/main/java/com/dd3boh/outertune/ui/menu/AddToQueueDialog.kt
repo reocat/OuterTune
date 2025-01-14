@@ -93,8 +93,8 @@ fun AddToQueueDialog(
             title = { Text(text = stringResource(R.string.create_queue)) },
             initialTextFieldValue = TextFieldValue(initialTextFieldValue ?: ""),
             onDismiss = { showCreateQueueDialog = false },
-            onDone = { queuetName ->
-                onAdd(queuetName)
+            onDone = { queueName ->
+                onAdd(queueName)
                 onDismiss()
             },
         )

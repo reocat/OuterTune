@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.ui.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,7 +58,6 @@ fun LibraryArtistListItem(
         }
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryArtistGridItem(
     navController: NavController,
@@ -127,7 +125,6 @@ fun LibraryAlbumListItem(
         }
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryAlbumGridItem(
     modifier: Modifier = Modifier,
@@ -229,7 +226,6 @@ fun LibraryPlaylistListItem(
         }
 )
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryPlaylistGridItem(
     navController: NavController,

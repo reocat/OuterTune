@@ -185,10 +185,10 @@ import com.dd3boh.outertune.ui.screens.settings.AboutScreen
 import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
 import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
 import com.dd3boh.outertune.ui.screens.settings.ContentSettings
-import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
-import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
+import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
+import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings

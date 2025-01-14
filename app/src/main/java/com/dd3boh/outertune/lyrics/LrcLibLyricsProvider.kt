@@ -1,10 +1,10 @@
 package com.dd3boh.outertune.lyrics
 
 import android.content.Context
+import com.dd3boh.lrclib.LrcLib
 import com.dd3boh.outertune.constants.EnableLrcLibKey
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
-import com.dd3boh.lrclib.LrcLib
 
 /**
  * Source: https://github.com/Malopieds/InnerTune
