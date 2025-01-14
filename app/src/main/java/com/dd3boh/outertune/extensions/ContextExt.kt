@@ -4,9 +4,9 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
-import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
+import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.zionhuang.innertube.utils.parseCookieString

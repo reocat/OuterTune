@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.pages.ArtistPage
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.utils.reportException
+import com.zionhuang.innertube.YouTube
+import com.zionhuang.innertube.pages.ArtistPage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn

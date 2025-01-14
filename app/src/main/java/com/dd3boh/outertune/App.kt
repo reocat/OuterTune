@@ -9,8 +9,20 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.request.CachePolicy
-import com.dd3boh.outertune.constants.*
-import com.dd3boh.outertune.extensions.*
+import com.dd3boh.outertune.constants.ContentCountryKey
+import com.dd3boh.outertune.constants.ContentLanguageKey
+import com.dd3boh.outertune.constants.CountryCodeToName
+import com.dd3boh.outertune.constants.InnerTubeCookieKey
+import com.dd3boh.outertune.constants.LanguageCodeToName
+import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
+import com.dd3boh.outertune.constants.ProxyEnabledKey
+import com.dd3boh.outertune.constants.ProxyTypeKey
+import com.dd3boh.outertune.constants.ProxyUrlKey
+import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
+import com.dd3boh.outertune.constants.UseLoginForBrowse
+import com.dd3boh.outertune.constants.VisitorDataKey
+import com.dd3boh.outertune.extensions.toEnum
+import com.dd3boh.outertune.extensions.toInetSocketAddress
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
@@ -25,7 +37,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.net.Proxy
-import java.util.*
+import java.util.Locale
 
 @HiltAndroidApp
 class App : Application(), ImageLoaderFactory {

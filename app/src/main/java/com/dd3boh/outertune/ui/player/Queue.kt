@@ -3,7 +3,6 @@ package com.dd3boh.outertune.ui.player
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,7 +49,6 @@ import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -120,7 +118,6 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @SuppressLint("UnrememberedMutableState")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun Queue(
     state: BottomSheetState,
@@ -730,19 +727,19 @@ fun Queue(
             ) {
                 // handle selection mode
                 if (inSelectMode) {
-                   SelectHeader(
-                       selectedItems = selectedItems.mapNotNull { uidHash ->
-                           mutableQueueWindows.find { it.uid.hashCode() == uidHash }
-                       }.mapNotNull { it.mediaItem.metadata },
-                       totalItemCount = queueWindows.size,
-                       onSelectAll = {
-                           selectedItems.clear()
-                           selectedItems.addAll(queueWindows.map { it.uid.hashCode() })
-                       },
-                       onDeselectAll = { selectedItems.clear() },
-                       menuState = menuState,
-                       onDismiss = { inSelectMode = false }
-                   )
+                    SelectHeader(
+                        selectedItems = selectedItems.mapNotNull { uidHash ->
+                            mutableQueueWindows.find { it.uid.hashCode() == uidHash }
+                        }.mapNotNull { it.mediaItem.metadata },
+                        totalItemCount = queueWindows.size,
+                        onSelectAll = {
+                            selectedItems.clear()
+                            selectedItems.addAll(queueWindows.map { it.uid.hashCode() })
+                        },
+                        onDeselectAll = { selectedItems.clear() },
+                        menuState = menuState,
+                        onDismiss = { inSelectMode = false }
+                    )
                 } else {
                     // queue title and show multiqueue button
                     Row(

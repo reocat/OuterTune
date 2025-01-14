@@ -23,7 +23,6 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.ClearAll
 import androidx.compose.material.icons.rounded.Error
-import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.NoCell
@@ -56,12 +55,11 @@ import com.dd3boh.outertune.constants.AudioNormalizationKey
 import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
-import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
-import com.dd3boh.outertune.constants.SkipOnErrorKey
-import com.dd3boh.outertune.constants.PlayerOnErrorActionKey
 import com.dd3boh.outertune.constants.PlayerOnError
+import com.dd3boh.outertune.constants.PlayerOnErrorActionKey
+import com.dd3boh.outertune.constants.SkipOnErrorKey
 import com.dd3boh.outertune.constants.SkipSilenceKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.constants.minPlaybackDurKey

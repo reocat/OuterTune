@@ -57,7 +57,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import java.net.Proxy
-import kotlin.random.Random
 
 /**
  * Parse useful data with [InnerTube] sending requests.

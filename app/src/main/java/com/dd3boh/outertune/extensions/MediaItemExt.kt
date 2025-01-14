@@ -3,10 +3,10 @@ package com.dd3boh.outertune.extensions
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata.MEDIA_TYPE_MUSIC
-import com.zionhuang.innertube.models.SongItem
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.toMediaMetadata
+import com.zionhuang.innertube.models.SongItem
 
 val MediaItem.metadata: MediaMetadata?
     get() = localConfiguration?.tag as? MediaMetadata

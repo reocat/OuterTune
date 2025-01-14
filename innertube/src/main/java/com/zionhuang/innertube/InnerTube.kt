@@ -112,7 +112,7 @@ class InnerTube {
             append("X-YouTube-Client-Name", client.clientId)
             append("X-YouTube-Client-Version", client.clientVersion)
             append("X-Origin", YouTubeClient.ORIGIN_YOUTUBE_MUSIC)
-            append("Referer", YouTubeClient.REFERER_YOUTUBE_MUSIC)
+            append("Referer", REFERER_YOUTUBE_MUSIC)
             if (setLogin && client.loginSupported) {
                 cookie?.let { cookie ->
                     append("cookie", cookie)
