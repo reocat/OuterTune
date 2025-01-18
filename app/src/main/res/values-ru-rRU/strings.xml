@@ -359,6 +359,7 @@
     <string name="on">ВКЛ</string>
     <string name="show_liked_and_downloaded_playlist">Показывать любимые треки и загруженную музыку в библиотеке</string>
     <string name="slim_navbar">Убрать подписи с панели навигации</string>
+    <string name="invalid_token">Неправильный токен. Убедитесь, что вы ввели SAPISID cookie.</string>
     <string name="ytm_sync">Авто-синхронизация с аккаунтом YouTube Music</string>
     <string name="like_autodownload">Автоматически скачивать понравившиеся песни</string>
     <string name="wifi_only">Только по Wi-Fi</string>
@@ -374,6 +375,7 @@
     <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
     <string name="folders">Папки</string>
     <string name="library">Библиотека</string>
+    <string name="song_added_to_queue">\"%s\" добавлено в очередь</string>
     <string name="create_queue">Новая очередь</string>
     <string name="player_background_style">Стиль фона плеера</string>
     <string name="new_interface">Новая раскладка интерфейса</string>
@@ -381,4 +383,20 @@
     <string name="manual_scanner_title">Ручное сканироваие</string>
     <string name="lyrics_settings_title">Текст</string>
     <string name="use_login_for_browse">Использовать аккаунт для просмотра контента</string>
+    <string name="scanner_warning">По умолчанию сканер НЕ будет обновлять метаданные существующих треков, если вы не укажете иное выше. В зависимости от размера вашей медиатеки, это может занять некоторое время.</string>
+    <string name="scanner_settings_title">Дополнительные настройки сканера</string>
+    <string name="scanner_type_title">Экстрактор метаданных</string>
+    <string name="scanner_type_taglib">Использовать встроенный экстрактор TagLib</string>
+    <string name="scanner_type_ffmpeg_ext">Использовать экстрактор FFMPEG. Требуется установка отдельного приложения</string>
+    <string name="token_shown">Нажмите еще раз, чтобы скопировать или изменить</string>
+    <string name="token_adv_login_description">Это ПРОДВИНУТЫЙ способ входа. Вместо использования веб-портала вы можете ввести или обновить токен для входа здесь. Это может быть полезно для быстрого входа на нескольких устройствах. Учтите, что приложение не примет токены с неверным форматом.</string>
+    <string name="token">Токен</string>
+    <string name="edit_token">Изменить токен</string>
+    <string name="local_library_enable_description">Отключение скроет локальную медиатеку в приложении</string>
+    <string name="local_player_settings_title">Локальные медиа</string>
+    <string name="local_library_enable_title">Включить локальные медиа</string>
+    <string name="pause">Пауза</string>
+    <string name="token_hidden">Нажмите, чтобы показать токен</string>
+    <string name="audio_offload">Включить аппаратное ускорение аудио</string>
+    <string name="audio_offload_description">Используйте аппаратный путь воспроизведения аудио. Отключение этой функции может увеличить расход энергии, но может быть полезным, если у вас возникают проблемы с воспроизведением или постобработкой звука.</string>
 </resources>
