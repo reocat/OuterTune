@@ -402,7 +402,6 @@
     <string name="token">Token</string>
     <string name="edit_token">Edit Token</string>
     <string name="invalid_token">Invalid token. Please ensure it includes the SAPISID cookie.</string>
-    <string name="cancel">Cancel</string>
     <string name="ytm_sync">Automatically sync with your YouTube Music account</string>
     <string name="like_autodownload">Automatically download your liked songs</string>
     <string name="wifi_only">Wi-Fi only</string>
