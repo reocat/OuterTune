@@ -372,6 +372,7 @@
 <!-- Menu -->
     <string name="select">Selection mode</string>
     <string name="like_all">Like all</string>
+    <string name="delete_lyric_confirm">Do you really want to delete the stored lyrics for \"%s\"?</string>
 
 <!-- Sort menu -->
     <string name="sort_by_date_modified">Date modified</string>
@@ -417,6 +418,8 @@
     <string name="lyrics_multiline_title">Read multiline lyrics</string>
     <string name="lyrics_multiline_description">Treat all the lines between sync points as one lyric text</string>
     <string name="lyrics_trim_title">Remove spaces around lyrics</string>
+    <string name="lyrics_prefer_local">Prefer local lyric files</string>
+    <string name="lyrics_prefer_local_description">Prioritize resolving local lyric files before using all cloud providers. Turn ths off to prioritize cloud providers</string>
 
 <!-- Local player settings -->
     <string name="local_library_enable_title">Enable local media</string>

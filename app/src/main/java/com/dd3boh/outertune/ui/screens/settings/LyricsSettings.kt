@@ -23,6 +23,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.EnableKugouKey
 import com.dd3boh.outertune.constants.EnableLrcLibKey
+import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
@@ -46,6 +47,7 @@ fun LyricsSettings(
     val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(LyricsTextPositionKey, defaultValue = LyricsPosition.CENTER)
     val (multilineLrc, onMultilineLrcChange) = rememberPreference(MultilineLrcKey, defaultValue = true)
     val (lyricTrim, onLyricTrimChange) = rememberPreference(LyricTrimKey, defaultValue = false)
+    val (preferLocalLyric, onPreferLocalLyric) = rememberPreference(LyricSourcePrefKey, defaultValue = true)
 
 
     Column(
@@ -98,6 +100,14 @@ fun LyricsSettings(
             icon = { Icon(Icons.Rounded.ContentCut, null) },
             checked = lyricTrim,
             onCheckedChange = onLyricTrimChange
+        )
+        // prioritize local lyric files over all cloud providers
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_prefer_local)) },
+            description = stringResource(R.string.lyrics_prefer_local_description),
+            icon = { Icon(Icons.Rounded.ContentCut, null) },
+            checked = preferLocalLyric,
+            onCheckedChange = onPreferLocalLyric
         )
 
     }
