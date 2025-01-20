@@ -412,6 +412,8 @@
     <string name="audio_offload_description">Use the offload audio path for audio playback. Disabling this may increase power usage but can be useful if you experience issues with audio playback or post processing</string>
     <string name="keep_alive_title">Prevent system killing app</string>
     <string name="keep_alive_description">Use a foreground notification to prevent OuterTune from being randomly closed by the system.</string>
+    <string name="min_playback_duration">Minimum playback duration</string>
+    <string name="min_playback_duration_description">The minimum amount of a song that must be played before it is considered \"played\"</string>
 
 <!--Lyrics settings -->
     <string name="lyrics_settings_title">Lyrics</string>
@@ -420,6 +422,7 @@
     <string name="lyrics_trim_title">Remove spaces around lyrics</string>
     <string name="lyrics_prefer_local">Prefer local lyric files</string>
     <string name="lyrics_prefer_local_description">Prioritize resolving local lyric files before using all cloud providers. Turn ths off to prioritize cloud providers</string>
+    <string name="lyrics_font_Size">Font size</string>
 
 <!-- Local player settings -->
     <string name="local_library_enable_title">Enable local media</string>

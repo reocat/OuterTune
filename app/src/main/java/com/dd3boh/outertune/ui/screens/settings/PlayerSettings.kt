@@ -41,12 +41,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
@@ -64,7 +62,7 @@ import com.dd3boh.outertune.constants.SkipSilenceKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.constants.minPlaybackDurKey
 import com.dd3boh.outertune.playback.KeepAlive
-import com.dd3boh.outertune.ui.component.ActionPromptDialog
+import com.dd3boh.outertune.ui.component.CounterDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -148,39 +146,22 @@ fun PlayerSettings(
 
 
     if (showMinPlaybackDur) {
-        ActionPromptDialog(
-            title = "Minimum playback duration",
+        CounterDialog(
+            title = stringResource(R.string.min_playback_duration),
+            description = stringResource(R.string.min_playback_duration_description),
+            initialValue = minPlaybackDur,
+            upperBound = 100,
+            lowerBound = 0,
+            unitDisplay = "%",
             onDismiss = { showMinPlaybackDur = false },
             onConfirm = {
                 showMinPlaybackDur = false
-                onMinPlaybackDurChange(tempminPlaybackDur)
+                onMinPlaybackDurChange(it)
             },
             onCancel = {
                 showMinPlaybackDur = false
-                tempminPlaybackDur = minPlaybackDur
             }
-        ) {
-            Text(
-                text = "The minimum amount of a song that must be played before it is considered \"played\"",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "${tempminPlaybackDur}%",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-                Slider(
-                    value = tempminPlaybackDur.toFloat(),
-                    onValueChange = { tempminPlaybackDur = it.toInt() },
-                    valueRange = 0f..100f
-                )
-            }
-        }
+        )
     }
 
     Column(
@@ -207,7 +188,7 @@ fun PlayerSettings(
             onClick = { navController.navigate("settings/player/lyrics") }
         )
         PreferenceEntry(
-            title = { Text("Minimum playback duration") },
+            title = { Text(stringResource(R.string.min_playback_duration)) },
             icon = { Icon(Icons.Rounded.Sync, null) },
             onClick = { showMinPlaybackDur = true }
         )
