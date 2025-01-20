@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DarkModeKey
+import com.dd3boh.outertune.constants.LyricFontSizeKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
@@ -92,6 +93,7 @@ fun Lyrics(
     val landscapeOffset = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
+    val lyricsFontSize by rememberPreference(LyricFontSizeKey, 20)
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val lyricsEntity by playerConnection.currentLyrics.collectAsState(initial = null)
@@ -253,7 +255,7 @@ fun Lyrics(
                 ) { index, item ->
                     Text(
                         text = item.content,
-                        fontSize = 20.sp,
+                        fontSize = lyricsFontSize.sp,
                         color = textColor,
                         textAlign = when (lyricsTextPosition) {
                             LyricsPosition.LEFT -> TextAlign.Left
