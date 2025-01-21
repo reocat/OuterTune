@@ -37,6 +37,7 @@ import com.dd3boh.outertune.ui.component.CounterDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -86,7 +87,9 @@ fun LyricsSettings(
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
             .verticalScroll(rememberScrollState())
     ) {
-        // providers
+        PreferenceGroupTitle(
+            title = stringResource(R.string.lrc_src_title)
+        )
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_lrclib)) },
             icon = { Icon(Icons.Rounded.Lyrics, null) },
@@ -101,21 +104,18 @@ fun LyricsSettings(
             onCheckedChange = onEnableKugouChange
         )
 
-        // lyrics position
-        EnumListPreference(
-            title = { Text(stringResource(R.string.lyrics_text_position)) },
-            icon = { Icon(Icons.Rounded.Lyrics, null) },
-            selectedValue = lyricsPosition,
-            onValueSelected = onLyricsPositionChange,
-            valueText = {
-                when (it) {
-                    LyricsPosition.LEFT -> stringResource(R.string.left)
-                    LyricsPosition.CENTER -> stringResource(R.string.center)
-                    LyricsPosition.RIGHT -> stringResource(R.string.right)
-                }
-            }
+        // prioritize local lyric files over all cloud providers
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_prefer_local)) },
+            description = stringResource(R.string.lyrics_prefer_local_description),
+            icon = { Icon(Icons.Rounded.ContentCut, null) },
+            checked = preferLocalLyric,
+            onCheckedChange = onPreferLocalLyric
         )
 
+        PreferenceGroupTitle(
+            title = stringResource(R.string.parser_title)
+        )
         // multiline lyrics
         SwitchPreference(
             title = { Text(stringResource(R.string.lyrics_multiline_title)) },
@@ -132,13 +132,23 @@ fun LyricsSettings(
             checked = lyricTrim,
             onCheckedChange = onLyricTrimChange
         )
-        // prioritize local lyric files over all cloud providers
-        SwitchPreference(
-            title = { Text(stringResource(R.string.lyrics_prefer_local)) },
-            description = stringResource(R.string.lyrics_prefer_local_description),
-            icon = { Icon(Icons.Rounded.ContentCut, null) },
-            checked = preferLocalLyric,
-            onCheckedChange = onPreferLocalLyric
+        PreferenceGroupTitle(
+            title = stringResource(R.string.formatting_title)
+        )
+
+        // lyrics position
+        EnumListPreference(
+            title = { Text(stringResource(R.string.lyrics_text_position)) },
+            icon = { Icon(Icons.Rounded.Lyrics, null) },
+            selectedValue = lyricsPosition,
+            onValueSelected = onLyricsPositionChange,
+            valueText = {
+                when (it) {
+                    LyricsPosition.LEFT -> stringResource(R.string.left)
+                    LyricsPosition.CENTER -> stringResource(R.string.center)
+                    LyricsPosition.RIGHT -> stringResource(R.string.right)
+                }
+            }
         )
 
         PreferenceEntry(

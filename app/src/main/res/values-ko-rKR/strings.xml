@@ -228,8 +228,6 @@
     <string name="about">정보</string>
     <string name="app_version">앱 버전</string>
     <string name="new_version_available">새 버전을 사용할 수 있습니다</string>
-    <string name="translation_models">번역 모델</string>
-    <string name="clear_translation_models">번역 모델 지우기</string>
     <string name="your_youtube_playlists">YouTube 재생목록</string>
     <string name="remove_from_playlist">재생목록에서 제거</string>
     <string name="remove_from_queue">대기열에서 제거</string>

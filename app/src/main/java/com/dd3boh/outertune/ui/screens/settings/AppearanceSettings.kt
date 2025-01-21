@@ -149,32 +149,6 @@ fun AppearanceSettings(
         }
         mutableTabs.move(from.index, to.index)
     }
-    LaunchedEffect(reorderableState.isAnyItemDragging) {
-        if (!reorderableState.isAnyItemDragging) {
-            dragInfo?.let { (from, to) ->
-//                if (from == to) {
-//                    return@LaunchedEffect
-//                }
-
-//                mutableTabs.apply {
-//                    clear()
-//
-//                    val enabled = decodeTabString(enabledTabs)
-//                    addAll(enabled)
-//                    add(NavigationTab.NULL)
-//                    addAll(NavigationTab.entries.filter { item -> enabled.none { it == item || item == NavigationTab.NULL } })
-//                }
-            }
-        }
-    }
-
-
-
-//    val reorderableState = rememberReorderableLazyListState(
-//        onMove = { from, to ->
-//            mutableTabs.move(from.index, to.index)
-//        }
-//    )
 
     fun updateTabs() {
         mutableTabs.apply {

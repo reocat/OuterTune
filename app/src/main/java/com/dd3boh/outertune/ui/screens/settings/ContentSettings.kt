@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -230,7 +231,7 @@ fun ContentSettings(
             onCheckedChange = onProxyEnabledChange
         )
 
-        if (proxyEnabled) {
+        AnimatedVisibility(proxyEnabled) {
             ListPreference(
                 title = { Text(stringResource(R.string.proxy_type)) },
                 selectedValue = proxyType,
