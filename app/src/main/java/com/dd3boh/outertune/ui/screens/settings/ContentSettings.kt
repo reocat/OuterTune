@@ -99,8 +99,9 @@ fun ContentSettings(
     val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(LikedAutoDownloadKey, LikedAutodownloadMode.OFF)
     val (contentLanguage, onContentLanguageChange) = rememberPreference(key = ContentLanguageKey, defaultValue = "system")
     val (contentCountry, onContentCountryChange) = rememberPreference(key = ContentCountryKey, defaultValue = "system")
-    val (selectedLanguage, setSelectedLanguage) = rememberPreference(key = AppLanguageKey, defaultValue = "en")
+    val availableLanguages = remember { getAvailableLanguages(context) }
     val localeManager = remember { LocaleManager(context) }
+    val (selectedLanguage, setSelectedLanguage) = rememberPreference(key = AppLanguageKey, defaultValue = "system")
 
     val (proxyEnabled, onProxyEnabledChange) = rememberPreference(key = ProxyEnabledKey, defaultValue = false)
     val (proxyType, onProxyTypeChange) = rememberEnumPreference(key = ProxyTypeKey, defaultValue = Proxy.Type.HTTP)
@@ -215,17 +216,28 @@ fun ContentSettings(
             title = { Text(stringResource(R.string.app_language)) },
             icon = { Icon(Icons.Rounded.Public, null) },
             selectedValue = selectedLanguage,
-            values = LanguageCodeToName.keys.toList(),
-            valueText = { LanguageCodeToName[it] ?: stringResource(R.string.system_default) },
+            values = availableLanguages.map { it.code },
+            valueText = { code ->
+                availableLanguages.find { it.code == code }?.displayName
+                    ?: stringResource(R.string.system_default)
+            },
             onValueSelected = { newLanguage ->
-                if (localeManager.updateLocale(newLanguage)) {
-                    setSelectedLanguage(newLanguage)
+                if (newLanguage == "system") {
+                    // Use system default language
+                    val systemLocale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        LocaleList.getDefault()[0]
+                    } else {
+                        @Suppress("DEPRECATION")
+                        Locale.getDefault()
+                    }
 
-                    // Restart activity to apply changes
-                    val intent = context.packageManager
-                        .getLaunchIntentForPackage(context.packageName)
-                        ?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
+                    if (localeManager.updateLocale(systemLocale.language)) {
+                        setSelectedLanguage("system")
+                        restartApp(context)
+                    }
+                } else if (localeManager.updateLocale(newLanguage)) {
+                    setSelectedLanguage(newLanguage)
+                    restartApp(context)
                 } else {
                     Toast.makeText(
                         context,
@@ -303,6 +315,74 @@ fun ContentSettings(
     )
 }
 
+data class LanguageInfo(
+    val code: String,
+    val displayName: String,
+    val isAvailable: Boolean = true
+)
+fun getAvailableLanguages(context: Context): List<LanguageInfo> {
+    val availableLocales = context.resources.assets.locales
+
+    val systemDefault = LanguageInfo(
+        code = "system",
+        displayName = context.getString(R.string.system_default),
+        isAvailable = true
+    )
+
+    fun getLocaleComponents(localeString: String): Pair<String, String> {
+        val locale = if (localeString.contains("-")) {
+            val (language, country) = localeString.split("-")
+            Locale(language, country)
+        } else {
+            Locale(localeString)
+        }
+
+        val language = locale.language
+
+        val country = locale.country
+
+
+        return Pair(language, country)
+    }
+
+    val languageList = LanguageCodeToName.map { (code, name) ->
+        LanguageInfo(
+            code = code,
+            displayName = name,
+            isAvailable = availableLocales.any { localeString ->
+                val (localeLanguage, localeCountry) = getLocaleComponents(localeString)
+
+                when {
+                    // Handle Chinese variants
+                    code == "zh-CN" -> localeLanguage == "zh" && localeCountry == "CN"
+                    code == "zh-TW" -> localeLanguage == "zh" && localeCountry == "TW"
+                    code == "zh-HK" -> localeLanguage == "zh" && localeCountry == "HK"
+
+                    // Handle other languages with country codes
+                    code.contains("-") -> {
+                        val (lang, country) = code.split("-")
+                        localeLanguage == lang && localeCountry == country
+                    }
+
+                    // Handle simple language codes
+                    else -> localeLanguage == code
+                }
+            }
+        )
+    }
+
+    // Return system default plus available languages
+    return listOf(systemDefault) + languageList.filter { it.isAvailable }
+}
+
+// Helper function to restart the app
+private fun restartApp(context: Context) {
+    val intent = context.packageManager
+        .getLaunchIntentForPackage(context.packageName)
+        ?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+}
+
 // LocaleManager
 class LocaleManager(private val context: Context) {
     companion object {
@@ -315,11 +395,18 @@ class LocaleManager(private val context: Context) {
 
     fun updateLocale(languageCode: String): Boolean {
         try {
-            val locale = createLocaleFromCode(languageCode)
+            val locale = when (languageCode) {
+                "system" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    LocaleList.getDefault()[0]
+                } else {
+                    @Suppress("DEPRECATION")
+                    Locale.getDefault()
+                }
+                else -> createLocaleFromCode(languageCode)
+            }
+
             val config = context.resources.configuration
-
             Locale.setDefault(locale)
-
             setLocaleApi24(config, locale)
 
             @Suppress("DEPRECATION")
