@@ -250,6 +250,7 @@ class MainActivity : ComponentActivity() {
     lateinit var syncUtils: SyncUtils
 
     lateinit var activityLauncher: ActivityLauncherHelper
+    lateinit var connectivityObserver: NetworkConnectivityObserver
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
     private val serviceConnection = object : ServiceConnection {
@@ -335,11 +336,11 @@ class MainActivity : ComponentActivity() {
         }
 
         activityLauncher = ActivityLauncherHelper(this)
+        connectivityObserver = NetworkConnectivityObserver(this)
 
         setContent {
             val haptic = LocalHapticFeedback.current
 
-            val connectivityObserver = NetworkConnectivityObserver(this)
             val isNetworkConnected by connectivityObserver.networkStatus.collectAsState(false)
 
             val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
