@@ -237,8 +237,6 @@
     <string name="about">Acerca</string>
     <string name="app_version">Versão</string>
     <string name="new_version_available">Nova versão disponível</string>
-    <string name="translation_models">Modelos de tradução</string>
-    <string name="clear_translation_models">Limpar modelos de tradução</string>
     <string name="songs">Músicas</string>
     <string name="artists">Artistas</string>
     <string name="new_release_albums">Novos álbuns</string>

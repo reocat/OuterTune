@@ -282,7 +282,5 @@
     <string name="app_version">Verzija aplikacije</string>
     <string name="logout">Izpiši se</string>
     <string name="about">O OuterTune-u</string>
-    <string name="clear_translation_models">Rasčisti modele prevođenja</string>
     <string name="new_version_available">Dostupna je nova verzija</string>
-    <string name="translation_models">Modeli prevođenja</string>
 </resources>

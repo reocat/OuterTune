@@ -353,8 +353,6 @@
 
     <string name="new_version_available">Доступна новая версия</string>
     <string name="dev_settings_description">Открывает дополнительные настройки, используемые во время разработки</string>
-    <string name="translation_models">Модели перевода</string>
-    <string name="clear_translation_models">Очистить модели перевода</string>
     <string name="off">ВЫКЛ</string>
     <string name="on">ВКЛ</string>
     <string name="show_liked_and_downloaded_playlist">Показывать любимые треки и загруженную музыку в библиотеке</string>
@@ -370,7 +368,7 @@
     <string name="dev_settings_title">Включить настройки для разработчиков</string>
     <string name="import_innertune_tooltip">Восстановление резервных копий OuterTune поддерживается, однако возможны проблемы в связи с техническими ограничениями</string>
     <string name="import_m3u">Импортировать плейлист (m3u)</string>
-    <string name="m3u_import_failed">Не удалось импортировать плейлист</string>
+    <string name="m3u_import_playlist_failed">Не удалось импортировать плейлист</string>
     <string name="auto_scanner_title">Сканировать автоматически</string>
     <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
     <string name="folders">Папки</string>

@@ -252,10 +252,8 @@
     <string name="auto_skip_next_on_error_desc">Taga jätkuv taasesitus</string>
     <string name="equalizer">Ekvalaiser</string>
     <string name="about">Rakenduse teave</string>
-    <string name="translation_models">Tõlkemudelid</string>
     <string name="app_version">Rakenduse versioon</string>
     <string name="new_version_available">Uus versioon on saadaval</string>
-    <string name="clear_translation_models">Eemalda tõlkemudelid</string>
     <string name="small">Väike</string>
     <string name="grid_cell_size">Ruudustiku elemendi suurus</string>
     <string name="big">Suur</string>
