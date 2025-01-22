@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
@@ -311,14 +312,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private lateinit var localeManager: LocaleManager
+
     override fun attachBaseContext(newBase: Context) {
-        val sharedPreferences = newBase.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-        val savedLanguage = sharedPreferences.getString("app_language", Locale.getDefault().language) ?: "en"
-
-        val localeManager = LocaleManager(newBase)
-        localeManager.updateLocale(savedLanguage)
-
         super.attachBaseContext(newBase)
+        localeManager = LocaleManager(this)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        // Handle system language changes
+        lifecycleScope.launch {
+            localeManager.handleSystemLanguageChange()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)

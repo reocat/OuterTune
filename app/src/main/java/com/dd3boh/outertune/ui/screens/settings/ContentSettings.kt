@@ -74,6 +74,8 @@ import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.utils.parseCookieString
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.net.Proxy
@@ -391,6 +393,31 @@ class LocaleManager(private val context: Context) {
             "si", "th", "lo", "my", "ka", "am", "km",
             "zh-CN", "zh-TW", "zh-HK", "ja", "ko"
         )
+    }
+
+    // Add this function to check the stored language preference
+    private suspend fun getStoredLanguage(): String? {
+        return try {
+            context.dataStore.data
+                .map { preferences ->
+                    preferences[AppLanguageKey]
+                }
+                .first()
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to read stored language preference")
+            null
+        }
+    }
+
+    // Modified to handle system language changes
+    suspend fun handleSystemLanguageChange() {
+        val storedLanguage = getStoredLanguage()
+
+        // Only update if the stored language is not "system"
+        if (storedLanguage != null && storedLanguage != "system") {
+            // Re-apply the stored language preference
+            updateLocale(storedLanguage)
+        }
     }
 
     fun updateLocale(languageCode: String): Boolean {
