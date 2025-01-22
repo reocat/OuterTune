@@ -315,17 +315,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var localeManager: LocaleManager
 
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
-        localeManager = LocaleManager(this)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        // Handle system language changes
-        lifecycleScope.launch {
-            localeManager.handleSystemLanguageChange()
-        }
+        localeManager = LocaleManager(newBase)
+        super.attachBaseContext(localeManager.applyStoredLocale(newBase))
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -1301,6 +1292,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Reapply the stored locale when the configuration changes
+        localeManager.applyStoredLocale(this)
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {

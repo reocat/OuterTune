@@ -48,6 +48,7 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.OuterTune"
+            android:configChanges="orientation|screenSize|keyboardHidden|locale"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -60,7 +61,7 @@
             </intent-filter>
 
             <!-- Youtube filter -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />

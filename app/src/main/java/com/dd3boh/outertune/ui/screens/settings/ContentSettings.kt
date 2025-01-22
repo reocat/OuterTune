@@ -224,20 +224,7 @@ fun ContentSettings(
                     ?: stringResource(R.string.system_default)
             },
             onValueSelected = { newLanguage ->
-                if (newLanguage == "system") {
-                    // Use system default language
-                    val systemLocale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        LocaleList.getDefault()[0]
-                    } else {
-                        @Suppress("DEPRECATION")
-                        Locale.getDefault()
-                    }
-
-                    if (localeManager.updateLocale(systemLocale.language)) {
-                        setSelectedLanguage("system")
-                        restartApp(context)
-                    }
-                } else if (localeManager.updateLocale(newLanguage)) {
+                if (localeManager.updateLocale(newLanguage)) {
                     setSelectedLanguage(newLanguage)
                     restartApp(context)
                 } else {
@@ -395,28 +382,24 @@ class LocaleManager(private val context: Context) {
         )
     }
 
-    // Add this function to check the stored language preference
+    fun applyStoredLocale(context: Context): Context {
+        val storedLanguage = runBlocking { getStoredLanguage() }
+        return if (storedLanguage != null) {
+            updateLocale(storedLanguage)
+            context.createConfigurationContext(context.resources.configuration)
+        } else {
+            context
+        }
+    }
+
     private suspend fun getStoredLanguage(): String? {
         return try {
             context.dataStore.data
-                .map { preferences ->
-                    preferences[AppLanguageKey]
-                }
+                .map { preferences -> preferences[AppLanguageKey] }
                 .first()
         } catch (e: Exception) {
             Timber.e(e, "Failed to read stored language preference")
             null
-        }
-    }
-
-    // Modified to handle system language changes
-    suspend fun handleSystemLanguageChange() {
-        val storedLanguage = getStoredLanguage()
-
-        // Only update if the stored language is not "system"
-        if (storedLanguage != null && storedLanguage != "system") {
-            // Re-apply the stored language preference
-            updateLocale(storedLanguage)
         }
     }
 
@@ -439,15 +422,13 @@ class LocaleManager(private val context: Context) {
             @Suppress("DEPRECATION")
             context.resources.updateConfiguration(config, context.resources.displayMetrics)
 
-            val newContext = context.createConfigurationContext(config)
-            updateAppContext(newContext)
-
             return true
         } catch (e: Exception) {
             Timber.tag("LocaleManager").e(e, "Failed to update locale")
             return false
         }
     }
+
 
     private fun createLocaleFromCode(languageCode: String): Locale {
         return when {
