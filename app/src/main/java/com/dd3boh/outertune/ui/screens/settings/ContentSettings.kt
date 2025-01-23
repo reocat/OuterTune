@@ -1,9 +1,7 @@
 package com.dd3boh.outertune.ui.screens.settings
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import android.widget.Toast
@@ -109,14 +107,8 @@ fun ContentSettings(
     val (proxyType, onProxyTypeChange) = rememberEnumPreference(key = ProxyTypeKey, defaultValue = Proxy.Type.HTTP)
     val (proxyUrl, onProxyUrlChange) = rememberPreference(key = ProxyUrlKey, defaultValue = "host:port")
 
-    // temp vars
-    var showToken: Boolean by remember {
-        mutableStateOf(false)
-    }
-
-    var showTokenEditor by remember {
-        mutableStateOf(false)
-    }
+    var showToken: Boolean by remember { mutableStateOf(false) }
+    var showTokenEditor by remember { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -125,9 +117,8 @@ fun ContentSettings(
     ) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
-        PreferenceGroupTitle(
-            title = stringResource(R.string.account)
-        )
+        PreferenceGroupTitle(title = stringResource(R.string.account))
+
         PreferenceEntry(
             title = { Text(if (isLoggedIn) accountName else stringResource(R.string.login)) },
             description = if (isLoggedIn) {
@@ -137,6 +128,7 @@ fun ContentSettings(
             icon = { Icon(Icons.Rounded.Person, null) },
             onClick = { navController.navigate("login") }
         )
+
         if (isLoggedIn) {
             PreferenceEntry(
                 title = { Text(stringResource(R.string.logout)) },
@@ -162,7 +154,7 @@ fun ContentSettings(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Light,
                         overflow = TextOverflow.Ellipsis,
-                        maxLines = 1 // just give a preview so user knows it's at least there
+                        maxLines = 1
                     )
                 } else {
                     Text(stringResource(R.string.token_hidden))
@@ -197,6 +189,7 @@ fun ContentSettings(
             onCheckedChange = onYtmSyncChange,
             isEnabled = isLoggedIn
         )
+
         ListPreference(
             title = { Text(stringResource(R.string.like_autodownload)) },
             icon = { Icon(Icons.Rounded.Favorite, null) },
@@ -210,10 +203,8 @@ fun ContentSettings(
             onValueSelected = onLikedAutoDownload
         )
 
-        PreferenceGroupTitle(
-            title = stringResource(R.string.localization)
-        )
-        // Language settings
+        PreferenceGroupTitle(title = stringResource(R.string.localization))
+
         ListPreference(
             title = { Text(stringResource(R.string.app_language)) },
             icon = { Icon(Icons.Rounded.Public, null) },
@@ -236,6 +227,7 @@ fun ContentSettings(
                 }
             }
         )
+
         ListPreference(
             title = { Text(stringResource(R.string.content_language)) },
             icon = { Icon(Icons.Rounded.Language, null) },
@@ -248,6 +240,7 @@ fun ContentSettings(
             },
             onValueSelected = onContentLanguageChange
         )
+
         ListPreference(
             title = { Text(stringResource(R.string.content_country)) },
             icon = { Icon(Icons.Rounded.LocationOn, null) },
@@ -261,9 +254,7 @@ fun ContentSettings(
             onValueSelected = onContentCountryChange
         )
 
-        PreferenceGroupTitle(
-            title = stringResource(R.string.proxy)
-        )
+        PreferenceGroupTitle(title = stringResource(R.string.proxy))
 
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_proxy)) },
@@ -294,10 +285,7 @@ fun ContentSettings(
                 onClick = navController::navigateUp,
                 onLongClick = navController::backToMain
             ) {
-                Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = null
-                )
+                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
             }
         },
         scrollBehavior = scrollBehavior
@@ -309,14 +297,53 @@ data class LanguageInfo(
     val displayName: String,
     val isAvailable: Boolean = true
 )
+
 fun getAvailableLanguages(context: Context): List<LanguageInfo> {
+    // Get the list of available locale strings from resources
     val availableLocales = context.resources.assets.locales
 
+    // Create the system default language option
     val systemDefault = LanguageInfo(
         code = "system",
         displayName = context.getString(R.string.system_default),
         isAvailable = true
     )
+
+    // Helper function to normalize locale codes between different formats
+    fun normalizeLocaleCode(code: String): String {
+        return when {
+            // Handle Android resource qualifier format (e.g., "fr-rFR" -> "fr-FR")
+            code.contains("-r") -> code.replace("-r", "-")
+
+            // Handle special cases for language-region codes
+            code == "es-419" -> "es-US"  // Map Latin American Spanish to US Spanish resources
+            code == "en-GB" -> "en"      // Map British English to default English resources
+            code == "fr-CA" -> "fr"      // Map Canadian French to default French resources
+
+            // Return unchanged for all other cases
+            else -> code
+        }
+    }
+
+    // Helper function to check if a language code matches available resources
+    fun isLanguageAvailable(languageCode: String): Boolean {
+        val normalizedCode = normalizeLocaleCode(languageCode)
+
+        return availableLocales.any { resourceLocale ->
+            val normalizedResource = normalizeLocaleCode(resourceLocale)
+
+            // Check for exact matches first
+            if (normalizedResource == normalizedCode) return@any true
+
+            // Check for language-only matches (e.g., "fr" matches "fr-FR")
+            val (resourceLang) = normalizedResource.split("-", limit = 2)
+            val (codeLang) = normalizedCode.split("-", limit = 2)
+
+            // Match if the base languages are the same and we have the resource
+            resourceLang == codeLang &&
+                    context.resources.getIdentifier("strings", "values-$resourceLocale", context.packageName) != 0
+        }
+    }
 
     fun getLocaleComponents(localeString: String): Pair<String, String> {
         val locale = if (localeString.contains("-")) {
@@ -325,46 +352,22 @@ fun getAvailableLanguages(context: Context): List<LanguageInfo> {
         } else {
             Locale(localeString)
         }
-
-        val language = locale.language
-
-        val country = locale.country
-
-
-        return Pair(language, country)
+        return Pair(locale.language, locale.country)
     }
 
+    // Filter the imported LanguageCodeToName map based on available translations
     val languageList = LanguageCodeToName.map { (code, name) ->
         LanguageInfo(
             code = code,
             displayName = name,
-            isAvailable = availableLocales.any { localeString ->
-                val (localeLanguage, localeCountry) = getLocaleComponents(localeString)
-
-                when {
-                    // Handle Chinese variants
-                    code == "zh-CN" -> localeLanguage == "zh" && localeCountry == "CN"
-                    code == "zh-TW" -> localeLanguage == "zh" && localeCountry == "TW"
-                    code == "zh-HK" -> localeLanguage == "zh" && localeCountry == "HK"
-
-                    // Handle other languages with country codes
-                    code.contains("-") -> {
-                        val (lang, country) = code.split("-")
-                        localeLanguage == lang && localeCountry == country
-                    }
-
-                    // Handle simple language codes
-                    else -> localeLanguage == code
-                }
-            }
+            isAvailable = isLanguageAvailable(code)
         )
     }
 
-    // Return system default plus available languages
+    // Return system default plus all available languages
     return listOf(systemDefault) + languageList.filter { it.isAvailable }
 }
 
-// Helper function to restart the app
 private fun restartApp(context: Context) {
     val intent = context.packageManager
         .getLaunchIntentForPackage(context.packageName)
@@ -372,7 +375,6 @@ private fun restartApp(context: Context) {
     context.startActivity(intent)
 }
 
-// LocaleManager
 class LocaleManager(private val context: Context) {
     companion object {
         private val COMPLEX_SCRIPT_LANGUAGES = setOf(
@@ -417,7 +419,9 @@ class LocaleManager(private val context: Context) {
 
             val config = context.resources.configuration
             Locale.setDefault(locale)
-            setLocaleApi24(config, locale)
+            val localeList = LocaleList(locale)
+            LocaleList.setDefault(localeList)
+            config.setLocales(localeList)
 
             @Suppress("DEPRECATION")
             context.resources.updateConfiguration(config, context.resources.displayMetrics)
@@ -429,13 +433,11 @@ class LocaleManager(private val context: Context) {
         }
     }
 
-
     private fun createLocaleFromCode(languageCode: String): Locale {
         return when {
             languageCode == "zh-CN" -> Locale.SIMPLIFIED_CHINESE
             languageCode == "zh-TW" -> Locale.TRADITIONAL_CHINESE
             languageCode == "zh-HK" -> Locale("zh", "HK")
-
             languageCode in COMPLEX_SCRIPT_LANGUAGES -> {
                 if (languageCode.contains("-")) {
                     val (language, country) = languageCode.split("-")
@@ -451,12 +453,10 @@ class LocaleManager(private val context: Context) {
                         .build()
                 }
             }
-
             languageCode.contains("-") -> {
                 val (language, country) = languageCode.split("-")
                 Locale(language, country)
             }
-
             else -> Locale(languageCode)
         }
     }
@@ -479,72 +479,4 @@ class LocaleManager(private val context: Context) {
             else -> ""
         }
     }
-
-    private fun setLocaleApi24(config: Configuration, locale: Locale) {
-        val localeList = LocaleList(locale)
-        LocaleList.setDefault(localeList)
-        config.setLocales(localeList)
-    }
-
-    @Suppress("DEPRECATION")
-    private fun setLocaleLegacy(config: Configuration, locale: Locale) {
-        config.locale = locale
-    }
-
-    @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
-    private fun updateAppContext(newContext: Context) {
-        try {
-            val activityThread = Class.forName("android.app.ActivityThread")
-            val thread = activityThread.getMethod("currentActivityThread").invoke(null)
-            val application = activityThread.getMethod("getApplication").invoke(thread)
-            val appContext = application.javaClass.getMethod("getBaseContext").invoke(application)
-
-            val contextImpl = Class.forName("android.app.ContextImpl")
-            val implResources = contextImpl.getDeclaredField("mResources")
-            implResources.isAccessible = true
-            implResources.set(appContext, newContext.resources)
-        } catch (e: Exception) {
-            Timber.tag("LocaleManager").e(e, "Failed to update app context")
-        }
-    }
 }
-
-// Language mappings
-val LanguageCodeToName = mapOf(
-    "ar" to "العربية",
-    "en" to "English",
-    "fr" to "Français",
-    "es" to "Español (España)",
-    "it" to "Italiano",
-    "de" to "Deutsch",
-    "nl" to "Nederlands",
-    "pt-PT" to "Português",
-    "pt" to "Português (Brasil)",
-    "ru" to "Русский",
-    "tr" to "Türkçe",
-    "id" to "Bahasa Indonesia",
-    "ur" to "اردو",
-    "fa" to "فارسی",
-    "ne" to "नेपाली",
-    "mr" to "मराठी",
-    "hi" to "हिन्दी",
-    "bn" to "বাংলা",
-    "pa" to "ਪੰਜਾਬੀ",
-    "gu" to "ગુજરાતી",
-    "ta" to "தமிழ்",
-    "te" to "తెలుగు",
-    "kn" to "ಕನ್ನಡ",
-    "ml" to "മലയാളം",
-    "si" to "සිංහල",
-    "th" to "ภาษาไทย",
-    "lo" to "ລາວ",
-    "my" to "ဗမာ",
-    "ka" to "ქართული",
-    "am" to "አማርኛ",
-    "km" to "ខ្មែរ",
-    "zh-CN" to "中文 (简体)",
-    "zh-TW" to "中文 (繁體)",
-    "zh-HK" to "中文 (香港)",
-    "ja" to "日本語",
-    "ko" to "한국어",
-)
