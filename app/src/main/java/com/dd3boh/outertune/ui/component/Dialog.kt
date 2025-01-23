@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.component
 
+import android.content.ClipData
 import android.text.format.Formatter
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -48,15 +49,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,6 +70,7 @@ import com.dd3boh.outertune.constants.DialogCornerRadius
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.MediaMetadata
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
@@ -376,7 +379,7 @@ fun CounterDialog(
                     IconButton(
                         onClick = {
                             if (tempValue.intValue < upperBound) {
-                                tempValue.value += 1
+                                tempValue.intValue += 1
                             }
                         },
                         onLongClick = {}
@@ -392,7 +395,7 @@ fun CounterDialog(
                     IconButton(
                         onClick = {
                             if (tempValue.intValue > lowerBound) {
-                                tempValue.value -= 1
+                                tempValue.intValue -= 1
                             }
                         },
                         onLongClick = {}
@@ -461,10 +464,11 @@ fun DetailsDialog(
     currentFormat: FormatEntity?,
     currentPlayCount: Int?,
     volume: Float,
-    clipboardManager: ClipboardManager,
+    clipboard: Clipboard,
     setVisibility: (newState: Boolean) -> Unit,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -544,8 +548,11 @@ fun DetailsDialog(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = {
-                                clipboardManager.setText(AnnotatedString(displayText))
-                                Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                                coroutineScope.launch {
+                                    val clipData = ClipData.newPlainText("label", displayText)
+                                    clipboard.setClipEntry(ClipEntry(clipData))
+                                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                                }
                             }
                         )
                     )
