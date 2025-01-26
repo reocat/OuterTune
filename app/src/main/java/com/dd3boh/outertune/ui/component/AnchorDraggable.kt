@@ -41,8 +41,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -136,6 +138,7 @@ fun SwipeToQueueBox(
     enabled: Boolean = true
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -178,6 +181,7 @@ fun SwipeToQueueBox(
                             duration = SnackbarDuration.Short
                         )
                     }
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 } else if (dragValue == DragAnchors.Center && addedToQueue) {
                     addedToQueue = false
                 }
