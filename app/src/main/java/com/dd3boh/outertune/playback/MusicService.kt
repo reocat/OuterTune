@@ -47,6 +47,7 @@ import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.CommandButton
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -202,14 +203,15 @@ class MusicService : MediaLibraryService(),
 
     override fun onCreate() {
         super.onCreate()
-        val notificationBuilder = NotificationCompat.Builder(this, KEEP_ALIVE_CHANNEL_ID)
-            .setContentTitle(getString(R.string.music_player))
-            .setSmallIcon(R.drawable.small_icon)
-            .setOngoing(true) // Ensures notification stays until service stops
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider(this, { NOTIFICATION_ID },
+                CHANNEL_ID, R.string.music_player)
+                .apply {
+                    setSmallIcon(R.drawable.small_icon)
+                }
+        )
 
-        val notification = notificationBuilder.build()
-
-        // FG notification
+        // FG keep alive
         if (dataStore.get(KeepAliveKey, false)) {
             try {
                 startService(Intent(this, KeepAlive::class.java))
@@ -1013,7 +1015,7 @@ class MusicService : MediaLibraryService(),
         const val PLAYLIST = "playlist"
 
         const val CHANNEL_ID = "music_channel_01"
-        const val KEEP_ALIVE_CHANNEL_ID = "outertune_keep_alive"
+        const val NOTIFICATION_ID = 888
         const val ERROR_CODE_NO_STREAM = 1000001
         const val CHUNK_LENGTH = 512 * 1024L
     }
