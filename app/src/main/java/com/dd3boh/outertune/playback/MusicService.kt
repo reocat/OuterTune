@@ -632,20 +632,6 @@ class MusicService : MediaLibraryService(),
         }
     }
 
-    fun startRadioSeamlessly() {
-        val currentMediaMetadata = player.currentMetadata ?: return
-        if (player.currentMediaItemIndex > 0) player.removeMediaItems(0, player.currentMediaItemIndex)
-        if (player.currentMediaItemIndex < player.mediaItemCount - 1) player.removeMediaItems(player.currentMediaItemIndex + 1, player.mediaItemCount)
-        scope.launch(SilentHandler) {
-            val radioQueue = YouTubeQueue(endpoint = WatchEndpoint(videoId = currentMediaMetadata.id))
-            val initialStatus = radioQueue.getInitialStatus()
-            if (initialStatus.title != null) {
-                queueTitle = initialStatus.title
-            }
-            player.addMediaItems(initialStatus.items.drop(1).map { it.toMediaItem() })
-        }
-    }
-
     /**
      * Add items to queue, right after current playing item
      */
@@ -701,7 +687,8 @@ class MusicService : MediaLibraryService(),
     }
 
     fun toggleStartRadio() {
-        startRadioSeamlessly()
+        val mediaMetadata = player.currentMetadata ?: return
+        playQueue(YouTubeQueue.radio(mediaMetadata))
     }
 
     private fun openAudioEffectSession() {
