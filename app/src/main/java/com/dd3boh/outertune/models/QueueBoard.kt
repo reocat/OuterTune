@@ -698,7 +698,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             )
 
         if (item == null) {
-            player.player.setMediaItems(ArrayList())
+            setMediaItems(ArrayList(), player)
             return null
         }
 
@@ -706,19 +706,60 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         masterIndex = masterQueues.indexOf(item)
 
         // if requested to get shuffled queue
+        val mediaItems: MutableList<MediaMetadata>?
         if (item.shuffled) {
-            player.player.setMediaItems(item.queue.map { it.toMediaItem() })
+            mediaItems = item.queue
         } else {
-            player.player.setMediaItems(item.unShuffled.map { it.toMediaItem() })
+            mediaItems = item.unShuffled
         }
+        setMediaItems(mediaItems, player)
         isShuffleEnabled.value = item.shuffled
 
-        if (autoSeek) {
+        if (autoSeek && !allowSeamlessPlayback(player, mediaItems)) {
             player.player.seekTo(queuePos, C.TIME_UNSET)
         }
 
         bubbleUp(item, player)
         return queuePos
+    }
+
+    /**
+     * Test if playback can be switched seamlessly
+     * return true if player is playing the first song of the new media items
+     */
+    private fun allowSeamlessPlayback(
+        player: MusicService,
+        mediaItems: List<MediaMetadata>
+    ): Boolean {
+        if (!player.player.isPlaying) {
+            return false
+        }
+        val currentSongId = player.currentMediaMetadata.value?.id ?: return false
+        return mediaItems.firstOrNull()?.id.equals(currentSongId)
+    }
+
+    /**
+     * Sets the media items. If the first media item matches the currently playing song it will
+     * switches to the new list of items without interrupting playback otherwise it replaces the
+     * media items
+     */
+    private fun setMediaItems(mediaItems: List<MediaMetadata>, player: MusicService) {
+        if (allowSeamlessPlayback(player, mediaItems)) {
+            // player.player.replaceMediaItems seems to stop playback so we
+            // remove all songs except the currently playing one and then add the list of new items
+            if (player.player.currentMediaItemIndex > 0) player.player.removeMediaItems(
+                0,
+                player.player.currentMediaItemIndex
+            )
+            if (player.player.currentMediaItemIndex < player.player.mediaItemCount - 1) player.player.removeMediaItems(
+                player.player.currentMediaItemIndex + 1,
+                player.player.mediaItemCount
+            )
+            // add all songs except the first one since it is already present and playing
+            player.player.addMediaItems(mediaItems.drop(1).map { it.toMediaItem() })
+        } else {
+            player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
+        }
     }
 
     /**
