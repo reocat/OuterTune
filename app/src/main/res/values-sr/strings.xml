@@ -227,6 +227,8 @@
     <string name="about">O OuterTune-u</string>
     <string name="app_version">Verzija aplikacije</string>
     <string name="new_version_available">Dostupna je nova verzija</string>
+    <string name="translation_models">Modeli prevođenja</string>
+    <string name="clear_translation_models">Obriši modele prevođenja</string>
     <string name="library_artist_empty">Umetnici biblioteke će se pojaviti ovde</string>
     <string name="library_album_empty">Albumi biblioteke će se pojaviti ovde</string>
     <string name="search_library">Pretraži biblioteku…</string>
@@ -283,4 +285,6 @@
     <string name="login_failed">Neuspešno ulogovanje</string>
     <string name="preview">Pregled</string>
     <string name="logout">Izloguj se</string>
+    <string name="use_login_for_browse">Koristite prijavu za pregledanje sadržaja</string>
+    <string name="use_login_for_browse_desc">Ovo može uticati na sadržaj koji vidite i, na primer, prikazivati albume koji su dostupni samo za Premium korisnike ako ste prijavljeni sa Premium nalogom</string>
 </resources>
