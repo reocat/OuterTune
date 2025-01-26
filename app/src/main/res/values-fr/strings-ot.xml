@@ -6,7 +6,7 @@
     <string name="select">Mode de sélection</string>
     <string name="library">Bibliothèque</string>
     <string name="song_added_to_queue">\"%s\" inséré dans la file d\'attente</string>
-    <string name="queue_searched_songs_ot">Recherche :</string>
+    <string name="queue_searched_songs_ot">Recherche :</string>
     <string name="sort_by_date_released">Date de sortie</string>
     <string name="local_history">Locale</string>
     <string name="remote_history">Distant</string>
@@ -52,7 +52,7 @@
     <string name="scanner_type_title">Extracteur de métadonnées</string>
     <string name="scanner_variant_rescan">Réanalyser l\'intégralité de la bibliothèque et recharger les métadonnées de tous les titres</string>
     <string name="scanner_online_artist_linking">Essayer de lier les artistes des fichiers locaux avec ceux de YouTube Music</string>
-    <string name="import_failed_songs">Impossible d\'importer :</string>
+    <string name="import_failed_songs">Impossible d\'importer :</string>
     <string name="experimental_settings_title">Expérimental</string>
     <string name="dev_settings_title">Activer les paramètres du développeur</string>
     <string name="oobe_welcome_message">Bienvenue sur OuterTune</string>
@@ -62,7 +62,7 @@
     <string name="info">Information</string>
     <string name="folders">Dossiers</string>
     <string name="create_sync_playlist">Synchroniser la playlist</string>
-    <string name="create_sync_playlist_description">Remarque : cela permet la synchronisation avec YouTube Music. Ce paramètre ne peut pas être modifié ultérieurement. Vous ne pouvez pas ajouter de titres locaux aux playlists synchronisées.</string>
+    <string name="create_sync_playlist_description">Remarque : cela permet la synchronisation avec YouTube Music. Ce paramètre ne peut pas être modifié ultérieurement. Vous ne pouvez pas ajouter de titres locaux aux playlists synchronisées.</string>
     <string name="audio_offload">Activer le déchargement</string>
     <string name="local_library_enable_title">Activer les médias locaux</string>
     <string name="token_adv_login_description">Il s\'agit d\'une méthode de connexion avancée. En guise d\'alternative au portail Web, vous pouvez saisir ou mettre à jour directement votre jeton de connexion ici. Par exemple, cela peut accélérer la connexion sur plusieurs appareils. Veuillez noter que tout format de jeton non valide que l\'application ne parvient pas à analyser ne sera pas accepté</string>
@@ -122,7 +122,7 @@
         <item quantity="other">%d titres traités</item>
     </plurals>
     <string name="swipe2Queue">Glisser pour mettre en file d’attente</string>
-    <string name="playlist_add_local_to_synced_note">Remarque : l\'ajout de titres locaux aux playlists synchronisées / distants n\'est pas pris en charge. Toute autre combinaison est valide</string>
+    <string name="playlist_add_local_to_synced_note">Remarque : l\'ajout de titres locaux aux playlists synchronisées / distants n\'est pas pris en charge. Toute autre combinaison est valide</string>
     <string name="grp_lyrics_format">Formatage</string>
     <string name="tab_arrangement_disable_tip">--- Faites glisser ci-dessous pour désactiver ---</string>
     <string name="scanner_progress_syncing">Synchronisation…</string>
@@ -157,7 +157,7 @@
     <string name="sync_conflict_add_only">Conservez tout le contenu local, ajoutez du nouveau contenu distant</string>
     <string name="sync_mode_rw">Lecture / Écriture (permet également de modifier le contenu distant)</string>
     <string name="grp_sync">Synchroniser</string>
-    <string name="playlist_missing_note">Playlists manquantes ? Cliquez ici pour activer la synchronisation en lecture/écriture dans les paramètres.</string>
+    <string name="playlist_missing_note">Playlists manquantes ? Cliquez ici pour activer la synchronisation en lecture/écriture dans les paramètres.</string>
     <string name="checking_for_update">Vérification des mises à jour</string>
     <string name="no_updates_available">Aucune mise à jour disponible</string>
     <string name="check_for_update">Vérifier les mises à jour</string>
