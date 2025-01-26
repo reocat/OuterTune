@@ -255,6 +255,8 @@
     <string name="about">O aplikacji</string>
     <string name="app_version">Wersja aplikacji</string>
     <string name="new_version_available">Dostępna nowa wersja</string>
+    <string name="translation_models">Modele Tłumaczenia</string>
+    <string name="clear_translation_models">Wyczyść modele tłumaczenia</string>
     <string name="auto_skip_next_on_error_desc">Zapewnij ciągłość odtwarzania</string>
     <string name="add_all_to_library">Dodaj wszystko do biblioteki</string>
     <string name="big">Duży</string>
@@ -313,4 +315,6 @@
     <string name="options">Opcje</string>
     <string name="preview">Podgląd</string>
     <string name="logout">Wyloguj</string>
+    <string name="use_login_for_browse">Zaloguj się, aby przeglądać treści</string>
+    <string name="use_login_for_browse_desc">Może to mieć wpływ na to, jaką zawartość widzisz, na przykład wyświetlanie albumów dostępnych tylko w wersji premium, jeśli jesteś zalogowany na koncie Premium</string>
 </resources>
