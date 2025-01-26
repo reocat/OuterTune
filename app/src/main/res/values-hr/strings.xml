@@ -208,6 +208,7 @@
     <string name="enable_discord_rpc">Omogući Bogatu Prisutnost</string>
     <string name="about">O OuterTune-u</string>
     <string name="app_version">Verzija aplikacije</string>
+    <string name="clear_translation_models">Rasčisti modele prevođenja</string>
     <string name="home">Početna</string>
     <string name="artists">Umjetnici</string>
     <string name="songs">Pjesme</string>
@@ -283,4 +284,7 @@
     <string name="preview">Pregled</string>
     <string name="login_failed">Neuspješno upisivanje</string>
     <string name="new_version_available">Dostupna je nova verzija</string>
+    <string name="translation_models">Modeli prevođenja</string>
+    <string name="use_login_for_browse">Koristi prijavu za pregledavanje sadržaja</string>
+    <string name="use_login_for_browse_desc">Ovo može utjecati na sadržaj koji vidiš i, na primjer, prikazuje samo premium albume ako si prijavljen/a s Premium računom</string>
 </resources>
