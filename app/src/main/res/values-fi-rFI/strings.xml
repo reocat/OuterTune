@@ -251,8 +251,6 @@
     <string name="app_version">Sovelluksen versio</string>
 
     <string name="new_version_available">New version available</string>
-    <string name="translation_models">Translation Models</string>
-    <string name="clear_translation_models">Clear translation models</string>
     <string name="add_all_to_library">Lisää kaikki kirjastoon</string>
     <string name="remove_all_from_library">Poista kaikki kirjastosta</string>
     <string name="remove_from_queue">Poista jonosta</string>

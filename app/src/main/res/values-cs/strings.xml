@@ -255,8 +255,6 @@
     <string name="about">O aplikaci</string>
     <string name="app_version">Verze aplikace</string>
     <string name="new_version_available">Je dostupná nová verze</string>
-    <string name="translation_models">Modely překladů</string>
-    <string name="clear_translation_models">Vymazat modely překladů</string>
     <string name="remove_from_playlist">Odstranit z playlistu</string>
     <string name="discord_integration">Integrace Discordu</string>
     <string name="squiggly">Klikatá</string>
