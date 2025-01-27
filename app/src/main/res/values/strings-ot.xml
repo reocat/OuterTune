@@ -54,6 +54,8 @@
     <string name="grp_interface">Interface</string>
     <string name="grp_layout">Layout</string>
 	<string name="grp_localization">Localization</string>
+    <string name="grp_lyrics_format">Formatting</string>
+    <string name="grp_lyrics_parser">Parser</string>
     <string name="grp_lyrics_source">Lyric sources</string>
     <string name="grp_manual_scanner">Manual scanner</string>
     <string name="grp_proxy">Proxy</string>
@@ -97,8 +99,6 @@
     <string name="swipe2Queue_description">Swipe on a song to add it to "enqueue next" directly after currently playing song</string>
 
 <!--Lyrics settings -->
-    <string name="grp_lyrics_parser">Parser</string>
-    <string name="grp_lyrics_format">Formatting</string>
     <string name="lyrics_settings_title">Lyrics</string>
     <string name="lyrics_multiline_title">Read multiline lyrics</string>
     <string name="lyrics_multiline_description">Treat all the lines between sync points as one lyric text</string>
