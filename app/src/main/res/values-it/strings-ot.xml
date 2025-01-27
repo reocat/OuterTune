@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_added_to_queue">\"%s\" inserita nella coda</string>
+    <string name="like_all">Mi piace a tutto</string>
+    <string name="library">Libreria</string>
+    <string name="delete_lyric_confirm">Vuoi davvero eliminare il testo memorizzato per \"%s\"?</string>
+    <string name="recent_activity">Attività recente</string>
+    <string name="local_history">Locale</string>
+    <string name="remote_history">Remota</string>
+    <string name="create_queue">Nuova coda</string>
+    <string name="queue_searched_songs_ot">Cerca:</string>
+    <string name="song_added_to_queue_end">\"%s\" aggiunta alla fine della coda</string>
+    <string name="auto_playlist">Playliat automatica</string>
+    <string name="select">Modalità selezione</string>
+    <string name="sort_by_date_modified">Data modificata</string>
+    <string name="folders">Cartelle</string>
+    <string name="player_background_gradient">Gradiente</string>
+    <string name="player_background_style">Stile sfondo del player</string>
+    <string name="player_background_blur">Blur</string>
+    <string name="prefs_advanced">Avanzate</string>
+    <string name="create_sync_playlist_description">Nota: questo consente la sincronizzazione con YouTube Music. Questo NON è modificabile in seguito. Non puoi aggiungere brani locali alle playlist sincronizzate.</string>
+    <string name="sort_by_date_released">Data di uscita</string>
+    <string name="sort_by_play_count">Ascolti</string>
+    <string name="play_count">Ascolti</string>
+    <string name="create_sync_playlist">Playlist sincronizzata</string>
+    <string name="settings_debug">Debug</string>
+    <string name="special_thanks">Ringraziamenti speciali</string>
+    <string name="grp_layout">Layout</string>
+    <string name="player_background_default">Segui tema</string>
+    <string name="new_interface">Nuovo layout dell\'interfaccia</string>
+    <string name="attrib_zhuang">Zion Huang per InnerTune</string>
+    <string name="grp_interface">Interfaccia</string>
+</resources>

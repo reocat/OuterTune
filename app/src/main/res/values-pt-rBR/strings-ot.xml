@@ -70,7 +70,7 @@
     <string name="scanner_local_title">Scanner local</string>
     <string name="auto_scanner_title">Escanear automaticamente</string>
     <string name="scan_paths_title">Configurar localizações de scan…</string>
-    <string name="flat_subfolders_title">Planificar subpastas</string>
+    <string name="flat_subfolders_title">Achatar subpastas</string>
     <string name="scan_paths_incl">Caminhos de scan</string>
     <string name="grp_manual_scanner">Scanner manual</string>
     <string name="grp_extra_scanner_settings">Configurações do scanner adicionais</string>
