@@ -99,7 +99,6 @@
     <string name="max_cache_size">அதிகபட்ச கேச் அளவு</string>
     <string name="disable_screenshot">ச்கிரீன்சாட்டை முடக்கு</string>
     <string name="restore">மீட்டமை</string>
-    <string name="clear_translation_models">மொழிபெயர்ப்பு மாதிரிகளை அழிக்கவும்</string>
     <string name="albums">ஆல்பம்</string>
     <string name="playlists">பிளேலிச்ட்கள்</string>
     <string name="history">வரலாறு</string>
@@ -273,5 +272,4 @@
     <string name="about">பற்றி</string>
     <string name="app_version">பயன்பாட்டு பதிப்பு</string>
     <string name="new_version_available">புதிய பதிப்பு கிடைக்கிறது</string>
-    <string name="translation_models">மொழிபெயர்ப்பு மாதிரிகள்</string>
 </resources>

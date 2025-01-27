@@ -311,8 +311,6 @@
     <string name="app_version">Έκδοση εφαρμογής</string>
 
     <string name="new_version_available">Νέα διαθέσιμη έκδοση</string>
-    <string name="translation_models">Μοντέλα Μετάφρασης</string>
-    <string name="clear_translation_models">Εκκάθαριση μοντέλων μετάφρασης</string>
     <string name="auto_load_more_desc">Αυτόματη προσθήκη περισσότερων τραγουδιών όταν το τέλος της ουράς επιτυγχάνεται, αν είναι δυνατόν</string>
     <string name="listen_history">Ιστορικό ακρόασης</string>
     <string name="disable_screenshot_desc">Όταν αυτή η επιλογή είναι ενεργή, τα στιγμιότυπα και η Πρόσφατη προβολή εφαρμογών θα είναι ανενεργή.</string>
