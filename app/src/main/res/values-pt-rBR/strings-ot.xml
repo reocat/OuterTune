@@ -100,4 +100,33 @@
     <string name="token_adv_login_description">Esse é um método de login AVANÇADO. Como uma alternativa ao portal web, você pode digitar ou atualizar seu token de login aqui. Por exemplo, isso pode fazer com que iniciar sessão em vários dispositivos seja mais rápido. Note que qualquer formato de token inválido qual o app não consegue entender não será aceitado</string>
     <string name="min_playback_duration_description">A duração mínima que uma música deve ser tocada antes que seja considerada \"reproduzida\"</string>
     <string name="scan_paths_add_folder">Adicionar nova pasta</string>
+    <string name="scanner_progress_scanning">Fazendo scan…</string>
+    <string name="tab_arrangement_disable_tip">--- Arraste abaixo disso para desativar ---</string>
+    <string name="sync_progress_success">Sincronização concluída</string>
+    <string name="swipe2Queue_description">Deslize em uma música para adicioná-la à fila diretamente após a música tocando no momento</string>
+    <string name="swipe2Queue">Deslize para enfileirar</string>
+    <string name="scanner_manual_btn">Executar sincronização manual</string>
+    <string name="scanner_missing_storage_perm">O scanner requer permissões de armazenamento</string>
+    <string name="scanner_progress_syncing">Sincronizando…</string>
+    <string name="scanner_scan_fail">Scanner falhou</string>
+    <string name="scanner_ytm_link_fail">Processo de vínculo de artistas do YouTube falhou</string>
+    <string name="playlist_add_local_to_synced_note">Nota: Adicionar músicas à playlists sincronizadas/remotas não é suportado. Qualquer outra combinação é válida</string>
+    <string name="grp_lyrics_parser">Interpretador</string>
+    <string name="scanner_ytm_link_success">Processo de vínculo de artistas do YouTube concluído</string>
+    <plurals name="scanner_n_song_processed">
+        <item quantity="one">%d música processada</item>
+        <item quantity="many">%d milhões de músicas processadas</item>
+        <item quantity="other">%d músicas processadas</item>
+    </plurals>
+    <plurals name="scanner_n_song_found">
+        <item quantity="one">%d música encontrada</item>
+        <item quantity="many">%d milhões de músicas encontradas</item>
+        <item quantity="other">%d músicas encontradas</item>
+    </plurals>
+    <string name="scanner_missing_ffmpeg">Extrator FFmpeg não detectado</string>
+    <string name="sync_progress_active">Sincronizando com conta do YouTube…</string>
+    <string name="grp_lyrics_format">Formatação</string>
+    <string name="grp_lyrics_source">Fontes de letras</string>
+    <string name="tab_arrangement_home_required">A aba Início é necessária.</string>
+    <string name="scanner_ytm_link_start">Iniciando vínculo de artistas do YouTube…</string>
 </resources>
