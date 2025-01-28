@@ -12,7 +12,7 @@
     <string name="remote_history">Distant</string>
     <string name="create_queue">Nouvelle file d\'attente</string>
     <string name="like_all">Tout liker</string>
-    <string name="delete_lyric_confirm">Voulez-vous vraiment supprimer les paroles enregistrées pour \"%s\" ?</string>
+    <string name="delete_lyric_confirm">Voulez-vous vraiment supprimer les paroles enregistrées pour \"%s\" ?</string>
     <string name="sort_by_date_modified">Date de modification</string>
     <string name="sort_by_like_date">Date aimée</string>
     <string name="sort_by_play_count">Nombre de lectures</string>
