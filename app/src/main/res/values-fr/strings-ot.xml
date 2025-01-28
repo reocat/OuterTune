@@ -57,11 +57,7 @@
     <string name="experimental_settings_title">Expérimental</string>
     <string name="dev_settings_title">Activer les paramètres du développeur</string>
     <string name="oobe_welcome_message">Bienvenue sur OuterTune</string>
-    <string name="oobe_local_scan_tooltip">Cliquez ici pour rechercher des titres</string>
     <string name="oobe_complete">Installation terminée</string>
-    <string name="oobe_ad_free_description">Lecture sans publicité</string>
-    <string name="oobe_ytm_sync_description">Synchronisation de compte</string>
-    <string name="oobe_local_playback_description">Lecture de musique locale</string>
     <string name="action_next">Suivant</string>
     <string name="action_skip">Passer</string>
     <string name="info">Information</string>
@@ -102,7 +98,6 @@
     <string name="scan_paths_incl">Chemins d\'analyse</string>
     <string name="scanner_type_taglib">Utiliser l’extracteur de métadonnées intégré TagLib</string>
     <string name="scanner_type_ffmpeg_ext">Utiliser l\'extracteur de métadonnées FFMpeg. Cela nécessite l\'installation d\'un package externe</string>
-    <string name="oobe_ytm_content_description">YouTube Music à portée de main</string>
     <string name="scanner_strict_file_name_title">Noms de fichiers stricts</string>
     <string name="dev_settings_description">Révèle des paramètres avancés supplémentaires destinés à une utilisation en développement</string>
 </resources>

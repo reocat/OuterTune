@@ -217,7 +217,7 @@ fun AppearanceSettings(
         )
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.layout)
+            title = stringResource(R.string.grp_layout)
         )
 
         SwitchPreference(
@@ -235,7 +235,7 @@ fun AppearanceSettings(
         )
 
         SwitchPreference(
-            title = { Text(stringResource(R.string.slim_navbar)) },
+            title = { Text(stringResource(R.string.slim_navbar_title)) },
             icon = { Icon(Icons.Rounded.MoreHoriz, null) },
             checked = slimNav,
             onCheckedChange = onSlimNavChange
@@ -251,7 +251,7 @@ fun AppearanceSettings(
 
         if (showTabArrangement)
             ActionPromptDialog(
-                title = stringResource(R.string.arrange_tabs),
+                title = stringResource(R.string.tab_arrangement),
                 onDismiss = { showTabArrangement = false },
                 onConfirm = {
                     var encoded = encodeTabString(mutableTabs)
@@ -312,7 +312,7 @@ fun AppearanceSettings(
                                         NavigationTab.ALBUM -> stringResource(R.string.albums)
                                         NavigationTab.PLAYLIST -> stringResource(R.string.playlists)
                                         else -> {
-                                            "--- Drag below here to disable ---"
+                                            stringResource(R.string.tab_arrangement_disable_tip)
                                         }
                                     }
                                 )
@@ -326,7 +326,7 @@ fun AppearanceSettings(
                     }
                 }
 
-                InfoLabel(text = "The Home tab is required.")
+                InfoLabel(stringResource(R.string.tab_arrangement_home_required))
             }
 
         if (newInterfaceStyle) {

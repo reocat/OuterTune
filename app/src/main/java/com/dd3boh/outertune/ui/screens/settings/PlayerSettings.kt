@@ -108,7 +108,7 @@ fun PlayerSettings(
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.iface)
+            title = stringResource(R.string.grp_interface)
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.persistent_queue)) },
@@ -130,7 +130,7 @@ fun PlayerSettings(
         )
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.audio)
+            title = stringResource(R.string.grp_audio)
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
