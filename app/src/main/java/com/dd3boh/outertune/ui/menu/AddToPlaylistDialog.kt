@@ -120,7 +120,7 @@ fun AddToPlaylistDialog(
 
             item {
                 Text(
-                    text = "Note: Adding local songs to synced/remote playlists is unsupported. Any other combination is valid.",
+                    text = stringResource(R.string.playlist_add_local_to_synced_note),
                     fontSize = TextUnit(12F, TextUnitType.Sp),
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )

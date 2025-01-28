@@ -207,7 +207,7 @@ fun SetupWizard(
                 }
             ) {
                 Text(
-                    text = "Back",
+                    text = stringResource(R.string.action_back),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
@@ -241,7 +241,7 @@ fun SetupWizard(
                 }
             ) {
                 Text(
-                    text = "Next",
+                    text = stringResource(R.string.action_next),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
@@ -390,23 +390,23 @@ private fun WelcomePage(
 ) {
     val welcomeFeatures = listOf(
         Feature(
-            title = "YouTube Music Integration",
-            description = "Access your favorite tracks seamlessly",
+            title = stringResource(R.string.youtube_music_integration),
+            description = stringResource(R.string.youtube_music_integration_description),
             icon = Icons.Rounded.MusicNote
         ),
         Feature(
-            title = "AD-Free Experience",
-            description = "Enjoy uninterrupted music playback",
+            title = stringResource(R.string.ad_free_experience),
+            description = stringResource(R.string.ad_free_experience_description),
             icon = Icons.Rounded.Block
         ),
         Feature(
-            title = "Local Music Support",
-            description = "Play your downloaded tracks anywhere",
+            title = stringResource(R.string.local_music_support),
+            description = stringResource(R.string.local_music_support_description),
             icon = Icons.Rounded.SdCard
         ),
         Feature(
-            title = "Cross-Platform Sync",
-            description = "Keep your music in harmony across devices",
+            title = stringResource(R.string.cross_platform_sync),
+            description = stringResource(R.string.cross_platform_sync_description),
             icon = Icons.Rounded.Sync
         )
     )
@@ -433,7 +433,7 @@ private fun WelcomePage(
         )
 
         Text(
-            text = "Welcome to OuterTune",
+            text = stringResource(R.string.oobe_welcome_message),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -507,7 +507,7 @@ private fun WelcomePage(
                 onClick = onRestoreBackup
             ) {
                 Text(
-                    text = "I have a backup",
+                    text = stringResource(R.string.oobe_use_backup),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -516,7 +516,7 @@ private fun WelcomePage(
                 onClick = onSkip
             ) {
                 Text(
-                    text = "Skip",
+                    text = stringResource(R.string.action_skip),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -560,7 +560,7 @@ private fun InterfacePage(
     }
 
     Text(
-        text = "Interface",
+        text = stringResource(R.string.grp_interface),
         style = MaterialTheme.typography.headlineLarge,
         fontWeight = FontWeight.Bold,
         modifier = Modifier
@@ -650,8 +650,8 @@ private fun InterfacePage(
             // Update the filters list in a proper way so that the animations of the LazyRow can work.
             LaunchedEffect(filter) {
                 val filterIndex = defaultFilter.indexOf(defaultFilter.find { it.first == filter })
-                val currentPairIndex = if (chips.size > 0) defaultFilter.indexOf(chips[0]) else -1
-                val currentPair = if (chips.size > 0) chips[0] else null
+                val currentPairIndex = if (chips.isNotEmpty()) defaultFilter.indexOf(chips[0]) else -1
+                val currentPair = if (chips.isNotEmpty()) chips[0] else null
 
                 if (filter == LibraryFilter.ALL) {
                     defaultFilter.reversed().fastForEachIndexed { index, it ->
@@ -708,19 +708,19 @@ private fun InterfacePage(
                 }
             }
         }
-            // sort header
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                SortHeaderDummy()
+        // sort header
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            SortHeaderDummy()
 
-                Spacer(Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
 
-                Text(
-                    text = pluralStringResource(R.plurals.n_song, dummySongs.size, dummySongs.size),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
+            Text(
+                text = pluralStringResource(R.plurals.n_song, dummySongs.size, dummySongs.size),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
 
@@ -799,7 +799,7 @@ private fun AccountPage(
         )
 
         Text(
-            text = "Connect Your Account",
+            text = stringResource(R.string.oobe_ytm_logon_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -807,7 +807,7 @@ private fun AccountPage(
         )
 
         Text(
-            text = "Sync with your music services",
+            text = stringResource(R.string.oobe_ytm_logon_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -931,7 +931,7 @@ private fun LocalMediaPage(
         )
 
         Text(
-            text = "Local Media Setup",
+            text = stringResource(R.string.oobe_local_media_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -939,14 +939,13 @@ private fun LocalMediaPage(
         )
 
         Text(
-            text = "Import your music collection",
+            text = stringResource(R.string.oobe_local_media_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Local Library Enable Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -996,7 +995,7 @@ private fun LocalMediaPage(
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp)
                     )
-                    Text("Scan for Local Music")
+                    Text(stringResource(R.string.oobe_scan_for_local_music))
                 }
             }
         }
@@ -1021,14 +1020,14 @@ private fun FinalPage(
             tint = MaterialTheme.colorScheme.primary
         )
         Text(
-            text = "You're All Set!",
+            text = stringResource(R.string.oobe_complete_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
         )
         Text(
-            text = "OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!",
+            text = stringResource(R.string.oobe_complete),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1070,7 +1069,7 @@ private fun SortHeaderDummy(
         modifier = modifier.padding(vertical = 8.dp)
     ) {
         Text(
-            text = "Name",
+            text = stringResource(R.string.sort_by_name),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier
@@ -1083,7 +1082,13 @@ private fun SortHeaderDummy(
                 .padding(horizontal = 4.dp, vertical = 8.dp)
         )
 
-        val dummyOptions = listOf("Artist", "Name", "Date added", "Date modified", "Date released")
+        val dummyOptions = listOf(
+            stringResource(R.string.artists),
+            stringResource(R.string.sort_by_name),
+            stringResource(R.string.sort_by_create_date),
+            stringResource(R.string.sort_by_date_modified),
+            stringResource(R.string.sort_by_date_released)
+        )
         DropdownMenu(
             expanded = menuExpanded,
             onDismissRequest = { menuExpanded = false },
@@ -1101,7 +1106,7 @@ private fun SortHeaderDummy(
                     },
                     trailingIcon = {
                         Icon(
-                            imageVector = if (type == "Name") Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
+                            imageVector = if (type == stringResource(R.string.sort_by_name)) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
                             contentDescription = null
                         )
                     },
