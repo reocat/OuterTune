@@ -1,51 +1,51 @@
 <resources>
 <!--OuterTune strings below-->
 
-<!-- Bottom navigation -->
+    <!-- Bottom navigation -->
     <string name="folders">Folders</string>
     <string name="library">Library</string>
 
-<!-- Home -->
+    <!-- Home -->
     <string name="recent_activity">Recent activity</string>
 
-<!-- History screen-->
+    <!-- History screen-->
     <string name="local_history">Local</string>
     <string name="remote_history">Remote</string>
 
-<!-- Library screens -->
+    <!-- Library screens -->
 
-<!-- Queue -->
+    <!-- Queue -->
     <string name="create_queue">New queue</string>
     <string name="queue_searched_songs_ot">Search: </string>
     <string name="song_added_to_queue">\"%s\" inserted into queue</string>
     <string name="song_added_to_queue_end">\"%s\" added to the end of queue</string>
 
 
-<!-- Playlist -->
+    <!-- Playlist -->
     <string name="auto_playlist">Auto playlist</string>
 
-<!-- Menu -->
+    <!-- Menu -->
     <string name="select">Selection mode</string>
     <string name="like_all">Like all</string>
     <string name="delete_lyric_confirm">Do you really want to delete the stored lyrics for \"%s\"?</string>
 
-<!-- Sort menu -->
+    <!-- Sort menu -->
     <string name="sort_by_date_modified">Date modified</string>
     <string name="sort_by_date_released">Date released</string>
     <string name="sort_by_like_date">Date liked</string>
     <string name="sort_by_play_count">Play count</string>
 
-<!-- Dialog -->
+    <!-- Dialog -->
     <string name="create_sync_playlist">Sync Playlist</string>
     <string name="create_sync_playlist_description">Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.</string>
     <string name="play_count">Play count</string>
     <string name="playlist_add_local_to_synced_note">Note: Adding local songs to synced/remote playlists is unsupported. Any other combination is valid</string>
 
-<!-- Sync-->
+    <!-- Sync-->
     <string name="sync_progress_active">Syncing with YouTube account…</string>
     <string name="sync_progress_success">Sync complete</string>
 
-<!-- Settings -->
+    <!-- Settings -->
     <string name="prefs_advanced">Advanced</string>
     <string name="settings_debug">Debug</string>
 
@@ -60,13 +60,11 @@
     <string name="grp_manual_scanner">Manual scanner</string>
     <string name="grp_proxy">Proxy</string>
 
-
-
-<!-- About settings -->
+    <!-- About settings -->
     <string name="attrib_zhuang">Zion Huang for InnerTune</string>
     <string name="special_thanks">Special thanks</string>
 
-<!-- Appearance settings -->
+    <!-- Appearance settings -->
     <string name="new_interface">New interface layout</string>
     <string name="player_background_blur">Blur</string>
     <string name="player_background_default">Follow theme</string>
@@ -80,10 +78,14 @@
     <string name="tab_arrangement_home_required">The Home tab is required.</string>
 
     <!-- Content settings -->
+    <string name="audio_quality_max">Max (beta)</string>
     <string name="like_autodownload">Automatically download your liked songs</string>
     <string name="token_adv_login_description">This is an ADVANCED login method. As an alternative to the web portal, you may directly enter or update your login token here. For example, this can speed up logging in on multiple devices. Please note that any invalid token formats the app fails to parse will not be accepted</string>
     <string name="token_hidden">Tap to show token</string>
     <string name="token_shown">Tap again to copy or edit</string>
+    <string name="token">Token</string>
+    <string name="edit_token">Edit Token</string>
+    <string name="invalid_token">Invalid token. Please ensure it includes the SAPISID cookie.</string>
     <string name="ytm_sync">Automatically sync with your YouTube Music account</string>
     <string name="wifi_only">Wifi only</string>
 
@@ -97,8 +99,12 @@
     <string name="min_playback_duration_description">The minimum amount of a song that must be played before it is considered \"played\"</string>
     <string name="swipe2Queue">Swipe to queue</string>
     <string name="swipe2Queue_description">Swipe on a song to add it to "enqueue next" directly after currently playing song</string>
+    <string name="on_error">On error</string>
+    <string name="pause">Pause</string>
+    <string name="wait_to_reconnect">Wait to reconnect</string>">
 
-<!--Lyrics settings -->
+
+    <!--Lyrics settings -->
     <string name="lyrics_settings_title">Lyrics</string>
     <string name="lyrics_multiline_title">Read multiline lyrics</string>
     <string name="lyrics_multiline_description">Treat all the lines between sync points as one lyric text</string>
@@ -108,7 +114,7 @@
     <string name="lyrics_font_Size">Font size</string>
 
 
-<!-- Local player settings -->
+    <!-- Local player settings -->
     <string name="local_library_enable_title">Enable local media</string>
     <string name="local_library_enable_description">Disabling will hide local library from the app</string>
     <string name="local_player_settings_title">Local media</string>
@@ -119,7 +125,7 @@
     <string name="import_m3u">Import a playlist (m3u)</string>
     <string name="m3u_import_playlist_failed">Failed to import playlist</string>
 
-<!-- Scanner settings -->
+    <!-- Scanner settings -->
     <string name="auto_scanner_title">Scan automatically</string>
     <string name="auto_scanner_description">Automatically scan for songs when opening the app. This does not reload metadata of existing songs.</string>
 
@@ -132,7 +138,7 @@
     <string name="scanner_manual_btn">Trigger manual sync</string>
     <string name="scanner_warning">By default, the scanner will NOT reload any metadata of existing songs unless you specify otherwise above. Depending on the size of your library, it make take a while.</string>
 
-<!-- Scanner progress strings-->
+    <!-- Scanner progress strings-->
 	<string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
     <string name="scanner_missing_storage_perm">The scanner requires storage permissions</string>
 
@@ -153,7 +159,7 @@
         <item quantity="other">%d songs found</item>
     </plurals>
 
-<!-- Scanner parameter settings-->
+    <!-- Scanner parameter settings-->
     <string name="scanner_strict_file_name_title">Strict file names</string>
     <string name="scanner_strict_file_name_description">When enabled, file names will NOT be ignored. Ex. "Song.ogg" will be a different song from "Song.flac". Scanner sensitivity preference will still apply</string>
     <string name="scanner_sensitivity_title">Configure scanner sensitivity</string>
@@ -168,34 +174,48 @@
     <string name="scanner_variant_rescan">Rescan the entire library and reload all songs\' metadata</string>
     <string name="scanner_online_artist_linking">Try to link local files\' artists with ones on YouTube Music</string>
 
-<!-- Privacy settings -->
+    <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Share listen history with YouTube Music</string>
 
-<!-- Backup and restore settings -->
+    <!-- Backup and restore settings -->
     <string name="m3u_import_song_failed">Could not import:</string>
 
-    <!--experimental settings-->
+    <!-- Experimental settings -->
     <string name="experimental_settings_title">Experimental</string>
     <string name="dev_settings_title">Enable developer settings</string>
     <string name="dev_settings_description">Reveals additional advanced settings intended for development use</string>
 
-<!-- Setup wizard -->
+    <!-- Setup wizard -->
     <string name="oobe_welcome_message">Welcome to OuterTune</string>
-    <string name="oobe_local_scan_tooltip">Click here to scan for songs</string>
-    <string name="oobe_complete">Setup complete</string>
-    <string name="oobe_ytm_content_description">YouTube Music at your fingertips</string>
-    <string name="oobe_ad_free_description">AD free playback</string>
-    <string name="oobe_ytm_sync_description">Account sync</string>
-    <string name="oobe_local_playback_description">Local music playback</string>
     <string name="oobe_use_backup">I have a backup</string>
+    <string name="oobe_ytm_logon_title">Connect Your Account</string>
+    <string name="oobe_ytm_logon_subtitle">Sync with YouTube Music</string>
+    <string name="oobe_local_media_title">Local Media Setup</string>
+    <string name="oobe_local_media_subtitle">Import your music collection</string>
+    <string name="oobe_scan_for_local_music">Scan for Local Music</string>
+    <string name="oobe_complete_title">You\'re All Set!</string>
+    <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
 
-<!-- Misc -->
+    <!-- Setup Wizard features-->
+    <string name="youtube_music_integration">YouTube Music Integration</string>
+    <string name="youtube_music_integration_description">Access your favorite tracks seamlessly</string>
+    <string name="ad_free_experience">AD-Free Experience</string>
+    <string name="ad_free_experience_description">Enjoy uninterrupted music playback</string>
+    <string name="local_music_support">Local Music Support</string>
+    <string name="local_music_support_description">Play your downloaded tracks anywhere</string>
+    <string name="cross_platform_sync">Cross-Platform Sync</string>
+    <string name="cross_platform_sync_description">Keep your music in harmony across devices</string>
+
+    <!-- Misc -->
     <string name="action_back">Back</string>
     <string name="action_next">Next</string>
     <string name="action_skip">Skip</string>
     <string name="info">Information</string>
+    <string name="off">OFF</string>
+    <string name="on">ON</string>
 
-<!-- Discord Integration -->
+
+    <!-- Discord Integration -->
     <string name="discord_integration">Discord Integration</string>
     <string name="discord_information">OuterTune uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.  OuterTune will only extract your token, and everything else is stored locally.</string>
     <string name="enable_discord_rpc">Enable Rich Presence</string>

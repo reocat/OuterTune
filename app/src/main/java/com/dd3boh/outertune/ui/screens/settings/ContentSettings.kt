@@ -194,7 +194,7 @@ fun ContentSettings(
         )
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.localization)
+            title = stringResource(R.string.grp_localization)
         )
         ListPreference(
             title = { Text(stringResource(R.string.content_language)) },
@@ -222,7 +222,7 @@ fun ContentSettings(
         )
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.proxy)
+            title = stringResource(R.string.grp_proxy)
         )
 
         SwitchPreference(

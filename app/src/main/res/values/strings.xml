@@ -1,7 +1,4 @@
 <resources>
-    <!--InnerTune strings-->
-    <!--!!! If you are modifying OuterTune strings, they are at the bottom with the same headings !!!-->
-
     <!-- Bottom navigation -->
     <string name="home">Home</string>
     <string name="songs">Songs</string>
@@ -99,7 +96,7 @@
     <string name="add_to_playlist">Add to playlist</string>
     <string name="view_artist">View artist</string>
     <string name="view_album">View album</string>
-    <string name="refetch">Re-fetch</string>
+    <string name="refetch">Refetch</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="remove_from_history">Remove from history</string>
@@ -118,7 +115,6 @@
     <string name="sort_by_song_count">Song count</string>
     <string name="sort_by_length">Length</string>
     <string name="sort_by_play_time">Play time</string>
-    <string name="sort_by_play_count">Play count</string>
     <string name="sort_by_custom">Custom order</string>
 
     <!-- Dialog -->
@@ -207,9 +203,6 @@
     <string name="error_no_internet">No network connection</string>
     <string name="error_timeout">Timeout</string>
     <string name="error_unknown">Unknown error</string>
-    <string name="on_error">On error</string>
-    <string name="pause">Pause</string>
-    <string name="wait_to_reconnect">Wait to reconnect</string>">
 
     <!-- Player action -->
     <string name="action_like">Like</string>
@@ -224,8 +217,7 @@
 
     <!-- Queue Title -->
     <string name="queue_all_songs">All songs</string>
-    <!-- OuterTune: Keep this one below as is:-->
-    <string name="queue_searched_songs">Search: </string>
+    <string name="queue_searched_songs">Searched songs</string>
 
     <!-- Notification name -->
     <string name="music_player">Music Player</string>
@@ -241,9 +233,6 @@
     <string name="dark_theme_follow_system">Follow system</string>
     <string name="pure_black">Pure black</string>
     <string name="customize_navigation_tabs">Customize navigation tabs</string>
-    <string name="tab_arrangement">Tab arrangement</string>
-    <string name="arrange_tabs">Arrange tabs</string>
-    <string name="layout">Layout</string>
     <string name="player">Player</string>
     <string name="player_text_alignment">Player text alignment</string>
     <string name="lyrics_text_position">Lyrics text position</string>
@@ -263,28 +252,22 @@
     <string name="content">Content</string>
     <string name="login">Login</string>
     <string name="not_logged_in">Not logged in</string>
-    <string name="localization">Localization</string>
     <string name="content_language">Default content language</string>
     <string name="content_country">Default content country</string>
     <string name="system_default">System default</string>
-    <string name="proxy">Proxy</string>
     <string name="enable_proxy">Enable proxy</string>
     <string name="proxy_type">Proxy type</string>
     <string name="proxy_url">Proxy URL</string>
     <string name="restart_to_take_effect">Restart to take effect</string>
 
     <string name="player_and_audio">Player and audio</string>
-    <string name="iface">Interface</string>
     <string name="audio_quality">Audio quality</string>
     <string name="audio_quality_auto">Auto</string>
-    <string name="audio_quality_max">Max (beta)</string>
     <string name="audio_quality_high">High</string>
     <string name="audio_quality_low">Low</string>
-    <string name="audio">Audio</string>
     <string name="queue">Queue</string>
     <string name="persistent_queue">Persistent queue</string>
-    <!-- OuterTune: Keep this one below as is-->
-    <string name="persistent_queue_desc">Restore previous open queue(s) when the app starts</string>
+    <string name="persistent_queue_desc">Restore your last queue when the app starts</string>
     <string name="auto_load_more">Auto load more songs</string>
     <string name="auto_load_more_desc">Automatically add more songs when the end of the queue is reached, if possible</string>
     <string name="skip_silence">Skip silence</string>
@@ -336,10 +319,10 @@
     <string name="options">Options</string>
     <string name="preview">Preview</string>
     <string name="login_failed">Login failed</string>
+    <string name="logout">Logout</string>
 
     <string name="about">About</string>
     <string name="app_version">App version</string>
 
     <string name="new_version_available">New version available</string>
-
 </resources>

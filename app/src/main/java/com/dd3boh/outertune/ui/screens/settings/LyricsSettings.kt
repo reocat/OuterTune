@@ -88,7 +88,7 @@ fun LyricsSettings(
             .verticalScroll(rememberScrollState())
     ) {
         PreferenceGroupTitle(
-            title = stringResource(R.string.lrc_src_title)
+            title = stringResource(R.string.grp_lyrics_source)
         )
         SwitchPreference(
             title = { Text(stringResource(R.string.enable_lrclib)) },
@@ -114,7 +114,7 @@ fun LyricsSettings(
         )
 
         PreferenceGroupTitle(
-            title = stringResource(R.string.parser_title)
+            title = stringResource(R.string.grp_lyrics_parser)
         )
         // multiline lyrics
         SwitchPreference(
@@ -133,7 +133,7 @@ fun LyricsSettings(
             onCheckedChange = onLyricTrimChange
         )
         PreferenceGroupTitle(
-            title = stringResource(R.string.formatting_title)
+            title = stringResource(R.string.grp_lyrics_format)
         )
 
         // lyrics position

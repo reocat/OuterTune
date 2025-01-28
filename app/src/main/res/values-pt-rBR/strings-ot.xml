@@ -85,12 +85,7 @@
     <string name="experimental_settings_title">Experimental</string>
     <string name="dev_settings_title">Ativar configurações de desenvolvedor</string>
     <string name="dev_settings_description">Revelar configurações avançadas adicionais utilizadas no desenvolvimento</string>
-    <string name="oobe_local_scan_tooltip">Toque aqui para escanear músicas</string>
     <string name="oobe_complete">Configuração concluída</string>
-    <string name="oobe_ytm_content_description">YouTube Music na ponta dos dedos</string>
-    <string name="oobe_ad_free_description">Reprodução sem anúncios</string>
-    <string name="oobe_ytm_sync_description">Sincronização com conta</string>
-    <string name="oobe_local_playback_description">Reprodução de música local</string>
     <string name="oobe_use_backup">Eu tenho um backup</string>
     <string name="action_back">Voltar</string>
     <string name="action_next">Avançar</string>
