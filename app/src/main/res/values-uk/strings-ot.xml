@@ -88,7 +88,7 @@
     <string name="token_adv_login_description">Це РОЗШИРЕНИЙ метод входу. Як альтернатива вебпорталу, ви можете безпосередньо ввести або оновити свій токен для входу тут. Наприклад, це може прискорити вхід на декількох пристроях. Зверніть увагу, що будь-які недійсні формати токенів, які застосунок не зможе розпізнати, не будуть прийняті</string>
     <string name="grp_audio">Звук</string>
     <string name="lyrics_prefer_local">Надавати перевагу локальним файлам текстів пісень</string>
-    <string name="keep_alive_description">Використовуйте сповіщення на передньому плані, щоб запобігти випадковому закриттю OuterTune системою.</string>
+    <string name="keep_alive_description">Використовуйте постійну службу переднього плану, щоб запобігти закриттю OuterTune у фоновому режимі.</string>
     <string name="auto_scanner_title">Автоматично сканувати</string>
     <string name="grp_proxy">Проксі</string>
     <string name="lyrics_prefer_local_description">Надавати пріоритет локальним файлам текстів пісень перед використанням усіх хмарних провайдерів. Вимкніть це, щоби визначити пріоритетність хмарних провайдерів</string>
@@ -100,4 +100,35 @@
     <string name="oobe_complete">Налаштування завершеною</string>
     <string name="action_skip">Пропустити</string>
     <string name="action_back">Назад</string>
+    <string name="sync_progress_active">Синхронізація з обліковим записом YouTube…</string>
+    <string name="sync_progress_success">Синхронізацію виконано</string>
+    <string name="tab_arrangement_home_required">Вкладка «Головна» обов\'язкова.</string>
+    <string name="tab_arrangement_disable_tip">--- Перетягніть нижче, щоби вимкнути ---</string>
+    <string name="swipe2Queue_description">Проведіть по пісні, щоби додати її до черги одразу після пісні, яка відтворюється зараз</string>
+    <string name="swipe2Queue">Проведіть для додавання в чергу</string>
+    <string name="scanner_missing_ffmpeg">Витягувач FFmpeg не виявлено</string>
+    <string name="scanner_missing_storage_perm">Сканер потребує дозволів на зберігання даних</string>
+    <string name="scanner_progress_scanning">Сканування…</string>
+    <string name="scanner_scan_fail">Не вдалося просканувати</string>
+    <string name="scanner_ytm_link_fail">Не вдалося пов\'язати з виконавцем на YouTube</string>
+    <string name="scanner_ytm_link_start">Початок пов\'язування з виконавцем на YouTube…</string>
+    <plurals name="scanner_n_song_processed">
+        <item quantity="one">%d пісню оброблено</item>
+        <item quantity="few">%d пісні оброблено</item>
+        <item quantity="many">%d пісень оброблено</item>
+        <item quantity="other">%d пісень оброблено</item>
+    </plurals>
+    <string name="grp_lyrics_format">Форматування</string>
+    <string name="grp_lyrics_parser">Аналізатор</string>
+    <string name="grp_lyrics_source">Джерело текстів</string>
+    <plurals name="scanner_n_song_found">
+        <item quantity="one">%d пісню знайдено</item>
+        <item quantity="few">%d пісні знайдено</item>
+        <item quantity="many">%d пісень знайдено</item>
+        <item quantity="other">%d пісень знайдено</item>
+    </plurals>
+    <string name="scanner_ytm_link_success">Пов\'язування з виконавцем на YouTube виконано</string>
+    <string name="scanner_progress_syncing">Синхронізація…</string>
+    <string name="playlist_add_local_to_synced_note">Примітка: додавання локальних пісень до синхронізованих / віддалених плейлистів не підтримується. Будь-яка інша комбінація дійсна</string>
+    <string name="scanner_manual_btn">Запустити ручну синхронізацію</string>
 </resources>
