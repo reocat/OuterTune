@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="recent_activity">Нещодавна активність</string>
+    <string name="oobe_ad_free_description">Безплатне відтворення без реклами</string>
     <string name="sort_by_like_date">Коли сподобалося</string>
     <string name="attrib_zhuang">Zion Huang за InnerTune</string>
     <string name="auto_scanner_description">Автоматичний пошук пісень під час відкриття застосунку. Це не перезавантажує метадані наявних пісень.</string>
