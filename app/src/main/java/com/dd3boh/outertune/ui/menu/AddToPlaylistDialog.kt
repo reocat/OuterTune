@@ -36,6 +36,7 @@ import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.ListItem
 import com.dd3boh.outertune.ui.component.PlaylistListItem
+import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -112,6 +113,14 @@ fun AddToPlaylistDialog(
                             } else {
                                 onDismiss()
                                 database.addSongToPlaylist(playlist, songIds!!)
+
+                                if (!playlist.playlist.isLocal) {
+                                    playlist.playlist.browseId?.let { plist ->
+                                        songIds?.forEach {
+                                            YouTube.addToPlaylist(plist, it)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
