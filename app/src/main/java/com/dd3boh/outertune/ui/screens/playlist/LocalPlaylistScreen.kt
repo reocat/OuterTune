@@ -302,6 +302,13 @@ fun LocalPlaylistScreen(
         scrollThresholdPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
     ) { from, to ->
         if (to.index >= headerItems && from.index >= headerItems) {
+            val currentDragInfo = dragInfo
+            dragInfo = if (currentDragInfo == null) {
+                (from.index - headerItems) to (to.index - headerItems)
+            } else {
+                currentDragInfo.first to (to.index - headerItems)
+            }
+
             mutableSongs.move(from.index - headerItems, to.index - headerItems)
         }
     }
