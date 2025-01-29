@@ -33,7 +33,7 @@
     <string name="token_hidden">Appuyez pour afficher le jeton</string>
     <string name="token_shown">Appuyez à nouveau pour copier ou modifier</string>
     <string name="ytm_sync">Synchronisation automatique avec votre compte YouTube Music</string>
-    <string name="wifi_only">Wifi uniquement</string>
+    <string name="wifi_only">Wi-Fi uniquement</string>
     <string name="grp_audio">Audio</string>
     <string name="grp_proxy">Proxy</string>
     <string name="auto_scanner_description">Rechercher automatiquement les titres lors de l\'ouverture de l\'application. Cela ne recharge pas les métadonnées des titres existants.</string>
