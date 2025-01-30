@@ -5,12 +5,16 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
 import android.database.SQLException
 import android.media.audiofx.AudioEffect
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.widget.Toast
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.edit
@@ -65,6 +69,7 @@ import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleLike
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleShuffle
+import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleStartRadio
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.PlayerOnError
@@ -193,6 +198,7 @@ class MusicService : MediaLibraryService(),
 
     lateinit var player: ExoPlayer
     private lateinit var mediaSession: MediaLibrarySession
+    private lateinit var notificationManager: NotificationManagerCompat
     private lateinit var playerNotificationManager: PlayerNotificationManager
 
     private var isAudioEffectSessionOpened = false
@@ -471,14 +477,39 @@ class MusicService : MediaLibraryService(),
                 }
             }
         }
+        notificationManager = NotificationManagerCompat.from(this)
+        notificationManager.createNotificationChannel(
+            NotificationChannelCompat.Builder(
+                CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_HIGH
+            ).apply {
+                setName(CHANNEL_NAME)
+                setLightsEnabled(false)
+                setShowBadge(false)
+                setSound(null, null)
+            }.build()
+        )
+
         playerNotificationManager = PlayerNotificationManager.Builder(this, NOTIFICATION_ID, CHANNEL_ID)
             .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
                 override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
+                    fun startFg() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            startForeground(notificationId, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+                        } else {
+                            startForeground(notificationId, notification)
+                        }
+                    }
+
                     // FG keep alive
                     if (dataStore.get(KeepAliveKey, false)) {
-                        startForeground(notificationId, notification)
+                      startFg()
                     } else {
-                        stopForeground(notificationId)
+                        // mimic media3 default behaviour
+                        if (player.isPlaying) {
+                          startFg()
+                        } else {
+                            stopForeground(notificationId)
+                        }
                     }
                 }
             })
@@ -973,10 +1004,7 @@ class MusicService : MediaLibraryService(),
     }
 
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        // use default behaviour if keep alive is disabled
-        if (!dataStore.get(KeepAliveKey, false)) {
-            super.onUpdateNotification(session, startInForegroundRequired)
-        }
+        // we handle notification manually
     }
 
     override fun onDestroy() {
@@ -1015,6 +1043,7 @@ class MusicService : MediaLibraryService(),
         const val PLAYLIST = "playlist"
 
         const val CHANNEL_ID = "music_channel_01"
+        const val CHANNEL_NAME = "fgs_workaround"
         const val NOTIFICATION_ID = 888
         const val ERROR_CODE_NO_STREAM = 1000001
         const val CHUNK_LENGTH = 512 * 1024L
