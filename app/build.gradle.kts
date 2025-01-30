@@ -155,6 +155,7 @@ dependencies {
     implementation(libs.media3.okhttp)
     implementation(libs.media3.ui)
 
+    implementation(libs.androidx.work)
 
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)

@@ -58,6 +58,8 @@ room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
+androidx-work = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "2.10.0" }
+
 apache-lang3 = { group = "org.apache.commons", name = "commons-lang3", version = "3.17.0" }
 
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
