@@ -1,10 +1,9 @@
 package com.dd3boh.outertune.models
 
 import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.db.entities.QueueEntity
-import com.dd3boh.outertune.extensions.metadata
+import com.dd3boh.outertune.extensions.currentMetadata
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.playback.MusicService
@@ -335,7 +334,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      */
     fun enqueueEnd(mediaList: List<MediaMetadata>, player: MusicService) {
         getCurrentQueue()?.let {
-            addSongsToQueue(it, Int.MAX_VALUE, mediaList, player)
+            addSongsToQueue(it, Int.MAX_VALUE, mediaList, player, isRadio)
         }
     }
 
@@ -352,7 +351,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         val listPos = if (pos < 0) {
             0
         } else if (pos > q.queue.size) {
-          q.queue.size - 1
+            q.queue.size
         } else {
             pos
         }
@@ -360,18 +359,23 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         // Add to current queue at the position. For the other queue, just add to end
         if (q.shuffled) {
             q.queue.addAll(listPos, mediaList)
-            q.unShuffled.addAll(q.queue.size - 1, mediaList)
+            q.unShuffled.addAll(q.queue.size, mediaList)
         } else {
-            q.queue.addAll(q.queue.size - 1, mediaList)
+            q.queue.addAll(q.queue.size, mediaList)
             q.unShuffled.addAll(listPos, mediaList)
         }
 
-        // copy so ui doesnt crash
-        player.player.replaceMediaItems(listPos, pos, mediaList.map { it.toMediaItem() })
+        setCurrQueue(q, player)
+
+        val newQ = if (isRadio) {
+            q.copy(playlistId = mediaList.lastOrNull()?.id)
+        } else {
+            q
+        }
 
         if (saveToDb && player.dataStore.get(PersistentQueueKey, true)) {
             CoroutineScope(Dispatchers.IO).launch {
-                player.database.rewriteQueue(q)
+                player.database.rewriteQueue(newQ)
             }
         }
     }
@@ -698,7 +702,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             )
 
         if (item == null) {
-            setMediaItems(ArrayList(), player)
+            player.player.setMediaItems(ArrayList())
             return null
         }
 
@@ -712,54 +716,44 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         } else {
             mediaItems = item.unShuffled
         }
-        setMediaItems(mediaItems, player)
+
+        /**
+         * current playing == jump target, do seamlessly
+         */
+        val seamlessSupported = player.player.currentMetadata?.id == mediaItems[queuePos].id
+        if (seamlessSupported) {
+            if (queuePos == 0) {
+                val playerIndex = player.player.currentMediaItemIndex
+                val playerItemCount = player.player.mediaItemCount
+                // player.player.replaceMediaItems seems to stop playback so we
+                // remove all songs except the currently playing one and then add the list of new items
+                if (playerIndex < playerItemCount - 1) {
+                    player.player.removeMediaItems(playerIndex + 1, playerItemCount)
+                }
+                if (playerIndex > 0) {
+                    player.player.removeMediaItems(0, playerIndex)
+                }
+                // add all songs except the first one since it is already present and playing
+                player.player.addMediaItems(mediaItems.drop(1).map { it.toMediaItem() })
+            } else {
+                // replace items up to current playing, then replace items after current
+                player.player.replaceMediaItems(0, queuePos,
+                    mediaItems.subList(0, queuePos).map { it.toMediaItem() })
+                player.player.replaceMediaItems(queuePos + 1, Int.MAX_VALUE,
+                    mediaItems.subList(queuePos + 1, mediaItems.size).map { it.toMediaItem() })
+            }
+        } else {
+            player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
+        }
+
         isShuffleEnabled.value = item.shuffled
 
-        if (autoSeek && !allowSeamlessPlayback(player, mediaItems)) {
+        if (autoSeek && !seamlessSupported) {
             player.player.seekTo(queuePos, C.TIME_UNSET)
         }
 
         bubbleUp(item, player)
         return queuePos
-    }
-
-    /**
-     * Test if playback can be switched seamlessly
-     * return true if player is playing the first song of the new media items
-     */
-    private fun allowSeamlessPlayback(
-        player: MusicService,
-        mediaItems: List<MediaMetadata>
-    ): Boolean {
-        if (!player.player.isPlaying) {
-            return false
-        }
-        val currentSongId = player.currentMediaMetadata.value?.id ?: return false
-        return mediaItems.firstOrNull()?.id.equals(currentSongId)
-    }
-
-    /**
-     * Sets the media items. If the first media item matches the currently playing song it will
-     * switches to the new list of items without interrupting playback otherwise it replaces the
-     * media items
-     */
-    private fun setMediaItems(mediaItems: List<MediaMetadata>, player: MusicService) {
-        if (allowSeamlessPlayback(player, mediaItems)) {
-            // player.player.replaceMediaItems seems to stop playback so we
-            // remove all songs except the currently playing one and then add the list of new items
-            if (player.player.currentMediaItemIndex > 0) player.player.removeMediaItems(
-                0,
-                player.player.currentMediaItemIndex
-            )
-            if (player.player.currentMediaItemIndex < player.player.mediaItemCount - 1) player.player.removeMediaItems(
-                player.player.currentMediaItemIndex + 1,
-                player.player.mediaItemCount
-            )
-            // add all songs except the first one since it is already present and playing
-            player.player.addMediaItems(mediaItems.drop(1).map { it.toMediaItem() })
-        } else {
-            player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
-        }
     }
 
     /**
@@ -776,30 +770,6 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                         player.database.updateQueue(it)
                     }
                 }
-            }
-        }
-    }
-
-    /**
-     * Update the current position index of the current queue to the index of the FIRST media item match
-     *
-     * @param mediaItem
-     */
-    fun setCurrQueuePosIndex(mediaItem: MediaItem?, player: MusicService) {
-        val currentQueue = getCurrentQueue()
-        if (mediaItem == null || currentQueue == null) {
-            return
-        }
-
-        if (currentQueue.shuffled) {
-            currentQueue.queuePos = currentQueue.queue.indexOf(mediaItem.metadata)
-        } else {
-            currentQueue.queuePos = currentQueue.unShuffled.indexOf(mediaItem.metadata)
-        }
-
-        if (player.dataStore.get(PersistentQueueKey, true)) {
-            CoroutineScope(Dispatchers.IO).launch {
-                player.database.updateQueue(currentQueue)
             }
         }
     }
