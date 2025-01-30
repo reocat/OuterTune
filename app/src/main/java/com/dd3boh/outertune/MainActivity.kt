@@ -1,7 +1,6 @@
 package com.dd3boh.outertune
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -113,6 +112,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.dd3boh.outertune.constants.AppBarHeight
@@ -229,6 +231,7 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroySc
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerActive
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.urlEncode
+import com.dd3boh.outertune.workers.MusicServiceWorker
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
@@ -300,7 +303,7 @@ class MainActivity : ComponentActivity() {
         
         lifecycleScope.launch {
             dataStore.data
-                .map { it[DisableScreenshotKey] ?: false }
+                .map { it[DisableScreenshotKey] == true }
                 .distinctUntilChanged()
                 .collectLatest {
                     if (it) {
@@ -1206,7 +1209,7 @@ class MainActivity : ComponentActivity() {
                                     LoginScreen(navController)
                                 }
 
-                                composable("setup_wizard",) {
+                                composable("setup_wizard") {
                                     SetupWizard(navController)
                                 }
                             }
@@ -1261,11 +1264,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        scheduleMusicServiceWork()
     }
 
     override fun onDestroy() {
         lifecycle.removeObserver(musicServiceLifecycleObserver)
         super.onDestroy()
+    }
+
+    private fun scheduleMusicServiceWork() {
+        val workRequest = OneTimeWorkRequestBuilder<MusicServiceWorker>()
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "MusicServiceWork",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {
@@ -1292,16 +1307,8 @@ class MusicServiceLifecycleObserver(
     private var playerConnection: PlayerConnection? = null
 
     override fun onStart(owner: LifecycleOwner) {
-        if (isAppInForeground(context)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(Intent(context, MusicService::class.java))
-            } else {
-                context.startService(Intent(context, MusicService::class.java))
-            }
-            context.bindService(Intent(context, MusicService::class.java), serviceConnection, Context.BIND_AUTO_CREATE)
-        } else {
-            Toast.makeText(context, "Cannot start service in the background", Toast.LENGTH_SHORT).show()
-        }
+        scheduleMusicServiceWork()
+        context.bindService(Intent(context, MusicService::class.java), serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onStop(owner: LifecycleOwner) {
@@ -1324,17 +1331,15 @@ class MusicServiceLifecycleObserver(
         }
     }
 
-    private fun isAppInForeground(context: Context): Boolean {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val appProcesses = activityManager.runningAppProcesses
-        if (appProcesses != null) {
-            for (processInfo in appProcesses) {
-                if (processInfo.processName == context.packageName && processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    return true
-                }
-            }
-        }
-        return false
+    private fun scheduleMusicServiceWork() {
+        val workRequest = OneTimeWorkRequestBuilder<MusicServiceWorker>()
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "MusicServiceWork",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
     }
 }
 
