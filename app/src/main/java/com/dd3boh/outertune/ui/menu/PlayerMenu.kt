@@ -79,6 +79,7 @@ import com.dd3boh.outertune.constants.PlayerOnErrorActionKey
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
+import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.BigSeekBar
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.DetailsDialog
@@ -342,7 +343,7 @@ fun PlayerMenu(
                 icon = Icons.Rounded.Radio,
                 title = R.string.start_radio
             ) {
-                playerConnection.service.startRadioSeamlessly()
+                playerConnection.playQueue(YouTubeQueue.radio(mediaMetadata))
                 onDismiss()
             }
         GridMenuItem(
