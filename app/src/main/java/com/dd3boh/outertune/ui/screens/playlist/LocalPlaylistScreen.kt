@@ -170,7 +170,7 @@ fun LocalPlaylistScreen(
         BackHandler(onBack = onExitSelectionMode)
     }
 
-    val editable: Boolean = playlist?.playlist?.isEditable == true
+    val editable: Boolean = playlist?.playlist?.isLocal == true || playlist?.playlist?.isEditable == true
 
     LaunchedEffect(songs) {
         mutableSongs.apply {
