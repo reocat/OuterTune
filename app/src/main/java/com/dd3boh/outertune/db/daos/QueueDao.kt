@@ -65,7 +65,8 @@ interface QueueDao {
                     unShuffled = unshuffledSongs.map { it.toMediaMetadata() }.toMutableList(),
                     shuffled = queue.shuffled,
                     queuePos = queue.queuePos,
-                    index = queue.index
+                    index = queue.index,
+                    playlistId = queue.playlistId
                 )
             )
         }

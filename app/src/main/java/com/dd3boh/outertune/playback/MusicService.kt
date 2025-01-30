@@ -613,17 +613,25 @@ class MusicService : MediaLibraryService(),
             if (queueTitle == null && initialStatus.title != null) { // do not find a title if an override is provided
                 queueTitle = initialStatus.title
             }
+            val items = ArrayList<MediaMetadata>()
+            val preloadItem = queue.preloadItem
 
             // print out queue
 //            println("-----------------------------")
 //            initialStatus.items.map { println(it.title) }
             if (initialStatus.items.isEmpty()) return@launch
+            if (preloadItem != null) {
+                items.add(preloadItem)
+                items.addAll(initialStatus.items.subList(1, initialStatus.items.size))
+            } else {
+                items.addAll(initialStatus.items)
+            }
             queueBoard.addQueue(
                 queueTitle?: "Queue",
-                initialStatus.items,
+                items,
                 player = this@MusicService,
                 startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
-                replace = replace
+                replace = replace,
             )
             queueBoard.setCurrQueue(this@MusicService)
 
@@ -636,21 +644,17 @@ class MusicService : MediaLibraryService(),
      * Add items to queue, right after current playing item
      */
     fun enqueueNext(items: List<MediaItem>) {
-        println("wtf "+ "ENQUEUNE NEXT CALLED " + queueBoard.initialized)
-        val currentQueue = queueBoard.getCurrentQueue()
-        if (currentQueue == null) {
-            if (!queueBoard.initialized) {
-                // when enqueuing next when player isn't active, play as a new song
-                if (items.isNotEmpty()) {
-                    println("wtf "+ "PLAYING FROMe")
-                    CoroutineScope(Dispatchers.Main).launch {
-                        playQueue(
-                            ListQueue(
-                                title = items.first().mediaMetadata.title.toString(),
-                                items = items.mapNotNull { it.metadata }
-                            )
+        if (!queueBoard.initialized) {
+
+            // when enqueuing next when player isn't active, play as a new song
+            if (items.isNotEmpty()) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    playQueue(
+                        ListQueue(
+                            title = items.first().mediaMetadata.title.toString(),
+                            items = items.mapNotNull { it.metadata }
                         )
-                    }
+                    )
                 }
             }
         } else {
