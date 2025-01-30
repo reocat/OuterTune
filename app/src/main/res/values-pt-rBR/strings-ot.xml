@@ -129,4 +129,9 @@
     <string name="grp_lyrics_source">Fontes de letras</string>
     <string name="tab_arrangement_home_required">A aba Início é necessária.</string>
     <string name="scanner_ytm_link_start">Iniciando vínculo de artistas do YouTube…</string>
+    <string name="err_play_next_on_error">Um erro ocorreu. Reproduzindo o próximo</string>
+    <string name="wait_to_reconnect">Esperando para re-conectar</string>"&gt;
+
+<string name="err_stop_on_error">Um erro ocorreu. A reprodução parou</string>
+    <string name="err_stop_on_too_many_errors">Muitos erros. A reprodução parou</string>
 </resources>
