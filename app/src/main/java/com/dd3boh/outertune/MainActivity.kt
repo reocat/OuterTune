@@ -1,7 +1,9 @@
 package com.dd3boh.outertune
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
@@ -95,8 +97,13 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -145,7 +152,6 @@ import com.dd3boh.outertune.db.entities.SearchHistory
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.MusicService
-import com.dd3boh.outertune.playback.MusicService.MusicBinder
 import com.dd3boh.outertune.playback.PlayerConnection
 import com.dd3boh.outertune.ui.component.BottomSheetMenu
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -253,9 +259,11 @@ class MainActivity : ComponentActivity() {
     lateinit var connectivityObserver: NetworkConnectivityObserver
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
+    private lateinit var musicServiceLifecycleObserver: MusicServiceLifecycleObserver
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            if (service is MusicBinder) {
+            if (service is MusicService.MusicBinder) {
                 playerConnection = PlayerConnection(service, database, lifecycleScope)
             }
         }
@@ -276,39 +284,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    override fun onStart() {
-        super.onStart()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this, MusicService::class.java))
-        } else {
-            startService(Intent(this, MusicService::class.java))
-        }
-        bindService(Intent(this, MusicService::class.java), serviceConnection, BIND_AUTO_CREATE)
-    }
-
-    override fun onStop() {
-        unbindService(serviceConnection)
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        runBlocking {
-            // save last position
-            dataStore.edit { settings ->
-                settings[LastPosKey] = playerConnection!!.player.currentPosition
-            }
-        }
-
-        if (dataStore.get(StopMusicOnTaskClearKey, false) && playerConnection?.isPlaying?.value == true
-            && isFinishing
-        ) {
-            stopService(Intent(this, MusicService::class.java))
-            unbindService(serviceConnection)
-            playerConnection = null
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @SuppressLint(
         "UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition",
@@ -318,6 +293,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        // Initialize the MusicServiceLifecycleObserver
+        musicServiceLifecycleObserver = MusicServiceLifecycleObserver(this, serviceConnection, dataStore)
+        lifecycle.addObserver(musicServiceLifecycleObserver)
         
         lifecycleScope.launch {
             dataStore.data
@@ -1284,6 +1263,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        lifecycle.removeObserver(musicServiceLifecycleObserver)
+        super.onDestroy()
+    }
+
     private fun setSystemBarAppearance(isDark: Boolean) {
         WindowCompat.getInsetsController(window, window.decorView.rootView).apply {
             isAppearanceLightStatusBars = !isDark
@@ -1296,6 +1280,61 @@ class MainActivity : ComponentActivity() {
         const val ACTION_SONGS = "com.dd3boh.outertune.action.SONGS"
         const val ACTION_ALBUMS = "com.dd3boh.outertune.action.ALBUMS"
         const val ACTION_PLAYLISTS = "com.dd3boh.outertune.action.PLAYLISTS"
+    }
+}
+
+class MusicServiceLifecycleObserver(
+    private val context: Context,
+    private val serviceConnection: ServiceConnection,
+    private val dataStore: DataStore<Preferences>
+) : DefaultLifecycleObserver {
+
+    private var playerConnection: PlayerConnection? = null
+
+    override fun onStart(owner: LifecycleOwner) {
+        if (isAppInForeground(context)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(Intent(context, MusicService::class.java))
+            } else {
+                context.startService(Intent(context, MusicService::class.java))
+            }
+            context.bindService(Intent(context, MusicService::class.java), serviceConnection, Context.BIND_AUTO_CREATE)
+        } else {
+            Toast.makeText(context, "Cannot start service in the background", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onStop(owner: LifecycleOwner) {
+        context.unbindService(serviceConnection)
+        playerConnection?.dispose()
+        playerConnection = null
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        runBlocking {
+            // Save last position
+            dataStore.edit { settings ->
+                settings[LastPosKey] = playerConnection?.player?.currentPosition ?: C.TIME_UNSET
+            }
+        }
+
+        if (dataStore.get(StopMusicOnTaskClearKey, false) && playerConnection?.isPlaying?.value == true) {
+            context.stopService(Intent(context, MusicService::class.java))
+            playerConnection = null
+        }
+    }
+
+    private fun isAppInForeground(context: Context): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val appProcesses = activityManager.runningAppProcesses
+        if (appProcesses != null) {
+            for (processInfo in appProcesses) {
+                if (processInfo.processName == context.packageName && processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 }
 
