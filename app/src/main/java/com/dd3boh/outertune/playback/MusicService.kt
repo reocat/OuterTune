@@ -5,12 +5,15 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.media.audiofx.AudioEffect
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.edit
@@ -129,6 +132,7 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import timber.log.Timber
 import java.io.File
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -473,12 +477,31 @@ class MusicService : MediaLibraryService(),
         }
         playerNotificationManager = PlayerNotificationManager.Builder(this, NOTIFICATION_ID, CHANNEL_ID)
             .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
+                @RequiresApi(Build.VERSION_CODES.Q)
                 override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-                    // FG keep alive
-                    if (dataStore.get(KeepAliveKey, false)) {
-                        startForeground(notificationId, notification)
-                    } else {
-                        stopForeground(notificationId)
+                    try {
+                        if (dataStore.get(KeepAliveKey, false)) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                // For Android 12 and above, check if we can start foreground
+                                if (ongoing) {
+                                    startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+                                } else {
+                                    stopForeground(STOP_FOREGROUND_REMOVE)
+                                }
+                            } else {
+                                // For older Android versions
+                                if (ongoing) {
+                                    startForeground(notificationId, notification)
+                                } else {
+                                    @Suppress("DEPRECATION")
+                                    stopForeground(false)
+                                }
+                            }
+                        } else {
+                            stopForeground(STOP_FOREGROUND_REMOVE)
+                        }
+                    } catch (e: Exception) {
+                        Timber.tag("MusicService").e(e, "Error managing foreground service state")
                     }
                 }
             })
