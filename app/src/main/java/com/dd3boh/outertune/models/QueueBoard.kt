@@ -32,7 +32,7 @@ var isShuffleEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
  * @param title Queue title (and UID)
  * @param queue List of media items
  */
-class MultiQueueObject(
+data class MultiQueueObject(
     val id: Long,
     val title: String,
     /**
@@ -46,7 +46,11 @@ class MultiQueueObject(
     var shuffled: Boolean = false,
     var queuePos: Int = -1, // position of current song
     var index: Int, // order of queue
-    val playlistId: String? = null,
+    /**
+     * Song id to start watch endpoint
+     * TODO: change this in database too
+     */
+    var playlistId: String? = null,
 ) {
 
     /**
@@ -168,6 +172,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         forceInsert: Boolean = false,
         replace: Boolean = false,
         delta: Boolean = true,
+        isRadio: Boolean = false,
         startIndex: Int = 0
     ): Boolean {
         if (QUEUE_DEBUG)
@@ -295,17 +300,20 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             }
         } else {
             // add entirely new queue
+            // Precondition(s): radio queues never include local songs
             if (masterQueues.size > MAX_QUEUES) {
                 deleteQueue(masterQueues.first(), player)
             }
+            val q = ArrayList(mediaList.filterNotNull())
             val newQueue = MultiQueueObject(
                 QueueEntity.generateQueueId(),
                 title,
-                ArrayList(mediaList.filterNotNull()),
+                q,
                 ArrayList(mediaList.filterNotNull()),
                 false,
                 startIndex,
-                masterQueues.size
+                masterQueues.size,
+                if (isRadio) q.lastOrNull()?.id else null
             )
             masterQueues.add(newQueue)
             if (player.dataStore.get(PersistentQueueKey, true)) {
@@ -325,16 +333,17 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         forceInsert: Boolean = false,
         replace: Boolean = false,
         delta: Boolean = true,
-        startIndex: Int = 0
-    ) = addQueue(title, mediaList, playerConnection.service, forceInsert, replace, delta, startIndex)
+        startIndex: Int = 0,
+        isRadio: Boolean = false,
+    ) = addQueue(title, mediaList, playerConnection.service, forceInsert, replace, delta, isRadio, startIndex)
 
 
     /**
      * Add songs to end of CURRENT QUEUE & update it in the player
      */
-    fun enqueueEnd(mediaList: List<MediaMetadata>, player: MusicService) {
+    fun enqueueEnd(mediaList: List<MediaMetadata>, player: MusicService, isRadio: Boolean = false) {
         getCurrentQueue()?.let {
-            addSongsToQueue(it, Int.MAX_VALUE, mediaList, player, isRadio)
+            addSongsToQueue(it, Int.MAX_VALUE, mediaList, player, isRadio = isRadio)
         }
     }
 
@@ -346,7 +355,8 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         pos: Int,
         mediaList: List<MediaMetadata>,
         player: MusicService,
-        saveToDb: Boolean = true
+        saveToDb: Boolean = true,
+        isRadio: Boolean = false
     ) {
         val listPos = if (pos < 0) {
             0
@@ -366,16 +376,13 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         }
 
         setCurrQueue(q, player)
-
-        val newQ = if (isRadio) {
-            q.copy(playlistId = mediaList.lastOrNull()?.id)
-        } else {
-            q
+        if (isRadio) {
+            q.playlistId = mediaList.lastOrNull()?.id
         }
 
         if (saveToDb && player.dataStore.get(PersistentQueueKey, true)) {
             CoroutineScope(Dispatchers.IO).launch {
-                player.database.rewriteQueue(newQ)
+                player.database.rewriteQueue(q)
             }
         }
     }

@@ -95,8 +95,8 @@ class PlayerConnection(
         repeatMode.value = player.repeatMode
     }
 
-    fun playQueue(queue: Queue, replace: Boolean = true, title: String? = null) {
-        service.playQueue(queue, replace = replace, title = title)
+    fun playQueue(queue: Queue, replace: Boolean = true, isRadio: Boolean = false, title: String? = null) {
+        service.playQueue(queue, replace = replace, title = title, isRadio = isRadio)
     }
 
     /**

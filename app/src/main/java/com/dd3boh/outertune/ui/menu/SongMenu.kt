@@ -272,14 +272,14 @@ fun SongMenu(
             bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
         )
     ) {
-        GridMenuItem(
-            icon = Icons.Rounded.Radio,
-            title = R.string.start_radio,
-            enabled = !song.song.isLocal
-        ) {
-            onDismiss()
-            playerConnection.playQueue(YouTubeQueue(WatchEndpoint(videoId = song.id), song.toMediaMetadata(), playlistId = WatchEndpoint(videoId = song.id).playlistId))
-        }
+        if (!song.song.isLocal)
+            GridMenuItem(
+                icon = Icons.Rounded.Radio,
+                title = R.string.start_radio
+            ) {
+                onDismiss()
+                playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()), isRadio = true)
+            }
         GridMenuItem(
             icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
             title = R.string.play_next

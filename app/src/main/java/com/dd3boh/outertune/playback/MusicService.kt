@@ -62,6 +62,7 @@ import com.dd3boh.outertune.constants.AudioNormalizationKey
 import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
+import com.dd3boh.outertune.constants.AutoLoadMoreKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
 import com.dd3boh.outertune.constants.KeepAliveKey
@@ -93,6 +94,7 @@ import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.setOffloadEnabled
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.lyrics.LyricsHelper
+import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.QueueBoard
 import com.dd3boh.outertune.models.isShuffleEnabled
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -139,6 +141,7 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.time.LocalDateTime
 import javax.inject.Inject
+import kotlin.collections.map
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -283,6 +286,22 @@ class MusicService : MediaLibraryService(),
                             player.play()
                         }
 
+                        // Auto load more songs
+                        val q = queueBoard.getCurrentQueue()
+                        val songId = q?.playlistId
+                        if (dataStore.get(AutoLoadMoreKey, true) &&
+                            reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
+                            player.mediaItemCount - player.currentMediaItemIndex <= 5 &&
+                            songId != null // aka "hasNext"
+                        ) {
+                            scope.launch(SilentHandler) {
+                                val mediaItems = YouTubeQueue(WatchEndpoint(songId)).nextPage()
+                                if (player.playbackState != STATE_IDLE) {
+                                    queueBoard.enqueueEnd(mediaItems, this@MusicService, isRadio = true)
+                                }
+                            }
+                        }
+
                         // this absolute eye sore detects if we loop back to the beginning of queue, when shuffle AND repeat all
                         // no, when repeat mode is on, player does not "STATE_ENDED"
                         if (player.currentMediaItemIndex == 0 && lastMediaItemIndex == player.mediaItemCount - 1 &&
@@ -296,7 +315,7 @@ class MusicService : MediaLibraryService(),
                         updateNotification() // also updates when queue changes
 
                         queueBoard.setCurrQueuePosIndex(player.currentMediaItemIndex, this@MusicService)
-                        queueTitle = queueBoard.getCurrentQueue()?.title
+                        queueTitle = q?.title
                     }
                 })
                 sleepTimer = SleepTimer(scope, this)
@@ -600,7 +619,13 @@ class MusicService : MediaLibraryService(),
      * @param title Title override for the queue. If this value us unspecified, this method takes the value from queue.
      * If both are unspecified, the title will default to "Queue".
      */
-    fun playQueue(queue: Queue, playWhenReady: Boolean = true, replace: Boolean = false, title: String? = null) {
+    fun playQueue(
+        queue: Queue,
+        playWhenReady: Boolean = true,
+        replace: Boolean = false,
+        isRadio: Boolean = false,
+        title: String? = null
+    ) {
         if (!queueBoard.initialized) {
             initQueue()
             queueBoard.initialized = true
@@ -632,6 +657,7 @@ class MusicService : MediaLibraryService(),
                 player = this@MusicService,
                 startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
                 replace = replace,
+                isRadio = isRadio
             )
             queueBoard.setCurrQueue(this@MusicService)
 
@@ -692,7 +718,7 @@ class MusicService : MediaLibraryService(),
 
     fun toggleStartRadio() {
         val mediaMetadata = player.currentMetadata ?: return
-        playQueue(YouTubeQueue.radio(mediaMetadata))
+        playQueue(YouTubeQueue.radio(mediaMetadata), isRadio = true)
     }
 
     private fun openAudioEffectSession() {

@@ -57,6 +57,7 @@
 
 	<string name="grp_audio">Audio</string>
     <string name="grp_extra_scanner_settings">Additional scanner settings</string>
+    <string name="grp_general">General</string>
     <string name="grp_interface">Interface</string>
     <string name="grp_layout">Layout</string>
 	<string name="grp_localization">Localization</string>

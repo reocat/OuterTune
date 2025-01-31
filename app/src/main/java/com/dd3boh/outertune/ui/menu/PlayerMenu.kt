@@ -336,7 +336,7 @@ fun PlayerMenu(
                 icon = Icons.Rounded.Radio,
                 title = R.string.start_radio
             ) {
-                playerConnection.playQueue(YouTubeQueue.radio(mediaMetadata))
+                playerConnection.playQueue(YouTubeQueue.radio(mediaMetadata), isRadio = true)
                 onDismiss()
             }
         GridMenuItem(
