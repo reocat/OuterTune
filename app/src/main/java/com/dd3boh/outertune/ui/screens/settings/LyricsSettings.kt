@@ -33,7 +33,7 @@ import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
-import com.dd3boh.outertune.ui.component.CounterDialog
+import com.dd3boh.outertune.ui.component.FontSizeDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -66,19 +66,14 @@ fun LyricsSettings(
 
     // lyrics font size
     if (showFontSizeDialog) {
-        CounterDialog(
-            title = stringResource(R.string.lyrics_font_Size),
+        FontSizeDialog(
             initialValue = lyricFontSize,
-            upperBound = 32,
-            lowerBound = 8,
-            unitDisplay = " pt",
             onDismiss = { showFontSizeDialog = false },
             onConfirm = {
                 onLyricFontSizeChange(it)
                 showFontSizeDialog = false
             },
-            onReset = { onLyricFontSizeChange(20) },
-            onCancel = { showFontSizeDialog = false }
+            onReset = { onLyricFontSizeChange(20) }
         )
     }
 
