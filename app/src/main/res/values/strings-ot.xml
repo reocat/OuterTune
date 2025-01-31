@@ -29,7 +29,7 @@
     <string name="like_all">Like all</string>
     <string name="delete_lyric_confirm">Do you really want to delete the stored lyrics for \"%s\"?</string>
 
-<!-- Player -->
+    <!-- Player -->
     <string name="err_play_next_on_error">Error occurred. Playing next</string>
     <string name="err_stop_on_error">Error occurred. Playback stopped</string>
     <string name="err_stop_on_too_many_errors">Too many errors. Playback stopped</string>
@@ -107,8 +107,6 @@
     <string name="swipe2Queue_description">Swipe on a song to add it to "enqueue next" directly after currently playing song</string>
     <string name="on_error">On error</string>
     <string name="pause">Pause</string>
-    <string name="wait_to_reconnect">Wait to reconnect</string>">
-
 
     <!--Lyrics settings -->
     <string name="lyrics_settings_title">Lyrics</string>

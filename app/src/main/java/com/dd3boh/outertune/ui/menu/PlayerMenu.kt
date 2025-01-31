@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.menu
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,11 +24,9 @@ import androidx.compose.material.icons.rounded.AddCircleOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.LibraryAddCheck
-import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.Radio
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SlowMotionVideo
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Tune
@@ -75,8 +72,6 @@ import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListItemHeight
-import com.dd3boh.outertune.constants.PlayerOnError
-import com.dd3boh.outertune.constants.PlayerOnErrorActionKey
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
@@ -89,7 +84,6 @@ import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
 import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.SleepTimerGridMenu
-import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -452,28 +446,6 @@ fun PlayerMenu(
             title = R.string.advanced
         ) {
             showPitchTempoDialog = true
-        }
-
-        GridMenuItem(
-            icon = when (playerOnErrorAction) {
-                PlayerOnError.PAUSE -> Icons.Rounded.Pause
-                PlayerOnError.SKIP -> Icons.Rounded.SkipNext
-            },
-            title = R.string.on_error
-        ) {
-            val nextState = when (playerOnErrorAction) {
-                PlayerOnError.PAUSE -> PlayerOnError.SKIP
-                PlayerOnError.SKIP -> PlayerOnError.PAUSE
-            }
-
-            toast?.cancel()
-            toast = when (nextState) {
-                PlayerOnError.PAUSE -> Toast.makeText(context, R.string.pause, Toast.LENGTH_SHORT)
-                PlayerOnError.SKIP -> Toast.makeText(context, R.string.play_next, Toast.LENGTH_SHORT)
-            }
-            toast?.show()
-
-            onPlayerOnErrorAction(nextState)
         }
     }
 }

@@ -121,18 +121,13 @@
     <string name="dev_settings_title">Abilita impostazioni sviluppatore</string>
     <string name="dev_settings_description">Rivela impostazioni avanzate aggiuntive destinate all\'uso in fase di sviluppo</string>
     <string name="oobe_welcome_message">Benvenuto in OuterTune</string>
-    <string name="oobe_ytm_content_description">YouTube Music a portata di mano</string>
-    <string name="oobe_ytm_sync_description">Sincronizzazione dell\'account</string>
-    <string name="oobe_local_playback_description">Riproduzione di musica locale</string>
     <string name="info">Informazione</string>
     <string name="oobe_use_backup">Ho un backup</string>
     <string name="action_back">Indietro</string>
     <string name="action_next">Successivo</string>
     <string name="action_skip">Salta</string>
-    <string name="oobe_ad_free_description">Riproduzione senza pubblicità</string>
     <string name="experimental_settings_title">Sperimentale</string>
     <string name="pause_remote_listen_history">Condividi la cronologia degli ascolti con YouTube Music</string>
-    <string name="oobe_local_scan_tooltip">Clicca qui per cercare i brani</string>
     <string name="m3u_import_song_failed">Impossibile importare:</string>
     <string name="wait_to_reconnect">Attendi per riconnetterti</string>"&gt;
 
