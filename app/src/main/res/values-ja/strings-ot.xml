@@ -46,7 +46,7 @@
     <string name="scan_paths_incl">スキャンパス</string>
     <string name="scan_paths_excl">除外されたスキャンパス</string>
     <string name="scanner_local_title">ローカルスキャナ</string>
-    <string name="scanner_manual_btn">手動同期をトリガーする</string>
+    <string name="scanner_manual_btn">手動で同期する</string>
     <string name="scanner_warning">デフォルトでは、上記で特に指定しない限り、スキャナーは既存の曲のメタデータを再読み込みしません。ライブラリのサイズによっては、時間がかかる場合があります。</string>
     <string name="scanner_missing_ffmpeg">FFmpeg 抽出プログラムが検出されませんでした</string>
     <string name="scanner_missing_storage_perm">スキャナーにはストレージ権限が必要です</string>
@@ -75,7 +75,7 @@
     <string name="keep_alive_title">タスキル時に確認する</string>
     <string name="persistent_queue_desc_ot">アプリ起動時に前回のキューを復元する</string>
     <string name="show_liked_and_downloaded_playlist">ライブラリにお気に入りした曲とダウンロードした曲を表示する</string>
-    <string name="ytm_sync">YouTube musicアカウントと動悸する</string>
+    <string name="ytm_sync">YouTube musicアカウントと同期する</string>
     <string name="token_hidden">タップしてトークンを表示</string>
     <string name="grp_manual_scanner">マニュアルスキャナー</string>
     <string name="attrib_zhuang">Zion Huang の InnerTune</string>
