@@ -78,7 +78,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.Download.STATE_COMPLETED
@@ -207,7 +206,7 @@ inline fun ListItem(
         ) {
             Text(
                 text = title,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -252,7 +251,7 @@ fun ListItem(
             Text(
                 text = subtitle,
                 color = MaterialTheme.colorScheme.secondary,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.bodySmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -325,7 +324,7 @@ fun GridItem(
     title = {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -340,7 +339,7 @@ fun GridItem(
 
         Text(
             text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.secondary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -1245,7 +1244,7 @@ fun YouTubeGridItem(
     title = {
         Text(
             text = item.title,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
