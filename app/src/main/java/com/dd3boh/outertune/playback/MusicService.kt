@@ -297,7 +297,7 @@ class MusicService : MediaLibraryService(),
                             scope.launch(SilentHandler) {
                                 val mediaItems = YouTubeQueue(WatchEndpoint(songId)).nextPage()
                                 if (player.playbackState != STATE_IDLE) {
-                                    queueBoard.enqueueEnd(mediaItems, this@MusicService, isRadio = true)
+                                    queueBoard.enqueueEnd(mediaItems.drop(1), this@MusicService, isRadio = true)
                                 }
                             }
                         }
