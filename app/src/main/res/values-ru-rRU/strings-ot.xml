@@ -6,57 +6,57 @@
     <string name="library">Библиотека</string>
 
     <!-- Home -->
-    <string name="recent_activity">Recent activity</string>
+    <string name="recent_activity">Недавняя активность</string>
 
     <!-- History screen-->
-    <string name="local_history">Local</string>
-    <string name="remote_history">Remote</string>
+    <string name="local_history">Локальная</string>
+    <string name="remote_history">Удалённая</string>
 
     <!-- Library screens -->
 
     <!-- Queue -->
     <string name="create_queue">Новая очередь</string>
-    <string name="queue_searched_songs_ot">Search: </string>
+    <string name="queue_searched_songs_ot">Поиск: </string>
     <string name="song_added_to_queue">\"%s\" добавлено в очередь</string>
     <string name="song_added_to_queue_end">\"%s\" добавлено в конец очереди</string>
 
 
     <!-- Playlist -->
-    <string name="auto_playlist">Auto playlist</string>
+    <string name="auto_playlist">Автоматический плейлист</string>
 
     <!-- Menu -->
-    <string name="select">Selection mode</string>
+    <string name="select">Режим выбора</string>
     <string name="like_all">Like all</string>
-    <string name="delete_lyric_confirm">Do you really want to delete the stored lyrics for \"%s\"?</string>
+    <string name="delete_lyric_confirm">Вы действительно хотите удалить сохранённые тексты для \"%s\"?</string>
 
     <!-- Sort menu -->
-    <string name="sort_by_date_modified">Date modified</string>
-    <string name="sort_by_date_released">Date released</string>
-    <string name="sort_by_like_date">Date liked</string>
-    <string name="sort_by_play_count">Play count</string>
+    <string name="sort_by_date_modified">Дата изменения</string>
+    <string name="sort_by_date_released">Дата выпуска</string>
+    <string name="sort_by_like_date">Дата добавления в понравившиеся</string>
+    <string name="sort_by_play_count">Количество проигрываний</string>
 
     <!-- Dialog -->
-    <string name="create_sync_playlist">Sync Playlist</string>
-    <string name="create_sync_playlist_description">Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.</string>
+    <string name="create_sync_playlist">Синхронизировать плейлист</string>
+    <string name="create_sync_playlist_description">Примечание: Это позволяет синхронизироваться с YouTube Music. Это НЕЛЬЗЯ изменить позже. Вы не можете добавлять локальные треки в синхронизированные плейлисты.</string>
     <string name="play_count">Play count</string>
-    <string name="playlist_add_local_to_synced_note">Note: Adding local songs to synced/remote playlists is unsupported. Any other combination is valid</string>
+    <string name="playlist_add_local_to_synced_note">Примечание: Добавление локальных песен в синхронизированные/удалённые плейлисты не поддерживается. Любые другие комбинации допустимы</string>
 
     <!-- Sync-->
-    <string name="sync_progress_active">Syncing with YouTube account…</string>
-    <string name="sync_progress_success">Sync complete</string>
+    <string name="sync_progress_active">Синхронизация с аккаунтом YouTube…</string>
+    <string name="sync_progress_success">Синхронизация завершена</string>
 
     <!-- Settings -->
     <string name="prefs_advanced">Advanced</string>
-    <string name="settings_debug">Debug</string>
+    <string name="settings_debug">Отладка</string>
 
     <string name="grp_audio">Аудио</string>
     <string name="grp_extra_scanner_settings">Дополнительные настройки сканера</string>
     <string name="grp_interface">Интерфейс</string>
     <string name="grp_layout">Раскладка</string>
     <string name="grp_localization">Локализация</string>
-    <string name="grp_lyrics_format">Formatting</string>
-    <string name="grp_lyrics_parser">Parser</string>
-    <string name="grp_lyrics_source">Lyric sources</string>
+    <string name="grp_lyrics_format">Форматирование</string>
+    <string name="grp_lyrics_parser">Парсер</string>
+    <string name="grp_lyrics_source">Источники текстов</string>
     <string name="grp_manual_scanner">Ручное сканироваие</string>
     <string name="grp_proxy">Прокси</string>
 
@@ -106,7 +106,7 @@
     <string name="lyrics_multiline_title">Read multiline lyrics</string>
     <string name="lyrics_multiline_description">Treat all the lines between sync points as one lyric text</string>
     <string name="lyrics_trim_title">Remove spaces around lyrics</string>
-    <string name="lyrics_prefer_local">Prefer local lyric files</string>
+    <string name="lyrics_prefer_local">Предпочитать локальные файлы с текстами</string>
     <string name="lyrics_prefer_local_description">Prioritize resolving local lyric files before using all cloud providers. Turn ths off to prioritize cloud providers</string>
     <string name="lyrics_font_Size">Размер шрифта</string>
 
@@ -115,8 +115,8 @@
     <string name="local_library_enable_title">Включить локальные медиа</string>
     <string name="local_library_enable_description">Отключение скроет локальную медиатеку в приложении</string>
     <string name="local_player_settings_title">Локальные медиа</string>
-    <string name="flat_subfolders_title">Flatten subfolders</string>
-    <string name="flat_subfolders_description">Disable to preserve the file structure as on disk</string>
+    <string name="flat_subfolders_title">Объединить подпапки</string>
+    <string name="flat_subfolders_description">Отключите, чтобы сохранить структуру папок как на диске</string>
 
     <string name="import_innertune_tooltip">Восстановление резервных копий OuterTune поддерживается, однако возможны проблемы в связи с техническими ограничениями</string>
     <string name="import_m3u">Импортировать плейлист (m3u)</string>
@@ -159,12 +159,11 @@
     </plurals>
 
     <!-- Scanner parameter settings-->
-    <string name="scanner_strict_file_name_title">Strict file names</string>
-    <string name="scanner_strict_file_name_description">When enabled, file names will NOT be ignored. Ex. "Song.ogg" will be a different song from "Song.flac". Scanner sensitivity preference will still apply</string>
-    <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
-    <string name="scanner_sensitivity_L1">Match title</string>
-    <string name="scanner_sensitivity_L2">Match title and artists</string>
-    <string name="scanner_sensitivity_L3">Match title, artists, albums</string>
+    <string name="scanner_strict_file_name_title">Строгие имена файлов</string>
+    <string name="scanner_strict_file_name_description">Если включено, имена файлов НЕ будут игнорироваться. Например: «Песня.ogg» и «Песня.flac» будут считаться разными треками. Настройки чувствительности сканера всё равно применяются</string>    <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
+    <string name="scanner_sensitivity_L1">Совпадение по названию</string>
+    <string name="scanner_sensitivity_L2">Совпадение по названию и исполнителям</string>
+    <string name="scanner_sensitivity_L3">Совпадение по названию, исполнителям и альбомам</string>
 
     <string name="scanner_type_title">Экстрактор метаданных</string>
     <string name="scanner_type_taglib">Использовать встроенный экстрактор TagLib</string>
@@ -174,7 +173,7 @@
     <string name="scanner_online_artist_linking">Try to link local files\' artists with ones on YouTube Music</string>
 
     <!-- Privacy settings -->
-    <string name="pause_remote_listen_history">Share listen history with YouTube Music</string>
+    <string name="pause_remote_listen_history">Делиться историей прослушиваний с YouTube Music</string>
 
     <!-- Backup and restore settings -->
     <string name="m3u_import_song_failed">Не удалось импортировать:</string>
@@ -185,30 +184,30 @@
     <string name="dev_settings_description">Открывает дополнительные настройки, используемые во время разработки</string>
 
     <!-- Setup wizard -->
-    <string name="oobe_welcome_message">Welcome to OuterTune</string>
-    <string name="oobe_use_backup">I have a backup</string>
-    <string name="oobe_ytm_logon_title">Connect Your Account</string>
-    <string name="oobe_ytm_logon_subtitle">Sync with YouTube Music</string>
-    <string name="oobe_local_media_title">Local Media Setup</string>
+    <string name="oobe_welcome_message">Добро пожаловать в OuterTune</string>
+    <string name="oobe_use_backup">У меня есть резервная копия</string>
+    <string name="oobe_ytm_logon_title">Подключите свой аккаунт</string>
+    <string name="oobe_ytm_logon_subtitle">Синхронизация с YouTube Music</string>
+    <string name="oobe_local_media_title">Настройка локальной медиатеки</string>
     <string name="oobe_local_media_subtitle">Import your music collection</string>
-    <string name="oobe_scan_for_local_music">Scan for Local Music</string>
-    <string name="oobe_complete_title">You\'re All Set!</string>
-    <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
+    <string name="oobe_scan_for_local_music">Сканировать локальную музыку</string>
+    <string name="oobe_complete_title">Всё готово!</string>
+    <string name="oobe_complete">OuterTune настроен и готов к использованию. Исследуйте свою музыку, открывайте новые треки и наслаждайтесь!</string>
 
     <!-- Setup Wizard features-->
-    <string name="youtube_music_integration">YouTube Music Integration</string>
-    <string name="youtube_music_integration_description">Access your favorite tracks seamlessly</string>
-    <string name="ad_free_experience">AD-Free Experience</string>
-    <string name="ad_free_experience_description">Enjoy uninterrupted music playback</string>
-    <string name="local_music_support">Local Music Support</string>
-    <string name="local_music_support_description">Play your downloaded tracks anywhere</string>
-    <string name="cross_platform_sync">Cross-Platform Sync</string>
-    <string name="cross_platform_sync_description">Keep your music in harmony across devices</string>
+    <string name="youtube_music_integration">Интеграция с YouTube Music</string>
+    <string name="youtube_music_integration_description">Доступ к любимым трекам без ограничений</string>
+    <string name="ad_free_experience">Без рекламы</string>
+    <string name="ad_free_experience_description">Наслаждайтесь музыкой без перерывов</string>
+    <string name="local_music_support">Поддержка локальной музыки</string>
+    <string name="local_music_support_description">Слушайте свои загруженные треки где угодно</string>
+    <string name="cross_platform_sync">Кросс-платформенная синхронизация</string>
+    <string name="cross_platform_sync_description">Ваша музыка синхронизирована на всех устройствах</string>
 
     <!-- Misc -->
-    <string name="action_back">Back</string>
-    <string name="action_next">Next</string>
-    <string name="action_skip">Skip</string>
+    <string name="action_back">Назад</string>
+    <string name="action_next">Далее</string>
+    <string name="action_skip">Пропустить</string>
     <string name="info">Информация</string>
     <string name="off">ВЫКЛ</string>
     <string name="on">ВКЛ</string>
