@@ -95,6 +95,11 @@
     <string name="ytm_sync">Automatically sync with your YouTube Music account</string>
     <string name="wifi_only">Wifi only</string>
 
+    <!-- Translator -->
+    <string name="select_language">Select Language</string>
+    <string name="translate">Translate</string>
+    <string name="translate_lyrics">Translate Lyrics</string>
+
     <!-- Player settings -->
     <string name="audio_offload">Enable offload</string>
     <string name="audio_offload_description">Use the offload audio path for audio playback. Disabling this may increase power usage but can be useful if you experience issues with audio playback or post processing</string>

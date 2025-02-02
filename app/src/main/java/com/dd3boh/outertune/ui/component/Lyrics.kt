@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.component
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -49,6 +51,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +64,7 @@ import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.ShowLyricsKey
+import com.dd3boh.outertune.constants.TranslationLanguageKey
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.dd3boh.outertune.lyrics.LyricsEntry
 import com.dd3boh.outertune.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
@@ -76,14 +80,20 @@ import com.dd3boh.outertune.ui.screens.settings.PlayerBackgroundStyle
 import com.dd3boh.outertune.ui.utils.fadingEdge
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.viewmodels.LyricsMenuViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeout
+import me.bush.translator.Language
+import me.bush.translator.Translator
 import kotlin.time.Duration.Companion.seconds
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun Lyrics(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
+    viewModel: LyricsMenuViewModel
 ) {
     val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -96,13 +106,19 @@ fun Lyrics(
     val lyricsFontSize by rememberPreference(LyricFontSizeKey, 20)
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    var translatedLyrics by remember {
+        mutableStateOf("")
+    }
+    val translationLanguage by rememberEnumPreference(TranslationLanguageKey, defaultValue = Language.ENGLISH)
     val lyricsEntity by playerConnection.currentLyrics.collectAsState(initial = null)
     val lyrics = remember(lyricsEntity) { lyricsEntity?.lyrics?.trim() }
-    val multilineLrc = rememberPreference(MultilineLrcKey, defaultValue = true)
-    val lyricTrim = rememberPreference(LyricTrimKey, defaultValue = false)
+    val multilineLrc by rememberPreference(MultilineLrcKey, defaultValue = true)
+    val lyricTrim by rememberPreference(LyricTrimKey, defaultValue = false)
 
-    val playerBackground by rememberEnumPreference(key = PlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
-
+    val playerBackground by rememberEnumPreference(
+        key = PlayerBackgroundStyleKey,
+        defaultValue = PlayerBackgroundStyle.DEFAULT
+    )
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
@@ -110,10 +126,7 @@ fun Lyrics(
     }
 
     val lines: List<LyricsEntry> = remember(lyrics) {
-        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
-        else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
-                loadAndParseLyricsString(lyrics, LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
-        else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
+        parseLyricsBasedOnType(lyrics, lyricTrim, multilineLrc)
     }
     val isSynced = remember(lyrics) {
         !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
@@ -144,7 +157,11 @@ fun Lyrics(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(lyrics) {
+    var isTranslated by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(mediaMetadata) {
+        isTranslated = false
+    }
+    LaunchedEffect(lyrics, translationLanguage, isTranslated) {
         if (lyrics.isNullOrEmpty() || !lyrics.startsWith("[")) {
             currentLineIndex = -1
             return@LaunchedEffect
@@ -153,8 +170,19 @@ fun Lyrics(
             delay(50)
             val sliderPosition = sliderPositionProvider()
             isSeeking = sliderPosition != null
-            currentLineIndex = findCurrentLineIndex(lines, sliderPosition ?: playerConnection.player.currentPosition)
-        }
+            if (isTranslated) {
+                translateLyrics(
+                    text = lyrics,
+                    destinationLanguage = translationLanguage,
+                    onResult = { result ->
+                        viewModel.updateTranslatedLyrics(result)
+                    }
+                )
+            }
+            currentLineIndex = findCurrentLineIndex(
+                lines,
+                sliderPosition ?: playerConnection.player.currentPosition
+            )        }
     }
 
     LaunchedEffect(isSeeking, lastPreviewTime) {
@@ -169,33 +197,18 @@ fun Lyrics(
     val lazyListState = rememberLazyListState()
 
     LaunchedEffect(currentLineIndex, lastPreviewTime) {
-        /**
-         * Count number of new lines in a lyric
-         */
-        fun countNewLine(str: String) = str.count { it == '\n' }
-
-        /**
-         * Calculate the lyric offset Based on how many lines (\n chars)
-         */
-        fun calculateOffset() = with(density) {
-            if (landscapeOffset) {
-                16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content) // landscape sits higher by default
-            } else {
-                20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
-            }
-        }
-
         if (!isSynced) return@LaunchedEffect
         if (currentLineIndex != -1) {
             deferredCurrentLineIndex = currentLineIndex
             if (lastPreviewTime == 0L) {
-                if (isSeeking) {
-                    lazyListState.scrollToItem(currentLineIndex,
-                        with(density) { 36.dp.toPx().toInt() } + calculateOffset())
-                } else {
-                    lazyListState.animateScrollToItem(currentLineIndex,
-                        with(density) { 36.dp.toPx().toInt() } + calculateOffset())
-                }
+                scrollToCurrentLine(
+                    lazyListState,
+                    currentLineIndex,
+                    isSeeking,
+                    density,
+                    landscapeOffset,
+                    lines
+                )
             }
         }
     }
@@ -206,6 +219,8 @@ fun Lyrics(
             .fillMaxSize()
             .padding(bottom = 12.dp)
     ) {
+        val translatedLyricsState by viewModel.translatedLyrics.collectAsState()
+
         LazyColumn(
             state = lazyListState,
             contentPadding = WindowInsets.systemBars
@@ -250,9 +265,14 @@ fun Lyrics(
                     }
                 }
             } else {
-                itemsIndexed(
-                    items = lines
-                ) { index, item ->
+                val lyricsToDisplay = if (isTranslated) {
+                    translatedLyricsState.lines().mapIndexed { index, line ->
+                        LyricsEntry(index * 100L, line)
+                    }
+                } else {
+                    lines
+                }
+                itemsIndexed(items = lyricsToDisplay) { index, item ->
                     Text(
                         text = item.content,
                         fontSize = lyricsFontSize.sp,
@@ -265,7 +285,7 @@ fun Lyrics(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = isSynced) {
+                            .clickable(enabled = isSynced || isTranslated) {
                                 playerConnection.player.seekTo(item.timeStamp)
                                 lastPreviewTime = 0L
                                 haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -316,8 +336,9 @@ fun Lyrics(
                             LyricsMenu(
                                 lyricsProvider = { lyricsEntity },
                                 mediaMetadataProvider = { mediaMetadata },
-                                onDismiss = menuState::dismiss
-                            )
+                                onDismiss = menuState::dismiss,
+                                isTranslated = isTranslated,
+                                onTranslationToggle = { isTranslated = it }                            )
                         }
                     }
                 ) {
@@ -329,6 +350,111 @@ fun Lyrics(
                 }
             }
         }
+    }
+}
+
+private suspend fun translateLyrics(
+    text: String,
+    destinationLanguage: Language,
+    onResult: (String) -> Unit,
+    maxRetries: Int = 3
+) {
+    var currentRetry = 0
+    var lastException: Exception? = null
+    while (currentRetry < maxRetries) {
+        try {
+            val translator = Translator()
+            val translatedLines = translateLyricsBasedOnType(text, destinationLanguage, translator)
+            onResult(translatedLines.joinToString("\n"))
+            return
+        } catch (e: Exception) {
+            lastException = e
+            currentRetry++
+            if (currentRetry < maxRetries) {
+                // Exponential backoff: 500ms, 1000ms, 2000ms, etc.
+                val delayTime = (500L * (1 shl (currentRetry - 1))).coerceAtMost(5000L)
+                delay(delayTime)
+            }
+        }
+    }
+    // If all retries failed, log the error and notify the user
+    println("Translation failed after $maxRetries attempts. Last error: ${lastException?.message}")
+    onResult("Translation Error (Retry Failed)")
+}
+
+private fun parseLyricsBasedOnType(
+    lyrics: String?,
+    lyricTrim: Boolean,
+    multilineLrc: Boolean
+): List<LyricsEntry> {
+    return if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
+    else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
+        loadAndParseLyricsString(lyrics.toString(), LyricsUtils.LrcParserOptions(lyricTrim, multilineLrc, "Unable to parse lyrics"))
+    else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
+}
+
+private suspend fun translateLyricsBasedOnType(
+    text: String,
+    destinationLanguage: Language,
+    translator: Translator
+): List<String> {
+    val translator = Translator()
+    val translatedLines = mutableListOf<String>()
+    val lyricsLines = text.lines()
+    lyricsLines.forEach { line ->
+        try {
+            if (line.startsWith("[")) {
+                val timecodeEnd = line.indexOf("]") + 1
+                val timecode = line.substring(0, timecodeEnd)
+                val lyrics = line.substring(timecodeEnd).trim()
+                val translatedLyrics = if (lyrics.isNotEmpty()) {
+                    withTimeout(5000) {
+                        translator.translate(lyrics, destinationLanguage).translatedText
+                    }
+                } else {
+                    lyrics
+                }
+                translatedLines.add("$timecode $translatedLyrics")
+            } else if (line.isNotBlank()) {
+                val translatedText = withTimeout(5000) {
+                    translator.translate(line, destinationLanguage).translatedText
+                }
+                translatedLines.add(translatedText)
+            }
+        } catch (e: Exception) {
+            translatedLines.add(line)
+            println("Failed to translate line: $line. Error: ${e.message}")
+        }
+    }
+    return translatedLines
+}
+
+private suspend fun scrollToCurrentLine(
+    lazyListState: LazyListState,
+    currentLineIndex: Int,
+    isSeeking: Boolean,
+    density: Density,
+    landscapeOffset: Boolean,
+    lines: List<LyricsEntry>
+) {
+    fun countNewLine(str: String) = str.count { it == '\n' }
+    fun calculateOffset() = with(density) {
+        if (landscapeOffset) {
+            16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content) // landscape sits higher by default
+        } else {
+            20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
+        }
+    }
+    if (isSeeking) {
+        lazyListState.scrollToItem(
+            currentLineIndex,
+            with(density) { 36.dp.toPx().toInt() } + calculateOffset()
+        )
+    } else {
+        lazyListState.animateScrollToItem(
+            currentLineIndex,
+            with(density) { 36.dp.toPx().toInt() } + calculateOffset()
+        )
     }
 }
 

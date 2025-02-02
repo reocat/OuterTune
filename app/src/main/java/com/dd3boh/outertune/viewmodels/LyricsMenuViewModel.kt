@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import me.bush.translator.Language
+import me.bush.translator.Translator
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +26,7 @@ class LyricsMenuViewModel @Inject constructor(
     private var job: Job? = null
     val results = MutableStateFlow(emptyList<LyricsResult>())
     val isLoading = MutableStateFlow(false)
+    val translatedLyrics = MutableStateFlow("")
 
     fun search(mediaId: String, title: String, artist: String, duration: Int) {
         isLoading.value = true
@@ -52,5 +55,19 @@ class LyricsMenuViewModel @Inject constructor(
             }
             upsert(LyricsEntity(mediaMetadata.id, lyrics))
         }
+    }
+    fun translateLyrics(text: String, destinationLanguage: Language) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val translator = Translator()
+            try {
+                val translation = translator.translate(text, destinationLanguage)
+                translatedLyrics.value = translation.translatedText
+            } catch (e: Exception) {
+                translatedLyrics.value = "Translation Error"
+            }
+        }
+    }
+    fun updateTranslatedLyrics(lyrics: String) {
+        translatedLyrics.value = lyrics
     }
 }

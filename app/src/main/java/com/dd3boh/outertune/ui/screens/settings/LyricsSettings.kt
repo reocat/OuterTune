@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.ContentCut
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.TextFields
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +52,7 @@ import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
+import com.dd3boh.outertune.constants.TranslationLanguageKey
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -59,6 +61,7 @@ import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import me.bush.translator.Language
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +78,7 @@ fun LyricsSettings(
     val (multilineLrc, onMultilineLrcChange) = rememberPreference(MultilineLrcKey, defaultValue = true)
     val (lyricTrim, onLyricTrimChange) = rememberPreference(LyricTrimKey, defaultValue = false)
     val (lyricFontSize, onLyricFontSizeChange) = rememberPreference(LyricFontSizeKey, defaultValue = 20)
+    val (translationLanguage, onTranslationLanguageChange) = rememberEnumPreference(TranslationLanguageKey, defaultValue = Language.ENGLISH)
 
 
     val (preferLocalLyric, onPreferLocalLyric) = rememberPreference(LyricSourcePrefKey, defaultValue = true)
@@ -145,6 +149,16 @@ fun LyricsSettings(
             checked = lyricTrim,
             onCheckedChange = onLyricTrimChange
         )
+
+        // translation language
+        EnumListPreference(
+            title = { Text(stringResource(R.string.translate_lyrics)) },
+            icon = { Icon(Icons.Rounded.Translate, null) },
+            selectedValue = translationLanguage,
+            onValueSelected = onTranslationLanguageChange,
+            valueText = { it.name }
+        )
+
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_lyrics_format)
         )

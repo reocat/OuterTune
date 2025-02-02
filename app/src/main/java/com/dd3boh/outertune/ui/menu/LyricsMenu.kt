@@ -26,8 +26,8 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncAlt
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,6 +70,8 @@ fun LyricsMenu(
     mediaMetadataProvider: () -> MediaMetadata,
     onDismiss: () -> Unit,
     viewModel: LyricsMenuViewModel = hiltViewModel(),
+    isTranslated: Boolean,
+    onTranslationToggle: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
@@ -242,7 +244,7 @@ fun LyricsMenu(
                             )
                             if (result.lyrics.startsWith("[")) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Sync,
+                                    imageVector = Icons.Rounded.SyncAlt,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier
@@ -357,6 +359,12 @@ fun LyricsMenu(
             title = R.string.search,
         ) {
             showSearchDialog = true
+        }
+        GridMenuItem(
+            icon = Icons.Rounded.Translate,
+            title = R.string.translate
+        ) {
+            onTranslationToggle(!isTranslated)
         }
         if (lyricsProvider() != null) {
             // TODO: hide this for when lrc exists and lyrics is not in the database

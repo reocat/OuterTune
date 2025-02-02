@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import me.bush.translator.Language
 
 /**
  * Appearance
@@ -79,7 +80,7 @@ val MultilineLrcKey = booleanPreferencesKey("multilineLrc")
 val LyricTrimKey = booleanPreferencesKey("lyricTrim")
 val LyricSourcePrefKey = booleanPreferencesKey("preferLocalLyrics")
 val LyricFontSizeKey = intPreferencesKey("lyricFontSize")
-
+val TranslationLanguageKey = stringPreferencesKey("translation_language")
 
 /**
  * Storage
@@ -434,3 +435,11 @@ val CountryCodeToName = mapOf(
     "YE" to "Yemen",
     "ZW" to "Zimbabwe",
 )
+
+fun String.toLanguage(): Language {
+    return try {
+        Language.valueOf(this)
+    } catch (e: IllegalArgumentException) {
+        Language.ENGLISH // Default to English if the stored value is invalid
+    }
+}

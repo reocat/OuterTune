@@ -1,7 +1,6 @@
 import java.text.SimpleDateFormat
 import java.util.Date
 
-@Suppress("UnstableApiUsage")
 val isFullBuild: Boolean by rootProject.extra
 
 plugins {
@@ -176,7 +175,9 @@ dependencies {
     implementation(libs.multidex)
 
     implementation(libs.timber)
-    
+
+    implementation(libs.translator)
+
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)

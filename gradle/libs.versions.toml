@@ -14,6 +14,7 @@ ksp = "2.1.20-Beta2-1.0.29"
 multidex = "2.0.1"
 newpipe = "3a33cefbc014a820056d83076914544f29b82644"
 taglib = "1.0.0-alpha25"
+translator = "1.1.1"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -78,6 +79,8 @@ desugaring = { group = "com.android.tools", name = "desugar_jdk_libs", version =
 junit = { group = "junit", name = "junit", version = "4.13.2" }
 
 timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" }
+
+translator = { group = "com.github.therealbush", name = "translator", version.ref = "translator" }
 
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 
