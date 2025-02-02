@@ -1,6 +1,8 @@
 package com.dd3boh.outertune.ui.component
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -37,8 +39,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -47,6 +50,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Velocity
@@ -80,6 +84,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.seconds
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun Lyrics(
     sliderPositionProvider: () -> Long?,
@@ -131,8 +136,6 @@ fun Lyrics(
     var currentLineIndex by remember {
         mutableIntStateOf(-1)
     }
-    // Because LaunchedEffect has delay, which leads to inconsistent with current line color and scroll animation,
-    // we use deferredCurrentLineIndex when user is scrolling
     var deferredCurrentLineIndex by rememberSaveable {
         mutableIntStateOf(0)
     }
@@ -169,19 +172,13 @@ fun Lyrics(
     val lazyListState = rememberLazyListState()
 
     LaunchedEffect(currentLineIndex, lastPreviewTime) {
-        /**
-         * Count number of new lines in a lyric
-         */
         fun countNewLine(str: String) = str.count { it == '\n' }
 
-        /**
-         * Calculate the lyric offset Based on how many lines (\n chars)
-         */
         fun calculateOffset() = with(density) {
             if (landscapeOffset) {
-                16.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content) // landscape sits higher by default
+                24.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
             } else {
-                20.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
+                32.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
             }
         }
 
@@ -191,10 +188,10 @@ fun Lyrics(
             if (lastPreviewTime == 0L) {
                 if (isSeeking) {
                     lazyListState.scrollToItem(currentLineIndex,
-                        with(density) { 36.dp.toPx().toInt() } + calculateOffset())
+                        with(density) { 48.dp.toPx().toInt() } + calculateOffset())
                 } else {
                     lazyListState.animateScrollToItem(currentLineIndex,
-                        with(density) { 36.dp.toPx().toInt() } + calculateOffset())
+                        with(density) { 48.dp.toPx().toInt() } + calculateOffset())
                 }
             }
         }
@@ -213,7 +210,7 @@ fun Lyrics(
                 .add(WindowInsets(top = maxHeight / 2, bottom = maxHeight / 2))
                 .asPaddingValues(),
             modifier = Modifier
-                .fadingEdge(vertical = 64.dp)
+                .fadingEdge(vertical = 96.dp)
                 .nestedScroll(remember {
                     object : NestedScrollConnection {
                         override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -233,7 +230,7 @@ fun Lyrics(
             if (lyrics == null) {
                 item {
                     ShimmerHost {
-                        repeat(10) {
+                        repeat(10) { index ->
                             Box(
                                 contentAlignment = when (lyricsTextPosition) {
                                     LyricsPosition.LEFT -> Alignment.CenterStart
@@ -242,9 +239,16 @@ fun Lyrics(
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 4.dp)
+                                    .padding(horizontal = 24.dp, vertical = 8.dp)
                             ) {
-                                TextPlaceholder()
+                                TextPlaceholder(
+                                    widthFraction = when (index % 3) {
+                                        0 -> 0.9f
+                                        1 -> 0.7f
+                                        else -> 0.6f
+                                    },
+                                    height = (lyricsFontSize * 1.2).dp
+                                )
                             }
                         }
                     }
@@ -253,25 +257,49 @@ fun Lyrics(
                 itemsIndexed(
                     items = lines
                 ) { index, item ->
+                    val animatedPadding by animateDpAsState(
+                        targetValue = if (index == displayedCurrentLineIndex) 18.dp else 12.dp,
+                        label = "lyricPadding"
+                    )
+                    val lineColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+
                     Text(
                         text = item.content,
-                        fontSize = lyricsFontSize.sp,
-                        color = textColor,
+                        fontSize = if (index == displayedCurrentLineIndex) (lyricsFontSize * 1.2).sp else lyricsFontSize.sp,
+                        color = textColor.copy(alpha = if (index == displayedCurrentLineIndex) 1f else 0.6f),
                         textAlign = when (lyricsTextPosition) {
                             LyricsPosition.LEFT -> TextAlign.Left
                             LyricsPosition.CENTER -> TextAlign.Center
                             LyricsPosition.RIGHT -> TextAlign.Right
                         },
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = if (index == displayedCurrentLineIndex) FontWeight.ExtraBold else FontWeight.Medium,
+                        lineHeight = if (index == displayedCurrentLineIndex) 32.sp else 28.sp,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .graphicsLayer {
+                                alpha = if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.6f
+                                translationY = if (index == displayedCurrentLineIndex) 0.dp.toPx() else 0f
+                            }
                             .clickable(enabled = isSynced) {
                                 playerConnection.player.seekTo(item.timeStamp)
                                 lastPreviewTime = 0L
                                 haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                             }
-                            .padding(horizontal = 24.dp, vertical = 8.dp)
-                            .alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f)
+                            .padding(horizontal = 24.dp, vertical = animatedPadding)
+                            .drawWithCache {
+                                onDrawBehind {
+                                    if (index == displayedCurrentLineIndex) {
+                                        val strokeWidth = 2.dp.toPx()
+                                        val y = size.height - strokeWidth / 2
+                                        drawLine(
+                                            color = lineColor,
+                                            start = Offset(0f, y),
+                                            end = Offset(size.width, y),
+                                            strokeWidth = strokeWidth
+                                        )
+                                    }
+                                }
+                            }
                     )
                 }
             }
@@ -281,17 +309,17 @@ fun Lyrics(
             Text(
                 text = stringResource(R.string.lyrics_not_found),
                 fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 textAlign = when (lyricsTextPosition) {
                     LyricsPosition.LEFT -> TextAlign.Left
                     LyricsPosition.CENTER -> TextAlign.Center
                     LyricsPosition.RIGHT -> TextAlign.Right
                 },
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Medium,
+                fontStyle = FontStyle.Italic,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 8.dp)
-                    .alpha(0.5f)
             )
         }
 
@@ -299,10 +327,14 @@ fun Lyrics(
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 12.dp)
+                    .padding(end = 12.dp, bottom = 8.dp)
             ) {
                 IconButton(
-                    onClick = { showLyrics = false }
+                    onClick = { showLyrics = false },
+                    modifier = Modifier
+                        .graphicsLayer {
+                            alpha = 0.9f
+                        }
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
@@ -319,7 +351,11 @@ fun Lyrics(
                                 onDismiss = menuState::dismiss
                             )
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .graphicsLayer {
+                            alpha = 0.9f
+                        }
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.MoreHoriz,
