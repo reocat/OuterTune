@@ -324,7 +324,8 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 title = mq.title,
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
-                index = mq.index
+                index = mq.index,
+                playlistId = mq.playlistId
             )
         )
 
