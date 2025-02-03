@@ -75,7 +75,7 @@
     <string name="keep_alive_title">タスキル時に確認する</string>
     <string name="persistent_queue_desc_ot">アプリ起動時に前回のキューを復元する</string>
     <string name="show_liked_and_downloaded_playlist">ライブラリにお気に入りした曲とダウンロードした曲を表示する</string>
-    <string name="ytm_sync">YouTube musicアカウントと同期する</string>
+    <string name="ytm_sync">YouTube Musicアカウントと同期する</string>
     <string name="token_hidden">タップしてトークンを表示</string>
     <string name="grp_manual_scanner">マニュアルスキャナー</string>
     <string name="attrib_zhuang">Zion Huang の InnerTune</string>
