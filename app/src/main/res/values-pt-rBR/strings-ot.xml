@@ -134,4 +134,5 @@
 
 <string name="err_stop_on_error">Um erro ocorreu. A reprodução parou</string>
     <string name="err_stop_on_too_many_errors">Muitos erros. A reprodução parou</string>
+    <string name="grp_general">Geral</string>
 </resources>
