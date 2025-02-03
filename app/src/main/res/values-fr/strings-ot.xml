@@ -9,7 +9,7 @@
     <string name="queue_searched_songs_ot">Recherche :</string>
     <string name="sort_by_date_released">Date de sortie</string>
     <string name="local_history">Locale</string>
-    <string name="remote_history">Éloigné</string>
+    <string name="remote_history">Distant</string>
     <string name="create_queue">Nouvelle file d\'attente</string>
     <string name="like_all">Tout liker</string>
     <string name="delete_lyric_confirm">Voulez-vous vraiment supprimer les paroles enregistrées pour \"%s\" ?</string>
