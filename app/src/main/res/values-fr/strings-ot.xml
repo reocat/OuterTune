@@ -134,4 +134,5 @@
     <string name="err_stop_on_too_many_errors">Trop d\'erreurs. La lecture est arrêtée</string>
     <string name="wait_to_reconnect">Attendez pour vous reconnecter</string>"&gt;
 
+<string name="grp_general">Général</string>
 </resources>
