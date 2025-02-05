@@ -155,6 +155,7 @@ class InnerTube {
         videoId: String,
         playlistId: String?,
         signatureTimestamp: Int?,
+        webPlayerPot: String?,
     ) = httpClient.post("player") {
         // Skip network call for local content
         if (isLocalContent(videoId)) {
@@ -184,12 +185,16 @@ class InnerTube {
                 },
                 videoId = videoId,
                 playlistId = playlistId,
-                playbackContext =
-                    if (client.useSignatureTimestamp && signatureTimestamp != null) {
-                        PlayerBody.PlaybackContext(PlayerBody.PlaybackContext.ContentPlaybackContext(
+                playbackContext = if (client.useSignatureTimestamp && signatureTimestamp != null) {
+                    PlayerBody.PlaybackContext(
+                        PlayerBody.PlaybackContext.ContentPlaybackContext(
                             signatureTimestamp
-                        ))
-                    } else null
+                        )
+                    )
+                } else null,
+                serviceIntegrityDimensions = if (client.useWebPoTokens && webPlayerPot != null) {
+                    PlayerBody.ServiceIntegrityDimensions(webPlayerPot)
+                } else null
             )
         )
     }

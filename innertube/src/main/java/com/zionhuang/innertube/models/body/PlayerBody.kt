@@ -10,6 +10,7 @@ data class PlayerBody(
     val playlistId: String?,
     val cpn: String? = "wzf9Y0nqz6AUe2Vr", // need some random cpn to get same algorithm for sig
     val playbackContext: PlaybackContext? = null,
+    val serviceIntegrityDimensions: ServiceIntegrityDimensions? = null,
     val contentCheckOk: Boolean = true,
     val racyCheckOk: Boolean = true,
 ) {
@@ -22,4 +23,9 @@ data class PlayerBody(
             val signatureTimestamp: Int
         )
     }
+
+    @Serializable
+    data class ServiceIntegrityDimensions(
+        val poToken: String
+    )
 }
