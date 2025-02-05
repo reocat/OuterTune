@@ -5,13 +5,12 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
 import android.database.SQLException
+import android.graphics.Bitmap
 import android.media.audiofx.AudioEffect
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Binder
-import android.os.Build
 import android.widget.Toast
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
@@ -68,9 +67,9 @@ import com.dd3boh.outertune.constants.EnableDiscordRPCKey
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleLike
-import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleStartRadio
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleShuffle
+import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleStartRadio
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.PlayerVolumeKey
@@ -141,7 +140,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlin.collections.map
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -452,25 +450,37 @@ class MusicService : MediaLibraryService(),
         playerNotificationManager = PlayerNotificationManager.Builder(this, NOTIFICATION_ID, CHANNEL_ID)
             .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
                 override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-                    fun startFg() {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            startForeground(notificationId, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-                        } else {
-                            startForeground(notificationId, notification)
-                        }
-                    }
-
                     // FG keep alive
                     if (dataStore.get(KeepAliveKey, false)) {
-                      startFg()
+                        startForeground(notificationId, notification)
                     } else {
-                        // mimic media3 default behaviour
-                        if (player.isPlaying) {
-                          startFg()
-                        } else {
-                            stopForeground(notificationId)
-                        }
+                        stopForeground(notificationId)
                     }
+                }
+            })
+            .setMediaDescriptionAdapter(object : PlayerNotificationManager.MediaDescriptionAdapter {
+                override fun createCurrentContentIntent(player: Player): PendingIntent? {
+                    val intent = Intent(this@MusicService, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    }
+                    return PendingIntent.getActivity(
+                        this@MusicService,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                }
+                override fun getCurrentContentText(player: Player): CharSequence? {
+                    return player.currentMediaItem?.mediaMetadata?.artist
+                }
+                override fun getCurrentContentTitle(player: Player): CharSequence {
+                    return player.currentMediaItem?.mediaMetadata?.title ?: ""
+                }
+                override fun getCurrentLargeIcon(
+                    player: Player,
+                    callback: PlayerNotificationManager.BitmapCallback
+                ): Bitmap? {
+                    return null
                 }
             })
             .build()
