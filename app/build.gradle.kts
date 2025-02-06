@@ -184,4 +184,6 @@ dependencies {
     implementation(libs.ktor.client.encoding)
 
     implementation(libs.taglib)
+
+    debugImplementation(libs.leakcanary)
 }
