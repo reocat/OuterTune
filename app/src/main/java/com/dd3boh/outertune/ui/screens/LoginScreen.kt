@@ -27,6 +27,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
+import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.ui.component.IconButton
@@ -47,6 +48,7 @@ fun LoginScreen(
     navController: NavController,
 ) {
     var visitorData by rememberPreference(VisitorDataKey, "")
+    var dataSyncId by rememberPreference(DataSyncIdKey, "")
     var innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
     var accountName by rememberPreference(AccountNameKey, "")
     var accountEmail by rememberPreference(AccountEmailKey, "")
@@ -84,6 +86,7 @@ fun LoginScreen(
 
                     override fun onPageFinished(view: WebView, url: String?) {
                         loadUrl("javascript:Android.onRetrieveVisitorData(window.yt.config_.VISITOR_DATA)")
+                        loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID)")
                     }
                 }
                 settings.apply {
@@ -105,6 +108,12 @@ fun LoginScreen(
 
                         if (newVisitorData != null) {
                             visitorData = newVisitorData
+                        }
+                    }
+                    @JavascriptInterface
+                    fun onRetrieveDataSyncId(newDataSyncId: String?) {
+                        if (newDataSyncId != null) {
+                            dataSyncId = newDataSyncId
                         }
                     }
                 }, "Android")
