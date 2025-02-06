@@ -4,6 +4,7 @@ import android.net.ConnectivityManager
 import androidx.media3.common.PlaybackException
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.db.entities.FormatEntity
+import com.dd3boh.outertune.utils.potoken.PoTokenGenerator
 import com.zionhuang.innertube.NewPipeUtils
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeClient
@@ -18,6 +19,8 @@ object YTPlayerUtils {
     private val httpClient = OkHttpClient.Builder()
         .proxy(YouTube.proxy)
         .build()
+
+    private val poTokenGenerator = PoTokenGenerator()
 
     /**
      * The main client is used for metadata and initial streams.
@@ -66,10 +69,9 @@ object YTPlayerUtils {
          */
         val signatureTimestamp = getSignatureTimestampOrNull(videoId)
 
-        // --- TODO: GET WEB PO TOKENS HERE ---
-        val webPlayerPot = "" // TODO
-        val webStreamingPot = "" // TODO
-        // ---
+        val (webPlayerPot, webStreamingPot) = poTokenGenerator.getWebClientPoToken(videoId)?.let {
+            Pair(it.playerRequestPoToken, it.streamingDataPoToken)
+        } ?: Pair(null, null)
 
         val mainPlayerResponse =
             YouTube.player(videoId, playlistId, MAIN_CLIENT, signatureTimestamp, webPlayerPot)
@@ -125,7 +127,7 @@ object YTPlayerUtils {
                 streamUrl = findUrlOrNull(format, videoId) ?: continue
                 streamExpiresInSeconds = streamPlayerResponse.streamingData?.expiresInSeconds ?: continue
 
-                if (client.useWebPoTokens) {
+                if (client.useWebPoTokens && webStreamingPot != null) {
                     streamUrl += "&pot=$webStreamingPot";
                 }
 
