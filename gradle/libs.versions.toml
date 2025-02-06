@@ -14,6 +14,7 @@ ksp = "2.1.20-Beta2-1.0.29"
 multidex = "2.0.1"
 newpipe = "dev-SNAPSHOT"
 taglib = "1.0.0-alpha25"
+leakcanary = "2.14"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -82,6 +83,8 @@ timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" 
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 
 newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor", version.ref = "newpipe" }
+
+leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
