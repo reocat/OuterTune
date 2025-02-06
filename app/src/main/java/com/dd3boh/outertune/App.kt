@@ -44,6 +44,7 @@ class App : Application(), ImageLoaderFactory {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
+        instance = this;
         Timber.plant(Timber.DebugTree())
 
         val locale = Locale.getDefault()
@@ -138,5 +139,10 @@ class App : Application(), ImageLoaderFactory {
                 .build()
         )
         .build()
+    }
+
+    companion object {
+        lateinit var instance: App
+            private set
     }
 }
