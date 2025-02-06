@@ -43,6 +43,7 @@ import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.ContentCountryKey
 import com.dd3boh.outertune.constants.ContentLanguageKey
 import com.dd3boh.outertune.constants.CountryCodeToName
+import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
@@ -130,6 +131,7 @@ fun ContentSettings(
                         context.dataStore.edit { settings ->
                             settings.remove(InnerTubeCookieKey)
                             settings.remove(VisitorDataKey)
+                            settings.remove(DataSyncIdKey)
                         }
                     }
                 }
