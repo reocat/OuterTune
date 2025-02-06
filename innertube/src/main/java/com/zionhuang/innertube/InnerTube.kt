@@ -45,6 +45,7 @@ class InnerTube {
         hl = Locale.getDefault().toLanguageTag()
     )
     var visitorData: String = "CgtsZG1ySnZiQWtSbyiMjuGSBg%3D%3D"
+    var dataSyncId: String? = null
     var cookie: String? = null
         set(value) {
             field = value

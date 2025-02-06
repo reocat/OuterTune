@@ -238,6 +238,7 @@ enum class LikedAutodownloadMode {
 }
 
 val VisitorDataKey = stringPreferencesKey("visitorData")
+val DataSyncIdKey = stringPreferencesKey("dataSyncId")
 val InnerTubeCookieKey = stringPreferencesKey("innerTubeCookie")
 val AccountNameKey = stringPreferencesKey("accountName")
 val AccountEmailKey = stringPreferencesKey("accountEmail")

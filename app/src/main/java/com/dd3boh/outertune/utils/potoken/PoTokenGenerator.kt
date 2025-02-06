@@ -15,7 +15,7 @@ class PoTokenGenerator {
     private var webViewBadImpl = false // whether the system has a bad WebView implementation
 
     private object WebPoTokenGenLock
-    private var webPoTokenVisitorData: String? = null
+    private var webPoTokenSessionIdentifier: String? = null
     private var webPoTokenStreamingPot: String? = null
     private var webPoTokenGenerator: PoTokenWebView? = null
 
@@ -48,12 +48,18 @@ class PoTokenGenerator {
         // just a helper class since Kotlin does not have builtin support for 4-tuples
         data class Quadruple<T1, T2, T3, T4>(val t1: T1, val t2: T2, val t3: T3, val t4: T4)
 
-        val (poTokenGenerator, visitorData, streamingPot, hasBeenRecreated) =
+        val (poTokenGenerator, sessionIdentifier, streamingPot, hasBeenRecreated) =
             synchronized(WebPoTokenGenLock) {
                 val shouldRecreate = webPoTokenGenerator == null || forceRecreate || webPoTokenGenerator!!.isExpired()
 
                 if (shouldRecreate) {
-                    webPoTokenVisitorData = YouTube.visitorData
+                    webPoTokenSessionIdentifier = if (YouTube.cookie != null) {
+                        // signed in sessions use dataSyncId as identifier
+                        YouTube.dataSyncId
+                    } else {
+                        // signed out sessions use visitorData as identifier
+                        YouTube.visitorData
+                    }
 
                     runBlocking {
                         // close the current webPoTokenGenerator on the main thread
@@ -65,13 +71,13 @@ class PoTokenGenerator {
 
                         // The streaming poToken needs to be generated exactly once before generating
                         // any other (player) tokens.
-                        webPoTokenStreamingPot = webPoTokenGenerator!!.generatePoToken(webPoTokenVisitorData!!)
+                        webPoTokenStreamingPot = webPoTokenGenerator!!.generatePoToken(webPoTokenSessionIdentifier!!)
                     }
                 }
 
                 return@synchronized Quadruple(
                     webPoTokenGenerator!!,
-                    webPoTokenVisitorData!!,
+                    webPoTokenSessionIdentifier!!,
                     webPoTokenStreamingPot!!,
                     shouldRecreate
                 )
@@ -102,7 +108,7 @@ class PoTokenGenerator {
             Log.d(
                 TAG,
                 "poToken for $videoId: playerPot=$playerPot, " +
-                        "streamingPot=$streamingPot, visitor_data=$visitorData"
+                        "streamingPot=$streamingPot, sessionIdentifier=$sessionIdentifier"
             )
         }
 
