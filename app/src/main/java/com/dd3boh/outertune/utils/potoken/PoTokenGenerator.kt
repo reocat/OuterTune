@@ -36,7 +36,6 @@ class PoTokenGenerator {
                 else -> throw e // includes PoTokenException
             }
         }
-
     }
 
     /**
@@ -59,6 +58,10 @@ class PoTokenGenerator {
                     } else {
                         // signed out sessions use visitorData as identifier
                         YouTube.visitorData
+                    }
+
+                    if (webPoTokenSessionIdentifier == null) {
+                        throw PoTokenException("Session identifier is null")
                     }
 
                     runBlocking {
