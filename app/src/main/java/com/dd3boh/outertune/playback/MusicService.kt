@@ -53,6 +53,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import androidx.media3.ui.PlayerNotificationManager
@@ -135,6 +136,7 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import timber.log.Timber
 import java.io.File
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -449,6 +451,7 @@ class MusicService : MediaLibraryService(),
             }.build()
         )
 
+
         playerNotificationManager = PlayerNotificationManager.Builder(this, NOTIFICATION_ID, CHANNEL_ID)
             .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
                 override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
@@ -474,6 +477,7 @@ class MusicService : MediaLibraryService(),
                 }
             })
             .build()
+
         playerNotificationManager.setPlayer(player)
         playerNotificationManager.setSmallIcon(R.drawable.small_icon)
         playerNotificationManager.setMediaSessionToken(mediaSession.platformToken)
@@ -524,11 +528,6 @@ class MusicService : MediaLibraryService(),
     fun deInitQueue() {
         if (dataStore.get(PersistentQueueKey, true)) {
             saveQueueToDisk()
-            scope.launch {
-                dataStore.edit { settings ->
-                    settings[LastPosKey] = player.currentPosition
-                }
-            }
         }
         // do not replace the object. Can lead to entire queue being deleted even though it is supposed to be saved already
         queueBoard.initialized = false
@@ -1006,30 +1005,48 @@ class MusicService : MediaLibraryService(),
                 database.deleteQueuesByIds(queueIdsToDelete.map { it.toString() })
             }
         }
+
+        val pos = player.currentPosition
+
+       runBlocking {
+           // async issues, run blocking
+            dataStore.edit { settings ->
+                settings[LastPosKey] = pos
+            }
+        }
     }
 
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
         // we handle notification manually
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_NOT_STICKY
+    }
+
     override fun onDestroy() {
+        super.onDestroy()
+        if (player.isReleased) {
+            Timber.tag("MusicService").e("Trying to stop an already dead service. Aborting.")
+            return
+        }
         deInitQueue()
+        stopForeground(STOP_FOREGROUND_DETACH)
+
         if (discordRpc?.isRpcRunning() == true) {
             discordRpc?.closeRPC()
         }
-        discordRpc = null
+        discordRpc = null  
         mediaSession.release()
         player.removeListener(this)
         player.removeListener(sleepTimer)
         player.release()
-        super.onDestroy()
+        stopSelf()
     }
 
     override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        deInitQueue()
-
         super.onTaskRemoved(rootIntent)
     }
 
