@@ -114,7 +114,7 @@ import com.dd3boh.outertune.ui.menu.PlayerMenu
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.PlayerBackgroundStyle
 import com.dd3boh.outertune.ui.theme.extractGradientColors
-import com.dd3boh.outertune.ui.utils.getLocalThumbnail
+import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -186,7 +186,7 @@ fun BottomSheetPlayer(
 
         withContext(Dispatchers.IO) {
             if (mediaMetadata?.isLocal == true) {
-                getLocalThumbnail(mediaMetadata?.localPath)?.extractGradientColors()?.let {
+                imageCache.getLocalThumbnail(mediaMetadata?.localPath)?.extractGradientColors()?.let {
                     gradientColors = it
                 }
             } else {
@@ -535,7 +535,7 @@ fun BottomSheetPlayer(
                 if (mediaMetadata?.isLocal == true) {
                     mediaMetadata?.let {
                         AsyncLocalImage(
-                            image = { getLocalThumbnail(it.localPath) },
+                            image = { imageCache.getLocalThumbnail(it.localPath) },
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds,
                             modifier = Modifier

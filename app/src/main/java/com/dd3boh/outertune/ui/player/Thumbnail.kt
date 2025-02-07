@@ -31,7 +31,7 @@ import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.ui.component.AsyncLocalImage
 import com.dd3boh.outertune.ui.component.Lyrics
-import com.dd3boh.outertune.ui.utils.getLocalThumbnail
+import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberPreference
 
 @Composable
@@ -75,7 +75,7 @@ fun Thumbnail(
                     // local thumbnail arts
                     mediaMetadata?.let { // required to re render when song changes
                         AsyncLocalImage(
-                            image = { getLocalThumbnail(it.localPath) },
+                            image = { imageCache.getLocalThumbnail(it.localPath) },
                             contentDescription = null,
                             modifier = Modifier
                                 .weight(1f, false)
