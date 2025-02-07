@@ -8,7 +8,7 @@ import android.net.Uri
 import coil.imageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import com.dd3boh.outertune.ui.utils.getLocalThumbnail
+import com.dd3boh.outertune.ui.utils.imageCache
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ class CoilBitmapLoader(
         scope.future(Dispatchers.IO) {
             // local images
             if (uri.toString().startsWith("/storage/")) {
-                return@future getLocalThumbnail(uri.toString(), false)?: placeholderImage
+                return@future imageCache.getLocalThumbnail(uri.toString(), false)?: placeholderImage
             }
             val result = context.imageLoader.execute(
                 ImageRequest.Builder(context)

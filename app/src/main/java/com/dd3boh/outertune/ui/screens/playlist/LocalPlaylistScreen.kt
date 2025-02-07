@@ -116,8 +116,8 @@ import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.ui.utils.getLocalThumbnail
 import com.dd3boh.outertune.ui.utils.getNSongsString
+import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -579,7 +579,7 @@ fun LocalPlaylistHeader(
             if (playlist.thumbnails.size == 1) {
                 if (playlist.thumbnails[0].startsWith("/storage")) {
                     AsyncLocalImage(
-                        image = { getLocalThumbnail(playlist.thumbnails[0], true) },
+                        image = { imageCache.getLocalThumbnail(playlist.thumbnails[0], true) },
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -610,7 +610,7 @@ fun LocalPlaylistHeader(
                     ).fastForEachIndexed { index, alignment ->
                         if (playlist.thumbnails.getOrNull(index)?.startsWith("/storage") == true) {
                             AsyncLocalImage(
-                                image = { getLocalThumbnail(playlist.thumbnails[index], true) },
+                                image = { imageCache.getLocalThumbnail(playlist.thumbnails[index], true) },
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

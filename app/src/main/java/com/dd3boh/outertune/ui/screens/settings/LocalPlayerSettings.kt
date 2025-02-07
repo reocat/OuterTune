@@ -86,8 +86,8 @@ import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
+import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.isPackageInstalled
-import com.dd3boh.outertune.utils.purgeCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
@@ -457,7 +457,7 @@ fun LocalPlayerSettings(
                             }
                         }
 
-                        purgeCache()
+                        imageCache.purgeCache()
                         cacheDirectoryTree(null)
 
                         onLastLocalScanChange(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond())

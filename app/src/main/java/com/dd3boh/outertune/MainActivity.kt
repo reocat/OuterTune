@@ -206,14 +206,13 @@ import com.dd3boh.outertune.ui.theme.extractThemeColor
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.appBarScrollBehavior
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
-import com.dd3boh.outertune.ui.utils.getLocalThumbnail
+import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.ui.utils.resetHeightOffset
 import com.dd3boh.outertune.utils.ActivityLauncherHelper
 import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
-import com.dd3boh.outertune.utils.purgeCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
@@ -373,7 +372,7 @@ class MainActivity : ComponentActivity() {
                                 (result.drawable as? BitmapDrawable)?.bitmap?.extractThemeColor()
                                     ?: DefaultThemeColor
                             } else {
-                                getLocalThumbnail(song.localPath)?.extractThemeColor()
+                                imageCache.getLocalThumbnail(song.localPath)?.extractThemeColor()
                                     ?: DefaultThemeColor
                             }
                         }
@@ -445,7 +444,7 @@ class MainActivity : ComponentActivity() {
                         } finally {
                             destroyScanner()
                         }
-                        purgeCache() // juuuust to be sure
+                        imageCache.purgeCache() // juuuust to be sure
                         cacheDirectoryTree(null)
                     } else if (checkSelfPermission(MEDIA_PERMISSION_LEVEL) == PackageManager.PERMISSION_DENIED) {
                         // Request the permission using the permission launcher
