@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 z-huang/InnerTune
+ * Copyright (C) 2025 O‌ute‌rTu‌ne Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune.ui.component
 
 import android.content.Context
@@ -638,7 +647,7 @@ fun SongGridItem(
             modifier = Modifier.size(GridThumbnailHeight)
         ) {
             if (song.song.isLocal) {
-                AsyncLocalImage(
+                AsyncImageLocal(
                     image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
                     contentDescription = null,
                     modifier = Modifier
@@ -1432,7 +1441,7 @@ fun ItemThumbnail(
             }
         } else if (thumbnailUrl?.startsWith("/storage") == true) {
             // local thumbnail arts
-            AsyncLocalImage(
+            AsyncImageLocal(
                 image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
                 contentDescription = null,
                 modifier = Modifier
@@ -1511,7 +1520,7 @@ fun PlaylistThumbnail(
                     Alignment.BottomEnd
                 ).fastForEachIndexed { index, alignment ->
                     if (thumbnails.getOrNull(index)?.startsWith("/storage") == true) {
-                        AsyncLocalImage(
+                        AsyncImageLocal(
                             image = { imageCache.getLocalThumbnail(thumbnails[index], true) },
                             contentDescription = null,
                             contentScale = ContentScale.Crop,

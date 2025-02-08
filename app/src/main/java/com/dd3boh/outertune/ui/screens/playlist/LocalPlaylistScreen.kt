@@ -104,7 +104,7 @@ import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.component.AsyncLocalImage
+import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
@@ -578,7 +578,7 @@ fun LocalPlaylistHeader(
         ) {
             if (playlist.thumbnails.size == 1) {
                 if (playlist.thumbnails[0].startsWith("/storage")) {
-                    AsyncLocalImage(
+                    AsyncImageLocal(
                         image = { imageCache.getLocalThumbnail(playlist.thumbnails[0], true) },
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
@@ -609,7 +609,7 @@ fun LocalPlaylistHeader(
                         Alignment.BottomEnd
                     ).fastForEachIndexed { index, alignment ->
                         if (playlist.thumbnails.getOrNull(index)?.startsWith("/storage") == true) {
-                            AsyncLocalImage(
+                            AsyncImageLocal(
                                 image = { imageCache.getLocalThumbnail(playlist.thumbnails[index], true) },
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,

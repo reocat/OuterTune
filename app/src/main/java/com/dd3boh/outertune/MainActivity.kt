@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 z-huang/InnerTune
+ * Copyright (C) 2025 O​u​t​er​Tu​ne Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune
 
 import android.annotation.SuppressLint
@@ -275,27 +284,34 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this, MusicService::class.java))
-        } else {
-            startService(Intent(this, MusicService::class.java))
-        }
+        startService(Intent(this, MusicService::class.java))
         bindService(Intent(this, MusicService::class.java), serviceConnection, BIND_AUTO_CREATE)
     }
 
     override fun onDestroy() {
+        /*
+         * While music is playing:
+         *      StopMusicOnTaskClearKey true: clearing from recent apps will kill service
+         *      StopMusicOnTaskClearKey false: clearing from recent apps will NOT kill service
+         * While music is not playing: 
+         *      Service will never be automatically killed
+         *
+         * Regardless of what happens, queues and last position are saves
+         */
         super.onDestroy()
+        unbindService(serviceConnection)
+
         if (dataStore.get(StopMusicOnTaskClearKey, false) && playerConnection?.isPlaying?.value == true
             && isFinishing
         ) {
             if (dataStore.get(PersistentQueueKey, true)) {
-                unbindService(serviceConnection)
-
 //                stopService(Intent(this, MusicService::class.java)) // Believe me, this doesn't actually stop
                 playerConnection?.service?.onDestroy()
 
                 playerConnection = null
             }
+        } else {
+            playerConnection?.service?.saveQueueToDisk()
         }
     }
 

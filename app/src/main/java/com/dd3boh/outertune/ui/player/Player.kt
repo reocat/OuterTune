@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 z-huang/InnerTune
+ * Copyright (C) 2025 OuterTune Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune.ui.player
 
 import android.content.Context
@@ -103,7 +112,7 @@ import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.isShuffleEnabled
 import com.dd3boh.outertune.playback.PlayerConnection
-import com.dd3boh.outertune.ui.component.AsyncLocalImage
+import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -534,7 +543,7 @@ fun BottomSheetPlayer(
             if (playerBackground == PlayerBackgroundStyle.BLUR) {
                 if (mediaMetadata?.isLocal == true) {
                     mediaMetadata?.let {
-                        AsyncLocalImage(
+                        AsyncImageLocal(
                             image = { imageCache.getLocalThumbnail(it.localPath) },
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds,
