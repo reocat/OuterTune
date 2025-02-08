@@ -135,10 +135,10 @@ fun LibraryAlbumsScreen(
             ) {
                 Icon(
                     imageVector =
-                        when (albumViewType) {
-                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                            LibraryViewType.GRID -> Icons.Rounded.GridView
-                        },
+                    when (albumViewType) {
+                        LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                        LibraryViewType.GRID -> Icons.Rounded.GridView
+                    },
                     contentDescription = null
                 )
             }

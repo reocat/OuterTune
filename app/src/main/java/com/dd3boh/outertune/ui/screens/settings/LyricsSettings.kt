@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025 O‌ute‌rTu‌ne Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune.ui.screens.settings
 
 
@@ -71,7 +79,10 @@ fun LyricsSettings(
     // state variables and such
     val (enableKugou, onEnableKugouChange) = rememberPreference(key = EnableKugouKey, defaultValue = true)
     val (enableLrcLib, onEnableLrcLibChange) = rememberPreference(key = EnableLrcLibKey, defaultValue = true)
-    val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(LyricsTextPositionKey, defaultValue = LyricsPosition.CENTER)
+    val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(
+        LyricsTextPositionKey,
+        defaultValue = LyricsPosition.CENTER
+    )
     val (multilineLrc, onMultilineLrcChange) = rememberPreference(MultilineLrcKey, defaultValue = true)
     val (lyricTrim, onLyricTrimChange) = rememberPreference(LyricTrimKey, defaultValue = false)
     val (lyricFontSize, onLyricFontSizeChange) = rememberPreference(LyricFontSizeKey, defaultValue = 20)
@@ -165,7 +176,7 @@ fun LyricsSettings(
         )
 
         PreferenceEntry(
-            title = { Text( stringResource(R.string.lyrics_font_Size)) },
+            title = { Text(stringResource(R.string.lyrics_font_Size)) },
             description = "$lyricFontSize sp",
             icon = { Icon(Icons.Rounded.TextFields, null) },
             onClick = { showFontSizeDialog = true }

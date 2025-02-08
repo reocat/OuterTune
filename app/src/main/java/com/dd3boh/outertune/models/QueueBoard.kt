@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025 O⁠ute⁠rTu⁠ne Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune.models
 
 import androidx.media3.common.C
@@ -476,7 +484,8 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
     /**
      * Shuffles current queue
      */
-    fun shuffleCurrent(player: MusicService, preserveCurrent: Boolean = true) = shuffle(masterIndex, player, preserveCurrent)
+    fun shuffleCurrent(player: MusicService, preserveCurrent: Boolean = true) =
+        shuffle(masterIndex, player, preserveCurrent)
 
 
     /**

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 z-huang/InnerTune
+ * Copyright (C) 2025 OuterTune Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
@@ -29,7 +38,7 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
-import com.dd3boh.outertune.ui.component.AsyncLocalImage
+import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.Lyrics
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberPreference
@@ -74,7 +83,7 @@ fun Thumbnail(
                 if (mediaMetadata?.isLocal == true) {
                     // local thumbnail arts
                     mediaMetadata?.let { // required to re render when song changes
-                        AsyncLocalImage(
+                        AsyncImageLocal(
                             image = { imageCache.getLocalThumbnail(it.localPath) },
                             contentDescription = null,
                             modifier = Modifier
