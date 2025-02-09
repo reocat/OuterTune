@@ -807,7 +807,8 @@ fun LocalPlaylistHeader(
                     playerConnection.playQueue(
                         ListQueue(
                             title = playlist.playlist.name,
-                            items = songsAvailable().shuffled()
+                            items = songs.map { it.song.toMediaMetadata() },
+                            startShuffled = true,
                         )
                     )
                 },

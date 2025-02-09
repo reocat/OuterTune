@@ -445,9 +445,8 @@ fun HistoryScreen(
                 playerConnection.playQueue(
                     ListQueue(
                         title = context.getString(R.string.history),
-                        items = filteredEventIndex.values
-                            .filter { it.song.song.isAvailableOffline() || isNetworkConnected }
-                            .map { it.song.toMediaMetadata() }.shuffled(),
+                        items = filteredEventIndex.values.map { it.song.toMediaMetadata() },
+                        startShuffled = true,
                     )
                 )
             }

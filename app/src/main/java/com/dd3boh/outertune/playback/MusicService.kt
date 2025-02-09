@@ -666,6 +666,7 @@ class MusicService : MediaLibraryService(),
                 queueTitle ?: "Queue",
                 items,
                 player = this@MusicService,
+                shuffled = queue.startShuffled,
                 startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
                 replace = replace,
                 isRadio = isRadio
