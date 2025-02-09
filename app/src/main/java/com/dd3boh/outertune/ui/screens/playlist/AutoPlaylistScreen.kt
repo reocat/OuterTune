@@ -431,8 +431,8 @@ fun AutoPlaylistScreen(
                                     playerConnection.playQueue(
                                         ListQueue(
                                             title = playlist.name,
-                                            items = songs.shuffled()
-                                                .map { it.toMediaMetadata() },
+                                            items = songs.map { it.toMediaMetadata() },
+                                            startShuffled = true,
                                             playlistId = playlist.browseId
                                         )
                                     )

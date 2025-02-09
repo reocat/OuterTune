@@ -314,11 +314,14 @@ fun PlaylistMenu(
             title = R.string.shuffle
         ) {
             onDismiss()
-            playerConnection.playQueue(ListQueue(
-                title = playlist.playlist.name,
-                items = songsAvailable().shuffled(),
-                playlistId = playlist.playlist.browseId
-            ))
+            playerConnection.playQueue(
+                ListQueue(
+                    title = playlist.playlist.name,
+                    items = songs.map { it.toMediaMetadata() },
+                    startShuffled = true,
+                    playlistId = playlist.playlist.browseId
+                )
+            )
         }
 
         if (isNetworkConnected) {
