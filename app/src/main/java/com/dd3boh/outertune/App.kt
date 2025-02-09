@@ -10,6 +10,7 @@
 package com.dd3boh.outertune
 
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
@@ -45,6 +46,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.net.Proxy
 import java.util.Locale
@@ -124,14 +126,7 @@ class App : Application(), ImageLoaderFactory {
                     } catch (e: Exception) {
                         // we now allow user input now, here be the demons. This serves as a last ditch effort to avoid a crash loop
                         Timber.e("Could not parse cookie. Clearing existing cookie. %s", e.message)
-                        dataStore.edit { settings ->
-                            settings.remove(InnerTubeCookieKey)
-                            settings.remove(VisitorDataKey)
-                            settings.remove(DataSyncIdKey)
-                            settings.remove(AccountNameKey)
-                            settings.remove(AccountEmailKey)
-                            settings.remove(AccountChannelHandleKey)
-                        }
+                        forgetAccount(this@App)
                     }
                 }
         }
@@ -166,5 +161,18 @@ class App : Application(), ImageLoaderFactory {
     companion object {
         lateinit var instance: App
             private set
+
+        fun forgetAccount(context: Context) {
+            runBlocking {
+                context.dataStore.edit { settings ->
+                    settings.remove(InnerTubeCookieKey)
+                    settings.remove(VisitorDataKey)
+                    settings.remove(DataSyncIdKey)
+                    settings.remove(AccountNameKey)
+                    settings.remove(AccountEmailKey)
+                    settings.remove(AccountChannelHandleKey)
+                }
+            }
+        }
     }
 }

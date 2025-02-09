@@ -3,7 +3,6 @@ package com.dd3boh.outertune.utils.potoken
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
@@ -54,7 +53,7 @@ class PoTokenWebView private constructor(
                     // supports a really old version of JS.
 
                     val fmt = "\"${m.message()}\", source: ${m.sourceId()} (${m.lineNumber()})"
-                    Timber.tag(TAG.toString()).e("This WebView implementation is broken: $fmt")
+                    Timber.tag(TAG).e("This WebView implementation is broken: $fmt")
 
                     // This can only happen during initialization, where there is no try-catch
                     onInitializationErrorCloseAndCancel(BadWebViewException(fmt))
@@ -71,7 +70,7 @@ class PoTokenWebView private constructor(
      */
     private fun loadHtmlAndObtainBotguard(context: Context) {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).d("loadHtmlAndObtainBotguard() called")
+            Timber.tag(TAG).d("loadHtmlAndObtainBotguard() called")
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -104,7 +103,7 @@ class PoTokenWebView private constructor(
     @JavascriptInterface
     fun downloadAndRunBotguard() {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).d("downloadAndRunBotguard() called")
+            Timber.tag(TAG).d("downloadAndRunBotguard() called")
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -139,7 +138,7 @@ class PoTokenWebView private constructor(
     @JavascriptInterface
     fun onJsInitializationError(error: String) {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).e("Initialization error from JavaScript: $error")
+            Timber.tag(TAG).e("Initialization error from JavaScript: $error")
         }
         onInitializationErrorCloseAndCancel(buildExceptionForJsError(error))
     }
@@ -165,7 +164,7 @@ class PoTokenWebView private constructor(
                     "this.integrityToken = $integrityToken"
                 ) {
                     if (BuildConfig.DEBUG) {
-                        Timber.tag(TAG.toString()).d("initialization finished, expiration=${expirationTimeInSeconds}s")
+                        Timber.tag(TAG).d("initialization finished, expiration=${expirationTimeInSeconds}s")
                     }
                     generatorContinuation.resume(this@PoTokenWebView)
                 }
@@ -177,7 +176,7 @@ class PoTokenWebView private constructor(
     //region Obtaining poTokens
     suspend fun generatePoToken(identifier: String): String {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).d("generatePoToken() called with identifier $identifier")
+            Timber.tag(TAG).d("generatePoToken() called with identifier $identifier")
         }
         return suspendCancellableCoroutine { continuation ->
             poTokenContinuations[identifier] = continuation
@@ -210,7 +209,7 @@ class PoTokenWebView private constructor(
     @JavascriptInterface
     fun onObtainPoTokenError(identifier: String, error: String) {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).e("obtainPoToken error from JavaScript: $error")
+            Timber.tag(TAG).e("obtainPoToken error from JavaScript: $error")
         }
         poTokenContinuations.remove(identifier)?.resumeWithException(buildExceptionForJsError(error))
     }
@@ -222,7 +221,7 @@ class PoTokenWebView private constructor(
     @JavascriptInterface
     fun onObtainPoTokenResult(identifier: String, poTokenU8: String) {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).d("Generated poToken (before decoding): identifier=$identifier poTokenU8=$poTokenU8")
+            Timber.tag(TAG).d("Generated poToken (before decoding): identifier=$identifier poTokenU8=$poTokenU8")
         }
         val poToken = try {
             u8ToBase64(poTokenU8)
@@ -232,7 +231,7 @@ class PoTokenWebView private constructor(
         }
 
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG.toString()).d("Generated poToken: identifier=$identifier poToken=$poToken")
+            Timber.tag(TAG).d("Generated poToken: identifier=$identifier poToken=$poToken")
         }
         poTokenContinuations.remove(identifier)?.resume(poToken)
     }
@@ -283,7 +282,7 @@ class PoTokenWebView private constructor(
     //endregion
 
     companion object {
-        private val TAG = PoTokenWebView::class.simpleName
+        private val TAG = PoTokenWebView::class.simpleName.toString()
         private const val GOOGLE_API_KEY = "AIzaSyDyT5W0Jh49F30Pqqtyfdf7pDLFKLJoAnw"
         private const val REQUEST_KEY = "O43z0dpjhgX20SCx4KAo"
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +

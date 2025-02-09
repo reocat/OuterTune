@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
 import androidx.navigation.NavController
+import com.dd3boh.outertune.App.Companion.forgetAccount
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
@@ -129,16 +130,7 @@ fun ContentSettings(
                 icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
                 onClick = {
                     onInnerTubeCookieChange("")
-                    runBlocking {
-                        context.dataStore.edit { settings ->
-                            settings.remove(InnerTubeCookieKey)
-                            settings.remove(VisitorDataKey)
-                            settings.remove(DataSyncIdKey)
-                            settings.remove(AccountNameKey)
-                            settings.remove(AccountEmailKey)
-                            settings.remove(AccountChannelHandleKey)
-                        }
-                    }
+                    forgetAccount(context)
                 }
             )
         }
