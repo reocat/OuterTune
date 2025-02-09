@@ -230,34 +230,17 @@ fun OnlineSearchScreen(
                         .clickable {
                             when (item) {
                                 is SongItem -> {
-                                    if (available) {
-                                        if (item.id == mediaMetadata?.id) {
-                                            playerConnection.player.togglePlayPause()
-                                        } else if (item.id.startsWith("LA")) {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = "Search: $query",
-                                                    items = viewState.items.map { it as SongItem}.map { it.toMediaMetadata() }
-                                                ),
-                                                replace = true,
-                                                title = "Search: $query",
-                                            )
-                                        } else {
-                                            playerConnection.playQueue(
-                                                if (isNetworkConnected) {
-                                                    YouTubeQueue.radio(item.toMediaMetadata())
-                                                }
-                                                else {
-                                                    ListQueue(
-                                                        title = "${context.getString(R.string.queue_searched_songs)} $viewModel.query",
-                                                        items = listOf(item.toMediaMetadata())
-                                                    )
-                                                },
-                                                replace = true,
-                                                title = "Search: $query",
-                                            )
-                                            onDismiss()
-                                        }
+                                    if (item.id == mediaMetadata?.id) {
+                                        playerConnection.player.togglePlayPause()
+                                    } else {
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                title = "${context.getString(R.string.queue_searched_songs_ot)} ${viewModel.query}",
+                                                items = listOf(item.toMediaMetadata())
+                                            ),
+                                            replace = true,
+                                        )
+                                        onDismiss()
                                     }
                                 }
 
