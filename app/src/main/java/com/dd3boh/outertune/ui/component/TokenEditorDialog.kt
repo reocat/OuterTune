@@ -32,7 +32,16 @@ fun TokenEditorDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var textFieldValue by remember { mutableStateOf(TextFieldValue(initialValue)) }
+    val initialText = buildString {
+        append("***INNERTUBE COOKIE*** =$initialValue\n\n")
+        append("***VISITOR DATA*** =$visitorData\n\n")
+        append("***DATASYNC ID*** =$dataSyncId\n\n")
+        append("***ACCOUNT NAME*** =$accountName\n\n")
+        append("***ACCOUNT EMAIL*** =$accountEmail\n\n")
+        append("***ACCOUNT CHANNEL HANDLE*** =$accountChannelHandle")
+    }
+    
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var isError by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -45,7 +54,11 @@ fun TokenEditorDialog(
                     value = textFieldValue,
                     onValueChange = {
                         textFieldValue = it
-                        isError = it.text.isNotEmpty() && !isTokenValid(it.text)
+                        // Update error state based on cookie validity
+                        val cookieLine = it.text.split("\n").find { line -> 
+                            line.startsWith("***INNERTUBE COOKIE*** =") 
+                        }?.substringAfter("***INNERTUBE COOKIE*** =") ?: ""
+                        isError = cookieLine.isNotEmpty() && !isTokenValid(cookieLine)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.token)) },
@@ -57,9 +70,7 @@ fun TokenEditorDialog(
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            if (isTokenValid(textFieldValue.text)) {
-                                onDone(textFieldValue.text)
-                            }
+                            processAndSaveToken(textFieldValue.text)
                         }
                     )
                 )
@@ -77,12 +88,8 @@ fun TokenEditorDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = {
-                    if (isTokenValid(textFieldValue.text)) {
-                        onDone(textFieldValue.text)
-                    }
-                },
-                enabled = isTokenValid(textFieldValue.text)
+                onClick = { processAndSaveToken(textFieldValue.text) },
+                enabled = !isError
             ) {
                 Text(stringResource(R.string.save))
             }
@@ -95,6 +102,25 @@ fun TokenEditorDialog(
     )
 }
 
+private fun processAndSaveToken(data: String) {
+    data.split("\n").forEach { line ->
+        when {
+            line.startsWith("***INNERTUBE COOKIE*** =") -> 
+                onInnerTubeCookieChange(line.substringAfter("***INNERTUBE COOKIE*** ="))
+            line.startsWith("***VISITOR DATA*** =") -> 
+                onVisitorDataChange(line.substringAfter("***VISITOR DATA*** ="))
+            line.startsWith("***DATASYNC ID*** =") -> 
+                onDataSyncIdChange(line.substringAfter("***DATASYNC ID*** ="))
+            line.startsWith("***ACCOUNT NAME*** =") -> 
+                onAccountNameChange(line.substringAfter("***ACCOUNT NAME*** ="))
+            line.startsWith("***ACCOUNT EMAIL*** =") -> 
+                onAccountEmailChange(line.substringAfter("***ACCOUNT EMAIL*** ="))
+            line.startsWith("***ACCOUNT CHANNEL HANDLE*** =") -> 
+                onAccountChannelHandleChange(line.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
+        }
+    }
+}
+
 private fun isTokenValid(token: String): Boolean {
     return token.isNotEmpty() && try {
         "SAPISID" in parseCookieString(token)
@@ -102,3 +128,4 @@ private fun isTokenValid(token: String): Boolean {
         false
     }
 }
+Last edited just now

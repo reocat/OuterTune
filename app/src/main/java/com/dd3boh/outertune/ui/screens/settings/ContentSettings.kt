@@ -1,12 +1,3 @@
-/*
- * Copyright (C) 2024 z-huang/InnerTune
- * Copyright (C) 2025 O‌ute‌rTu‌ne Project
- *
- * SPDX-License-Identifier: GPL-3.0
- *
- * For any other attributions, refer to the git commit history
- */
-
 package com.dd3boh.outertune.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
@@ -69,7 +60,7 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.component.TokenEditorDialog
+import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -86,10 +77,12 @@ fun ContentSettings(
 ) {
     val context = LocalContext.current
 
-    val accountName by rememberPreference(AccountNameKey, "")
-    val accountEmail by rememberPreference(AccountEmailKey, "")
-    val accountChannelHandle by rememberPreference(AccountChannelHandleKey, "")
+    val (accountName, onAccountNameChange) = rememberPreference(AccountNameKey, "")
+    val (accountEmail, onAccountEmailChange) = rememberPreference(AccountEmailKey, "")
+    val (accountChannelHandle, onAccountChannelHandleChange) = rememberPreference(AccountChannelHandleKey, "")
     val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
+    val (visitorData, onVisitorDataChange) = rememberPreference(VisitorDataKey, "")
+    val (dataSyncId, onDataSyncIdChange) = rememberPreference(DataSyncIdKey, "")
     val isLoggedIn = remember(innerTubeCookie) {
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
@@ -141,6 +134,9 @@ fun ContentSettings(
                             settings.remove(InnerTubeCookieKey)
                             settings.remove(VisitorDataKey)
                             settings.remove(DataSyncIdKey)
+                            settings.remove(AccountNameKey)
+                            settings.remove(AccountEmailKey)
+                            settings.remove(AccountChannelHandleKey)
                         }
                     }
                 }
@@ -173,14 +169,31 @@ fun ContentSettings(
         )
 
         if (showTokenEditor) {
-            TokenEditorDialog(
-                initialValue = innerTubeCookie,
-                onDone = { newToken ->
-                    onInnerTubeCookieChange(newToken)
-                    showTokenEditor = false
+            val text =
+                "***INNERTUBE COOKIE*** =${innerTubeCookie}\n\n***VISITOR DATA*** =${visitorData}\n\n***DATASYNC ID*** =${dataSyncId}\n\n***ACCOUNT NAME*** =${accountName}\n\n***ACCOUNT EMAIL*** =${accountEmail}\n\n***ACCOUNT CHANNEL HANDLE*** =${accountChannelHandle}"
+            TextFieldDialog(
+                modifier = Modifier,
+                initialTextFieldValue = TextFieldValue(text),
+                onDone = { data ->
+                    data.split("\n").forEach {
+                        if (it.startsWith("***INNERTUBE COOKIE*** =")) {
+                            onInnerTubeCookieChange(it.substringAfter("***INNERTUBE COOKIE*** ="))
+                        } else if (it.startsWith("***VISITOR DATA*** =")) {
+                            onVisitorDataChange(it.substringAfter("***VISITOR DATA*** ="))
+                        } else if (it.startsWith("***DATASYNC ID*** =")) {
+                            onDataSyncIdChange(it.substringAfter("***DATASYNC ID*** ="))
+                        } else if (it.startsWith("***ACCOUNT NAME*** =")) {
+                            onAccountNameChange(it.substringAfter("***ACCOUNT NAME*** ="))
+                        } else if (it.startsWith("***ACCOUNT EMAIL*** =")) {
+                            onAccountEmailChange(it.substringAfter("***ACCOUNT EMAIL*** ="))
+                        } else if (it.startsWith("***ACCOUNT CHANNEL HANDLE*** =")) {
+                            onAccountChannelHandleChange(it.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
+                        }
+                    }
                 },
                 onDismiss = { showTokenEditor = false },
-                modifier = Modifier
+                singleLine = false,
+                maxLines = 20,
             )
         }
 

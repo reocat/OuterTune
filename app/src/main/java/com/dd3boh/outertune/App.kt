@@ -128,6 +128,9 @@ class App : Application(), ImageLoaderFactory {
                             settings.remove(InnerTubeCookieKey)
                             settings.remove(VisitorDataKey)
                             settings.remove(DataSyncIdKey)
+                            settings.remove(AccountNameKey)
+                            settings.remove(AccountEmailKey)
+                            settings.remove(AccountChannelHandleKey)
                         }
                     }
                 }
