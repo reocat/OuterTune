@@ -237,8 +237,6 @@
     <string name="about">കുറിച്ച്</string>
     <string name="app_version">അപ്ലിക്കേഷൻ പതിപ്പ്</string>
     <string name="new_version_available">New version available</string>
-    <string name="translation_models">Translation Models</string>
-    <string name="clear_translation_models">Clear translation models</string>
     <string name="use_login_for_browse_desc">ഇത് നിങ്ങൾ കാണുന്ന ഉള്ളടക്കത്തെ സ്വാധീനിക്കും, ഉദാഹരണത്തിന് നിങ്ങൾ ഒരു പ്രീമിയം അക്കൗണ്ട് ഉപയോഗിച്ച് ലോഗിൻ ചെയ്തിട്ടുണ്ടെങ്കിൽ പ്രീമിയം-മാത്രം ആൽബങ്ങൾ കാണിക്കുന്നു</string>
     <string name="forgotten_favorites">മറന്ന മധുരങ്ങള്‍</string>
     <string name="keep_listening">കേള്‍ക്കുന്നത് തുടരൂ</string>

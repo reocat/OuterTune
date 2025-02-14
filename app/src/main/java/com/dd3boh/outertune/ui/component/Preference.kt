@@ -151,7 +151,7 @@ fun <T> ListPreference(
 inline fun <reified T : Enum<T>> EnumListPreference(
     modifier: Modifier = Modifier,
     noinline title: @Composable () -> Unit,
-    noinline icon: (@Composable () -> Unit)?,
+    noinline icon: @Composable () -> Unit,
     selectedValue: T,
     noinline valueText: @Composable (T) -> String,
     noinline onValueSelected: (T) -> Unit,

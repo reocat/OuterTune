@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 z-huang/InnerTune
+ * Copyright (C) 2025 O‌ute‌rTu‌ne Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
 package com.dd3boh.outertune.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
@@ -35,7 +44,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
 import androidx.navigation.NavController
-import com.dd3boh.outertune.App.Companion.forgetAccount
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
@@ -61,7 +69,7 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.component.TextFieldDialog
+import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -81,9 +89,9 @@ fun ContentSettings(
     val (accountName, onAccountNameChange) = rememberPreference(AccountNameKey, "")
     val (accountEmail, onAccountEmailChange) = rememberPreference(AccountEmailKey, "")
     val (accountChannelHandle, onAccountChannelHandleChange) = rememberPreference(AccountChannelHandleKey, "")
-    val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
     val (visitorData, onVisitorDataChange) = rememberPreference(VisitorDataKey, "")
     val (dataSyncId, onDataSyncIdChange) = rememberPreference(DataSyncIdKey, "")
+    val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
     val isLoggedIn = remember(innerTubeCookie) {
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
@@ -130,7 +138,16 @@ fun ContentSettings(
                 icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
                 onClick = {
                     onInnerTubeCookieChange("")
-                    forgetAccount(context)
+                    runBlocking {
+                        context.dataStore.edit { settings ->
+                            settings.remove(InnerTubeCookieKey)
+                            settings.remove(VisitorDataKey)
+                            settings.remove(DataSyncIdKey)
+                            settings.remove(AccountNameKey)
+                            settings.remove(AccountEmailKey)
+                            settings.remove(AccountChannelHandleKey)
+                        }
+                    }
                 }
             )
         }
@@ -161,31 +178,25 @@ fun ContentSettings(
         )
 
         if (showTokenEditor) {
-            val text =
-                "***INNERTUBE COOKIE*** =${innerTubeCookie}\n\n***VISITOR DATA*** =${visitorData}\n\n***DATASYNC ID*** =${dataSyncId}\n\n***ACCOUNT NAME*** =${accountName}\n\n***ACCOUNT EMAIL*** =${accountEmail}\n\n***ACCOUNT CHANNEL HANDLE*** =${accountChannelHandle}"
-            TextFieldDialog(
-                modifier = Modifier,
-                initialTextFieldValue = TextFieldValue(text),
-                onDone = { data ->
-                    data.split("\n").forEach {
-                        if (it.startsWith("***INNERTUBE COOKIE*** =")) {
-                            onInnerTubeCookieChange(it.substringAfter("***INNERTUBE COOKIE*** ="))
-                        } else if (it.startsWith("***VISITOR DATA*** =")) {
-                            onVisitorDataChange(it.substringAfter("***VISITOR DATA*** ="))
-                        } else if (it.startsWith("***DATASYNC ID*** =")) {
-                            onDataSyncIdChange(it.substringAfter("***DATASYNC ID*** ="))
-                        } else if (it.startsWith("***ACCOUNT NAME*** =")) {
-                            onAccountNameChange(it.substringAfter("***ACCOUNT NAME*** ="))
-                        } else if (it.startsWith("***ACCOUNT EMAIL*** =")) {
-                            onAccountEmailChange(it.substringAfter("***ACCOUNT EMAIL*** ="))
-                        } else if (it.startsWith("***ACCOUNT CHANNEL HANDLE*** =")) {
-                            onAccountChannelHandleChange(it.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
-                        }
-                    }
-                },
+            TokenEditorDialog(
+                initialValue = innerTubeCookie,
+                visitorData = visitorData,
+                dataSyncId = dataSyncId,
+                accountName = accountName,
+                accountEmail = accountEmail,
+                accountChannelHandle = accountChannelHandle,
+                onInnerTubeCookieChange = onInnerTubeCookieChange,
+                onVisitorDataChange = onVisitorDataChange,
+                onDataSyncIdChange = onDataSyncIdChange,
+                onAccountNameChange = onAccountNameChange,
+                onAccountEmailChange = onAccountEmailChange,
+                onAccountChannelHandleChange = onAccountChannelHandleChange,
                 onDismiss = { showTokenEditor = false },
-                singleLine = false,
-                maxLines = 20,
+                onDone = { newToken ->
+                    onInnerTubeCookieChange(newToken)
+                    showTokenEditor = false
+                },
+                modifier = Modifier
             )
         }
 
@@ -278,4 +289,4 @@ fun ContentSettings(
         },
         scrollBehavior = scrollBehavior
     )
-}
+} 

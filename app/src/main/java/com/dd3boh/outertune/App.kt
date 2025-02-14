@@ -19,6 +19,9 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.request.CachePolicy
+import com.dd3boh.outertune.constants.AccountChannelHandleKey
+import com.dd3boh.outertune.constants.AccountEmailKey
+import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.ContentCountryKey
 import com.dd3boh.outertune.constants.ContentLanguageKey
 import com.dd3boh.outertune.constants.CountryCodeToName
@@ -56,7 +59,7 @@ class App : Application(), ImageLoaderFactory {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
-        instance = this;
+        instance = this
         Timber.plant(Timber.DebugTree())
 
         val locale = Locale.getDefault()
@@ -118,7 +121,7 @@ class App : Application(), ImageLoaderFactory {
                 .distinctUntilChanged()
                 .collect { rawCookie ->
                     // quick hack until https://github.com/z-huang/InnerTune/pull/1694 is done
-                    val isLoggedIn: Boolean = rawCookie?.contains("SAPISID") ?: false
+                    val isLoggedIn: Boolean = rawCookie?.contains("SAPISID") == true
                     val cookie = if (isLoggedIn) rawCookie else null
                     
                     try {

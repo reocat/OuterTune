@@ -989,7 +989,7 @@ class MusicService : MediaLibraryService(),
         }
     }
 
-    private fun saveQueueToDisk() {
+     fun saveQueueToDisk() {
         val allQueues = queueBoard.getAllQueues()
 
         CoroutineScope(Dispatchers.IO).launch {
