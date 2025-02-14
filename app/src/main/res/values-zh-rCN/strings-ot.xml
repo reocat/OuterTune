@@ -3,9 +3,7 @@
     <string name="folders">文件夹</string>
     <string name="create_queue">新建队列</string>
     <string name="create_sync_playlist_description">注意：这允许与 YouTube Music 同步。这在以后是不可更改的。您无法将本地歌曲添加到同步的播放列表中。</string>
-    <string name="oobe_local_scan_tooltip">单击此处扫描歌曲</string>
     <string name="local_library_enable_description">禁用将在应用程序中隐藏本地库</string>
-    <string name="oobe_ytm_sync_description">帐户同步</string>
     <string name="slim_navbar_description">删除文本标签以降低导航栏高度</string>
     <string name="library">图书馆</string>
     <string name="recent_activity">最近的活动</string>
@@ -118,8 +116,6 @@
     <string name="dev_settings_description">显示用于开发的其他高级设置</string>
     <string name="oobe_welcome_message">欢迎来到 OuterTune</string>
     <string name="oobe_complete">设置完成</string>
-    <string name="oobe_ytm_content_description">YouTube Music 触手可及</string>
-    <string name="oobe_local_playback_description">本地音乐播放</string>
     <string name="oobe_use_backup">我有备份</string>
     <string name="action_back">返回</string>
     <string name="action_next">下一个</string>
@@ -134,6 +130,5 @@
     <string name="scanner_warning">默认情况下，扫描不会重新加载现有歌曲的任何元数据，除非你在上面另行指定。根据你的音乐库大小，可能需要一些时间。</string>
     <string name="scanner_strict_file_name_title">严格的文件名</string>
     <string name="scanner_strict_file_name_description">启用时，文件名将不会被忽略。例如，Song.ogg 将与 Song.flac 被视为不同的歌曲。扫描的灵敏度偏好仍然适用</string>
-    <string name="oobe_ad_free_description">无广告播放</string>
     <string name="token_adv_login_description">这是高级登录方法。作为门户网站的替代方法，您可以直接在此输入或更新登录令牌。例如，这可以加快在多个设备上登录的速度。请注意，应用程序无法解析的任何无效令牌格式都不会被接受</string>
 </resources>

@@ -28,6 +28,17 @@ import com.zionhuang.innertube.utils.parseCookieString
 @Composable
 fun TokenEditorDialog(
     initialValue: String,
+    visitorData: String,
+    dataSyncId: String,
+    accountName: String,
+    accountEmail: String,
+    accountChannelHandle: String,
+    onInnerTubeCookieChange: (String) -> Unit,
+    onVisitorDataChange: (String) -> Unit,
+    onDataSyncIdChange: (String) -> Unit,
+    onAccountNameChange: (String) -> Unit,
+    onAccountEmailChange: (String) -> Unit,
+    onAccountChannelHandleChange: (String) -> Unit,
     onDone: (String) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
@@ -40,9 +51,29 @@ fun TokenEditorDialog(
         append("***ACCOUNT EMAIL*** =$accountEmail\n\n")
         append("***ACCOUNT CHANNEL HANDLE*** =$accountChannelHandle")
     }
-    
+
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialText)) }
     var isError by remember { mutableStateOf(false) }
+
+    fun processAndSaveToken(data: String) {
+        data.split("\n").forEach { line ->
+            when {
+                line.startsWith("***INNERTUBE COOKIE*** =") ->
+                    onInnerTubeCookieChange(line.substringAfter("***INNERTUBE COOKIE*** ="))
+                line.startsWith("***VISITOR DATA*** =") ->
+                    onVisitorDataChange(line.substringAfter("***VISITOR DATA*** ="))
+                line.startsWith("***DATASYNC ID*** =") ->
+                    onDataSyncIdChange(line.substringAfter("***DATASYNC ID*** ="))
+                line.startsWith("***ACCOUNT NAME*** =") ->
+                    onAccountNameChange(line.substringAfter("***ACCOUNT NAME*** ="))
+                line.startsWith("***ACCOUNT EMAIL*** =") ->
+                    onAccountEmailChange(line.substringAfter("***ACCOUNT EMAIL*** ="))
+                line.startsWith("***ACCOUNT CHANNEL HANDLE*** =") ->
+                    onAccountChannelHandleChange(line.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
+            }
+        }
+        onDismiss()
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -55,8 +86,8 @@ fun TokenEditorDialog(
                     onValueChange = {
                         textFieldValue = it
                         // Update error state based on cookie validity
-                        val cookieLine = it.text.split("\n").find { line -> 
-                            line.startsWith("***INNERTUBE COOKIE*** =") 
+                        val cookieLine = it.text.split("\n").find { line ->
+                            line.startsWith("***INNERTUBE COOKIE*** =")
                         }?.substringAfter("***INNERTUBE COOKIE*** =") ?: ""
                         isError = cookieLine.isNotEmpty() && !isTokenValid(cookieLine)
                     },
@@ -70,7 +101,9 @@ fun TokenEditorDialog(
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            processAndSaveToken(textFieldValue.text)
+                            if (!isError) {
+                                processAndSaveToken(textFieldValue.text)
+                            }
                         }
                     )
                 )
@@ -88,7 +121,11 @@ fun TokenEditorDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { processAndSaveToken(textFieldValue.text) },
+                onClick = {
+                    if (!isError) {
+                        processAndSaveToken(textFieldValue.text)
+                    }
+                },
                 enabled = !isError
             ) {
                 Text(stringResource(R.string.save))
@@ -102,24 +139,6 @@ fun TokenEditorDialog(
     )
 }
 
-private fun processAndSaveToken(data: String) {
-    data.split("\n").forEach { line ->
-        when {
-            line.startsWith("***INNERTUBE COOKIE*** =") -> 
-                onInnerTubeCookieChange(line.substringAfter("***INNERTUBE COOKIE*** ="))
-            line.startsWith("***VISITOR DATA*** =") -> 
-                onVisitorDataChange(line.substringAfter("***VISITOR DATA*** ="))
-            line.startsWith("***DATASYNC ID*** =") -> 
-                onDataSyncIdChange(line.substringAfter("***DATASYNC ID*** ="))
-            line.startsWith("***ACCOUNT NAME*** =") -> 
-                onAccountNameChange(line.substringAfter("***ACCOUNT NAME*** ="))
-            line.startsWith("***ACCOUNT EMAIL*** =") -> 
-                onAccountEmailChange(line.substringAfter("***ACCOUNT EMAIL*** ="))
-            line.startsWith("***ACCOUNT CHANNEL HANDLE*** =") -> 
-                onAccountChannelHandleChange(line.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
-        }
-    }
-}
 
 private fun isTokenValid(token: String): Boolean {
     return token.isNotEmpty() && try {
@@ -128,4 +147,3 @@ private fun isTokenValid(token: String): Boolean {
         false
     }
 }
-Last edited just now

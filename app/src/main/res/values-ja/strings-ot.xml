@@ -119,21 +119,16 @@
     <string name="dev_settings_description">開発用途向けの追加の詳細設定を表示します</string>
     <string name="oobe_welcome_message">ようこそ、OuterTuneへ</string>
     <string name="oobe_complete">セットアップ完了</string>
-    <string name="oobe_ytm_content_description">YouTube Musicを指先で楽しもう</string>
-    <string name="oobe_local_playback_description">ローカルでの音楽再生</string>
     <string name="action_back">戻る</string>
     <string name="action_next">次へ</string>
-    <string name="oobe_ytm_sync_description">アカウント同期</string>
     <string name="action_skip">スキップ</string>
     <string name="info">情報</string>
     <string name="player_background_style">プレーヤーの背景スタイル</string>
-    <string name="oobe_local_scan_tooltip">曲をスキャンするにはここをクリックしてください</string>
     <string name="oobe_use_backup">バックアップがある</string>
     <string name="token_adv_login_description">これは高度なログイン方法です。Webポータルの代わりに、ここでログイントークンを直接入力または更新することもできます。たとえば、これにより複数のデバイスでのログインが高速化されます</string>
     <string name="scanner_type_ffmpeg_ext">FFMpeg メタデータ抽出ツールを使用します。外部パッケージのインストールが必要です</string>
     <string name="scanner_variant_rescan">ライブラリ全体を再スキャンし、すべての曲のメタデータを再読み込みします</string>
     <string name="new_interface">新しいインターフェースレイアウト</string>
-    <string name="oobe_ad_free_description">広告なしの音楽体験</string>
     <string name="experimental_settings_title">実験的な設定</string>
     <string name="grp_general">一般</string>
 </resources>

@@ -67,10 +67,6 @@ fun PrivacySettings(
         key = PauseListenHistoryKey,
         defaultValue = false
     )
-    val (pauseRemoteListenHistory, onPauseRemoteListenHistoryChange) = rememberPreference(
-        key = PauseRemoteListenHistoryKey,
-        defaultValue = false
-    )
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(
         key = PauseSearchHistoryKey,
         defaultValue = false
@@ -171,13 +167,6 @@ fun PrivacySettings(
             icon = { Icon(Icons.Rounded.History, null) },
             checked = pauseListenHistory,
             onCheckedChange = onPauseListenHistoryChange
-        )
-        SwitchPreference(
-            title = { Text(stringResource(R.string.pause_remote_listen_history)) },
-            icon = { Icon(Icons.Rounded.History, null) },
-            checked = pauseRemoteListenHistory,
-            onCheckedChange = onPauseRemoteListenHistoryChange,
-            isEnabled = !pauseListenHistory
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.clear_listen_history)) },

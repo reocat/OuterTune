@@ -111,14 +111,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.multidex.BuildConfig
 import androidx.navigation.NavController
-import com.dd3boh.outertune.BuildConfig
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.DarkModeKey
+import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LibraryFilter
@@ -128,6 +129,7 @@ import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.NavigationBarHeight
 import com.dd3boh.outertune.constants.NewInterfaceKey
 import com.dd3boh.outertune.constants.PureBlackKey
+import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
@@ -171,10 +173,12 @@ fun SetupWizard(
     val (newInterfaceStyle, onNewInterfaceStyleChange) = rememberPreference(key = NewInterfaceKey, defaultValue = true)
     var filter by rememberEnumPreference(LibraryFilterKey, LibraryFilter.ALL)
 
-    val accountName by rememberPreference(AccountNameKey, "")
-    val accountEmail by rememberPreference(AccountEmailKey, "")
-    val accountChannelHandle by rememberPreference(AccountChannelHandleKey, "")
+    val (accountName, onAccountNameChange) = rememberPreference(AccountNameKey, "")
+    val (accountEmail, onAccountEmailChange) = rememberPreference(AccountEmailKey, "")
+    val (accountChannelHandle, onAccountChannelHandleChange) = rememberPreference(AccountChannelHandleKey, "")
     val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
+    val (visitorData, onVisitorDataChange) = rememberPreference(VisitorDataKey, "")
+    val (dataSyncId, onDataSyncIdChange) = rememberPreference(DataSyncIdKey, "")
     val isLoggedIn = remember(innerTubeCookie) {
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
@@ -340,7 +344,14 @@ fun SetupWizard(
                             innerTubeCookie = innerTubeCookie,
                             onInnerTubeCookieChange = onInnerTubeCookieChange,
                             ytmSync = ytmSync,
-                            onYtmSyncChange = onYtmSyncChange
+                            onYtmSyncChange = onYtmSyncChange,
+                            visitorData = visitorData,
+                            onVisitorDataChange = onVisitorDataChange,
+                            dataSyncId = dataSyncId,
+                            onDataSyncIdChange = onDataSyncIdChange,
+                            onAccountNameChange = onAccountNameChange,
+                            onAccountEmailChange = onAccountEmailChange,
+                            onAccountChannelHandleChange = onAccountChannelHandleChange
                         )
                     }
 
@@ -587,7 +598,7 @@ private fun InterfacePage(
     // light/dark theme
     EnumListPreference(
         title = { Text(stringResource(R.string.dark_theme)) },
-        icon = { Icon(Icons.Rounded.DarkMode, null) },
+        icon = { @Composable { Icon(Icons.Rounded.DarkMode, null) }},
         selectedValue = darkMode,
         onValueSelected = onDarkModeChange,
         valueText = {
@@ -785,7 +796,14 @@ private fun AccountPage(
     innerTubeCookie: String,
     onInnerTubeCookieChange: (String) -> Unit,
     ytmSync: Boolean,
-    onYtmSyncChange: (Boolean) -> Unit
+    onYtmSyncChange: (Boolean) -> Unit,
+    visitorData: String,
+    onVisitorDataChange: (String) -> Unit,
+    dataSyncId: String,
+    onDataSyncIdChange: (String) -> Unit,
+    onAccountNameChange: (String) -> Unit,
+    onAccountEmailChange: (String) -> Unit,
+    onAccountChannelHandleChange: (String) -> Unit
 ) {
     var showToken by remember { mutableStateOf(false) }
     var showTokenEditor by remember { mutableStateOf(false) }
@@ -909,7 +927,18 @@ private fun AccountPage(
                     showTokenEditor = false
                 },
                 onDismiss = { showTokenEditor = false },
-                modifier = Modifier
+                modifier = Modifier,
+                visitorData = visitorData,
+                dataSyncId = dataSyncId,
+                accountName = accountName,
+                accountEmail = accountEmail,
+                accountChannelHandle = accountChannelHandle,
+                onInnerTubeCookieChange = onInnerTubeCookieChange,
+                onVisitorDataChange = onVisitorDataChange,
+                onDataSyncIdChange = onDataSyncIdChange,
+                onAccountNameChange = onAccountNameChange,
+                onAccountEmailChange = onAccountEmailChange,
+                onAccountChannelHandleChange = onAccountChannelHandleChange
             )
         }
     }
@@ -1104,35 +1133,36 @@ private fun SortHeaderDummy(
         ) {
 
             dummyOptions.forEach { type ->
-            dummyOptions.forEach { type ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = type,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = if (type == stringResource(R.string.sort_by_name)) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
-                            contentDescription = null
-                        )
-                    },
-                    onClick = {
-                        menuExpanded = false
-                    }
-                )
+                dummyOptions.forEach { type ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = type,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal
+                            )
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = if (type == stringResource(R.string.sort_by_name)) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+                        }
+                    )
+                }
             }
-        }
 
-        ResizableIconButton(
-            icon = if (sortDescending) Icons.Rounded.ArrowDownward else Icons.Rounded.ArrowUpward,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(32.dp)
-                .padding(8.dp),
-            onClick = { sortDescending = !sortDescending }
-        )
+            ResizableIconButton(
+                icon = if (sortDescending) Icons.Rounded.ArrowDownward else Icons.Rounded.ArrowUpward,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .padding(8.dp),
+                onClick = { sortDescending = !sortDescending }
+            )
+        }
     }
 }
