@@ -18,6 +18,7 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
 import com.zionhuang.innertube.models.YouTubeLocale
 import com.zionhuang.innertube.models.getContinuation
+import com.zionhuang.innertube.models.getItems
 import com.zionhuang.innertube.models.oddElements
 import com.zionhuang.innertube.models.response.AccountMenuResponse
 import com.zionhuang.innertube.models.response.BrowseResponse
@@ -134,11 +135,9 @@ object YouTube {
                 else
                     SearchSummary(
                         title = it.musicShelfRenderer?.title?.runs?.firstOrNull()?.text ?: return@mapNotNull null,
-                        items = it.musicShelfRenderer.contents
+                        items = it.musicShelfRenderer.contents?.getItems()
                             ?.mapNotNull {
-                                it.musicResponsiveListItemRenderer?.let { renderer ->
-                                    SearchSummaryPage.fromMusicResponsiveListItemRenderer(renderer)
-                                }
+                                SearchSummaryPage.fromMusicResponsiveListItemRenderer(it)
                             }
                             ?.distinctBy { it.id }
                             ?.ifEmpty { null } ?: return@mapNotNull null
@@ -152,10 +151,8 @@ object YouTube {
         SearchResult(
             items = response.contents?.tabbedSearchResultsRenderer?.tabs?.firstOrNull()
                 ?.tabRenderer?.content?.sectionListRenderer?.contents?.lastOrNull()
-                ?.musicShelfRenderer?.contents?.mapNotNull {
-                    it.musicResponsiveListItemRenderer?.let { renderer ->
-                        SearchPage.toYTItem(renderer)
-                    }
+                ?.musicShelfRenderer?.contents?.getItems()?.mapNotNull {
+                    SearchPage.toYTItem(it)
                 }.orEmpty(),
             continuation = response.contents?.tabbedSearchResultsRenderer?.tabs?.firstOrNull()
                 ?.tabRenderer?.content?.sectionListRenderer?.contents?.lastOrNull()
@@ -209,8 +206,8 @@ object YouTube {
             response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
                 ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents
 
-        val songs = contents?.mapNotNull {
-            it.musicResponsiveListItemRenderer?.let { renderer -> AlbumPage.getSong(renderer) }
+        val songs = contents?.getItems()?.mapNotNull {
+            AlbumPage.getSong(it)
         }
         songs!!
     }
@@ -264,10 +261,8 @@ object YouTube {
                 title = response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
                 items = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                     ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-                    ?.musicPlaylistShelfRenderer?.contents?.mapNotNull {
-                        it.musicResponsiveListItemRenderer?.let { renderer ->
-                            ArtistItemsPage.fromMusicResponsiveListItemRenderer(renderer)
-                        }
+                    ?.musicPlaylistShelfRenderer?.contents?.getItems()?.mapNotNull {
+                        ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
                     }!!,
                 continuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
                     ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
@@ -280,11 +275,9 @@ object YouTube {
         val response = innerTube.browse(WEB_REMIX, continuation = continuation).body<ContinuationResponse>()
         ArtistItemsContinuationPage(
             items = response.onResponseReceivedActions?.firstOrNull()
-                ?.appendContinuationItemsAction?.continuationItems?.mapNotNull {
-                    it.musicResponsiveListItemRenderer?.let { renderer ->
-                        ArtistItemsPage.fromMusicResponsiveListItemRenderer(renderer)
-                    }
-            }!!,
+                ?.appendContinuationItemsAction?.continuationItems?.getItems()?.mapNotNull {
+                    ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
+                }!!,
             continuation = response.onResponseReceivedActions.firstOrNull()
                 ?.appendContinuationItemsAction?.continuationItems?.getContinuation()
         )
@@ -325,10 +318,8 @@ object YouTube {
                 isEditable = editable
             ),
             songs = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
-                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.mapNotNull {
-                    it.musicResponsiveListItemRenderer?.let { renderer ->
-                        PlaylistPage.fromMusicResponsiveListItemRenderer(renderer)
-                    }
+                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.getItems()?.mapNotNull {
+                    PlaylistPage.fromMusicResponsiveListItemRenderer(it)
                 }!!,
             songsContinuation = response.contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer
                 .contents.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.getContinuation(),
@@ -345,11 +336,9 @@ object YouTube {
         ).body<ContinuationResponse>()
         PlaylistContinuationPage(
             songs = response.onResponseReceivedActions?.firstOrNull()
-                ?.appendContinuationItemsAction?.continuationItems?.mapNotNull {
-                it.musicResponsiveListItemRenderer?.let { renderer ->
-                    PlaylistPage.fromMusicResponsiveListItemRenderer(renderer)
-                }
-            }!!,
+                ?.appendContinuationItemsAction?.continuationItems?.getItems()?.mapNotNull {
+                    PlaylistPage.fromMusicResponsiveListItemRenderer(it)
+                }!!,
             continuation = response.onResponseReceivedActions.firstOrNull()
                 ?.appendContinuationItemsAction?.continuationItems?.getContinuation()
         )
