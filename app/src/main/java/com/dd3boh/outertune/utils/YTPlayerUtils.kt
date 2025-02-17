@@ -12,8 +12,7 @@ import android.net.ConnectivityManager
 import androidx.media3.common.PlaybackException
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.db.entities.FormatEntity
-import com.dd3boh.outertune.utils.potoken.PoTokenGenerator
-import com.dd3boh.outertune.utils.potoken.PoTokenResult
+import com.dd3boh.outertune.utils.potoken.PoTokenException
 import com.zionhuang.innertube.NewPipeUtils
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeClient
@@ -78,7 +77,17 @@ object YTPlayerUtils {
          */
         val signatureTimestamp = getSignatureTimestampOrNull(videoId)
 
-        val (webPlayerPot, webStreamingPot) = getWebClientPoTokenOrNull(videoId)?.let {
+        val isLoggedIn = YouTube.cookie != null
+        val sessionId =
+            if (isLoggedIn) {
+                // signed in sessions use dataSyncId as identifier
+                YouTube.dataSyncId
+            } else {
+                // signed out sessions use visitorData as identifier
+                YouTube.visitorData
+            }
+
+        val (webPlayerPot, webStreamingPot) = getWebClientPoTokenOrNull(videoId, sessionId)?.let {
             Pair(it.playerRequestPoToken, it.streamingDataPoToken)
         } ?: Pair(null, null)
 
@@ -114,7 +123,7 @@ object YTPlayerUtils {
             if (client == MAIN_CLIENT) {
                 streamPlayerResponse = mainPlayerResponse
             } else {
-                if (client.loginRequired && YouTube.cookie == null) {
+                if (client.loginRequired && !isLoggedIn) {
                     // skip client if it requires login but user is not logged in
                     continue
                 }
@@ -260,9 +269,12 @@ object YTPlayerUtils {
     /**
      * Wrapper around the [PoTokenGenerator.getWebClientPoToken] function which reports exceptions
      */
-    private fun getWebClientPoTokenOrNull(videoId: String): PoTokenResult? {
+    private fun getWebClientPoTokenOrNull(videoId: String, sessionId: String?): PoTokenResult? {
         try {
-            return poTokenGenerator.getWebClientPoToken(videoId)
+            if (sessionId == null) {
+                throw PoTokenException("Session identifier is null")
+            }
+            return poTokenGenerator.getWebClientPoToken(videoId, sessionId)
         } catch (e: Exception) {
             reportException(e)
         }
