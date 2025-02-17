@@ -183,7 +183,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.client.encoding)
 
-    implementation(libs.nanojson)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.webkit)
 
