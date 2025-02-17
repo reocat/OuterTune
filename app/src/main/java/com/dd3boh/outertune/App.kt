@@ -104,7 +104,7 @@ class App : Application(), ImageLoaderFactory {
                             dataStore.edit { settings ->
                                 settings[VisitorDataKey] = newVisitorData
                             }
-                        } ?: YouTube.DEFAULT_VISITOR_DATA
+                        }
                 }
         }
         GlobalScope.launch {
