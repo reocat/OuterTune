@@ -8,14 +8,12 @@
 
 package com.dd3boh.outertune.ui.screens.settings
 
-import android.Manifest
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -72,6 +70,7 @@ import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
+import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
@@ -92,6 +91,7 @@ import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
+import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.imageCache
@@ -112,10 +112,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-
-val MEDIA_PERMISSION_LEVEL =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
-    else Manifest.permission.READ_EXTERNAL_STORAGE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
