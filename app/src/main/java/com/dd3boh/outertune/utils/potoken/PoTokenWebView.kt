@@ -231,7 +231,8 @@ class PoTokenWebView private constructor(
         popPoTokenContinuation(identifier)?.resume(poToken)
     }
 
-    val isExpired get() = Instant.now() > expirationInstant
+    val isExpired: Boolean
+        get() = Instant.now().isAfter(expirationInstant)
     //endregion
 
     //region Handling multiple emitters
