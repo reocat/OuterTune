@@ -6,7 +6,6 @@ import android.util.Log
 import android.webkit.CookieManager
 import com.dd3boh.outertune.App
 import com.dd3boh.outertune.BuildConfig
-import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.runBlocking
 
 class PoTokenGenerator {
@@ -19,13 +18,13 @@ class PoTokenGenerator {
     private var webPoTokenStreamingPot: String? = null
     private var webPoTokenGenerator: PoTokenWebView? = null
 
-    fun getWebClientPoToken(videoId: String): PoTokenResult? {
+    fun getWebClientPoToken(videoId: String, sessionId: String): PoTokenResult? {
         if (!webViewSupported || webViewBadImpl) {
             return null
         }
 
         try {
-            return getWebClientPoToken(videoId, false)
+            return getWebClientPoToken(videoId, sessionId, false)
         } catch (e: Exception) {
             when (e) {
                 is BadWebViewException -> {
@@ -43,26 +42,17 @@ class PoTokenGenerator {
      * case the current [webPoTokenGenerator] threw an error last time
      * [PoTokenGenerator.generatePoToken] was called
      */
-    private fun getWebClientPoToken(videoId: String, forceRecreate: Boolean): PoTokenResult {
+    private fun getWebClientPoToken(videoId: String, sessionId: String, forceRecreate: Boolean): PoTokenResult {
         // just a helper class since Kotlin does not have builtin support for 4-tuples
         data class Quadruple<T1, T2, T3, T4>(val t1: T1, val t2: T2, val t3: T3, val t4: T4)
 
         val (poTokenGenerator, sessionIdentifier, streamingPot, hasBeenRecreated) =
             synchronized(WebPoTokenGenLock) {
-                val shouldRecreate = webPoTokenGenerator == null || forceRecreate || webPoTokenGenerator!!.isExpired()
+                val shouldRecreate =
+                    webPoTokenGenerator == null || forceRecreate || webPoTokenGenerator!!.isExpired() || webPoTokenSessionIdentifier != sessionId
 
                 if (shouldRecreate) {
-                    webPoTokenSessionIdentifier = if (YouTube.cookie != null) {
-                        // signed in sessions use dataSyncId as identifier
-                        YouTube.dataSyncId
-                    } else {
-                        // signed out sessions use visitorData as identifier
-                        YouTube.visitorData
-                    }
-
-                    if (webPoTokenSessionIdentifier == null) {
-                        throw PoTokenException("Session identifier is null")
-                    }
+                    webPoTokenSessionIdentifier = sessionId
 
                     runBlocking {
                         // close the current webPoTokenGenerator on the main thread
@@ -100,10 +90,10 @@ class PoTokenGenerator {
                 throw throwable
             } else {
                 // retry, this time recreating the [webPoTokenGenerator] from scratch;
-                // this might happen for example if NewPipe goes in the background and the WebView
+                // this might happen for example if the app goes in the background and the WebView
                 // content is lost
                 Log.e(TAG, "Failed to obtain poToken, retrying", throwable)
-                return getWebClientPoToken(videoId = videoId, forceRecreate = true)
+                return getWebClientPoToken(videoId = videoId, sessionId = sessionId, forceRecreate = true)
             }
         }
 
