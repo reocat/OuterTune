@@ -122,6 +122,7 @@ fun LocalPlayerSettings(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
+    val playerConnection = LocalPlayerConnection.current
 
     // scanner vars
     val isScannerActive by scannerActive.collectAsState()
@@ -354,6 +355,8 @@ fun LocalPlayerSettings(
                     scannerFinished.value = false
                     scannerFailure = false
 
+                    playerConnection?.player?.pause()
+
                     coroutineScope.launch(Dispatchers.IO) {
                         // full rescan
                         if (fullRescan) {
@@ -461,8 +464,9 @@ fun LocalPlayerSettings(
                             }
                         }
 
+                        // post scan actions
                         imageCache.purgeCache()
-                        cacheDirectoryTree(null)
+                        playerConnection?.service?.initQueue()
 
                         onLastLocalScanChange(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond())
                         scannerFinished.value = true

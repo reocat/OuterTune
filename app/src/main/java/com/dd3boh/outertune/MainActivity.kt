@@ -423,6 +423,7 @@ class MainActivity : ComponentActivity() {
                         if (perms == PackageManager.PERMISSION_GRANTED) {
                             // equivalent to (quick scan)
                             try {
+                                playerConnection?.player?.pause()
                                 val scanner = LocalMediaScanner.getScanner(this@MainActivity, scannerImpl)
                                 val directoryStructure = scanner.scanLocal(
                                     database,
@@ -463,6 +464,7 @@ class MainActivity : ComponentActivity() {
 
                             // post scan actions
                             imageCache.purgeCache()
+                            playerConnection?.service?.initQueue()
                         } else if (perms == PackageManager.PERMISSION_DENIED) {
                             // Request the permission using the permission launcher
                             permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)

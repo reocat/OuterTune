@@ -531,8 +531,12 @@ class MusicService : MediaLibraryService(),
     fun initQueue() {
         if (dataStore.get(PersistentQueueKey, true)) {
             queueBoard = QueueBoard(database.readQueue().toMutableList())
-            isShuffleEnabled.value = queueBoard.getCurrentQueue()?.shuffled == true
-            queueBoard.initialized = true
+            queueBoard.getCurrentQueue()?.let {
+                isShuffleEnabled.value = it.shuffled
+                queueBoard.initialized = true
+            }
+        } else {
+            queueBoard = QueueBoard()
         }
     }
 
