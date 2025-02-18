@@ -1,6 +1,6 @@
+<!-- This file hosts strings specific to OuterTune. This separation allows us to easily recycle translations from upstream InnerTune,
+while also allowing users to translate our app as well. New, specific strings to OuterTune go here. -->
 <resources>
-<!--OuterTune strings below-->
-
     <!-- Bottom navigation -->
     <string name="folders">Folders</string>
     <string name="library">Library</string>
@@ -36,7 +36,7 @@
     <string name="err_play_next_on_error">Error occurred. Playing next</string>
     <string name="err_stop_on_error">Error occurred. Playback stopped</string>
     <string name="err_stop_on_too_many_errors">Too many errors. Playback stopped</string>
-    <string name="wait_to_reconnect">Wait to reconnect</string>">
+    <string name="wait_to_reconnect">Wait to reconnect</string>
 
     <!-- Sort menu -->
     <string name="sort_by_date_modified">Date modified</string>
@@ -220,9 +220,7 @@
     <string name="action_back">Back</string>
     <string name="action_next">Next</string>
     <string name="action_skip">Skip</string>
-
     <string name="action_cancel">Cancel</string>
-
     <string name="info">Information</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
