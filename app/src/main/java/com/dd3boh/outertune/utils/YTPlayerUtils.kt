@@ -9,10 +9,10 @@
 package com.dd3boh.outertune.utils
 
 import android.net.ConnectivityManager
+import android.util.Log
 import androidx.media3.common.PlaybackException
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.db.entities.FormatEntity
-import com.dd3boh.outertune.utils.potoken.PoTokenException
 import com.zionhuang.innertube.NewPipeUtils
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeClient
@@ -23,6 +23,8 @@ import com.zionhuang.innertube.models.response.PlayerResponse
 import okhttp3.OkHttpClient
 
 object YTPlayerUtils {
+
+    private const val TAG = "YTPlayerUtils"
 
     private val httpClient = OkHttpClient.Builder()
         .proxy(YouTube.proxy)
@@ -69,6 +71,8 @@ object YTPlayerUtils {
         audioQuality: AudioQuality,
         connectivityManager: ConnectivityManager,
     ): Result<PlaybackData> = runCatching {
+        Log.d(TAG, "Playback info requested: $videoId")
+
         /**
          * This is required for some clients to get working streams however
          * it should not be forced for the [MAIN_CLIENT] because the response of the [MAIN_CLIENT]
@@ -87,9 +91,13 @@ object YTPlayerUtils {
                 YouTube.visitorData
             }
 
+        Log.d(TAG, "[$videoId] signatureTimestamp: $signatureTimestamp, isLoggedIn: $isLoggedIn")
+
         val (webPlayerPot, webStreamingPot) = getWebClientPoTokenOrNull(videoId, sessionId)?.let {
             Pair(it.playerRequestPoToken, it.streamingDataPoToken)
-        } ?: Pair(null, null)
+        } ?: Pair(null, null).also {
+            Log.w(TAG, "[$videoId] No po token")
+        }
 
         val mainPlayerResponse =
             YouTube.player(videoId, playlistId, MAIN_CLIENT, signatureTimestamp, webPlayerPot)
@@ -133,6 +141,11 @@ object YTPlayerUtils {
                         .getOrNull()
             }
 
+            Log.d(TAG, "[$videoId] stream client: ${client.clientName}, " +
+                    "playabilityStatus: ${streamPlayerResponse?.playabilityStatus?.let {
+                        it.status + (it.reason?.let { " - $it" } ?: "")
+                    }}")
+
             // process current client response
             if (streamPlayerResponse?.playabilityStatus?.status == "OK") {
                 format =
@@ -157,6 +170,8 @@ object YTPlayerUtils {
                 if (validateStatus(streamUrl)) {
                     // working stream found
                     break
+                } else {
+                    Log.d(TAG, "[$videoId] [${client.clientName}] got bad http status code")
                 }
             }
         }
@@ -180,6 +195,8 @@ object YTPlayerUtils {
         if (streamUrl == null) {
             throw Exception("Could not find stream url")
         }
+
+        Log.d(TAG, "[$videoId] stream url: $streamUrl")
 
         PlaybackData(
             audioConfig,
@@ -270,10 +287,11 @@ object YTPlayerUtils {
      * Wrapper around the [PoTokenGenerator.getWebClientPoToken] function which reports exceptions
      */
     private fun getWebClientPoTokenOrNull(videoId: String, sessionId: String?): PoTokenResult? {
+        if (sessionId == null) {
+            Log.d(TAG, "[$videoId] Session identifier is null")
+            return null
+        }
         try {
-            if (sessionId == null) {
-                throw PoTokenException("Session identifier is null")
-            }
             return poTokenGenerator.getWebClientPoToken(videoId, sessionId)
         } catch (e: Exception) {
             reportException(e)
