@@ -134,4 +134,10 @@
 <string name="err_play_next_on_error">Si è verificato un errore. Riproduzione successiva</string>
     <string name="err_stop_on_error">Si è verificato un errore. Riproduzione interrotta</string>
     <string name="err_stop_on_too_many_errors">Troppi errori. Riproduzione interrotta</string>
+    <string name="grp_general">Generale</string>
+    <string name="queue_remote_history">Cronologia (remota)</string>
+    <string name="queue_local_history">Cronologia (locale)</string>
+    <string name="scanner_btn_idle">Scansiona</string>
+    <string name="scanner_progress_complete">Scansione completata</string>
+    <string name="action_cancel">Annulla</string>
 </resources>
