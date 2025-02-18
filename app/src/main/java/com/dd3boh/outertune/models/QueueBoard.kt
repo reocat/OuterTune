@@ -200,7 +200,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
         val match = masterQueues.firstOrNull { it.title == title } // look for matching queue. Title is uid
         if (match != null) { // found an existing queue
-            // Titles ending in "+​" (u200B) signify a extension queue
+            // Titles ending in "+" (u200B) signify a extension queue
             val anyExts = masterQueues.firstOrNull { it.title == match.title + " +\u200B" }
             if (replace) { // force replace
                 if (QUEUE_DEBUG)
