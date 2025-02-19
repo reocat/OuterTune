@@ -1,6 +1,7 @@
 package com.dd3boh.outertune.utils.potoken
 
 import android.content.Context
+import android.util.Log
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
@@ -21,7 +22,6 @@ import com.zionhuang.innertube.YouTube
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
-import timber.log.Timber
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.Collections
@@ -67,7 +67,7 @@ class PoTokenWebView private constructor(
 
                     val fmt = "\"${m.message()}\", source: ${m.sourceId()} (${m.lineNumber()})"
                     val exception = BadWebViewException(fmt)
-                    Timber.tag(TAG).e("This WebView implementation is broken: $fmt")
+                    Log.e(TAG, "This WebView implementation is broken: $fmt")
 
                     onInitializationErrorCloseAndCancel(exception)
                     popAllPoTokenContinuations().forEach { (_, cont) -> cont.resumeWithException(exception) }
@@ -83,9 +83,7 @@ class PoTokenWebView private constructor(
      * run it, and obtain an `integrityToken`.
      */
     private fun loadHtmlAndObtainBotguard() {
-        if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).d("loadHtmlAndObtainBotguard() called")
-        }
+        Log.d(TAG, "loadHtmlAndObtainBotguard() called")
 
         scope.launch(exceptionHandler) {
             val html = withContext(Dispatchers.IO) {
@@ -104,9 +102,7 @@ class PoTokenWebView private constructor(
      */
     @JavascriptInterface
     fun downloadAndRunBotguard() {
-        if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).d("downloadAndRunBotguard() called")
-        }
+        Log.d(TAG, "downloadAndRunBotguard() called")
 
         makeBotguardServiceRequest(
             "https://www.youtube.com/api/jnn/v1/Create",
@@ -137,7 +133,7 @@ class PoTokenWebView private constructor(
     @JavascriptInterface
     fun onJsInitializationError(error: String) {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).e("Initialization error from JavaScript: $error")
+            Log.e(TAG, "Initialization error from JavaScript: $error")
         }
         onInitializationErrorCloseAndCancel(buildExceptionForJsError(error))
     }
@@ -148,25 +144,19 @@ class PoTokenWebView private constructor(
      */
     @JavascriptInterface
     fun onRunBotguardResult(botguardResponse: String) {
-        if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).d("botguardResponse: $botguardResponse")
-        }
+        Log.d(TAG, "botguardResponse: $botguardResponse")
         makeBotguardServiceRequest(
             "https://www.youtube.com/api/jnn/v1/GenerateIT",
             "[ \"$REQUEST_KEY\", \"$botguardResponse\" ]",
         ) { responseBody ->
-            if (BuildConfig.DEBUG) {
-                Timber.tag(TAG).d("GenerateIT response: $responseBody")
-            }
+            Log.d(TAG, "GenerateIT response: $responseBody")
             val (integrityToken, expirationTimeInSeconds) = parseIntegrityTokenData(responseBody)
 
             // leave 10 minutes of margin just to be sure
             expirationInstant = Instant.now().plusSeconds(expirationTimeInSeconds).minus(10, ChronoUnit.MINUTES)
 
             webView.evaluateJavascript("this.integrityToken = $integrityToken") {
-                if (BuildConfig.DEBUG) {
-                    Timber.tag(TAG).d("initialization finished, expiration=${expirationTimeInSeconds}s")
-                }
+                Log.d(TAG, "initialization finished, expiration=${expirationTimeInSeconds}s")
                 continuation.resume(this)
             }
         }
@@ -177,9 +167,7 @@ class PoTokenWebView private constructor(
     suspend fun generatePoToken(identifier: String): String {
         return withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { cont ->
-                if (BuildConfig.DEBUG) {
-                    Timber.tag(TAG).d("generatePoToken() called with identifier $identifier")
-                }
+                Log.d(TAG, "generatePoToken() called with identifier $identifier")
                 addPoTokenEmitter(identifier, cont)
                 webView.evaluateJavascript(
                     """try {
@@ -204,7 +192,7 @@ class PoTokenWebView private constructor(
     @JavascriptInterface
     fun onObtainPoTokenError(identifier: String, error: String) {
         if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).e("obtainPoToken error from JavaScript: $error")
+            Log.e(TAG, "obtainPoToken error from JavaScript: $error")
         }
         popPoTokenContinuation(identifier)?.resumeWithException(buildExceptionForJsError(error))
     }
@@ -215,9 +203,7 @@ class PoTokenWebView private constructor(
      */
     @JavascriptInterface
     fun onObtainPoTokenResult(identifier: String, poTokenU8: String) {
-        if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).d("Generated poToken (before decoding): identifier=$identifier poTokenU8=$poTokenU8")
-        }
+        Log.d(TAG, "Generated poToken (before decoding): identifier=$identifier poTokenU8=$poTokenU8")
         val poToken = try {
             u8ToBase64(poTokenU8)
         } catch (t: Throwable) {
@@ -225,9 +211,7 @@ class PoTokenWebView private constructor(
             return
         }
 
-        if (BuildConfig.DEBUG) {
-            Timber.tag(TAG).d("Generated poToken: identifier=$identifier poToken=$poToken")
-        }
+        Log.d(TAG, "Generated poToken: identifier=$identifier poToken=$poToken")
         popPoTokenContinuation(identifier)?.resume(poToken)
     }
 
@@ -335,7 +319,7 @@ class PoTokenWebView private constructor(
     //endregion
 
     companion object {
-        private val TAG = PoTokenWebView::class.simpleName.toString()
+        private const val TAG = "PoTokenWebView"
         private const val GOOGLE_API_KEY = "AIzaSyDyT5W0Jh49F30Pqqtyfdf7pDLFKLJoAnw"
         private const val REQUEST_KEY = "O43z0dpjhgX20SCx4KAo"
         private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
