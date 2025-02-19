@@ -244,7 +244,7 @@ fun LocalPlayerSettings(
                 val dirPickerLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.OpenDocumentTree()
                 ) { uri ->
-                    if (uri?.path != null && !tempScanPaths.contains(uri.path!!)) {
+                    if (uri?.path != null && !("$tempScanPaths\u200B").contains(uri.path!! + "\u200B")) {
                         if (tempScanPaths.isBlank()) {
                             tempScanPaths = "${uri.path}\n"
                         } else {
@@ -285,7 +285,13 @@ fun LocalPlayerSettings(
                                         .align(Alignment.CenterVertically)
                                 )
                                 IconButton(
-                                    onClick = { tempScanPaths = tempScanPaths.replace("$it\n", "") },
+                                    onClick = {
+                                        tempScanPaths = if (tempScanPaths.substringAfter("\n").contains("\n")) {
+                                            tempScanPaths.replace("$it\n", "")
+                                        } else {
+                                            " " // cursed bug
+                                        }
+                                    },
                                     onLongClick = {}
                                 ) {
                                     Icon(
