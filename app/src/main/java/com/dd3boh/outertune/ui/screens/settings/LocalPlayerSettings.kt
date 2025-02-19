@@ -593,7 +593,7 @@ fun LocalPlayerSettings(
         // scanner sensitivity
         EnumListPreference(
             title = { Text(stringResource(R.string.scanner_sensitivity_title)) },
-            icon = { @Composable { Icon(Icons.Rounded.GraphicEq, null) } },
+            icon = { Icon(Icons.Rounded.GraphicEq, null) },
             selectedValue = scannerSensitivity,
             onValueSelected = onScannerSensitivityChange,
             valueText = {
@@ -624,7 +624,7 @@ fun LocalPlayerSettings(
 
         EnumListPreference(
             title = { Text(stringResource(R.string.scanner_type_title)) },
-            icon = { @Composable { Icon(Icons.Rounded.Speed, null) } },
+            icon = { Icon(Icons.Rounded.Speed, null) },
             selectedValue = scannerImpl,
             onValueSelected = {
                 if (it == ScannerImpl.FFMPEG_EXT && isFFmpegInstalled) {
