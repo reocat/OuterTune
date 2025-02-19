@@ -53,6 +53,7 @@ import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.MusicNote
@@ -598,7 +599,7 @@ private fun InterfacePage(
     // light/dark theme
     EnumListPreference(
         title = { Text(stringResource(R.string.dark_theme)) },
-        icon = { @Composable { Icon(Icons.Rounded.DarkMode, null) }},
+        icon = { Icon(Icons.Rounded.DarkMode, null) },
         selectedValue = darkMode,
         onValueSelected = onDarkModeChange,
         valueText = {

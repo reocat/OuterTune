@@ -163,7 +163,7 @@ fun PlayerSettings(
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
-            icon = { @Composable { Icon(Icons.Rounded.GraphicEq, null) } },
+            icon = { Icon(Icons.Rounded.GraphicEq, null) },
             selectedValue = audioQuality,
             onValueSelected = onAudioQualityChange,
             valueText = {
@@ -269,7 +269,6 @@ fun MinPlaybackDurDialog(
                     value = currentValue,
                     onValueChange = { currentValue = it },
                     valueRange = 0f..100f,
-                    steps = 99,
                 )
 
                 Row(

@@ -163,7 +163,7 @@ fun LyricsSettings(
         // lyrics position
         EnumListPreference(
             title = { Text(stringResource(R.string.lyrics_text_position)) },
-            icon = { @Composable { Icon(Icons.Rounded.Lyrics, null) } },
+            icon = { Icon(Icons.Rounded.Lyrics, null) },
             selectedValue = lyricsPosition,
             onValueSelected = onLyricsPositionChange,
             valueText = {
