@@ -84,8 +84,6 @@ multidex = { group = "androidx.multidex", name = "multidex", version.ref = "mult
 
 newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor", version.ref = "newpipe" }
 
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.3" }
-
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.12.1" }
 
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
