@@ -193,7 +193,7 @@ fun AppearanceSettings(
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.player_background_style)) },
-            icon = { @Composable { Icon(Icons.Rounded.BlurOn, null) }},
+            icon = { Icon(Icons.Rounded.BlurOn, null) },
             selectedValue = playerBackground,
             onValueSelected = onPlayerBackgroundChange,
             valueText = {
@@ -207,7 +207,7 @@ fun AppearanceSettings(
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.dark_theme)) },
-            icon = { @Composable { Icon(Icons.Rounded.DarkMode, null) } },
+            icon = { Icon(Icons.Rounded.DarkMode, null) },
             selectedValue = darkMode,
             onValueSelected = onDarkModeChange,
             valueText = {
@@ -341,7 +341,7 @@ fun AppearanceSettings(
         if (newInterfaceStyle) {
             EnumListPreference(
                 title = { Text(stringResource(R.string.default_open_tab)) },
-                icon = { @Composable { Icon(Icons.Rounded.Tab, null) } },
+                icon = { Icon(Icons.Rounded.Tab, null) },
                 selectedValue = defaultOpenTabNew,
                 onValueSelected = onDefaultOpenTabNewChange,
                 valueText = {
@@ -354,7 +354,7 @@ fun AppearanceSettings(
         } else {
             EnumListPreference(
                 title = { Text(stringResource(R.string.default_open_tab)) },
-                icon = { @Composable { Icon(Icons.Rounded.Tab, null) } },
+                icon = { Icon(Icons.Rounded.Tab, null)},
                 selectedValue = defaultOpenTab,
                 onValueSelected = onDefaultOpenTabChange,
                 values = NavigationTab.entries.filter { it != NavigationTab.NULL },

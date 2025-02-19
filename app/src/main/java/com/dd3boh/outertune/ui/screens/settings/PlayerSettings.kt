@@ -163,7 +163,7 @@ fun PlayerSettings(
         )
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
-            icon = { @Composable { Icon(Icons.Rounded.GraphicEq, null) } },
+            icon = { Icon(Icons.Rounded.GraphicEq, null) },
             selectedValue = audioQuality,
             onValueSelected = onAudioQualityChange,
             valueText = {
