@@ -61,6 +61,7 @@ import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.ListThumbnailSize
@@ -100,7 +101,8 @@ fun SongMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
-    val clipboard = LocalClipboard.current
+    val clipboardManager = LocalClipboard.current
+    val syncUtils = LocalSyncUtils.current
 
     val playerConnection = LocalPlayerConnection.current ?: return
     val songState = database.song(originalSong.id).collectAsState(initial = originalSong)
@@ -259,8 +261,13 @@ fun SongMenu(
         trailingContent = {
             IconButton(
                 onClick = {
+                    val s = song.song.toggleLike()
                     database.query {
-                        update(song.song.toggleLike())
+                        update(s)
+                    }
+
+                    if (!s.isLocal) {
+                        syncUtils.likeSong(s)
                     }
                 }
             ) {
