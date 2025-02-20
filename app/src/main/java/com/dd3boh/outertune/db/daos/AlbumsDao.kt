@@ -261,12 +261,17 @@ interface AlbumsDao : ArtistsDao {
 
     @Transaction
     fun insert(albumItem: AlbumItem) {
+        val thumbnailUrl = if (albumItem.thumbnail.startsWith("http") == true) {
+            albumItem.thumbnail
+        } else {
+            "https://i.ytimg.com/${albumItem.thumbnail}" // Prepend base URL if relative
+        }
         if (insert(AlbumEntity(
                 id = albumItem.browseId,
                 playlistId = albumItem.playlistId,
                 title = albumItem.title,
                 year = albumItem.year,
-                thumbnailUrl = albumItem.thumbnail,
+                thumbnailUrl = thumbnailUrl, // Ensure this is set
                 songCount = 0,
                 duration = 0
             )) == -1L

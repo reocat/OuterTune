@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.Edit
@@ -74,6 +75,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -136,6 +138,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 const val ActiveBoxAlpha = 0.6f
 
@@ -1180,7 +1183,7 @@ fun YouTubeListItem(
     val downloads by LocalDownloadUtil.current.downloads.collectAsState()
 
     var available = true
-    if (item is SongItem) { available = downloads[item.id]?.isAvailableOffline() ?: false || isNetworkConnected }
+    if (item is SongItem) { available = downloads[item.id]?.isAvailableOffline() == true || isNetworkConnected }
 
     ListItem(
         title = item.title,
@@ -1423,6 +1426,8 @@ fun ItemThumbnail(
 ) {
     // ehhhh make a nicer thing for later
     val context = LocalContext.current
+    val errorPainter = rememberVectorPainter(image = Icons.Rounded.BrokenImage)
+    Timber.tag("ThumbnailDebug").d("Thumbnail URL: ${thumbnailUrl}")
 
     Box(
         contentAlignment = Alignment.Center,
@@ -1440,6 +1445,7 @@ fun ItemThumbnail(
                 )
             }
         } else if (thumbnailUrl?.startsWith("/storage") == true) {
+            Timber.tag("ThumbnailDebug").d("Loading local thumbnail: $thumbnailUrl")
             // local thumbnail arts
             AsyncImageLocal(
                 image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
@@ -1455,7 +1461,8 @@ fun ItemThumbnail(
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(shape)
+                    .clip(shape),
+                error = errorPainter
             )
         }
 
