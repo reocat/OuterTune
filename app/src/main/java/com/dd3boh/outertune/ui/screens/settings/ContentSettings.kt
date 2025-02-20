@@ -137,7 +137,6 @@ fun ContentSettings(
                 title = { Text(stringResource(R.string.logout)) },
                 icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
                 onClick = {
-                    onInnerTubeCookieChange("")
                     runBlocking {
                         context.dataStore.edit { settings ->
                             settings.remove(InnerTubeCookieKey)
