@@ -123,20 +123,16 @@ object YTPlayerUtils {
             streamUrl = null
             streamExpiresInSeconds = null
 
-            // decide which client to use
-            val client =
-                if (clientIndex == -1) {
-                    // try with streams from main client first
-                    MAIN_CLIENT
-                } else {
-                    // after main client use fallback clients
-                    STREAM_FALLBACK_CLIENTS[clientIndex]
-                }
-
-            // get player response for streams
-            if (client == MAIN_CLIENT) {
+            // decide which client to use for streams and load its player response
+            val client: YouTubeClient
+            if (clientIndex == -1) {
+                // try with streams from main client first
+                client = MAIN_CLIENT
                 streamPlayerResponse = mainPlayerResponse
             } else {
+                // after main client use fallback clients
+                client = STREAM_FALLBACK_CLIENTS[clientIndex]
+
                 if (client.loginRequired && !isLoggedIn) {
                     // skip client if it requires login but user is not logged in
                     continue
