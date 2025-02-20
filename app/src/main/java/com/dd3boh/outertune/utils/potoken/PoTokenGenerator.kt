@@ -3,7 +3,6 @@ package com.dd3boh.outertune.utils.potoken
 import android.util.Log
 import android.webkit.CookieManager
 import com.dd3boh.outertune.App
-import com.dd3boh.outertune.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -11,7 +10,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class PoTokenGenerator {
-    private val TAG = PoTokenGenerator::class.simpleName
+    private val TAG = "PoTokenGenerator"
     private val webViewSupported by lazy { runCatching { CookieManager.getInstance() }.isSuccess }
     private var webViewBadImpl = false // whether the system has a bad WebView implementation
 
@@ -45,10 +44,9 @@ class PoTokenGenerator {
      * [PoTokenWebView.generatePoToken] was called
      */
     private suspend fun getWebClientPoToken(videoId: String, sessionId: String, forceRecreate: Boolean): PoTokenResult {
-        // just a helper class since Kotlin does not have builtin support for 4-tuples
-        data class Quadruple<T1, T2, T3, T4>(val t1: T1, val t2: T2, val t3: T3, val t4: T4)
+        Log.d(TAG, "poToken requested: $videoId, $sessionId")
 
-        val (poTokenGenerator, sessionIdentifier, streamingPot, hasBeenRecreated) =
+        val (poTokenGenerator, streamingPot, hasBeenRecreated) =
             webPoTokenGenLock.withLock {
                 val shouldRecreate =
                     forceRecreate || webPoTokenGenerator == null || webPoTokenGenerator!!.isExpired || webPoTokenSessionId != sessionId
@@ -68,7 +66,7 @@ class PoTokenGenerator {
                     webPoTokenStreamingPot = webPoTokenGenerator!!.generatePoToken(webPoTokenSessionId!!)
                 }
 
-                Quadruple(webPoTokenGenerator!!, webPoTokenSessionId!!, webPoTokenStreamingPot!!, shouldRecreate)
+                Triple(webPoTokenGenerator!!, webPoTokenStreamingPot!!, shouldRecreate)
             }
 
         val playerPot = try {
@@ -90,13 +88,7 @@ class PoTokenGenerator {
             }
         }
 
-        if (BuildConfig.DEBUG) {
-            Log.d(
-                TAG,
-                "poToken for $videoId: playerPot=$playerPot, " +
-                        "streamingPot=$streamingPot, sessionIdentifier=$sessionIdentifier"
-            )
-        }
+        Log.d(TAG, "[$videoId] playerPot=$playerPot, streamingPot=$streamingPot")
 
         return PoTokenResult(playerPot, streamingPot)
     }
