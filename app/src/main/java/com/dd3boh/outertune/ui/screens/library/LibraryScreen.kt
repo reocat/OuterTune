@@ -1,6 +1,7 @@
 package com.dd3boh.outertune.ui.screens.library
 
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -82,6 +83,9 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryViewModel
 import kotlinx.coroutines.delay
+import timber.log.Timber
+
+private const val TAG = "LibraryScreen"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -108,11 +112,33 @@ fun LibraryScreen(
 
     val allItems by viewModel.allItems.collectAsState()
 
+    // Log when allItems updates
+    LaunchedEffect(allItems) {
+        Timber.tag(TAG).d("AllItems updated: ${allItems?.size ?: 0} items")
+        allItems?.groupBy { it?.javaClass?.simpleName }?.forEach { (type, items) ->
+            Timber.tag(TAG).d("- $type: ${items.size} items")
+        }
+    }
+
     val isSyncingRemotePlaylists by viewModel.isSyncingRemotePlaylists.collectAsState()
     val isSyncingRemoteAlbums by viewModel.isSyncingRemoteAlbums.collectAsState()
     val isSyncingRemoteArtists by viewModel.isSyncingRemoteArtists.collectAsState()
     val isSyncingRemoteSongs by viewModel.isSyncingRemoteSongs.collectAsState()
     val isSyncingRemoteLikedSongs by viewModel.isSyncingRemoteLikedSongs.collectAsState()
+
+    // Log syncing state changes
+    LaunchedEffect(
+        isSyncingRemotePlaylists,
+        isSyncingRemoteAlbums,
+        isSyncingRemoteArtists,
+        isSyncingRemoteSongs,
+        isSyncingRemoteLikedSongs
+    ) {
+        Timber.tag(TAG).d(
+            "Sync state: Playlists=$isSyncingRemotePlaylists, Albums=$isSyncingRemoteAlbums, " +
+                    "Artists=$isSyncingRemoteArtists, Songs=$isSyncingRemoteSongs, " +
+                    "LikedSongs=$isSyncingRemoteLikedSongs")
+    }
 
     val likedPlaylist = PlaylistEntity(id = "liked", name = stringResource(id = R.string.liked_songs))
     val downloadedPlaylist = PlaylistEntity(id = "downloaded", name = stringResource(id = R.string.downloaded_songs))
@@ -121,6 +147,16 @@ fun LibraryScreen(
     val lazyGridState = rememberLazyGridState()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
+
+    // Log when filter changes
+    LaunchedEffect(filter) {
+        Timber.tag(TAG).d("Filter changed to: $filter")
+    }
+
+    // Log when viewType changes
+    LaunchedEffect(viewType) {
+        Timber.tag(TAG).d("View type changed to: $viewType")
+    }
 
     val filterString = when (filter) {
         LibraryFilter.ALBUMS -> stringResource(R.string.albums)
@@ -149,6 +185,7 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(Unit) {
+        Timber.tag(TAG).d("Initial setup: filter=$filter, defaultFilter=${defaultFilter.map { it.first }}")
         if (filter == LibraryFilter.ALL)
             chips.addAll(defaultFilter)
         else
@@ -165,13 +202,16 @@ fun LibraryScreen(
     // Update the filters list in a proper way so that the animations of the LazyRow can work.
     LaunchedEffect(filter) {
         val filterIndex = defaultFilter.indexOf(defaultFilter.find { it.first == filter })
-        val currentPairIndex = if (chips.size > 0) defaultFilter.indexOf(chips[0]) else -1
-        val currentPair = if (chips.size > 0) chips[0] else null
+        val currentPairIndex = if (chips.isNotEmpty()) defaultFilter.indexOf(chips[0]) else -1
+        val currentPair = if (chips.isNotEmpty()) chips[0] else null
+
+        Timber.tag(TAG).d("Updating chip filters: filterIndex=$filterIndex, currentPairIndex=$currentPairIndex")
 
         if (filter == LibraryFilter.ALL) {
             defaultFilter.reversed().fastForEachIndexed { index, it ->
                 val curFilterIndex = defaultFilter.indexOf(it)
                 if (!chips.contains(it)) {
+                    Timber.tag(TAG).d("Adding chip: ${it.first}")
                     chips.add(0, it)
                     if (currentPairIndex > curFilterIndex) animationBasedDelay(100)
                     else {
@@ -190,6 +230,7 @@ fun LibraryScreen(
             chips.filter { it.first != filter }
                 .onEachIndexed { index, it ->
                     if (chips.contains(it)) {
+                        Timber.tag(TAG).d("Removing chip: ${it.first}")
                         chips.remove(it)
                         if (index > filterIndex) animationBasedDelay(150 + 30 * index.toLong())
                         else animationBasedDelay(80)
@@ -204,6 +245,7 @@ fun LibraryScreen(
                 chips = chips,
                 currentValue = filter,
                 onValueUpdate = {
+                    Timber.tag(TAG).d("Chip selected: $it (current filter: $filter)")
                     filter = if (filter == LibraryFilter.ALL)
                         it
                     else
@@ -213,25 +255,26 @@ fun LibraryScreen(
                 selected = { it == filterSelected },
                 isLoading = { filter ->
                     (filter == LibraryFilter.PLAYLISTS && isSyncingRemotePlaylists)
-                    || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
-                    || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
-                    || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
+                            || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
+                            || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
+                            || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
                 }
             )
 
             if (filter != LibraryFilter.SONGS) {
                 IconButton(
                     onClick = {
-                        viewType = viewType.toggle()
+                    viewType = viewType.toggle()
+                        Timber.tag(TAG).d("View type toggled to: $viewType")
                     },
                     modifier = Modifier.padding(end = 6.dp)
                 ) {
                     Icon(
                         imageVector =
-                        when (viewType) {
-                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                            LibraryViewType.GRID -> Icons.Rounded.GridView
-                        },
+                            when (viewType) {
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                            },
                         contentDescription = null
                     )
                 }
@@ -243,8 +286,14 @@ fun LibraryScreen(
         SortHeader(
             sortType = sortType,
             sortDescending = sortDescending,
-            onSortTypeChange = onSortTypeChange,
-            onSortDescendingChange = onSortDescendingChange,
+            onSortTypeChange = {
+                Timber.tag(TAG).d("Sort type changed: $it")
+                onSortTypeChange(it)
+            },
+            onSortDescendingChange = {
+                Timber.tag(TAG).d("Sort direction changed: $it")
+                onSortDescendingChange(it)
+            },
             sortTypeText = { sortType ->
                 when (sortType) {
                     LibrarySortType.CREATE_DATE -> R.string.sort_by_create_date
@@ -257,6 +306,7 @@ fun LibraryScreen(
 
     if (filter != LibraryFilter.ALL) {
         BackHandler {
+            Timber.tag(TAG).d("Back pressed, setting filter to ALL")
             filter = LibraryFilter.ALL
         }
     }
@@ -264,6 +314,7 @@ fun LibraryScreen(
     // scroll to top
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
+            Timber.tag(TAG).d("Scrolling to top")
             when (viewType) {
                 LibraryViewType.LIST -> lazyListState.animateScrollToItem(0)
                 LibraryViewType.GRID -> lazyGridState.animateScrollToItem(0)
@@ -338,6 +389,7 @@ fun LibraryScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                Timber.tag(TAG).d("Navigating to liked playlist")
                                                 navController.navigate("auto_playlist/${likedPlaylist.id}")
                                             }
                                             .animateItem()
@@ -354,6 +406,7 @@ fun LibraryScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                Timber.tag(TAG).d("Navigating to downloaded playlist")
                                                 navController.navigate("auto_playlist/${downloadedPlaylist.id}")
                                             }
                                             .animateItem()
@@ -363,6 +416,7 @@ fun LibraryScreen(
 
                             allItems?.let { allItems ->
                                 if (allItems.isEmpty()) {
+                                    Timber.tag(TAG).d("Library is empty")
                                     item {
                                         EmptyPlaceholder(
                                             icon = Icons.AutoMirrored.Rounded.List,
@@ -370,6 +424,8 @@ fun LibraryScreen(
                                             modifier = Modifier.animateItem()
                                         )
                                     }
+                                } else {
+                                    Timber.tag(TAG).d("Rendering ${allItems.size} library items in LIST view")
                                 }
 
                                 items(
@@ -377,8 +433,9 @@ fun LibraryScreen(
                                     key = { it.hashCode() },
                                     contentType = { CONTENT_TYPE_LIST }
                                 ) { item ->
-                                    when (item) {
+                                when (item) {
                                         is Album -> {
+                                            Timber.tag(TAG).v("Rendering album: (id: ${item.id})")
                                             LibraryAlbumListItem(
                                                 navController = navController,
                                                 menuState = menuState,
@@ -390,6 +447,7 @@ fun LibraryScreen(
                                         }
 
                                         is Artist -> {
+                                            Timber.tag(TAG).v("Rendering artist: (id: ${item.id})")
                                             LibraryArtistListItem(
                                                 navController = navController,
                                                 menuState = menuState,
@@ -400,6 +458,7 @@ fun LibraryScreen(
                                         }
 
                                         is Playlist -> {
+                                            Timber.tag(TAG).v("Rendering playlist: (id: ${item.id})")
                                             LibraryPlaylistListItem(
                                                 navController = navController,
                                                 menuState = menuState,
@@ -409,7 +468,9 @@ fun LibraryScreen(
                                             )
                                         }
 
-                                        else -> {}
+                                        else -> {
+                                            Timber.tag(TAG).w("Unknown item type: ${item?.javaClass?.simpleName}")
+                                        }
                                     }
                                 }
                             }
@@ -450,6 +511,7 @@ fun LibraryScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                Timber.tag(TAG).d("Navigating to liked playlist")
                                                 navController.navigate("auto_playlist/${likedPlaylist.id}")
                                             }
                                             .animateItem()
@@ -467,6 +529,7 @@ fun LibraryScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                Timber.tag(TAG).d("Navigating to downloaded playlist")
                                                 navController.navigate("auto_playlist/${downloadedPlaylist.id}")
                                             }
                                             .animateItem()
@@ -476,6 +539,7 @@ fun LibraryScreen(
 
                             allItems?.let { allItems ->
                                 if (allItems.isEmpty()) {
+                                    Timber.tag(TAG).d("Library is empty")
                                     item {
                                         EmptyPlaceholder(
                                             icon = Icons.AutoMirrored.Rounded.List,
@@ -483,6 +547,8 @@ fun LibraryScreen(
                                             modifier = Modifier.animateItem()
                                         )
                                     }
+                                } else {
+                                    Timber.tag(TAG).d("Rendering ${allItems.size} library items in GRID view")
                                 }
 
                                 items(
@@ -492,6 +558,7 @@ fun LibraryScreen(
                                 ) { item ->
                                     when (item) {
                                         is Album -> {
+                                            Timber.tag(TAG).v("Rendering album grid: (id: ${item.id})")
                                             LibraryAlbumGridItem(
                                                 navController = navController,
                                                 menuState = menuState,
@@ -504,6 +571,7 @@ fun LibraryScreen(
                                         }
 
                                         is Artist -> {
+                                            Timber.tag(TAG).v("Rendering artist grid: (id: ${item.id})")
                                             LibraryArtistGridItem(
                                                 navController = navController,
                                                 menuState = menuState,
@@ -514,6 +582,7 @@ fun LibraryScreen(
                                         }
 
                                         is Playlist -> {
+                                            Timber.tag(TAG).v("Rendering playlist grid: (id: ${item.id})")
                                             LibraryPlaylistGridItem(
                                                 navController = navController,
                                                 menuState = menuState,
@@ -523,7 +592,9 @@ fun LibraryScreen(
                                             )
                                         }
 
-                                        else -> {}
+                                        else -> {
+                                            Timber.tag(TAG).w("Unknown item type: ${item?.javaClass?.simpleName}")
+                                        }
                                     }
                                 }
                             }
