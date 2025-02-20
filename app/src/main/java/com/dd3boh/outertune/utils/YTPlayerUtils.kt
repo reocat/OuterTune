@@ -9,10 +9,14 @@
 package com.dd3boh.outertune.utils
 
 import android.net.ConnectivityManager
-import android.util.Log
 import androidx.media3.common.PlaybackException
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.db.entities.FormatEntity
+import com.dd3boh.outertune.utils.YTPlayerUtils.MAIN_CLIENT
+import com.dd3boh.outertune.utils.YTPlayerUtils.STREAM_FALLBACK_CLIENTS
+import com.dd3boh.outertune.utils.YTPlayerUtils.validateStatus
+import com.dd3boh.outertune.utils.potoken.PoTokenGenerator
+import com.dd3boh.outertune.utils.potoken.PoTokenResult
 import com.zionhuang.innertube.NewPipeUtils
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeClient
@@ -21,6 +25,7 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5_SIMPLY_EMB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
 import com.zionhuang.innertube.models.response.PlayerResponse
 import okhttp3.OkHttpClient
+import timber.log.Timber
 
 object YTPlayerUtils {
 
@@ -71,7 +76,7 @@ object YTPlayerUtils {
         audioQuality: AudioQuality,
         connectivityManager: ConnectivityManager,
     ): Result<PlaybackData> = runCatching {
-        Log.d(TAG, "Playback info requested: $videoId")
+        Timber.tag(TAG).d("Playback info requested: $videoId")
 
         /**
          * This is required for some clients to get working streams however
@@ -91,12 +96,13 @@ object YTPlayerUtils {
                 YouTube.visitorData
             }
 
-        Log.d(TAG, "[$videoId] signatureTimestamp: $signatureTimestamp, isLoggedIn: $isLoggedIn")
+        Timber.tag(TAG)
+            .d("[$videoId] signatureTimestamp: $signatureTimestamp, isLoggedIn: $isLoggedIn")
 
         val (webPlayerPot, webStreamingPot) = getWebClientPoTokenOrNull(videoId, sessionId)?.let {
             Pair(it.playerRequestPoToken, it.streamingDataPoToken)
         } ?: Pair(null, null).also {
-            Log.w(TAG, "[$videoId] No po token")
+            Timber.tag(TAG).w("[$videoId] No po token")
         }
 
         val mainPlayerResponse =
@@ -141,10 +147,14 @@ object YTPlayerUtils {
                         .getOrNull()
             }
 
-            Log.d(TAG, "[$videoId] stream client: ${client.clientName}, " +
-                    "playabilityStatus: ${streamPlayerResponse?.playabilityStatus?.let {
-                        it.status + (it.reason?.let { " - $it" } ?: "")
-                    }}")
+            Timber.tag(TAG).d(
+                "[$videoId] stream client: ${client.clientName}, " +
+                    "playabilityStatus: ${
+                        streamPlayerResponse?.playabilityStatus?.let {
+                            it.status + (it.reason?.let { " - $it" } ?: "")
+                        }
+                    }"
+            )
 
             // process current client response
             if (streamPlayerResponse?.playabilityStatus?.status == "OK") {
@@ -160,7 +170,7 @@ object YTPlayerUtils {
                     streamPlayerResponse.streamingData?.expiresInSeconds ?: continue
 
                 if (client.useWebPoTokens && webStreamingPot != null) {
-                    streamUrl += "&pot=$webStreamingPot";
+                    streamUrl += "&pot=$webStreamingPot"
                 }
 
                 if (clientIndex == STREAM_FALLBACK_CLIENTS.size - 1) {
@@ -171,7 +181,7 @@ object YTPlayerUtils {
                     // working stream found
                     break
                 } else {
-                    Log.d(TAG, "[$videoId] [${client.clientName}] got bad http status code")
+                    Timber.tag(TAG).d("[$videoId] [${client.clientName}] got bad http status code")
                 }
             }
         }
@@ -196,7 +206,7 @@ object YTPlayerUtils {
             throw Exception("Could not find stream url")
         }
 
-        Log.d(TAG, "[$videoId] stream url: $streamUrl")
+        Timber.tag(TAG).d("[$videoId] stream url: $streamUrl")
 
         PlaybackData(
             audioConfig,
@@ -288,7 +298,7 @@ object YTPlayerUtils {
      */
     private fun getWebClientPoTokenOrNull(videoId: String, sessionId: String?): PoTokenResult? {
         if (sessionId == null) {
-            Log.d(TAG, "[$videoId] Session identifier is null")
+            Timber.tag(TAG).d("[$videoId] Session identifier is null")
             return null
         }
         try {
