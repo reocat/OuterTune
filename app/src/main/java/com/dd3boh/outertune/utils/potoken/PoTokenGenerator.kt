@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 
 class PoTokenGenerator {
     private val TAG = "PoTokenGenerator"
+
     private val webViewSupported by lazy { runCatching { CookieManager.getInstance() }.isSuccess }
     private var webViewBadImpl = false // whether the system has a bad WebView implementation
 
@@ -44,7 +45,7 @@ class PoTokenGenerator {
      * [PoTokenWebView.generatePoToken] was called
      */
     private suspend fun getWebClientPoToken(videoId: String, sessionId: String, forceRecreate: Boolean): PoTokenResult {
-        Log.d(TAG, "poToken requested: $videoId, $sessionId")
+        Log.d(TAG, "Web poToken requested: $videoId, $sessionId")
 
         val (poTokenGenerator, streamingPot, hasBeenRecreated) =
             webPoTokenGenLock.withLock {
@@ -72,7 +73,7 @@ class PoTokenGenerator {
         val playerPot = try {
             // Not using synchronized here, since poTokenGenerator would be able to generate
             // multiple poTokens in parallel if needed. The only important thing is for exactly one
-            // visitorData/streaming poToken to be generated before anything else.
+            // streaming poToken (based on [sessionId]) to be generated before anything else.
             poTokenGenerator.generatePoToken(videoId)
         } catch (throwable: Throwable) {
             if (hasBeenRecreated) {
