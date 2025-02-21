@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.screens.library
 
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -135,9 +134,8 @@ fun LibraryScreen(
         isSyncingRemoteLikedSongs
     ) {
         Timber.tag(TAG).d(
-            "Sync state: Playlists=$isSyncingRemotePlaylists, Albums=$isSyncingRemoteAlbums, " +
-                    "Artists=$isSyncingRemoteArtists, Songs=$isSyncingRemoteSongs, " +
-                    "LikedSongs=$isSyncingRemoteLikedSongs")
+            "%snull", "Sync state: Playlists=$isSyncingRemotePlaylists, Albums=$isSyncingRemoteAlbums, " +
+                    "Artists=$isSyncingRemoteArtists, Songs=$isSyncingRemoteSongs, ")
     }
 
     val likedPlaylist = PlaylistEntity(id = "liked", name = stringResource(id = R.string.liked_songs))

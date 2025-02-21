@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.DragHandle
@@ -96,6 +97,7 @@ import androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING
 import androidx.media3.exoplayer.offline.Download.STATE_QUEUED
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalIsNetworkConnected
@@ -740,7 +742,6 @@ fun ArtistGridItem(
         if (artist.artist.bookmarkedAt != null) {
             Icon.Favorite()
         }
-
         // assume if they have a non local artist ID, they are not local
         if (artist.artist.isLocalArtist) {
             Icon(
@@ -752,7 +753,6 @@ fun ArtistGridItem(
                     .padding(end = 2.dp)
             )
         }
-
         if (artist.downloadCount > 0) {
             Icon(
                 imageVector = Icons.Rounded.OfflinePin,
@@ -769,14 +769,43 @@ fun ArtistGridItem(
     subtitle = getNSongsString(artist.songCount, artist.downloadCount),
     badges = badges,
     thumbnailContent = {
-        AsyncImage(
-            model = artist.artist.thumbnailUrl,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Placeholder background
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+
+            if (!artist.artist.thumbnailUrl.isNullOrBlank()) {
+                Timber.tag("ArtistDebug")
+                    .d("Artist: ${artist.artist.name}, thumbnailUrl: ${artist.artist.thumbnailUrl}")
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(artist.artist.thumbnailUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                )
+            } else {
+                // Fallback icon when no thumbnail is available
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
     },
     fillMaxWidth = fillMaxWidth,
     modifier = modifier
@@ -1427,7 +1456,7 @@ fun ItemThumbnail(
     // ehhhh make a nicer thing for later
     val context = LocalContext.current
     val errorPainter = rememberVectorPainter(image = Icons.Rounded.BrokenImage)
-    Timber.tag("ThumbnailDebug").d("Thumbnail URL: ${thumbnailUrl}")
+    Timber.tag("ThumbnailDebug").d("Thumbnail URL: $thumbnailUrl")
 
     Box(
         contentAlignment = Alignment.Center,
