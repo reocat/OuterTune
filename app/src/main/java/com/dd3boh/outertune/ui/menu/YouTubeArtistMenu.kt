@@ -29,6 +29,7 @@ import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
 import com.dd3boh.outertune.ui.component.YouTubeListItem
 import com.zionhuang.innertube.models.ArtistItem
+import timber.log.Timber
 
 @Composable
 fun YouTubeArtistMenu(
@@ -58,6 +59,8 @@ fun YouTubeArtistMenu(
                                     thumbnailUrl = artist.thumbnail,
                                 ).toggleLike()
                             )
+                            Timber.tag("ArtistDebug")
+                                .d("Artist: ${artist.title}, thumbnailUrl: ${artist.thumbnail}")
                         }
                     }
                 }

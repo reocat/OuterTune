@@ -799,43 +799,15 @@ fun ArtistGridItem(
     subtitle = getNSongsString(artist.songCount, artist.downloadCount),
     badges = badges,
     thumbnailContent = {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Placeholder background
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-
-            if (!artist.artist.thumbnailUrl.isNullOrBlank()) {
-                Timber.tag("ArtistDebug")
-                    .d("Artist: ${artist.artist.name}, thumbnailUrl: ${artist.artist.thumbnailUrl}")
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(artist.artist.thumbnailUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                )
-            } else {
-                // Fallback icon when no thumbnail is available
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
+        Timber.tag("ArtistDebug")
+            .d("Artist: ${artist.artist.name}, thumbnailUrl: ${artist.artist.thumbnailUrl}")
+        ItemThumbnail(
+            thumbnailUrl = artist.artist.thumbnailUrl,
+            isActive = TODO(),
+            isPlaying = TODO(),
+            shape = RoundedCornerShape(ThumbnailCornerRadius),
+            modifier = Modifier.size(ListThumbnailSize)
+        )
     },
     fillMaxWidth = fillMaxWidth,
     modifier = modifier
