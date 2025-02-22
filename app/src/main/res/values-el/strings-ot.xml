@@ -14,4 +14,16 @@
     <string name="folders">Φάκελοι</string>
     <string name="library">Βιβλιοθήκη</string>
     <string name="recent_activity">Πρόσφατη δραστηριότητα</string>
+    <string name="delete_lyric_confirm">Θες πραγματικά να διαγράψεις τους αποθηκευμένους στίχους για «%s»;</string>
+    <string name="err_play_next_on_error">Πρόεκυψε σφάλμα. Αναπαραγωγή επομένου</string>
+    <string name="err_stop_on_error">Πρόεκυψε σφάλμα. Η αναπαραγωγή σταμάτησε</string>
+    <string name="err_stop_on_too_many_errors">Πάρα πολλά σφάλματα. Η αναπαραγωγή σταμάτησε</string>
+    <string name="wait_to_reconnect">Αναμονή για επανασύνδεση</string>"&gt;
+
+<string name="sort_by_date_modified">Ημερομηνία τροποποίησης</string>
+    <string name="sort_by_date_released">Ημερομηνία κυκλοφορίας</string>
+    <string name="sort_by_like_date">Ημερομηνία «μου αρέσει»</string>
+    <string name="sort_by_play_count">Αναπαραγωγές</string>
+    <string name="create_sync_playlist_description">Σημείωση: Αυτό επιτρέπει το συγχρονισμό με το YouTube Music. Αυτό ΔΕΝ αλλάζει αργότερα. Δεν μπορείς να προσθέσεις τοπικά τραγούδια για σε συγχρονιζόμενες playlists.</string>
+    <string name="create_sync_playlist">Συγχρονισμός Playlist</string>
 </resources>
