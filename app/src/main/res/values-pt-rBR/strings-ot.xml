@@ -140,4 +140,6 @@
     <string name="scanner_btn_idle">Buscar</string>
     <string name="action_cancel">Cancelar</string>
     <string name="scanner_progress_complete">Busca concluída</string>
+    <string name="queues_title">Filas</string>
+    <string name="queues_empty">Nenhuma fila</string>
 </resources>
