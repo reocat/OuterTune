@@ -236,6 +236,7 @@ import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -298,6 +299,9 @@ class MainActivity : ComponentActivity() {
          *
          * Regardless of what happens, queues and last position are saves
          */
+        lifecycleScope.cancel()
+        lifecycle.removeObserver(connectivityObserver)
+
         super.onDestroy()
         unbindService(serviceConnection)
 
@@ -324,10 +328,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        
+
         lifecycleScope.launch {
             dataStore.data
-                .map { it[DisableScreenshotKey] ?: false }
+                .map { it[DisableScreenshotKey] == true }
                 .distinctUntilChanged()
                 .collectLatest {
                     if (it) {
@@ -342,7 +346,9 @@ class MainActivity : ComponentActivity() {
         }
 
         activityLauncher = ActivityLauncherHelper(this)
-        connectivityObserver = NetworkConnectivityObserver(this)
+        connectivityObserver = NetworkConnectivityObserver(applicationContext)
+
+        lifecycle.addObserver(connectivityObserver)
 
         setContent {
             val haptic = LocalHapticFeedback.current
@@ -775,14 +781,14 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector =
-                                                    if (active || navBackStackEntry?.destination?.route?.startsWith(
-                                                            "search"
-                                                        ) == true
-                                                    ) {
-                                                        Icons.AutoMirrored.Rounded.ArrowBack
-                                                    } else {
-                                                        Icons.Rounded.Search
-                                                    },
+                                                        if (active || navBackStackEntry?.destination?.route?.startsWith(
+                                                                "search"
+                                                            ) == true
+                                                        ) {
+                                                            Icons.AutoMirrored.Rounded.ArrowBack
+                                                        } else {
+                                                            Icons.Rounded.Search
+                                                        },
                                                     contentDescription = null
                                                 )
                                             }
@@ -1246,7 +1252,7 @@ class MainActivity : ComponentActivity() {
                                     LoginScreen(navController)
                                 }
 
-                                composable("setup_wizard",) {
+                                composable("setup_wizard") {
                                     SetupWizard(navController)
                                 }
                             }
