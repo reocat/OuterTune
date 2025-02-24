@@ -24,7 +24,6 @@
     <string name="scanner_sensitivity_L3">Съпоставете заглавие, изпълнители, албуми</string>
     <string name="oobe_welcome_message">Добре дошли в OuterTune</string>
     <string name="scanner_type_ffmpeg_ext">Използвайте инструмент за извличане на метаданни FFMpeg. Изисква инсталиране на външен пакет</string>
-    <string name="oobe_ad_free_description">Възпроизвеждане без реклами</string>
     <string name="grp_interface">Интерфейс</string>
     <string name="grp_layout">Оформление</string>
     <string name="grp_lyrics_parser">Анализатор</string>
@@ -108,9 +107,7 @@
     <string name="scanner_sensitivity_L2">Съпоставете заглавието и изпълнителите</string>
     <string name="scanner_type_title">Екстракт на метаданни</string>
     <string name="pause_remote_listen_history">Споделете история на слушане с YouTube Music</string>
-    <string name="oobe_local_scan_tooltip">Натиснете тук, за да сканирате за песни</string>
     <string name="oobe_complete">Настройката е завършена</string>
-    <string name="oobe_ytm_content_description">YouTube Music на една ръка разстояние</string>
     <string name="action_back">Назад</string>
     <string name="action_next">Следващ</string>
     <string name="action_skip">Пропускане</string>
@@ -130,7 +127,6 @@
     <string name="experimental_settings_title">Експериментални</string>
     <string name="dev_settings_title">Активирайте настройките за програмисти</string>
     <string name="oobe_use_backup">Имам резервно копие</string>
-    <string name="oobe_ytm_sync_description">Синхронизиране на акаунта</string>
     <string name="grp_lyrics_source">Лирически източници</string>
     <string name="player_background_gradient">Градиент</string>
     <string name="dev_settings_description">Разкрива допълнителни разширени настройки, предназначени за използване при разработка</string>
@@ -139,7 +135,6 @@
     <string name="err_stop_on_error">Възникна грешка. Възпроизвеждането е спряно</string>
     <string name="lyrics_settings_title">Текстове</string>
     <string name="scanner_strict_file_name_description">Когато е активирано, имената на файловете НЯМА да бъдат игнорирани. Пр. Song.ogg ще бъде различна песен от Song.flac. Предпочитанията за чувствителност на скенера все още ще се прилагат</string>
-    <string name="oobe_local_playback_description">Възпроизвеждане на локална музика</string>
     <string name="sync_progress_success">Синхронизирането е завършено</string>
     <string name="m3u_import_playlist_failed">Неуспешно импортиране на плейлиста</string>
     <string name="scanner_missing_storage_perm">Скенерът изисква разрешения за съхранение</string>
