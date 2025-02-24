@@ -1,14 +1,12 @@
-<resources>
-    <!--OuterTune strings below-->
-
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Bottom navigation -->
-    <string name="folders">Папки</string>
     <string name="library">Библиотека</string>
+    <string name="folders">Папки</string>
 
     <!-- Home -->
     <string name="recent_activity">Недавняя активность</string>
 
-    <!-- History screen-->
+    <!-- History screen -->
     <string name="local_history">Локальная</string>
     <string name="remote_history">Удалённая</string>
 
@@ -16,37 +14,35 @@
 
     <!-- Queue -->
     <string name="create_queue">Новая очередь</string>
-    <string name="queue_searched_songs_ot">Поиск: </string>
+    <string name="queue_searched_songs_ot">Поиск:</string>
     <string name="song_added_to_queue">\"%s\" добавлено в очередь</string>
     <string name="song_added_to_queue_end">\"%s\" добавлено в конец очереди</string>
 
-
     <!-- Playlist -->
-    <string name="auto_playlist">Автоматический плейлист</string>
+    <string name="auto_playlist">Автоплейлист</string>
 
     <!-- Menu -->
     <string name="select">Режим выбора</string>
-    <string name="like_all">Like all</string>
-    <string name="delete_lyric_confirm">Вы действительно хотите удалить сохранённые тексты для \"%s\"?</string>
+    <string name="like_all">Добавить всё в избранное</string>
+    <string name="delete_lyric_confirm">Вы действительно хотите удалить сохраненный текст песни \"%s\"?</string>
 
     <!-- Sort menu -->
     <string name="sort_by_date_modified">Дата изменения</string>
     <string name="sort_by_date_released">Дата выпуска</string>
     <string name="sort_by_like_date">Дата добавления в понравившиеся</string>
-    <string name="sort_by_play_count">Количество проигрываний</string>
+    <string name="sort_by_play_count">Количество воспроизведений</string>
 
     <!-- Dialog -->
     <string name="create_sync_playlist">Синхронизировать плейлист</string>
-    <string name="create_sync_playlist_description">Примечание: Это позволяет синхронизироваться с YouTube Music. Это НЕЛЬЗЯ изменить позже. Вы не можете добавлять локальные треки в синхронизированные плейлисты.</string>
-    <string name="play_count">Play count</string>
-    <string name="playlist_add_local_to_synced_note">Примечание: Добавление локальных песен в синхронизированные/удалённые плейлисты не поддерживается. Любые другие комбинации допустимы</string>
+    <string name="create_sync_playlist_description">Примечание: Это позволит синхронизировать плейлист с YouTube Music. Этот параметр НЕЛЬЗЯ изменить позже. Вы не сможете добавлять локальные песни в синхронизированные плейлисты.</string>
+    <string name="playlist_add_local_to_synced_note">Примечание: Добавление локальных песен в синхронизированные/удаленные плейлисты не поддерживается. Любая другая комбинация допустима</string>
 
-    <!-- Sync-->
+    <!-- Sync -->
     <string name="sync_progress_active">Синхронизация с аккаунтом YouTube…</string>
     <string name="sync_progress_success">Синхронизация завершена</string>
 
     <!-- Settings -->
-    <string name="prefs_advanced">Advanced</string>
+    <string name="prefs_advanced">Расширенные</string>
     <string name="settings_debug">Отладка</string>
 
     <string name="grp_audio">Аудио</string>
@@ -60,8 +56,6 @@
     <string name="grp_manual_scanner">Ручное сканироваие</string>
     <string name="grp_proxy">Прокси</string>
 
-
-
     <!-- About settings -->
     <string name="attrib_zhuang">Zion Huang за InnerTune</string>
     <string name="special_thanks">Особые благодарности</string>
@@ -72,44 +66,40 @@
     <string name="player_background_default">Следовать теме</string>
     <string name="player_background_gradient">Градиент</string>
     <string name="player_background_style">Стиль фона плеера</string>
-    <string name="show_liked_and_downloaded_playlist">Показывать любимые треки и загруженную музыку в библиотеке</string>
-    <string name="slim_navbar_title">Slim navbar</string>
-    <string name="slim_navbar_description">Убрать подписи с панели навигации, чтобы уменьшить высоту панели навигации</string>
+    <string name="show_liked_and_downloaded_playlist">Показывать понравившиеся треки и загруженную музыку в библиотеке</string>
+    <string name="slim_navbar_title">Тонкая панель навигации</string>
+    <string name="slim_navbar_description">Убрать подписи с панели навигации чтобы уменьшить её высоту</string>
     <string name="tab_arrangement">Расположение вкладок</string>
-    <string name="tab_arrangement_disable_tip">--- Drag below here to disable ---</string>
-    <string name="tab_arrangement_home_required">The Home tab is required.</string>
+    <string name="tab_arrangement_disable_tip">--- Потяните вниз, чтобы выключить ---</string>
+    <string name="tab_arrangement_home_required">Вкладка «Главная» обязательна.</string>
 
     <!-- Content settings -->
     <string name="like_autodownload">Автоматически скачивать понравившиеся песни</string>
     <string name="token_adv_login_description">Это ПРОДВИНУТЫЙ способ входа. Вместо использования веб-портала вы можете ввести или обновить токен для входа здесь. Это может быть полезно для быстрого входа на нескольких устройствах. Учтите, что приложение не примет токены с неверным форматом.</string>
     <string name="token_hidden">Нажмите, чтобы показать токен</string>
     <string name="token_shown">Нажмите еще раз, чтобы скопировать или изменить</string>
-    <string name="token">Токен</string>
-    <string name="edit_token">Изменить токен</string>
-    <string name="invalid_token">Неправильный токен. Убедитесь, что вы ввели SAPISID cookie.</string>
     <string name="ytm_sync">Авто-синхронизация с аккаунтом YouTube Music</string>
     <string name="wifi_only">Только по Wi-Fi</string>
 
     <!-- Player settings -->
     <string name="audio_offload">Включить аппаратное ускорение аудио</string>
     <string name="audio_offload_description">Использовать аппаратный путь воспроизведения аудио. Отключение этой функции может увеличить расход энергии, но может быть полезным, если у вас возникают проблемы с воспроизведением или постобработкой звука.</string>
-    <string name="keep_alive_title">Prevent system killing app</string>
-    <string name="keep_alive_description">Use a persistent foreground service to prevent OuterTune from being closed in the background.</string>
-    <string name="persistent_queue_desc_ot">Restore previous open queue(s) when the app starts</string>
-    <string name="min_playback_duration">Minimum playback duration</string>
-    <string name="min_playback_duration_description">The minimum amount of a song that must be played before it is considered \"played\"</string>
-    <string name="swipe2Queue">Swipe to queue</string>
-    <string name="swipe2Queue_description">Swipe on a song to add it to "enqueue next" directly after currently playing song</string>
+    <string name="keep_alive_title">Предотвратить закрытие приложения системой</string>
+    <string name="keep_alive_description">Использовать постоянную службу на переднем плане, чтобы предотвратить закрытие OuterTune в фоновом режиме.</string>
+    <string name="persistent_queue_desc_ot">Восстанавливать предыдущие очереди при запуске приложения</string>
+    <string name="min_playback_duration">Минимальная длительность воспроизведения</string>
+    <string name="min_playback_duration_description">Минимальное время воспроизведения песни, после которого она будет считаться \"проигранной\"</string>
+    <string name="swipe2Queue">Свайп для добавления в очередь</string>
+    <string name="swipe2Queue_description">Свайп по треку для добавления его в очередь после текущего трека</string>
 
-    <!--Lyrics settings -->
+    <!-- Lyrics settings -->
     <string name="lyrics_settings_title">Текст</string>
-    <string name="lyrics_multiline_title">Read multiline lyrics</string>
-    <string name="lyrics_multiline_description">Treat all the lines between sync points as one lyric text</string>
-    <string name="lyrics_trim_title">Remove spaces around lyrics</string>
+    <string name="lyrics_multiline_title">Многострочные тексты</string>
+    <string name="lyrics_multiline_description">Объединять все строки между точками синхронизации в один текст</string>
+    <string name="lyrics_trim_title">Удалять пробелы вокруг текста</string>
     <string name="lyrics_prefer_local">Предпочитать локальные файлы с текстами</string>
-    <string name="lyrics_prefer_local_description">Prioritize resolving local lyric files before using all cloud providers. Turn ths off to prioritize cloud providers</string>
+    <string name="lyrics_prefer_local_description">Отдавать приоритет локальным файлам текстов песен перед использованием облачных источников. Отключите эту опцию, чтобы отдать приоритет облачным источникам</string>
     <string name="lyrics_font_Size">Размер шрифта</string>
-
 
     <!-- Local player settings -->
     <string name="local_library_enable_title">Включить локальные медиа</string>
@@ -118,38 +108,33 @@
     <string name="flat_subfolders_title">Объединить подпапки</string>
     <string name="flat_subfolders_description">Отключите, чтобы сохранить структуру папок как на диске</string>
 
-    <string name="import_innertune_tooltip">Восстановление резервных копий OuterTune поддерживается, однако возможны проблемы в связи с техническими ограничениями</string>
-    <string name="import_m3u">Импортировать плейлист (m3u)</string>
-    <string name="m3u_import_playlist_failed">Не удалось импортировать плейлист</string>
-
     <!-- Scanner settings -->
     <string name="auto_scanner_title">Сканировать автоматически</string>
-    <string name="auto_scanner_description">Automatically scan for songs when opening the app. This does not reload metadata of existing songs.</string>
-
-    <string name="scan_paths_title">Configure scan locations…</string>
-    <string name="scan_paths_tooltip">All subdirectories will also be affected</string>
-    <string name="scan_paths_add_folder">Add new folder</string>
-    <string name="scan_paths_incl">Scan paths</string>
-    <string name="scan_paths_excl">Excluded scan paths</string>
-    <string name="scanner_local_title">Local scanner</string>
-    <string name="scanner_manual_btn">Trigger manual sync</string>
+    <string name="auto_scanner_description">Автоматически искать песни при открытии приложения. Метаданные существующих песен обновлены не будут.</string>
+    <string name="scan_paths_title">Настроить места для сканирования…</string>
+    <string name="scan_paths_tooltip">Все подкаталоги также будут затронуты</string>
+    <string name="scan_paths_add_folder">Добавить новую папку</string>
+    <string name="scan_paths_incl">Папки для поиска</string>
+    <string name="scan_paths_excl">Исключённые папки</string>
+    <string name="scanner_local_title">Локальный сканер</string>
+    <string name="scanner_manual_btn">Синхронизировать вручную</string>
     <string name="scanner_warning">По умолчанию сканер НЕ будет обновлять метаданные существующих треков, если вы не укажете иное выше. В зависимости от размера вашей медиатеки, это может занять некоторое время.</string>
 
-    <!-- Scanner progress strings-->
-    <string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
-    <string name="scanner_missing_storage_perm">The scanner requires storage permissions</string>
-
-    <string name="scanner_progress_scanning">Scanning…</string>
-    <string name="scanner_progress_syncing">Syncing…</string>
-    <string name="scanner_scan_fail">Scanner failed</string>
-
-    <string name="scanner_ytm_link_fail">YouTube artist linking job failed</string>
-    <string name="scanner_ytm_link_start">Starting YouTube artist linking…</string>
-    <string name="scanner_ytm_link_success">YouTube artist linking job complete</string>
+    <!-- Scanner progress strings -->
+    <string name="scanner_missing_ffmpeg">Экстрактор FFmpeg не найден</string>
+    <string name="scanner_missing_storage_perm">Сканеру требуются разрешения на доступ к хранилищу</string>
+    <string name="scanner_progress_scanning">Сканирование…</string>
+    <string name="scanner_progress_syncing">Синхронизация…</string>
+    <string name="scanner_scan_fail">Ошибка сканирования</string>
+    <string name="scanner_ytm_link_fail">Не удалось связать с исполнителем на YouTube</string>
+    <string name="scanner_ytm_link_start">Начало привязки исполнителей к YouTube…</string>
+    <string name="scanner_ytm_link_success">Привязка исполнителей к YouTube успешно завершена</string>
 
     <plurals name="scanner_n_song_processed">
-        <item quantity="one">%d song processed</item>
-        <item quantity="other">%d songs processed</item>
+        <item quantity="one">%d песня обработана</item>
+        <item quantity="few">%d песни обработано</item>
+        <item quantity="many">%d песен обработано</item>
+        <item quantity="other">%d песен обработано</item>
     </plurals>
     <plurals name="scanner_n_song_found">
         <item quantity="one">%d песня найдена</item>
@@ -158,19 +143,20 @@
         <item quantity="other">%d песен найдено</item>
     </plurals>
 
-    <!-- Scanner parameter settings-->
-    <string name="scanner_strict_file_name_title">Строгие имена файлов</string>
-    <string name="scanner_strict_file_name_description">Если включено, имена файлов НЕ будут игнорироваться. Например: «Песня.ogg» и «Песня.flac» будут считаться разными треками. Настройки чувствительности сканера всё равно применяются</string>    <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
+    <!-- Scanner parameter settings -->
+    <string name="scanner_strict_file_name_title">Точное соответствие имен файлов</string>
+    <string name="scanner_strict_file_name_description">Если включено, имена файлов НЕ будут игнорироваться. Например: «Песня.ogg» и «Песня.flac» будут считаться разными треками. Настройки чувствительности сканера всё равно применяются</string>
+    <string name="scanner_sensitivity_title">Настройка чувствительности сканера</string>
     <string name="scanner_sensitivity_L1">Совпадение по названию</string>
     <string name="scanner_sensitivity_L2">Совпадение по названию и исполнителям</string>
     <string name="scanner_sensitivity_L3">Совпадение по названию, исполнителям и альбомам</string>
 
     <string name="scanner_type_title">Экстрактор метаданных</string>
     <string name="scanner_type_taglib">Использовать встроенный экстрактор TagLib</string>
-    <string name="scanner_type_ffmpeg_ext">Использовать экстрактор FFMPEG. Требуется установка отдельного приложения</string>
+    <string name="scanner_type_ffmpeg_ext">Использовать экстрактор метаданных FFMpeg. Требуется установка отдельного приложения</string>
 
-    <string name="scanner_variant_rescan">Rescan the entire library and reload all songs\' metadata</string>
-    <string name="scanner_online_artist_linking">Try to link local files\' artists with ones on YouTube Music</string>
+    <string name="scanner_variant_rescan">Пересканировать всю библиотеку и обновить метаданные всех треков</string>
+    <string name="scanner_online_artist_linking">Попытаться связать исполнителей локальных файлов с исполнителями на YouTube Music</string>
 
     <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Делиться историей прослушиваний с YouTube Music</string>
@@ -178,7 +164,7 @@
     <!-- Backup and restore settings -->
     <string name="m3u_import_song_failed">Не удалось импортировать:</string>
 
-    <!--experimental settings-->
+    <!-- Experimental settings -->
     <string name="experimental_settings_title">Экспериментальные настройки</string>
     <string name="dev_settings_title">Включить настройки для разработчиков</string>
     <string name="dev_settings_description">Открывает дополнительные настройки, используемые во время разработки</string>
@@ -212,7 +198,7 @@
     <string name="off">ВЫКЛ</string>
     <string name="on">ВКЛ</string>
     <string name="pause">Пауза</string>
-
+    
     <!-- Discord Integration -->
     <string name="discord_integration">Интеграция с Discord</string>
     <string name="discord_information">OuterTune использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.\n\nOuterTune будет извлекать только ваш токен, а все остальное хранится локально.</string>
