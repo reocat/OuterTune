@@ -53,7 +53,6 @@ import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.MusicNote
@@ -64,6 +63,7 @@ import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.SdCard
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.rounded.VpnKey
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -112,7 +112,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.multidex.BuildConfig
 import androidx.navigation.NavController
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
@@ -900,6 +899,9 @@ private fun AccountPage(
                     } else {
                         showTokenEditor = true
                     }
+                },
+                icon = {
+                    Icon(Icons.Rounded.VpnKey, null)
                 }
             )
         }
@@ -1018,23 +1020,19 @@ private fun LocalMediaPage(
 
         // Manual Scan Button (if local library is enabled)
         if (localLibEnable) {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
+            ElevatedButton(
+                onClick = { navController.navigate("settings/local") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                ElevatedButton(
-                    onClick = { navController.navigate("settings/local") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Icon(
-                        Icons.Rounded.Search,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(stringResource(R.string.oobe_scan_for_local_music))
-                }
+                Icon(
+                    Icons.Rounded.Search,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(stringResource(R.string.oobe_scan_for_local_music))
             }
         }
     }
@@ -1087,7 +1085,7 @@ private fun FinalPage(
             }
         }
         Text(
-            text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
+            text = "${com.dd3boh.outertune.BuildConfig.VERSION_NAME} (${com.dd3boh.outertune.BuildConfig.VERSION_CODE}) | ${com.dd3boh.outertune.BuildConfig.FLAVOR}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp)

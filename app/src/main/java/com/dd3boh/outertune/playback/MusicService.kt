@@ -62,7 +62,6 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
-import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import androidx.media3.ui.DefaultMediaDescriptionAdapter
@@ -79,9 +78,9 @@ import com.dd3boh.outertune.constants.EnableDiscordRPCKey
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleLike
-import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleStartRadio
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleShuffle
+import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleStartRadio
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.PlayerVolumeKey
@@ -153,7 +152,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlin.collections.map
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -191,7 +189,7 @@ class MusicService : MediaLibraryService(),
     var queuePlaylistId: String? = null
     private var lastMediaItemIndex = -1
 
-    val currentMediaMetadata = MutableStateFlow<com.dd3boh.outertune.models.MediaMetadata?>(null)
+    val currentMediaMetadata = MutableStateFlow<MediaMetadata?>(null)
 
     private val currentSong = currentMediaMetadata.flatMapLatest { mediaMetadata ->
         database.song(mediaMetadata?.id)
@@ -224,7 +222,9 @@ class MusicService : MediaLibraryService(),
     override fun onCreate() {
         super.onCreate()
 
-        connectivityObserver = NetworkConnectivityObserver(this)
+        connectivityObserver = NetworkConnectivityObserver(applicationContext)
+
+        connectivityObserver.register()
 
         scope.launch {
             connectivityObserver.networkStatus.collect { isConnected ->

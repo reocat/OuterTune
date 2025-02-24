@@ -8,6 +8,8 @@
 
 package com.dd3boh.outertune.utils
 
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -16,7 +18,10 @@ import android.net.NetworkRequest
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
-class NetworkConnectivityObserver(context: Context) {
+class NetworkConnectivityObserver(
+    private val context: Context
+) : DefaultLifecycleObserver {
+
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -33,7 +38,7 @@ class NetworkConnectivityObserver(context: Context) {
         }
     }
 
-    init {
+    fun register() {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
@@ -42,5 +47,15 @@ class NetworkConnectivityObserver(context: Context) {
 
     fun unregister() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
+    }
+
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
+        register()
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
+        unregister()
     }
 }
