@@ -136,4 +136,6 @@
     <string name="scanner_btn_idle">スキャン</string>
     <string name="scanner_progress_complete">スキャンが終わりました</string>
     <string name="action_cancel">キャンセル</string>
+    <string name="queues_title">キュー</string>
+    <string name="queues_empty">キューはありません</string>
 </resources>
