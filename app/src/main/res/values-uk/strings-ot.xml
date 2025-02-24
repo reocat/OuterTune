@@ -142,4 +142,6 @@
     <string name="scanner_progress_complete">Сканування завершено</string>
     <string name="scanner_btn_idle">Сканувати</string>
     <string name="action_cancel">Скасувати</string>
+    <string name="queues_title">Черги</string>
+    <string name="queues_empty">Без черг</string>
 </resources>
