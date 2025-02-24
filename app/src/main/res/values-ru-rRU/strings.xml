@@ -269,7 +269,7 @@
     <string name="big">Большой</string>
 
     <string name="content">Контент</string>
-    <string name="login">Логин</string>
+    <string name="login">Вход</string>
     <string name="not_logged_in">Не авторизовано</string>
     <string name="content_language">Язык контента</string>
     <string name="content_country">Страна контента</string>
