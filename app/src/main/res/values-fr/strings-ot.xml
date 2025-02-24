@@ -140,4 +140,6 @@
     <string name="scanner_progress_complete">Analyse terminée</string>
     <string name="scanner_btn_idle">Analyse</string>
     <string name="action_cancel">Annuler</string>
+    <string name="queues_empty">Pas de files d\'attente</string>
+    <string name="queues_title">Files d\'attente</string>
 </resources>
