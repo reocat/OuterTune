@@ -140,4 +140,6 @@
     <string name="scanner_btn_idle">Scansiona</string>
     <string name="scanner_progress_complete">Scansione completata</string>
     <string name="action_cancel">Annulla</string>
+    <string name="queues_title">Code</string>
+    <string name="queues_empty">Nessuna coda</string>
 </resources>
