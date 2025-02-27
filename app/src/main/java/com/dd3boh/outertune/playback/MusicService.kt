@@ -102,7 +102,6 @@ import com.dd3boh.outertune.extensions.currentMetadata
 import com.dd3boh.outertune.extensions.findNextMediaItemById
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.setOffloadEnabled
-import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.lyrics.LyricsHelper
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.QueueBoard
@@ -943,20 +942,10 @@ class MusicService : MediaLibraryService(),
         // shuffle and update player playlist
         if (!currentQueue.shuffled) {
             queueBoard.shuffleCurrent(this)
-            player.moveMediaItem(oldIndex, 0)
-            val newItems = currentQueue.getCurrentQueueShuffled()
-            player.replaceMediaItems(1, Int.MAX_VALUE,
-                newItems.subList(1, newItems.size).map { it.toMediaItem() })
         } else {
-            val unshuffledPos = queueBoard.unShuffleCurrent(this)
-            player.moveMediaItem(oldIndex, unshuffledPos)
-            val newItems = currentQueue.getCurrentQueueShuffled()
-            // replace items up to current playing, then replace items after current
-            player.replaceMediaItems(0, unshuffledPos,
-                newItems.subList(0, unshuffledPos).map { it.toMediaItem() })
-            player.replaceMediaItems(unshuffledPos + 1, Int.MAX_VALUE,
-                newItems.subList(unshuffledPos + 1, newItems.size).map { it.toMediaItem() })
+            queueBoard.unShuffleCurrent(this)
         }
+        queueBoard.setCurrQueue(this)
 
         updateNotification()
     }
