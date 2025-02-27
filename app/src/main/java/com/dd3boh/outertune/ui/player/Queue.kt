@@ -100,6 +100,7 @@ import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Timeline
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.LockQueueKey
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
@@ -111,7 +112,6 @@ import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.models.isShuffleEnabled
 import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
-import com.dd3boh.outertune.R
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -251,7 +251,6 @@ fun Queue(
                     queueBoard.moveSong(
                         from,
                         to,
-                        playerConnection.player.currentMediaItemIndex,
                         playerConnection.service
                     )
                     playerConnection.player.moveMediaItem(from, to)
