@@ -92,7 +92,7 @@ class MusicDatabase(
         SortedSongAlbumMap::class,
         PlaylistSongMapPreview::class
     ],
-    version = 16,
+    version = 17,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 2, to = 3),
@@ -122,6 +122,7 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_1_2)
                     .addMigrations(MIGRATION_14_15)
                     .addMigrations(MIGRATION_15_16)
+                    .addMigrations(MIGRATION_16_17)
                     .build()
             )
     }
@@ -327,6 +328,97 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
     }
 }
 
+/**
+ * Merge shuffled and unshuffled queue
+ */
+val MIGRATION_16_17 = object : Migration(16, 17) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        data class TempQueueSong(val queue: String, val song: String, val index: Long, var shuffleIndex: Long)
+
+        val shuffled = ArrayList<TempQueueSong>()
+        val unShuffled = ArrayList<TempQueueSong>()
+        val result = ArrayList<TempQueueSong>()
+
+        // get shuffled songs
+        db.query("SELECT * FROM queue_song_map WHERE shuffled = 1").use { cursor ->
+            val songIdColIndex = cursor.getColumnIndex("songId")
+            val queueIdColIndex = cursor.getColumnIndex("queueId")
+
+            var i = 0L
+            while (cursor.moveToNext()) {
+                shuffled.add(
+                    TempQueueSong(cursor.getString(queueIdColIndex), cursor.getString(songIdColIndex), i, -1)
+                )
+                i++
+            }
+
+            cursor.close()
+        }
+
+        // get unshuffled songs
+        db.query("SELECT * FROM queue_song_map WHERE shuffled = 0").use { cursor ->
+            val songIdColIndex = cursor.getColumnIndex("songId")
+            val queueIdColIndex = cursor.getColumnIndex("queueId")
+
+            var i = 0L
+            while (cursor.moveToNext()) {
+                unShuffled.add(
+                    TempQueueSong(cursor.getString(queueIdColIndex), cursor.getString(songIdColIndex), i, -1)
+                )
+                i++
+            }
+
+            cursor.close()
+        }
+
+
+        /**
+         * Assign the un-shuffled song the shuffled counterpart's index
+         */
+        while (unShuffled.isNotEmpty()) {
+            // get all songs in the same queue
+            val queue = unShuffled.first().queue
+            val songs = unShuffled.filter { it.queue == queue }.toMutableList()
+            val shuffled = shuffled.filter { it.queue == queue }.toMutableList()
+
+            // assign indexes
+            for (s in songs) {
+                val match = shuffled.find { it.song == s.song }
+
+                match.let {
+                    s.shuffleIndex = it?.index!!
+                    result.add(s)
+                    shuffled.remove(match) // remove from shuffled, so duplicates are handled
+                }
+            }
+            unShuffled.removeAll(songs)
+        }
+
+        // rewrite db
+        db.execSQL("DELETE FROM queue_song_map")
+        db.execSQL("ALTER TABLE queue_song_map ADD COLUMN `index` INTEGER NOT NULL")
+        db.execSQL("ALTER TABLE queue_song_map ADD COLUMN shuffledIndex INTEGER NOT NULL")
+        db.execSQL("ALTER TABLE queue_song_map DROP COLUMN shuffled")
+        var i = 0L
+        result.forEach {
+//            println("4")
+            if (it.shuffleIndex != -1L) { // queues could be malformed, so only take pairs of songs
+                db.insert(
+                    "queue_song_map", SQLiteDatabase.CONFLICT_IGNORE, contentValuesOf(
+                        "id" to i++,
+                        "queueId" to it.queue,
+                        "songId" to it.song,
+                        "`index`" to it.index,
+                        "shuffledIndex" to it.shuffleIndex
+                    )
+                )
+            }
+        }
+
+
+    }
+}
+
 @DeleteColumn.Entries(
     DeleteColumn(tableName = "song", columnName = "isTrash"),
     DeleteColumn(tableName = "playlist", columnName = "author"),
@@ -477,7 +569,7 @@ class Migration12To13 : AutoMigrationSpec {
                         "position" to position
                     )
                 )
-                position ++
+                position++
             }
         }
 
@@ -504,7 +596,7 @@ class Migration12To13 : AutoMigrationSpec {
                         "position" to position
                     )
                 )
-                position ++
+                position++
             }
         }
 
