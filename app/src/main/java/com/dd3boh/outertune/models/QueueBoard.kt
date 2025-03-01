@@ -9,6 +9,7 @@
 package com.dd3boh.outertune.models
 
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastSumBy
 import androidx.media3.common.C
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.db.entities.QueueEntity
@@ -90,12 +91,10 @@ data class MultiQueueObject(
      *
      * @return Duration in seconds
      */
-    fun getDuration(): Long {
-        var duration = 0L
-        getCurrentQueueShuffled().forEach {
-            duration += it.duration // seconds
+    fun getDuration(): Int {
+        return queue.fastSumBy {
+            it.duration // seconds
         }
-        return duration
     }
 
     /**
@@ -143,8 +142,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * Regenerate indexes of queues to reflect their position
      */
     private fun regenerateIndexes() {
-        var count = 0
-        masterQueues.forEach { it.index = count++ }
+        masterQueues.fastForEachIndexed { index, q -> q.index = index }
     }
 
     /**
