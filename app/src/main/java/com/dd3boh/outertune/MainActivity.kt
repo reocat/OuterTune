@@ -243,6 +243,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.internal.trimSubstring
 import java.net.URLDecoder
 import javax.inject.Inject
 
@@ -604,7 +605,12 @@ class MainActivity : ComponentActivity() {
                             if (youtubeNavigator(it.toUri())) {
                                 // don't do anything
                             } else {
-                                navController.navigate("search/${it.urlEncode()}")
+                                val query = if (it[it.lastIndex] == '%') {
+                                    it.substring(0, it.lastIndex)
+                                } else {
+                                    it
+                                }
+                                navController.navigate("search/${query.urlEncode()}")
                                 if (dataStore[PauseSearchHistoryKey] != true) {
                                     database.query {
                                         insert(SearchHistory(query = it))
@@ -884,7 +890,12 @@ class MainActivity : ComponentActivity() {
                                                         if (youtubeNavigator(it.toUri())) {
                                                             return@OnlineSearchScreen
                                                         } else {
-                                                            navController.navigate("search/${it.urlEncode()}")
+                                                            val query = if (it[it.lastIndex] == '%') {
+                                                                it.substring(0, it.lastIndex)
+                                                            } else {
+                                                                it
+                                                            }
+                                                            navController.navigate("search/${query.urlEncode()}")
                                                             if (dataStore[PauseSearchHistoryKey] != true) {
                                                                 database.query {
                                                                     insert(SearchHistory(query = it))
