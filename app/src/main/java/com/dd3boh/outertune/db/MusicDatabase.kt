@@ -333,8 +333,9 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
  */
 val MIGRATION_16_17 = object : Migration(16, 17) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        data class TempQueueSong(val queue: String, val song: String, val index: Long, var shuffleIndex: Long)
+        db.execSQL("ALTER TABLE format RENAME playbackUrl to playbackTrackingUrl")
 
+        data class TempQueueSong(val queue: String, val song: String, val index: Long, var shuffleIndex: Long)
         val shuffled = ArrayList<TempQueueSong>()
         val unShuffled = ArrayList<TempQueueSong>()
         val result = ArrayList<TempQueueSong>()

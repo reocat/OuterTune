@@ -890,7 +890,7 @@ class MusicService : MediaLibraryService(),
                         sampleRate = format.audioSampleRate,
                         contentLength = format.contentLength!!,
                         loudnessDb = playbackData.audioConfig?.loudnessDb,
-                        playbackUrl = playbackData.streamUrl
+                        playbackTrackingUrl = playbackData.streamUrl
                     )
                 )
             }
