@@ -106,7 +106,7 @@ class LibrarySongsViewModel @Inject constructor(
             val directoryStructure: DirectoryTree
             var cachedTree = getDirectoryTree().value
             if (cachedTree == uninitializedDirectoryTree) {
-                directoryStructure = refreshLocal(database, scanPaths.split('\n'), excludedScanPaths.split('\n')).value
+                directoryStructure = refreshLocal(database, scanPaths.split('\n'), excludedScanPaths.split('\n'))
                 cacheDirectoryTree(directoryStructure)
             } else {
                 directoryStructure = cachedTree!!
