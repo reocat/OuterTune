@@ -15,6 +15,7 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import com.dd3boh.outertune.db.MusicDatabase.Companion.MUSIC_DATABASE_VERSION
 import com.dd3boh.outertune.db.entities.AlbumArtistMap
 import com.dd3boh.outertune.db.entities.AlbumEntity
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -64,6 +65,10 @@ class MusicDatabase(
     }
 
     fun close() = delegate.close()
+
+    companion object {
+        const val MUSIC_DATABASE_VERSION = 17
+    }
 }
 
 @Database(
@@ -92,7 +97,7 @@ class MusicDatabase(
         SortedSongAlbumMap::class,
         PlaylistSongMapPreview::class
     ],
-    version = 17,
+    version = MUSIC_DATABASE_VERSION,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 2, to = 3),
