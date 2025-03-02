@@ -79,6 +79,10 @@ data class MultiQueueObject(
      * Returns the index of current queue position considering shuffle state
      */
     fun getQueuePosShuffled(): Int {
+        if (queuePos < 0) { // I don't even...
+            queuePos = 0
+            return 0
+        }
         return if (shuffled) {
             queue[queuePos].shuffleIndex
         } else {
