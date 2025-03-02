@@ -343,6 +343,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         // why does kotlin not have for i loop???
         var i = 0
         while (i < mq.getSize()) {
+            insert(mq.queue[i]) // make sure song exists
             insert(
                 QueueSongMap(
                     queueId = mq.id,

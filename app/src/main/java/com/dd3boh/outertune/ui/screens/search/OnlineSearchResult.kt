@@ -75,6 +75,7 @@ import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.models.YTItem
 import kotlinx.coroutines.launch
+import java.net.URLDecoder
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -113,10 +114,7 @@ fun OnlineSearchResult(
         }
     }
 
-    val ytItemContent: @Composable LazyItemScope.(YTItem) -> Unit = { item: YTItem ->
-        var available = true
-        if (item is SongItem) { available = downloads[item.id]?.isAvailableOffline() ?: false || isNetworkConnected }
-
+    val ytItemContent: @Composable LazyItemScope.(YTItem, List<YTItem>) -> Unit = { item: YTItem, collection: List<YTItem> ->
         val content: @Composable () -> Unit = {
             YouTubeListItem(
                 item = item,
@@ -173,10 +171,12 @@ fun OnlineSearchResult(
                                     if (item.id == mediaMetadata?.id) {
                                         playerConnection.player.togglePlayPause()
                                     } else {
+                                        val songSuggestions = collection.filter { it is SongItem }
                                         playerConnection.playQueue(
                                             ListQueue(
-                                                title = "${context.getString(R.string.queue_searched_songs_ot)} ${viewModel.query}",
-                                                items = listOf(item.toMediaMetadata())
+                                                title = "${context.getString(R.string.queue_searched_songs_ot)} ${ URLDecoder.decode(viewModel.query, "UTF-8")}",
+                                                items = songSuggestions.map { (it as SongItem).toMediaMetadata() },
+                                                startIndex = songSuggestions.indexOf(item)
                                             ),
                                             replace = true,
                                         )
@@ -229,9 +229,10 @@ fun OnlineSearchResult(
 
                 items(
                     items = summary.items,
-                    key = { "${summary.title}/${it.id}" },
-                    itemContent = ytItemContent
-                )
+                    key = { "${summary.title}/${it.id}" }
+                ) { item ->
+                    ytItemContent(item, summary.items)
+                }
             }
 
             if (searchSummary?.summaries?.isEmpty() == true) {
@@ -246,9 +247,10 @@ fun OnlineSearchResult(
         } else {
             items(
                 items = itemsPage?.items.orEmpty(),
-                key = { it.id },
-                itemContent = ytItemContent
-            )
+                key = { it.id }
+            ) { item ->
+                ytItemContent(item, itemsPage?.items.orEmpty())
+            }
 
             if (itemsPage?.continuation != null) {
                 item(key = "loading") {
