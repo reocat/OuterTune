@@ -67,7 +67,7 @@ class MusicDatabase(
     fun close() = delegate.close()
 
     companion object {
-        const val MUSIC_DATABASE_VERSION = 17
+        const val MUSIC_DATABASE_VERSION = 18
     }
 }
 
@@ -112,6 +112,7 @@ class MusicDatabase(
         AutoMigration(from = 11, to = 12, spec = Migration11To12::class),
         AutoMigration(from = 12, to = 13, spec = Migration12To13::class), // Migration from InnerTune
         AutoMigration(from = 13, to = 14), // Initial queue as database
+        AutoMigration(from = 17, to = 18, spec = Migration17To18::class), // Fix Room nonsense
     ]
 )
 @TypeConverters(Converters::class)
@@ -617,3 +618,17 @@ class Migration12To13 : AutoMigrationSpec {
 
     }
 }
+
+/**
+ * Nonsense migration failure
+ *
+ * Q: What? Why? playCount was never changed since it's creation
+ * A: It wasn't. But that didn't stop Room from randomly adding an id column for *some* users only...
+ *
+ * Q: That sounds like complete nonsense.
+ * A: Yep. https://github.com/OuterTune/OuterTune/discussions/359#discussioncomment-12366232
+ */
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "playCount", columnName = "id"),
+)
+class Migration17To18 : AutoMigrationSpec
