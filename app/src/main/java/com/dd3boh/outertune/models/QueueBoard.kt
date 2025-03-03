@@ -8,6 +8,8 @@
 
 package com.dd3boh.outertune.models
 
+import androidx.compose.ui.util.fastFirst
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastSumBy
 import androidx.media3.common.C
@@ -106,20 +108,10 @@ data class MultiQueueObject(
      */
     fun getSize() = queue.size
 
-
     fun replaceAll(mediaList: List<MediaMetadata>) {
         queue.clear()
         queue.addAll(mediaList)
     }
-
-    fun addAll(mediaList: List<MediaMetadata>) {
-        addAll(mediaList)
-    }
-
-    fun addAll(index: Int, mediaList: List<MediaMetadata>) {
-        addAll(index, mediaList)
-    }
-
 }
 
 /**
@@ -288,7 +280,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 }
 
                 // add only the songs that are not already in the queue
-                match.addAll(mediaList.filter { s -> match.queue.none { s?.id == it.id } }.filterNotNull())
+                match.queue.addAll(mediaList.filter { s -> match.queue.none { s?.id == it.id } }.filterNotNull())
 
                 // find the song in existing queue song, track the index to jump to
                 val findSong = match.queue.firstOrNull { it.id == mediaList[startIndex]?.id }
@@ -453,10 +445,30 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             pos
         }
 
-        mediaList.fastForEachIndexed { index, s ->
-            s.shuffleIndex = index
+        // assign new indexes to items affected by inserted items
+        if (q.shuffled) {
+            val songsAfter = q.queue.filter { it.shuffleIndex >= listPos }
+            songsAfter.forEachIndexed { index, s ->
+                s.shuffleIndex = listPos + mediaList.size + index
+            }
         }
-        q.addAll(listPos, mediaList)
+
+        // add new items
+        mediaList.fastForEachIndexed { index, s ->
+            s.shuffleIndex = listPos + index
+        }
+        q.queue.addAll(listPos, mediaList)
+
+        // adding before current playing song requires tracking new index
+        if (q.getQueuePosShuffled() >= listPos) {
+            if (q.shuffled) {
+                // shuffle index current song + add size
+                val newIndex = q.queue[q.queuePos].shuffleIndex + mediaList.size
+                q.queuePos = q.queue.indexOf(q.queue.fastFirst { it.shuffleIndex == newIndex })
+            } else {
+                q.queuePos += mediaList.size
+            }
+        }
 
         setCurrQueue(q, player)
         if (isRadio) {
@@ -618,9 +630,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             if (s2 != null && currentSong != s2) {
                 currentSong.shuffleIndex = s2.shuffleIndex.also { s2.shuffleIndex = currentSong.shuffleIndex }
             }
+            item.queuePos = item.queue.indexOf(currentSong)
+        } else {
+            item.queuePos = item.queue.indexOf(item.queue.fastFirstOrNull { it.shuffleIndex == 0 })
         }
 
-        item.queuePos = item.queue.indexOf(currentSong)
         item.shuffled = true
         isShuffleEnabled.value = true
 
