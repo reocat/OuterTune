@@ -340,6 +340,10 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE format RENAME playbackUrl to playbackTrackingUrl")
 
+        // First, create a temporary table without the 'shuffled' column
+        db.execSQL("CREATE TABLE queue_song_map_temp (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `queueId` INTEGER NOT NULL, `songId` TEXT NOT NULL, `index` INTEGER NOT NULL, `shuffledIndex` INTEGER NOT NULL, FOREIGN KEY(`queueId`) REFERENCES `queue`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY(`songId`) REFERENCES `song`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
+        
+        // Copy the data we want to keep
         data class TempQueueSong(val queue: String, val song: String, val index: Long, var shuffleIndex: Long)
         val shuffled = ArrayList<TempQueueSong>()
         val unShuffled = ArrayList<TempQueueSong>()
@@ -377,7 +381,6 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
             cursor.close()
         }
 
-
         /**
          * Assign the un-shuffled song the shuffled counterpart's index
          */
@@ -400,14 +403,17 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
             unShuffled.removeAll(songs)
         }
 
-        // rewrite db
-        db.execSQL("DELETE FROM queue_song_map")
-        db.execSQL("ALTER TABLE queue_song_map ADD COLUMN `index` INTEGER NOT NULL")
-        db.execSQL("ALTER TABLE queue_song_map ADD COLUMN shuffledIndex INTEGER NOT NULL")
-        db.execSQL("ALTER TABLE queue_song_map DROP COLUMN shuffled")
+        // Drop the old table and rename the new one
+        db.execSQL("DROP TABLE queue_song_map")
+        db.execSQL("ALTER TABLE queue_song_map_temp RENAME TO queue_song_map")
+        
+        // Recreate the indexes
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_queue_song_map_queueId` ON `queue_song_map` (`queueId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_queue_song_map_songId` ON `queue_song_map` (`songId`)")
+        
+        // Insert data into the new table
         var i = 0L
         result.forEach {
-//            println("4")
             if (it.shuffleIndex != -1L) { // queues could be malformed, so only take pairs of songs
                 db.insert(
                     "queue_song_map", SQLiteDatabase.CONFLICT_IGNORE, contentValuesOf(
@@ -420,8 +426,6 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
                 )
             }
         }
-
-
     }
 }
 
