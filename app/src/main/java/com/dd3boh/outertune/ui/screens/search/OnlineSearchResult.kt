@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalIsNetworkConnected
@@ -89,7 +90,8 @@ fun OnlineSearchResult(
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val isNetworkConnected = LocalIsNetworkConnected.current
-    val downloads by LocalDownloadUtil.current.downloads.collectAsState()
+    val downloadUtil = LocalDownloadUtil.current
+    val downloads by downloadUtil.downloads.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -115,6 +117,11 @@ fun OnlineSearchResult(
     }
 
     val ytItemContent: @Composable LazyItemScope.(YTItem, List<YTItem>) -> Unit = { item: YTItem, collection: List<YTItem> ->
+        val available = when (item) {
+            is SongItem -> isNetworkConnected || downloads[item.id]?.state == Download.STATE_COMPLETED
+            else -> isNetworkConnected
+        }
+
         val content: @Composable () -> Unit = {
             YouTubeListItem(
                 item = item,
