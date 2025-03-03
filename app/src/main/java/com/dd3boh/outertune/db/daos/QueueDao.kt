@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
@@ -32,6 +33,9 @@ interface QueueDao {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT *, queue_song_map.shuffledIndex from queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId ORDER BY `index`")
     fun getQueueSongs(queueId: Long): Flow<List<QueueSong>>
+
+    @Query("SELECT id FROM queue")
+    fun getAllQueueIds(): List<Long>
 
     fun readQueue(): List<MultiQueueObject> {
         val resultQueues = ArrayList<MultiQueueObject>()
