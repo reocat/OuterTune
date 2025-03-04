@@ -92,7 +92,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachReversed
-import androidx.media3.common.C
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
@@ -424,7 +423,7 @@ fun Queue(
                                             detachedQueue.clear()
                                             detachedQueue.addAll(mq.getCurrentQueueShuffled())
                                             detachedQueueIndex = index
-                                            detachedQueuePos = mq.queuePos
+                                            detachedQueuePos = mq.getQueuePosShuffled()
                                             detachedQueueTitle = mq.title
                                         }
 
@@ -531,8 +530,7 @@ fun Queue(
                         onClick = {
                             coroutineScope.launch(Dispatchers.Main) {
                                 // change to this queue, seek to the item clicked on
-                                queueBoard.setCurrQueue(detachedQueueIndex, playerConnection, false)
-                                playerConnection.player.seekTo(detachedQueuePos, C.TIME_UNSET)
+                                queueBoard.setCurrQueue(detachedQueueIndex, playerConnection)
                                 playerConnection.player.playWhenReady = true
                                 detachedHead = false
                                 updateQueues()
@@ -570,8 +568,7 @@ fun Queue(
                                         onClick = {
                                             coroutineScope.launch(Dispatchers.Main) {
                                                 // change to this queue, seek to the item clicked on
-                                                queueBoard.setCurrQueue(detachedQueueIndex, playerConnection, false)
-                                                playerConnection.player.seekTo(index, C.TIME_UNSET)
+                                                queueBoard.setCurrQueue(detachedQueueIndex, playerConnection)
                                                 detachedHead = false
                                                 updateQueues()
                                             }
