@@ -93,7 +93,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.util.Date
+import java.util.Locale
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.round
@@ -263,20 +266,27 @@ fun PlayerMenu(
             },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val pluralString = pluralStringResource(
+                        R.plurals.minute,
+                        sleepTimerValue.roundToInt(),
+                        sleepTimerValue.roundToInt()
+                    )
+
+                    val endTimeString = SimpleDateFormat
+                        .getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault())
+                        .format(Date(System.currentTimeMillis() + (sleepTimerValue.roundToInt() * 60 * 1000).toLong()))
+
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.minute,
-                            sleepTimerValue.roundToInt(),
-                            sleepTimerValue.roundToInt()
-                        ),
-                        style = MaterialTheme.typography.bodyLarge
+                        text = "$pluralString\n$endTimeString",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
 
                     Slider(
                         value = sleepTimerValue,
                         onValueChange = { sleepTimerValue = it },
-                        valueRange = 5f..120f,
-                        steps = (120 - 5) / 5 - 1,
+                        valueRange = 5f..120f
                     )
 
                     OutlinedButton(
