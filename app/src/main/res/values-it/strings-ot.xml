@@ -127,7 +127,7 @@
     <string name="action_next">Successivo</string>
     <string name="action_skip">Salta</string>
     <string name="experimental_settings_title">Sperimentale</string>
-    <string name="pause_remote_listen_history">Condividi la cronologia degli ascolti con YouTube Music</string>
+    <string name="pause_remote_listen_history">Interrompi la condivisione della cronologia degli ascolti con YouTube Music</string>
     <string name="m3u_import_song_failed">Impossibile importare:</string>
     <string name="wait_to_reconnect">Attendi per riconnetterti</string>"&gt;
 
