@@ -111,9 +111,8 @@
     <string name="scanner_sensitivity_L3">タイトル、アーティスト、アルバムを一致させる</string>
     <string name="scanner_type_title">メタデータ抽出</string>
     <string name="scanner_type_taglib">統合されたTagLibメタデータ抽出ツールを使用する</string>
-    <string name="scanner_sensitivity_L1">タイトルに一致</string>
-    <string name="scanner_online_artist_linking">ローカルファイルのアーティストをYouTube Musicのアーティストとリンクしてみてください</string>
-    <string name="pause_remote_listen_history">YouTube Musicで視聴履歴を共有する</string>
+    <string name="scanner_sensitivity_L1">タイトルが一致</string>
+    <string name="scanner_online_artist_linking">ローカルファイルのアーティストをYouTube Music のアーティストとリンクする</string>
     <string name="m3u_import_song_failed">インポートできませんでした:</string>
     <string name="dev_settings_title">開発者向け設定を有効にする</string>
     <string name="dev_settings_description">開発用途向けの追加の詳細設定を表示します</string>
