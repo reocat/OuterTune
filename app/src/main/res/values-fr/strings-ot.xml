@@ -52,7 +52,6 @@
     <string name="scanner_type_title">Extracteur de métadonnées</string>
     <string name="scanner_variant_rescan">Réanalyser l\'intégralité de la bibliothèque et recharger les métadonnées de tous les titres</string>
     <string name="scanner_online_artist_linking">Essayer de lier les artistes des fichiers locaux avec ceux de YouTube Music</string>
-    <string name="pause_remote_listen_history">Partager l\'historique d\'écoute avec YouTube Music</string>
     <string name="m3u_import_song_failed">Impossible d\'importer :</string>
     <string name="experimental_settings_title">Expérimental</string>
     <string name="dev_settings_title">Activer les paramètres du développeur</string>
