@@ -114,8 +114,8 @@ fun LibraryArtistsScreen(
                 onValueUpdate = {
                     filter = it
                     if (context.isSyncEnabled()) {
-                        if (it == ArtistFilter.LIBRARY || it == ArtistFilter.LIKED)
-                            viewModel.syncArtists()
+                        if ((it == ArtistFilter.LIBRARY || it == ArtistFilter.LIKED)
+                            && !isSyncingRemoteArtists) viewModel.syncArtists()
                     }
                 },
                 modifier = Modifier.weight(1f),
