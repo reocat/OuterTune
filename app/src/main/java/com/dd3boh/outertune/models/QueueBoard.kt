@@ -448,7 +448,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         if (q.shuffled) {
             val songsAfter = q.queue.filter { it.shuffleIndex >= listPos }
             songsAfter.forEachIndexed { index, s ->
-                s.shuffleIndex = listPos + mediaList.size + index
+                s.shuffleIndex += mediaList.size
             }
         }
 
@@ -485,8 +485,14 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      *
      * @param index Index of item
      */
-    fun removeCurrentQueueSong(index: Int, player: MusicService) =
-        getCurrentQueue()?.let { removeSong(it, index, player) }
+    fun removeCurrentQueueSong(index: Int, player: MusicService): Boolean {
+        val q = getCurrentQueue()
+        if (q == null) {
+            return false
+        }
+        return removeSong(q, index, player)
+    }
+
 
     /**
      * Removes song from the queue
@@ -494,14 +500,42 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param item Queue
      * @param index Index of item
      */
-    fun removeSong(item: MultiQueueObject, index: Int, player: MusicService) {
+    fun removeSong(item: MultiQueueObject, index: Int, player: MusicService): Boolean {
+        var ret = false
+        val currentMediaItemIndex = player.player.currentMediaItemIndex
+        var newQueuePos = item.getQueuePosShuffled()
+
         if (item.shuffled) {
-            item.queue.find { it.shuffleIndex == index }.let { item.queue.remove(it) }
+            Log.d(TAG, "Trying remove song at index: $index")
+            val s = item.queue.find { it.shuffleIndex == index }
+            if (s != null) {
+                ret = item.queue.remove(s)
+                Log.d(TAG, "Removing song: ${s.title}, $ret")
+            }
         } else {
             item.queue.removeAt(index)
+            ret = true
+        }
+        item.getCurrentQueueShuffled().fastForEachIndexed { index, s -> s.shuffleIndex = index }
+
+        // update current position only if the move will affect it
+        if (index < currentMediaItemIndex) {
+            newQueuePos--
+        } else if (index == currentMediaItemIndex) {
+            newQueuePos++
+        } else {
+            // no need to adjust
         }
 
+        if (newQueuePos >= item.getSize()) {
+            newQueuePos = item.getSize() - 1
+        } else if (newQueuePos < 0) {
+            newQueuePos = 0
+        }
+        item.queuePos = newQueuePos
+
         saveQueueSongs(item, player)
+        return ret
     }
 
     /**
@@ -689,7 +723,6 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param queue Queue to operate on
      * @param fromIndex Song to move
      * @param toIndex Destination
-     * @param currentMediaItemIndex Index of now playing song
      *
      * @return New current position tracker
      */
@@ -731,6 +764,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         } else {
             queue.queue.move(fromIndex, toIndex)
         }
+        queue.getCurrentQueueShuffled().fastForEachIndexed { index, s -> s.shuffleIndex = index }
 
         saveQueueSongs(queue, player)
 
