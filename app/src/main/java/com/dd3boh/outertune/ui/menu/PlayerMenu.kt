@@ -61,7 +61,9 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -88,13 +90,16 @@ import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
 import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.SleepTimerGridMenu
+import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.lang.Float.parseFloat
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.log2
@@ -212,7 +217,10 @@ fun PlayerMenu(
         )
     }
 
-    val sleepTimerEnabled = remember(playerConnection.service.sleepTimer.triggerTime, playerConnection.service.sleepTimer.pauseWhenSongEnd) {
+    val sleepTimerEnabled = remember(
+        playerConnection.service.sleepTimer.triggerTime,
+        playerConnection.service.sleepTimer.pauseWhenSongEnd
+    ) {
         playerConnection.service.sleepTimer.isActive
     }
 
@@ -272,15 +280,58 @@ fun PlayerMenu(
                         sleepTimerValue.roundToInt()
                     )
 
-                    val endTimeString = SimpleDateFormat
-                        .getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault())
-                        .format(Date(System.currentTimeMillis() + (sleepTimerValue.roundToInt() * 60 * 1000).toLong()))
+                    val endTime = System.currentTimeMillis() + (sleepTimerValue.roundToInt() * 60 * 1000).toLong()
+                    val calendarNow = Calendar.getInstance()
+                    val calendarEnd = Calendar.getInstance().apply { timeInMillis = endTime }
 
+                    // show date if it will span to next day
+                    val endTimeString =
+                        if (calendarNow.get(Calendar.DAY_OF_YEAR) == calendarEnd.get(Calendar.DAY_OF_YEAR) &&
+                            calendarNow.get(Calendar.YEAR) == calendarEnd.get(Calendar.YEAR)
+                        ) {
+                            SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault())
+                                .format(Date(endTime))
+                        } else {
+                            SimpleDateFormat.getDateTimeInstance(
+                                SimpleDateFormat.SHORT,
+                                SimpleDateFormat.SHORT,
+                                Locale.getDefault()
+                            ).format(Date(endTime))
+                        }
+
+                    var showDialog by remember {
+                        mutableStateOf(false)
+                    }
+
+                    if (showDialog) {
+                        TextFieldDialog(
+                            initialTextFieldValue = TextFieldValue(
+                                text = sleepTimerValue.toInt().toString(),
+                                selection = TextRange(sleepTimerValue.toInt().toString().length)
+                            ),
+                            placeholder = { pluralString },
+                            singleLine = true,
+                            isInputValid = {
+                                it.isNotBlank() && try {
+                                    parseFloat(it)
+                                    true
+                                } catch (e: Exception) {
+                                    false
+                                }
+                            },
+                            onDone = { sleepTimerValue = parseFloat(it) },
+                            onDismiss = { showDialog = false }
+                        )
+                    }
                     Text(
                         text = "$pluralString\n$endTimeString",
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .clickable {
+                                showDialog = true
+                            }
                     )
 
                     Slider(
@@ -310,7 +361,7 @@ fun PlayerMenu(
         DetailsDialog(
             mediaMetadata = mediaMetadata,
             currentFormat = currentFormat,
-            currentPlayCount = librarySong?.playCount?.fastSumBy { it.count }?: 0,
+            currentPlayCount = librarySong?.playCount?.fastSumBy { it.count } ?: 0,
             volume = playerConnection.player.volume,
             clipboard = clipboard,
             setVisibility = {showDetailsDialog = it }
