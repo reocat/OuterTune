@@ -444,11 +444,13 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             pos
         }
 
+        Log.d(TAG, "Inserting at position: $listPos")
+
         // assign new indexes to items affected by inserted items
         if (q.shuffled) {
-            val songsAfter = q.queue.filter { it.shuffleIndex >= listPos }
-            songsAfter.forEachIndexed { index, s ->
-                s.shuffleIndex += mediaList.size
+            val songsAfter = q.getCurrentQueueShuffled()
+            songsAfter.subList(listPos, songsAfter.size - 1).forEach {
+                it.shuffleIndex += mediaList.size
             }
         }
 
@@ -456,7 +458,12 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         mediaList.fastForEachIndexed { index, s ->
             s.shuffleIndex = listPos + index
         }
-        q.queue.addAll(listPos, mediaList)
+
+        if (q.shuffled) {
+            q.queue.addAll(mediaList)
+        } else {
+            q.queue.addAll(listPos, mediaList)
+        }
 
         // adding before current playing song requires tracking new index
         if (q.getQueuePosShuffled() >= listPos) {
@@ -876,18 +883,25 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             return null
         }
 
-        val queuePos =
-            item.getQueuePosShuffled() // I have no idea why this value gets reset to 0 by the end... but ig this works
+        // I have no idea why this value gets reset to 0 by the end... but ig this works
+        val queuePos = item.getQueuePosShuffled()
+        val realQueuePos = item.queuePos
         masterIndex = masterQueues.indexOf(item)
 
         val mediaItems: MutableList<MediaMetadata> = item.getCurrentQueueShuffled()
 
+        Log.d(
+            TAG, "Setting current queue. in bounds: ${queuePos >= 0 && queuePos < mediaItems.size}, " +
+                    "queuePos: $queuePos, real queuePos: ${realQueuePos}, ids: ${player.player.currentMetadata?.id}, " +
+                    "${mediaItems[queuePos].id}"
+        )
         /**
          * current playing == jump target, do seamlessly
          */
         val seamlessSupported = (queuePos >= 0 && queuePos < mediaItems.size)
                 && player.player.currentMetadata?.id == mediaItems[queuePos].id
         if (seamlessSupported) {
+            Log.d(TAG, "Trying seamless queue switch. Is first song?: ${queuePos == 0}")
             val playerIndex = player.player.currentMediaItemIndex
 
             if (queuePos == 0) {
@@ -910,6 +924,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     mediaItems.subList(queuePos + 1, mediaItems.size).map { it.toMediaItem() })
             }
         } else {
+            Log.d(TAG, "Seamless is not supported. Loading songs in directly")
             player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
         }
 
