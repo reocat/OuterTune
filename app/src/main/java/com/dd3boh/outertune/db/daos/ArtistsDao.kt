@@ -40,8 +40,8 @@ interface ArtistsDao {
             SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
         FROM artist
             LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
-            LEFT JOIN song ON sam.songId = song.id
-        WHERE artist.id = :id AND song.inLibrary IS NOT NULL
+            LEFT JOIN song ON sam.songId = song.id AND song.inLibrary IS NOT NULL
+        WHERE artist.id = :id
         GROUP BY artist.id
     """)
     fun artist(id: String): Flow<Artist?>
