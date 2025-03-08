@@ -145,7 +145,7 @@ interface ArtistsDao {
                 LEFT JOIN song ON sam.songId = song.id
             WHERE $where
             GROUP BY artist.id
-            HAVING songCount > 0 $having
+            HAVING songCount >= 0 $having
             ORDER BY $orderBy
         """)
 
