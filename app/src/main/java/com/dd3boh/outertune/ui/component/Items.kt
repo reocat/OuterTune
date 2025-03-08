@@ -103,7 +103,6 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.ListThumbnailSize
-import com.dd3boh.outertune.constants.SwipeToQueueKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
@@ -126,7 +125,6 @@ import com.dd3boh.outertune.ui.utils.getNSongsString
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.utils.makeTimeString
-import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.AlbumItem
@@ -396,8 +394,6 @@ fun SongListItem(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val swipeToQueueEnabled by rememberPreference(SwipeToQueueKey, true)
-
     val listItem: @Composable () -> Unit = {
         ListItem(
             title = song.song.title,
@@ -506,16 +502,12 @@ fun SongListItem(
         )
     }
 
-    if (swipeToQueueEnabled && enableSwipeToQueue && available) {
-        SwipeToQueueBox(
-            item = song.toMediaItem(),
-            content = { listItem() },
-            snackbarHostState = snackbarHostState
-        )
-    }
-    else {
-        listItem()
-    }
+    SwipeToQueueBox(
+        item = song.toMediaItem(),
+        content = { listItem() },
+        snackbarHostState = snackbarHostState,
+        enabled = enableSwipeToQueue
+    )
 }
 
 @Composable
