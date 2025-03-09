@@ -19,11 +19,12 @@ permissions:
 
 jobs:
   build:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        abi: [ "universal", "arm64", "x86_64", "uncommon_abi" ]  # Defined ABIs
+        abi: [ "universal", "arm64", "x86_64", "uncommon_abi" ]
 
     steps:
       - uses: actions/checkout@v4
