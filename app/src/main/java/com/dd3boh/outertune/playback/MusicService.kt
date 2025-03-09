@@ -178,7 +178,7 @@ class MusicService : MediaLibraryService(),
 
     private lateinit var connectivityManager: ConnectivityManager
 
-    lateinit var connectivityObserver: NetworkConnectivityObserver
+    private lateinit var connectivityObserver: NetworkConnectivityObserver
     val waitingForNetworkConnection = MutableStateFlow(false)
     private val isNetworkConnected = MutableStateFlow(false)
 
@@ -551,12 +551,23 @@ class MusicService : MediaLibraryService(),
     fun updateNotification() {
         mediaSession.setCustomLayout(
             listOf(
-                CommandButton.Builder()
-                    .setDisplayName(getString(if (queueBoard.getCurrentQueue()?.shuffled == true) R.string.action_shuffle_off else R.string.action_shuffle_on))
-                    .setIconResId(if (queueBoard.getCurrentQueue()?.shuffled == true) R.drawable.shuffle_on else R.drawable.shuffle)
+                CommandButton.Builder(CommandButton.ICON_UNDEFINED)
+                    .setDisplayName(getString(
+                        if (queueBoard.getCurrentQueue()?.shuffled == true)
+                            R.string.action_shuffle_off
+                        else
+                            R.string.action_shuffle_on
+                    ))
+                    .setCustomIconResId(
+                        if (queueBoard.getCurrentQueue()?.shuffled == true)
+                            R.drawable.shuffle_on
+                        else
+                            R.drawable.shuffle
+                    )
                     .setSessionCommand(CommandToggleShuffle)
                     .build(),
-                CommandButton.Builder()
+
+                CommandButton.Builder(CommandButton.ICON_UNDEFINED)
                     .setDisplayName(
                         getString(
                             when (player.repeatMode) {
@@ -567,7 +578,7 @@ class MusicService : MediaLibraryService(),
                             }
                         )
                     )
-                    .setIconResId(
+                    .setCustomIconResId(
                         when (player.repeatMode) {
                             REPEAT_MODE_OFF -> R.drawable.repeat
                             REPEAT_MODE_ONE -> R.drawable.repeat_one_on
@@ -577,15 +588,27 @@ class MusicService : MediaLibraryService(),
                     )
                     .setSessionCommand(CommandToggleRepeatMode)
                     .build(),
-                CommandButton.Builder()
-                    .setDisplayName(getString(if (currentSong.value?.song?.liked == true) R.string.action_remove_like else R.string.action_like))
-                    .setIconResId(if (currentSong.value?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border)
+
+                CommandButton.Builder(CommandButton.ICON_UNDEFINED)
+                    .setDisplayName(getString(
+                        if (currentSong.value?.song?.liked == true)
+                            R.string.action_remove_like
+                        else
+                            R.string.action_like
+                    ))
+                    .setCustomIconResId(
+                        if (currentSong.value?.song?.liked == true)
+                            R.drawable.favorite
+                        else
+                            R.drawable.favorite_border
+                    )
                     .setSessionCommand(CommandToggleLike)
                     .setEnabled(currentSong.value != null)
                     .build(),
-                CommandButton.Builder()
+
+                CommandButton.Builder(CommandButton.ICON_UNDEFINED)
                     .setDisplayName(getString(R.string.start_radio))
-                    .setIconResId(R.drawable.radio)
+                    .setCustomIconResId(R.drawable.radio)
                     .setSessionCommand(CommandToggleStartRadio)
                     .setEnabled(currentSong.value != null)
                     .build()
@@ -701,7 +724,7 @@ class MusicService : MediaLibraryService(),
             }
         } else {
             // enqueue next
-            queueBoard.getCurrentQueue()?.let {
+            queueBoard.getCurrentQueue()?.let { it ->
                 queueBoard.addSongsToQueue(it, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata }, this)
             }
         }
