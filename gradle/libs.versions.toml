@@ -12,6 +12,7 @@ hilt = "2.55"
 ktor = "3.1.1"
 ksp = "2.1.20-RC2-1.0.31"
 multidex = "2.0.1"
+materialKolor = "2.0.2"
 newpipe = "dev-SNAPSHOT"
 taglib = "1.0.0-alpha25"
 leakcanary = "2.14"
@@ -45,6 +46,8 @@ viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 squigglyslider = { group = "me.saket.squigglyslider", name = "squigglyslider", version = "1.0.0" }
+materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
+
 
 coil = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }
 
