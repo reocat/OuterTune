@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.ui.menu
 
-import android.media.audiofx.Equalizer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -13,22 +12,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -41,12 +39,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,23 +58,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.core.stringSetPreferencesKey
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.composed
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.utils.dataStore
@@ -87,6 +81,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.roundToInt
+
 
 // Keys for DataStore
 private val EQ_ENABLED = booleanPreferencesKey("eq_enabled")
@@ -114,7 +110,7 @@ fun getEqualizerPrefs(dataStore: androidx.datastore.core.DataStore<Preferences>)
             val jsonArray = JSONArray(bandLevelsJson)
             List(jsonArray.length()) { jsonArray.getInt(it).toShort() }
         } catch (e: Exception) {
-            emptyList<Short>()
+            emptyList()
         }
 
         val customPresets = try {
@@ -127,7 +123,7 @@ fun getEqualizerPrefs(dataStore: androidx.datastore.core.DataStore<Preferences>)
                 CustomPreset(name, bandValues)
             }
         } catch (e: Exception) {
-            emptyList<CustomPreset>()
+            emptyList()
         }
 
         EqualizerSettings(enabled, presetIndex, bandLevels, customPresets, bassBoost)
@@ -152,42 +148,38 @@ fun EqualizerDialog(
     val playerConnection = LocalPlayerConnection.current ?: return
     val coroutineScope = rememberCoroutineScope()
 
-    // Create equalizer instance tied to the player
-    val equalizerInstance = remember {
-        try {
-            Equalizer(0, playerConnection.player.audioSessionId)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    // Clean up the equalizer when the dialog is dismissed
-    DisposableEffect(equalizerInstance) {
-        onDispose {
-            equalizerInstance?.release()
-        }
-    }
+    val equalizerInstance = playerConnection.equalizer
 
     // Get settings from DataStore
     val settings by getEqualizerPrefs(dataStore).collectAsState(initial = EqualizerSettings())
 
-    // Current UI state
+    // Current UI state (initialize with settings but update on changes)
     var eqEnabled by remember { mutableStateOf(settings.enabled) }
     var currentPresetIndex by remember { mutableIntStateOf(settings.presetIndex) }
+    var bassBoostValue by remember { mutableFloatStateOf(settings.bassBoost) }
     var showCustomPresetDialog by remember { mutableStateOf(false) }
     var showAdvancedSettings by remember { mutableStateOf(false) }
-    var bassBoostValue by remember { mutableFloatStateOf(settings.bassBoost) }
 
-    // Band levels
+    // Band levels state list: if settings.customBandLevels is not empty, use that
     val bandLevels = remember {
         mutableStateListOf<Short>().apply {
             if (settings.customBandLevels.isNotEmpty()) {
                 addAll(settings.customBandLevels)
             } else {
-                // Default levels (flat)
                 val count = equalizerInstance?.numberOfBands ?: 5
                 repeat(count.toInt()) { add(0) }
             }
+        }
+    }
+
+    // Sync local states when settings change from DataStore
+    LaunchedEffect(settings) {
+        eqEnabled = settings.enabled
+        currentPresetIndex = settings.presetIndex
+        bassBoostValue = settings.bassBoost
+        if (settings.customBandLevels.isNotEmpty()) {
+            bandLevels.clear()
+            bandLevels.addAll(settings.customBandLevels)
         }
     }
 
@@ -261,7 +253,7 @@ fun EqualizerDialog(
             repeat(equalizerInstance.numberOfBands.toInt()) { band ->
                 bandLevels.add(equalizerInstance.getBandLevel(band.toShort()))
             }
-        } else if (currentPresetIndex > equalizerInstance?.numberOfPresets ?: 0) {
+        } else if (currentPresetIndex > (equalizerInstance?.numberOfPresets ?: 0)) {
             // If it's a custom preset, load its values
             val customPresetIndex = currentPresetIndex - (equalizerInstance?.numberOfPresets?.toInt() ?: 0) - 1
             if (customPresetIndex < settings.customPresets.size) {
@@ -445,6 +437,7 @@ fun EqualizerDialog(
     )
 }
 
+
 @Composable
 fun PresetSelector(
     presets: List<String>,
@@ -570,70 +563,80 @@ fun FrequencyBandSlider(
         "${frequency}Hz"
     }
 
+    val density = LocalDensity.current
+    val trackHeight = 200.dp
+    val thumbSize = 24.dp
+
+    // Convert track height and thumb size to pixels
+    val trackHeightPx = with(density) { trackHeight.toPx() }
+    val thumbSizePx = with(density) { thumbSize.toPx() }
+    val availableSpacePx = trackHeightPx - thumbSizePx
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
         Text(
-            text = if (level >= 0.5f) "+${((level - 0.5f) * 30).toInt()}" else "${((level - 0.5f) * 30).toInt()}",
+            text = if (level >= 0.5f) "+${((level - 0.5f) * 30).toInt()}"
+            else "${((level - 0.5f) * 30).toInt()}",
             style = MaterialTheme.typography.bodySmall,
-            color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            color = if (enabled) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
 
         Box(
-            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .height(200.dp)
-                .width(40.dp)
-        ) {
-            // Slider track
-            Box(
-                modifier = Modifier
-                    .width(2.dp)
-                    .height(180.dp)
-                    .background(
-                        color = if (enabled) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
-                        shape = RoundedCornerShape(4.dp)
-                    )
-            )
-
-            // Center line
-            Box(
-                modifier = Modifier
-                    .width(10.dp)
-                    .height(1.dp)
-                    .background(
-                        color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                    )
-            )
-
-            // Slider thumb
-            Box(
-                modifier = Modifier
-                    .offset(y = ((-90 * (2 * level - 1)).toInt().dp))
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clip(CircleShape),
-                    color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                ) {
-                    // Empty surface for the thumb
-                }
-            }
-
-            // Invisible drag area
-            Box(
-                modifier = Modifier
-                    .width(40.dp)
-                    .height(200.dp)
-                    .draggable(
-                        enable = enabled,
-                        onDragStopped = {},
-                        onDrag = { delta ->
-                            val newLevel = (level - delta.y / 180).coerceIn(0f, 1f)
-                            onLevelChanged(newLevel)
+                .height(trackHeight)
+                .width(48.dp)
+                .pointerInput(enabled) {
+                    if (!enabled) return@pointerInput
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            when (event.type) {
+                                PointerEventType.Press,
+                                PointerEventType.Move -> {
+                                    val y = event.changes.first().position.y
+                                    val newLevel = 1 - (y / trackHeightPx)
+                                        .coerceIn(0f, 1f)
+                                    onLevelChanged(newLevel)
+                                }
+                                else -> Unit
+                            }
+                            event.changes.forEach { it.consume() }
                         }
+                    }
+                }
+        ) {
+            // Track
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(4.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        RoundedCornerShape(2.dp)
+                    )
+                    .align(Alignment.Center)
+            )
+
+            // Thumb bar
+            Box(
+                modifier = Modifier
+                    .width(24.dp)    // Adjust width for a bar-like appearance
+                    .height(8.dp)   // Adjust height to suit your design
+                    .align(Alignment.TopCenter)
+                    .offset {
+                        IntOffset(
+                            x = 0,
+                            y = (availableSpacePx * (1 - level)).roundToInt()
+                        )
+                    }
+                    .zIndex(1f)  // Ensure it appears on top
+                    .background(
+                        if (enabled) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        RoundedCornerShape(2.dp)  // Rounded corners for a nice bar effect
                     )
             )
         }
@@ -641,7 +644,8 @@ fun FrequencyBandSlider(
         Text(
             text = displayFreq,
             style = MaterialTheme.typography.bodySmall,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            color = if (enabled) MaterialTheme.colorScheme.onSurface
+            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
     }
 }
@@ -683,24 +687,4 @@ fun SavePresetDialog(
             }
         }
     )
-}
-
-// Extension functions for draggable modifier
-fun Modifier.draggable(
-    enable: Boolean,
-    onDrag: (Offset) -> Unit,
-    onDragStopped: () -> Unit
-): Modifier = composed {
-    if (enable) {
-        this.pointerInput(Unit) {
-            detectDragGestures(
-                onDrag = { _, dragAmount ->
-                    onDrag(dragAmount)
-                },
-                onDragEnd = { onDragStopped() }
-            )
-        }
-    } else {
-        this
-    }
 }

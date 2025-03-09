@@ -9,6 +9,7 @@
 
 package com.dd3boh.outertune.playback
 
+import android.media.audiofx.Equalizer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -47,6 +48,9 @@ class PlayerConnection(
 ) : Player.Listener {
     val service = binder.service
     val player = service.player
+
+    val equalizer: Equalizer?
+        get() = service.equalizer
 
     val playbackState = MutableStateFlow(player.playbackState)
     private val playWhenReady = MutableStateFlow(player.playWhenReady)
