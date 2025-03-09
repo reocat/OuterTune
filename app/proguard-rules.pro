@@ -92,6 +92,15 @@
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
+# Keep Rhino classes
+-keep class org.mozilla.javascript.** { *; }
+# For javax.script classes
+-dontwarn javax.script.**
+-keep class javax.script.** { *; }
+# For jdk.dynalink classes
+-dontwarn jdk.dynalink.**
+-keep class jdk.dynalink.** { *; }
+
 ## Logging (does not affect Timber)
 -assumenosideeffects class android.util.Log {
     public static boolean isLoggable(java.lang.String, int);
@@ -101,4 +110,5 @@
     ## Leave warnings and errors in release builds
     #public static int w(...);
     #public static int e(...);
+
 }
