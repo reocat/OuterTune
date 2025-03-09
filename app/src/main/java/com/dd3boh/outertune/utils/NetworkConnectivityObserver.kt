@@ -19,7 +19,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
 class NetworkConnectivityObserver(
-    private val context: Context
+    context: Context
 ) : DefaultLifecycleObserver {
 
     private val connectivityManager =
@@ -29,13 +29,18 @@ class NetworkConnectivityObserver(
     val networkStatus = _networkStatus.receiveAsFlow()
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            _networkStatus.trySend(true)
-        }
+        override fun onAvailable(network: Network) = checkNetworkStatus()
+        override fun onLost(network: Network) = checkNetworkStatus()
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) = checkNetworkStatus()
+    }
 
-        override fun onLost(network: Network) {
-            _networkStatus.trySend(false)
-        }
+    fun checkNetworkStatus() {
+        val activeNetwork = connectivityManager.activeNetwork
+        val hasInternet = connectivityManager.getNetworkCapabilities(activeNetwork)?.let { capabilities ->
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        } ?: false
+        _networkStatus.trySend(hasInternet)
     }
 
     fun register() {
@@ -43,6 +48,7 @@ class NetworkConnectivityObserver(
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
         connectivityManager.registerNetworkCallback(request, networkCallback)
+        checkNetworkStatus()
     }
 
     fun unregister() {
