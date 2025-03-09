@@ -8,7 +8,6 @@
 
 package com.dd3boh.outertune.models
 
-import android.util.Log
 import androidx.compose.ui.util.fastFirst
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
@@ -260,7 +259,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 match.queuePos = startIndex
 
                 if (shuffled) {
-                    shuffle(match, player, false, true)
+                    shuffle(match, player, false, bypassSaveToDb = true)
                     match.queuePos = match.queue.indexOf(match.queue.find { it.shuffleIndex == 0 })
                 }
 
@@ -281,7 +280,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     // no need update index in db, onMediaItemTransition() has alread done it
                 }
                 if (shuffled) {
-                    shuffle(match, player, false, true)
+                    shuffle(match, player, false, bypassSaveToDb = true)
                     match.queuePos = match.queue.indexOf(match.queue.find { it.shuffleIndex == 0 })
                 }
 
@@ -304,7 +303,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     match.queuePos = match.queue.indexOf(findSong) // track the index we jumped to
                 }
                 if (shuffled) {
-                    shuffle(match, player, false, true)
+                    shuffle(match, player, false, bypassSaveToDb = true)
                     match.queuePos = match.queue.indexOf(match.queue.find { it.shuffleIndex == 0 })
                 }
 
@@ -318,13 +317,13 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 if (anyExts != null) {
                     addSongsToQueue(anyExts, Int.MAX_VALUE, mediaList.filterNotNull(), player, saveToDb = false)
                     if (shuffled) {
-                        shuffle(anyExts, player, false, true)
+                        shuffle(anyExts, player, false, bypassSaveToDb = true)
                         match.queuePos = match.queue.indexOf(match.queue.find { it.shuffleIndex == 0 })
                     }
                 } else {
                     addSongsToQueue(match, Int.MAX_VALUE, mediaList.filterNotNull(), player, saveToDb = false)
                     if (shuffled) {
-                        shuffle(match, player, false, true)
+                        shuffle(match, player, false, bypassSaveToDb = true)
                         match.queuePos = match.queue.indexOf(match.queue.find { it.shuffleIndex == 0 })
                     }
                 }
@@ -362,7 +361,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 )
                 masterQueues.add(newQueue)
                 if (shuffled) {
-                    shuffle(newQueue, player, false, true)
+                    shuffle(newQueue, player, false, bypassSaveToDb = true)
                 }
 
                 saveQueue(newQueue, player)
@@ -393,7 +392,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             )
             masterQueues.add(newQueue)
             if (shuffled) {
-                shuffle(masterQueues.size - 1, player, false, true)
+                shuffle(masterQueues.size - 1, player, false, bypassSaveToDb = true)
                 newQueue.queuePos = newQueue.queue.indexOf(newQueue.queue.find { it.shuffleIndex == 0 })
             }
 
@@ -444,7 +443,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             pos
         }
 
-        Log.d(TAG, "Inserting at position: $listPos")
+        Timber.tag(TAG).d("Inserting at position: $listPos")
 
         // assign new indexes to items affected by inserted items
         if (q.shuffled) {
@@ -493,10 +492,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param index Index of item
      */
     fun removeCurrentQueueSong(index: Int, player: MusicService): Boolean {
-        val q = getCurrentQueue()
-        if (q == null) {
-            return false
-        }
+        val q = getCurrentQueue() ?: return false
         return removeSong(q, index, player)
     }
 
@@ -513,11 +509,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         var newQueuePos = item.getQueuePosShuffled()
 
         if (item.shuffled) {
-            Log.d(TAG, "Trying remove song at index: $index")
+            Timber.tag(TAG).d("Trying remove song at index: $index")
             val s = item.queue.find { it.shuffleIndex == index }
             if (s != null) {
                 ret = item.queue.remove(s)
-                Log.d(TAG, "Removing song: ${s.title}, $ret")
+                Timber.tag(TAG).d("Removing song: ${s.title}, $ret")
             }
         } else {
             item.queue.removeAt(index)
@@ -890,10 +886,20 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
         val mediaItems: MutableList<MediaMetadata> = item.getCurrentQueueShuffled()
 
-        Log.d(
-            TAG, "Setting current queue. in bounds: ${queuePos >= 0 && queuePos < mediaItems.size}, " +
-                    "queuePos: $queuePos, real queuePos: ${realQueuePos}, ids: ${player.player.currentMetadata?.id}, " +
-                    "${mediaItems[queuePos].id}"
+        if (mediaItems.isEmpty()) {
+            Timber.tag(TAG).d("Empty queue received, cannot load empty queue into player")
+            player.player.setMediaItems(ArrayList())
+            return null
+        }
+
+        if (queuePos < 0 || queuePos >= mediaItems.size) {
+            Timber.tag(TAG).d("Invalid queue position: $queuePos for queue size: ${mediaItems.size}")
+            player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
+            return 0
+        }
+
+        Timber.tag(TAG).d("%snull", "Setting current queue. in bounds: ${queuePos >= 0 && queuePos < mediaItems.size}, " +
+                "queuePos: $queuePos, real queuePos: ${realQueuePos}, ids: ${player.player.currentMetadata?.id}, "
         )
         /**
          * current playing == jump target, do seamlessly
@@ -901,7 +907,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         val seamlessSupported = (queuePos >= 0 && queuePos < mediaItems.size)
                 && player.player.currentMetadata?.id == mediaItems[queuePos].id
         if (seamlessSupported) {
-            Log.d(TAG, "Trying seamless queue switch. Is first song?: ${queuePos == 0}")
+            Timber.tag(TAG).d("Trying seamless queue switch. Is first song?: ${queuePos == 0}")
             val playerIndex = player.player.currentMediaItemIndex
 
             if (queuePos == 0) {
@@ -924,7 +930,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                     mediaItems.subList(queuePos + 1, mediaItems.size).map { it.toMediaItem() })
             }
         } else {
-            Log.d(TAG, "Seamless is not supported. Loading songs in directly")
+            Timber.tag(TAG).d("Seamless is not supported. Loading songs in directly")
             player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
         }
 
@@ -967,9 +973,9 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * Execute the most recent save request, with a 5 second delay from function call
      */
     private fun databaseDispatcher() {
-        Log.d(TAG, "Starting database save task")
+        Timber.tag(TAG).d("Starting database save task")
         if (jobActive.isLocked) {
-            Log.d(TAG, "Database save task is already acive, aborting")
+            Timber.tag(TAG).d("Database save task is already acive, aborting")
             return
         }
 
@@ -978,7 +984,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             runBlocking {
                 delay(5000L)
             }
-            Log.d(TAG, "Running database save task")
+            Timber.tag(TAG).d("Running database save task")
 
             // saving songs nukes the queue entity in the process, abut it shouldn't matter since are same queue object
             if (!queueSongMap.isEmpty()) {
@@ -994,7 +1000,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             }
         }
         jobActive.unlock()
-        Log.d(TAG, "Exiting database save task")
+        Timber.tag(TAG).d("Exiting database save task")
     }
 
     fun shutdown() {
@@ -1052,7 +1058,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         val mutex = Mutex()
 
         fun shuffleInPlace(list: List<MediaMetadata>) {
-            val rng = (0..(list.size - 1)).shuffled()
+            val rng = list.indices.shuffled()
 
             list.forEachIndexed { index, s ->
                 s.shuffleIndex = rng[index]
