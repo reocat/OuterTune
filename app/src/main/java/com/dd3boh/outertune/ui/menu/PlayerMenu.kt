@@ -446,19 +446,21 @@ fun PlayerMenu(
             else showSleepTimerDialog = true
         }
 
+        var showEqualizerDialog by rememberSaveable {
+            mutableStateOf(false)
+        }
+
+        if (showEqualizerDialog) {
+            EqualizerDialog(
+                onDismiss = { showEqualizerDialog = false }
+            )
+        }
+
         GridMenuItem(
             icon = Icons.Rounded.Equalizer,
             title = R.string.equalizer
         ) {
-            val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, playerConnection.player.audioSessionId)
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-            }
-            if (intent.resolveActivity(context.packageManager) != null) {
-                activityResultLauncher.launch(intent)
-            }
-            onDismiss()
+            showEqualizerDialog = true
         }
         GridMenuItem(
             icon = Icons.Rounded.Tune,

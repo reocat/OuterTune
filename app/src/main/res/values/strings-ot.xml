@@ -231,4 +231,13 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="discord_information">OuterTune uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.  OuterTune will only extract your token, and everything else is stored locally.</string>
     <string name="enable_discord_rpc">Enable Rich Presence</string>
 
+    <!-- Add these to your strings.xml file -->
+    <string name="preset">Preset</string>
+    <string name="save_preset">Save Preset</string>
+    <string name="preset_name">Preset Name</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="bass_boost">Bass Boost</string>
+    <string name="advanced_settings">Advanced Settings</string>
+
 </resources>
