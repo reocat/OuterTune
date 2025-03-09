@@ -125,6 +125,10 @@ fun PlayerMenu(
         mutableStateOf(false)
     }
 
+    var showEqualizerDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(librarySong?.song?.liked) {
         librarySong?.let {
             downloadUtil.autoDownloadIfLiked(it.song)
@@ -446,16 +450,6 @@ fun PlayerMenu(
             else showSleepTimerDialog = true
         }
 
-        var showEqualizerDialog by rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        if (showEqualizerDialog) {
-            EqualizerDialog(
-                onDismiss = { showEqualizerDialog = false }
-            )
-        }
-
         GridMenuItem(
             icon = Icons.Rounded.Equalizer,
             title = R.string.equalizer
@@ -468,6 +462,11 @@ fun PlayerMenu(
         ) {
             showPitchTempoDialog = true
         }
+    }
+    if (showEqualizerDialog) {
+        EqualizerDialog(
+            onDismiss = { showEqualizerDialog = false }
+        )
     }
 }
 
