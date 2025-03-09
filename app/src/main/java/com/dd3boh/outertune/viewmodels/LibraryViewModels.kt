@@ -270,7 +270,7 @@ class LibraryViewModel @Inject constructor(
     val isSyncingRemotePlaylists = syncUtils.isSyncingRemotePlaylists
 
     var artists = database.artistsBookmarkedAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
-    var albums = database.albumsInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
+    var albums = database.albumsLikedAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
     var playlists = database.playlistInLibraryAsc().stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val allItems = context.dataStore.data
