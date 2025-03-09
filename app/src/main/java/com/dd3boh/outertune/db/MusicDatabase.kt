@@ -339,7 +339,30 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
  */
 val MIGRATION_16_17 = object : Migration(16, 17) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE format RENAME playbackUrl to playbackTrackingUrl")
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `format_new` (
+                `id` TEXT NOT NULL,
+                `itag` INTEGER NOT NULL,
+                `mimeType` TEXT NOT NULL,
+                `codecs` TEXT NOT NULL,
+                `bitrate` INTEGER NOT NULL,
+                `sampleRate` INTEGER,
+                `contentLength` INTEGER NOT NULL,
+                `loudnessDb` REAL,
+                `playbackTrackingUrl` TEXT,
+                PRIMARY KEY(`id`)
+            )
+        """)
+
+        db.execSQL("""
+            INSERT INTO `format_new` (`id`, `itag`, `mimeType`, `codecs`, `bitrate`, `sampleRate`, `contentLength`, `loudnessDb`, `playbackTrackingUrl`)
+            SELECT `id`, `itag`, `mimeType`, `codecs`, `bitrate`, `sampleRate`, `contentLength`, `loudnessDb`, `playbackUrl`
+            FROM `format`
+        """)
+
+        db.execSQL("DROP TABLE `format`")
+
+        db.execSQL("ALTER TABLE `format_new` RENAME TO `format`")
 
         db.execSQL("CREATE TABLE queue_song_map_temp (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `queueId` INTEGER NOT NULL, `songId` TEXT NOT NULL, `index` INTEGER NOT NULL, `shuffledIndex` INTEGER NOT NULL, FOREIGN KEY(`queueId`) REFERENCES `queue`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY(`songId`) REFERENCES `song`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
         
