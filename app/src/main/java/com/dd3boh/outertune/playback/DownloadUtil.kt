@@ -5,6 +5,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.media3.common.util.NotificationUtil
+import androidx.media3.common.util.Util
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.SimpleCache
@@ -14,6 +16,7 @@ import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
+import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
@@ -42,6 +45,28 @@ import java.time.ZoneOffset
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
+
+class TerminalStateNotificationHelper(
+    private val applicationContext: Context,
+    private val notificationHelper: DownloadNotificationHelper,
+    private var nextNotificationId: Int,
+) : DownloadManager.Listener {
+    override fun onDownloadChanged(
+        downloadManager: DownloadManager,
+        download: Download,
+        finalException: Exception?,
+    ) {
+        if (download.state == Download.STATE_FAILED) {
+            val notification = notificationHelper.buildDownloadFailedNotification(
+                applicationContext,
+                R.drawable.error,
+                null,
+                Util.fromUtf8Bytes(download.request.data)
+            )
+            NotificationUtil.setNotification(applicationContext, nextNotificationId++, notification)
+        }
+    }
+}
 
 @Singleton
 class DownloadUtil @Inject constructor(
@@ -104,19 +129,28 @@ class DownloadUtil @Inject constructor(
         songUrlCache[mediaId] = streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
         dataSpec.withUri(streamUrl.toUri())
     }
-    val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
-    val downloadManager: DownloadManager = DownloadManager(context, databaseProvider, downloadCache, dataSourceFactory, Executor(Runnable::run)).apply {
-        maxParallelDownloads = 3
-        addListener(
-            ExoDownloadService.TerminalStateNotificationHelper(
-                context = context,
-                notificationHelper = downloadNotificationHelper,
-                nextNotificationId = ExoDownloadService.NOTIFICATION_ID + 1
-            )
-        )
-    }
-    val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
+    val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
+
+    private val terminalStateHelper = TerminalStateNotificationHelper(
+        applicationContext = context.applicationContext,
+        notificationHelper = downloadNotificationHelper,
+        nextNotificationId = ExoDownloadService.NOTIFICATION_ID + 1
+    )
+    private var downloadListener: DownloadManager.Listener
+
+    val downloadManager: DownloadManager = DownloadManager(
+        context,
+        databaseProvider,
+        downloadCache,
+        dataSourceFactory,
+        Executor(Runnable::run)
+    ).apply {
+        maxParallelDownloads = 3
+        addListener(terminalStateHelper)
+    }
+
+    val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
     fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
 
@@ -166,8 +200,7 @@ class DownloadUtil @Inject constructor(
         if (
             context.getLikeAutoDownload() == LikedAutodownloadMode.ON
             || (context.getLikeAutoDownload() == LikedAutodownloadMode.WIFI_ONLY && isWifiConnected)
-        )
-        {
+        ) {
             download(song)
         }
     }
@@ -179,26 +212,31 @@ class DownloadUtil @Inject constructor(
             result[cursor.download.request.id] = cursor.download
         }
         downloads.value = result
-        downloadManager.addListener(
-            object : DownloadManager.Listener {
-                override fun onDownloadChanged(downloadManager: DownloadManager, download: Download, finalException: Exception?) {
-                    downloads.update { map ->
-                        map.toMutableMap().apply {
-                            set(download.request.id, download)
-                        }
-                    }
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (download.state == Download.STATE_COMPLETED) {
-                            val updateTime = Instant.ofEpochMilli(download.updateTimeMs).atZone(ZoneOffset.UTC).toLocalDateTime()
-                            database.updateDownloadStatus(download.request.id, updateTime)
-                        }
-                        else {
-                            database.updateDownloadStatus(download.request.id, null)
-                        }
+        downloadListener = object : DownloadManager.Listener {
+            override fun onDownloadChanged(downloadManager: DownloadManager, download: Download, finalException: Exception?) {
+                downloads.update { map ->
+                    map.toMutableMap().apply {
+                        set(download.request.id, download)
+                    }
+                }
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (download.state == Download.STATE_COMPLETED) {
+                        val updateTime = Instant.ofEpochMilli(download.updateTimeMs).atZone(ZoneOffset.UTC).toLocalDateTime()
+                        database.updateDownloadStatus(download.request.id, updateTime)
+                    }
+                    else {
+                        database.updateDownloadStatus(download.request.id, null)
                     }
                 }
             }
-        )
+        }
+        downloadManager.addListener(downloadListener)
+    }
+    fun cleanup() {
+        downloadManager.removeListener(terminalStateHelper)
+        downloadManager.removeListener(downloadListener)
     }
 }
+
