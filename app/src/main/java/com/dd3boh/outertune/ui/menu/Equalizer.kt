@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.menu
 
+import android.media.audiofx.Equalizer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -148,7 +149,14 @@ fun EqualizerDialog(
     val playerConnection = LocalPlayerConnection.current ?: return
     val coroutineScope = rememberCoroutineScope()
 
-    val equalizerInstance = playerConnection.equalizer
+    // Create equalizer instance tied to the player
+    val equalizerInstance = remember {
+        try {
+            Equalizer(0, playerConnection.player.audioSessionId)
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     // Get settings from DataStore
     val settings by getEqualizerPrefs(dataStore).collectAsState(initial = EqualizerSettings())

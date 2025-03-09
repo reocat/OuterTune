@@ -49,9 +49,6 @@ class PlayerConnection(
     val service = binder.service
     val player = service.player
 
-    val equalizer: Equalizer?
-        get() = service.equalizer
-
     val playbackState = MutableStateFlow(player.playbackState)
     private val playWhenReady = MutableStateFlow(player.playWhenReady)
     val isPlaying = combine(playbackState, playWhenReady) { playbackState, playWhenReady ->

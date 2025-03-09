@@ -218,12 +218,9 @@ class MusicService : MediaLibraryService(),
     private var discordRpc: DiscordRPC? = null
 
     var consecutivePlaybackErr = 0
-    var equalizer: Equalizer? = null
 
     override fun onCreate() {
         super.onCreate()
-
-        initializeEqualizer(player.audioSessionId)
 
         connectivityObserver = NetworkConnectivityObserver(applicationContext)
 
@@ -1079,12 +1076,6 @@ class MusicService : MediaLibraryService(),
         return START_NOT_STICKY
     }
 
-    private fun initializeEqualizer(audioSessionId: Int) {
-        equalizer?.release() // Release any existing instance
-        equalizer = Equalizer(0, audioSessionId).apply {
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         if (player.isReleased) {
@@ -1100,10 +1091,6 @@ class MusicService : MediaLibraryService(),
             discordRpc?.closeRPC()
         }
         discordRpc = null
-
-        equalizer?.release()
-        equalizer = null
-
         mediaSession.release()
         player.removeListener(this)
         player.removeListener(sleepTimer)
