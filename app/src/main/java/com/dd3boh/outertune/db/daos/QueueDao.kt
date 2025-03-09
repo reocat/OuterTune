@@ -31,7 +31,7 @@ interface QueueDao {
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT *, queue_song_map.shuffledIndex from queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId ORDER BY `index`")
+    @Query("SELECT song.*, queue_song_map.shuffledIndex FROM queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId ORDER BY queue_song_map.`index`")
     fun getQueueSongs(queueId: Long): Flow<List<QueueSong>>
 
     @Query("SELECT id FROM queue")
