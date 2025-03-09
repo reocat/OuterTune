@@ -139,12 +139,13 @@ dependencies {
     implementation(libs.compose.reorderable)
     implementation(libs.compose.icons.extended)
 
+    implementation(libs.materialKolor)
+
     implementation(libs.viewmodel)
     implementation(libs.viewmodel.compose)
 
     implementation(libs.material3)
     implementation(libs.palette)
-    implementation(projects.materialColorUtilities)
     implementation(libs.squigglyslider)
 
     implementation(libs.coil)
