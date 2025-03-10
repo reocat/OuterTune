@@ -425,6 +425,20 @@ class SyncUtils @Inject constructor(
         }
     }
 
+    suspend fun syncRecentActivity() {
+        YouTube.libraryRecentActivity().onSuccess { page ->
+            val recentActivity = page.items.take(9).drop(1)
+
+            coroutineScope {
+                launch(Dispatchers.IO) {
+                    database.clearRecentActivity()
+
+                    recentActivity.reversed().forEach { database.insertRecentActivityItem(it) }
+                }
+            }
+        }
+    }
+
     private suspend inline fun <reified T> getRemoteData(libraryId: String, uploadsId: String): MutableList<T> {
         val browseIds = mapOf(
             libraryId to 0,
