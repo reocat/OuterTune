@@ -2,13 +2,21 @@ package com.dd3boh.outertune.ui.screens.library
 
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -24,6 +32,8 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,9 +43,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -328,17 +340,7 @@ fun LibraryScreen(
                                 }
                             }
 
-                            allItems?.let { allItems ->
-                                if (allItems.isEmpty()) {
-                                    item {
-                                        EmptyPlaceholder(
-                                            icon = Icons.AutoMirrored.Rounded.List,
-                                            text = stringResource(R.string.library_album_empty),
-                                            modifier = Modifier.animateItem()
-                                        )
-                                    }
-                                }
-
+                            allItems.let { allItems ->
                                 items(
                                     items = allItems.distinctBy { it.hashCode() },
                                     key = { it.hashCode() },
@@ -442,16 +444,6 @@ fun LibraryScreen(
                             }
 
                             allItems.let { allItems ->
-                                if (allItems.isEmpty()) {
-                                    item {
-                                        EmptyPlaceholder(
-                                            icon = Icons.AutoMirrored.Rounded.List,
-                                            text = stringResource(R.string.library_album_empty),
-                                            modifier = Modifier.animateItem()
-                                        )
-                                    }
-                                }
-
                                 items(
                                     items = allItems.distinctBy { it.hashCode() },
                                     key = { it.hashCode() },
@@ -497,6 +489,60 @@ fun LibraryScreen(
                         }
                     }
                 }
+        }
+        LibraryEmptyState(
+            isVisible = allItems.isEmpty() && !showLikedAndDownloadedPlaylist,
+        )
+    }
+}
+
+@Composable
+fun LibraryEmptyState(
+    isVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(0.8f)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.List,
+                    contentDescription = null,
+                    modifier = Modifier.size(96.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(id = R.string.library_empty),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(id = R.string.library_empty_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
