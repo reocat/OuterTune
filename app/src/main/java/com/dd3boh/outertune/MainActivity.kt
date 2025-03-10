@@ -33,6 +33,8 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -1066,28 +1068,16 @@ class MainActivity : ComponentActivity() {
                                     else -> Screens.Home
                                 }.route,
                                 enterTransition = {
-                                    slideIntoContainer(
-                                        transitionDirection,
-                                        animationSpec = tween(200)
-                                    )
+                                    fadeIn(tween(250)) + slideInHorizontally { it / 2 }
                                 },
                                 exitTransition = {
-                                    slideOutOfContainer(
-                                        transitionDirection,
-                                        animationSpec = tween(200)
-                                    )
+                                    fadeOut(tween(200)) + slideOutHorizontally { -it / 2 }
                                 },
                                 popEnterTransition = {
-                                    slideIntoContainer(
-                                        AnimatedContentTransitionScope.SlideDirection.Right,
-                                        animationSpec = tween(200)
-                                    )
+                                    fadeIn(tween(250)) + slideInHorizontally { -it / 2 }
                                 },
                                 popExitTransition = {
-                                    slideOutOfContainer(
-                                        AnimatedContentTransitionScope.SlideDirection.Right,
-                                        animationSpec = tween(200)
-                                    )
+                                    fadeOut(tween(200)) + slideOutHorizontally { it / 2 }
                                 },
                                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                             ) {
