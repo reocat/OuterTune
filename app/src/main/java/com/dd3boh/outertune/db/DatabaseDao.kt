@@ -461,4 +461,7 @@ AND NOT EXISTS (
             }
         }
     }
+    
+    @Query("SELECT * FROM RecentActivityItem ORDER BY date DESC")
+    fun recentActivity(): Flow<List<RecentActivityItem>>
 }
