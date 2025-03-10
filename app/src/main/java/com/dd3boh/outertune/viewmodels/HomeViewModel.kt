@@ -3,11 +3,12 @@ package com.dd3boh.outertune.viewmodels
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dd3boh.outertune.constants.PlaylistFilter
+import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.LocalItem
-import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.models.SimilarRecommendation
@@ -24,9 +25,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,8 +47,10 @@ class HomeViewModel @Inject constructor(
     val accountPlaylists = MutableStateFlow<List<PlaylistItem>?>(null)
     val homePage = MutableStateFlow<HomePage?>(null)
     val explorePage = MutableStateFlow<ExplorePage?>(null)
-    val recentActivity = MutableStateFlow<List<YTItem>?>(null)
-    val recentPlaylistsDb = MutableStateFlow<List<Playlist>?>(null)
+    val playlists = database.playlists(PlaylistFilter.LIBRARY, PlaylistSortType.NAME, true)
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
+    val recentActivity = database.recentActivity()
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val allLocalItems = MutableStateFlow<List<LocalItem>>(emptyList())
     val allYtItems = MutableStateFlow<List<YTItem>>(emptyList())
@@ -150,18 +153,7 @@ class HomeViewModel @Inject constructor(
             reportException(it)
         }
 
-        YouTube.libraryRecentActivity().onSuccess { page ->
-            recentActivity.value = page.items.take(9).drop(1)
-
-            recentActivity.value!!.filterIsInstance<PlaylistItem>().forEach { item ->
-                val playlist = database.playlistByBrowseId(item.id).firstOrNull()
-                if (playlist != null) {
-                    recentPlaylistsDb.update { list ->
-                        list?.plusElement(playlist) ?: listOf(playlist)
-                    }
-                }
-            }
-        }
+        syncUtils.syncRecentActivity()
 
         allYtItems.value = similarRecommendations.value?.flatMap { it.items }.orEmpty() +
                 homePage.value?.sections?.flatMap { it.items }.orEmpty() +
