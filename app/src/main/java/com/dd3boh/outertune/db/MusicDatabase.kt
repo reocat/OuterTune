@@ -30,6 +30,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.PlaylistSongMapPreview
 import com.dd3boh.outertune.db.entities.QueueEntity
 import com.dd3boh.outertune.db.entities.QueueSongMap
+import com.dd3boh.outertune.db.entities.RecentActivityItem
 import com.dd3boh.outertune.db.entities.RelatedSongMap
 import com.dd3boh.outertune.db.entities.SearchHistory
 import com.dd3boh.outertune.db.entities.SongAlbumMap
@@ -90,7 +91,8 @@ class MusicDatabase(
         LyricsEntity::class,
         PlayCountEntity::class,
         Event::class,
-        RelatedSongMap::class
+        RelatedSongMap::class,
+        RecentActivityItem::class
     ],
     views = [
         SortedSongArtistMap::class,
