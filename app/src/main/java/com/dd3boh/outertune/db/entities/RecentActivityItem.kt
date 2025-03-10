@@ -3,6 +3,7 @@ package com.dd3boh.outertune.db.entities
 import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.time.LocalDateTime
 
 @Immutable
 enum class RecentActivityType {
@@ -20,5 +21,6 @@ data class RecentActivityItem(
     val type: RecentActivityType,
     val playlistId: String?,
     val radioPlaylistId: String?,
-    val shufflePlaylistId: String?
+    val shufflePlaylistId: String?,
+    val date: LocalDateTime = LocalDateTime.now()
 )

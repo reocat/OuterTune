@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 18,
-    "identityHash": "ce912f1cdab6c12abab46bd41ceb779d",
+    "identityHash": "520514ada06ccb06ffaee555e70d74d9",
     "entities": [
       {
         "tableName": "song",
@@ -1244,7 +1244,7 @@
       },
       {
         "tableName": "RecentActivityItem",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `thumbnail` TEXT, `explicit` INTEGER NOT NULL, `shareLink` TEXT NOT NULL, `type` TEXT NOT NULL, `playlistId` TEXT, `radioPlaylistId` TEXT, `shufflePlaylistId` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `thumbnail` TEXT, `explicit` INTEGER NOT NULL, `shareLink` TEXT NOT NULL, `type` TEXT NOT NULL, `playlistId` TEXT, `radioPlaylistId` TEXT, `shufflePlaylistId` TEXT, `date` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -1299,6 +1299,12 @@
             "columnName": "shufflePlaylistId",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -1327,7 +1333,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ce912f1cdab6c12abab46bd41ceb779d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '520514ada06ccb06ffaee555e70d74d9')"
     ]
   }
 }
