@@ -71,6 +71,9 @@ import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.LocalItem
 import com.dd3boh.outertune.db.entities.Playlist
+import com.dd3boh.outertune.db.entities.RecentActivityType.ALBUM
+import com.dd3boh.outertune.db.entities.RecentActivityType.ARTIST
+import com.dd3boh.outertune.db.entities.RecentActivityType.PLAYLIST
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -137,8 +140,8 @@ fun HomeScreen(
     val accountPlaylists by viewModel.accountPlaylists.collectAsState()
     val homePage by viewModel.homePage.collectAsState()
     val explorePage by viewModel.explorePage.collectAsState()
+    val playlists by viewModel.playlists.collectAsState()
     val recentActivity by viewModel.recentActivity.collectAsState()
-    val recentPlaylistsDb by viewModel.recentPlaylistsDb.collectAsState()
 
     val allLocalItems by viewModel.allLocalItems.collectAsState()
     val allYtItems by viewModel.allYtItems.collectAsState()
@@ -421,9 +424,9 @@ fun HomeScreen(
                             YouTubeCardItem(
                                 item,
                                 onClick = {
-                                    when (item) {
-                                        is PlaylistItem -> {
-                                            val playlistDb = recentPlaylistsDb
+                                    when (item.type) {
+                                        PLAYLIST -> {
+                                            val playlistDb = playlists
                                                 ?.firstOrNull { it.playlist.browseId == item.id }
 
                                             if (playlistDb != null && playlistDb.songCount != 0)
@@ -432,22 +435,18 @@ fun HomeScreen(
                                                 navController.navigate("online_playlist/${item.id}")
                                         }
 
-                                        is AlbumItem -> navController.navigate("album/${item.id}")
+                                        ALBUM -> navController.navigate("album/${item.id}")
 
-                                        is ArtistItem -> navController.navigate("artist/${item.id}")
-
-                                        else -> {}
+                                        ARTIST -> navController.navigate("artist/${item.id}")
                                     }
                                 },
                                 isPlaying = isPlaying,
-                                isActive = when (item) {
-                                    is PlaylistItem -> queuePlaylistId == item.id
-                                    is AlbumItem -> queuePlaylistId == item.playlistId
-                                    is ArtistItem -> (queuePlaylistId == item.radioEndpoint?.playlistId ||
-                                            queuePlaylistId == item.shuffleEndpoint?.playlistId ||
-                                            queuePlaylistId == item.playEndpoint?.playlistId)
-
-                                    else -> false
+                                isActive = when (item.type) {
+                                    PLAYLIST -> queuePlaylistId == item.id
+                                    ALBUM -> queuePlaylistId == item.playlistId
+                                    ARTIST -> (queuePlaylistId == item.radioPlaylistId ||
+                                            queuePlaylistId == item.shufflePlaylistId ||
+                                            queuePlaylistId == item.playlistId)
                                 },
                             )
                         }
