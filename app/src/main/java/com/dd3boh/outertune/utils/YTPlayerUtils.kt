@@ -46,14 +46,14 @@ object YTPlayerUtils {
      * - the correct metadata (like loudnessDb)
      * - premium formats
      */
-    private val MAIN_CLIENT: YouTubeClient = WEB_REMIX
+    private val MAIN_CLIENT: YouTubeClient = IOS
 
     /**
      * Clients used for fallback streams in case the streams of the main client do not work.
      */
     private val STREAM_FALLBACK_CLIENTS: Array<YouTubeClient> = arrayOf(
         TVHTML5_SIMPLY_EMBEDDED_PLAYER,
-        IOS,
+        WEB_REMIX,
     )
 
     data class PlaybackData(
