@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.drawable.BitmapDrawable
 import android.os.PowerManager
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
@@ -20,6 +21,8 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -629,11 +632,27 @@ fun BottomSheetPlayer(
             enter = fadeIn(tween(1000)),
             exit = fadeOut()
         ) {
-            if (playerBackground == PlayerBackgroundStyle.BLUR) {
-                if (mediaMetadata?.isLocal == true) {
-                    mediaMetadata?.let {
-                        AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(it.localPath) },
+            AnimatedContent(
+                targetState = mediaMetadata,
+                transitionSpec = {
+                    fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+                }
+            ) { metadata ->
+                if (playerBackground == PlayerBackgroundStyle.BLUR) {
+                    if (metadata?.isLocal == true) {
+                        metadata.let {
+                            AsyncImageLocal(
+                                image = { imageCache.getLocalThumbnail(it.localPath) },
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .blur(200.dp)
+                            )
+                        }
+                    } else {
+                        AsyncImage(
+                            model = metadata?.thumbnailUrl,
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds,
                             modifier = Modifier
@@ -641,36 +660,27 @@ fun BottomSheetPlayer(
                                 .blur(200.dp)
                         )
                     }
-                } else {
-                    AsyncImage(
-                        model = mediaMetadata?.thumbnailUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.FillBounds,
+
+                    Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .blur(200.dp)
+                            .background(Color.Black.copy(alpha = 0.3f))
+                    )
+                } else if (playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.size >= 2) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.verticalGradient(gradientColors), alpha = 0.8f)
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f))
-                )
-            } else if (playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.size >= 2) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Brush.verticalGradient(gradientColors), alpha = 0.8f)
-                )
-            }
-
-            if (playerBackground != PlayerBackgroundStyle.DEFAULT && showLyrics) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f))
-                )
+                if (playerBackground != PlayerBackgroundStyle.DEFAULT && showLyrics) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f))
+                    )
+                }
             }
         }
 
