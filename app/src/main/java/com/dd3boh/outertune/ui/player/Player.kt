@@ -631,7 +631,7 @@ fun BottomSheetPlayer(
         AnimatedVisibility(
             visible = !powerManager.isPowerSaveMode && state.isExpanded,
             enter = fadeIn(tween(1000)),
-            exit = fadeOut()
+            exit = fadeOut(tween(1000))
         ) {
             AnimatedContent(
                 targetState = mediaMetadata,
