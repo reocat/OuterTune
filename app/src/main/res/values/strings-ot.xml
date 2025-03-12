@@ -195,6 +195,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="dev_settings_title">Enable developer settings</string>
     <string name="dev_settings_description">Reveals additional advanced settings intended for development use</string>
 
+    <string name="swipe_to_skip_title">Swipe horizontally to change song</string>
+    <string name="swipe_to_skip_description">Enable swiping horizontally in the player to switch songs</string>
+
     <!-- Setup wizard -->
     <string name="oobe_welcome_message">Welcome to OuterTune</string>
     <string name="oobe_use_backup">I have a backup</string>

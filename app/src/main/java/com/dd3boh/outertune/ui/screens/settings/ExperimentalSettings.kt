@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.WarningAmber
@@ -67,6 +68,7 @@ import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerImplKey
+import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
@@ -94,6 +96,7 @@ fun ExperimentalSettings(
     val coroutineScope = rememberCoroutineScope()
 
     // state variables and such
+    val (swipeToSkip, onSwipeToSkipChange) = rememberPreference(SwipeToSkip, defaultValue = true)
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
 
@@ -117,6 +120,13 @@ fun ExperimentalSettings(
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
             .verticalScroll(rememberScrollState())
     ) {
+        SwitchPreference(
+            title = { Text(stringResource(R.string.swipe_to_skip_title)) },
+            description = stringResource(R.string.swipe_to_skip_description),
+            icon = { Icon(Icons.Rounded.Swipe, null) },
+            checked = swipeToSkip,
+            onCheckedChange = onSwipeToSkipChange
+        )
 
         // dev settings
         SwitchPreference(
