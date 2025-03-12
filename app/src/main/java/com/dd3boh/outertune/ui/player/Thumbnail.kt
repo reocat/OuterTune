@@ -38,6 +38,7 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.Lyrics
 import com.dd3boh.outertune.ui.utils.imageCache
@@ -48,12 +49,15 @@ fun Thumbnail(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
     showLyricsOnClick: Boolean = false,
+    customMediaMetadata: MediaMetadata? = null
 ) {
     val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val currentView = LocalView.current
-    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    val playerMediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val error by playerConnection.error.collectAsState()
+
+    val mediaMetadata = customMediaMetadata ?: playerMediaMetadata
 
     var showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
 
