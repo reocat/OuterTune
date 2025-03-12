@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyGridLayoutInfo
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.ui.util.fastForEach
+import kotlin.math.abs
 
 @ExperimentalFoundationApi
 fun SnapLayoutInfoProvider(
@@ -14,6 +15,7 @@ fun SnapLayoutInfoProvider(
     positionInLayout: (layoutSize: Float, itemSize: Float) -> Float = { layoutSize, itemSize ->
         (layoutSize / 2f - itemSize / 2f)
     },
+    velocityThreshold: Float = 1000f,
 ): SnapLayoutInfoProvider = object : SnapLayoutInfoProvider {
     private val layoutInfo: LazyGridLayoutInfo
         get() = lazyGridState.layoutInfo
@@ -21,6 +23,15 @@ fun SnapLayoutInfoProvider(
     override fun calculateApproachOffset(velocity: Float, decayOffset: Float): Float = 0f
     override fun calculateSnapOffset(velocity: Float): Float {
         val bounds = calculateSnappingOffsetBounds()
+
+        // Only snap when velocity exceeds threshold
+        if (abs(velocity) < velocityThreshold) {
+            if (abs(bounds.start) < abs(bounds.endInclusive))
+                return bounds.start
+
+            return bounds.endInclusive
+        }
+
         return when {
             velocity < 0 -> bounds.start
             velocity > 0 -> bounds.endInclusive
