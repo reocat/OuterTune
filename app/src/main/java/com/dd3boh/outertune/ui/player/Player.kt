@@ -197,7 +197,7 @@ fun BottomSheetPlayer(
 
     LaunchedEffect(mediaMetadata) {
         // When the current media changes, scroll to it
-        thumbnailLazyGridState.scrollToItem(maxOf(0, mediaItems.indexOf(mediaMetadata)))
+        thumbnailLazyGridState.animateScrollToItem(maxOf(0, mediaItems.indexOf(mediaMetadata)))
     }
 
     val horizontalLazyGridItemWidthFactor = 1f
