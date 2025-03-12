@@ -184,8 +184,11 @@ fun BottomSheetPlayer(
     val currentMediaIndex = mediaItems.indexOf(mediaMetadata)
 
     val currentItem by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemIndex } }
+    val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
 
-    LaunchedEffect(currentItem) {
+    LaunchedEffect(itemScrollOffset) {
+        if (itemScrollOffset != 0) return@LaunchedEffect
+
         if (currentItem > currentMediaIndex)
             playerConnection.player.seekToNext()
         else if (currentItem < currentMediaIndex)
