@@ -308,7 +308,7 @@ fun PlayerMenu(
                         TextFieldDialog(
                             initialTextFieldValue = TextFieldValue(
                                 text = sleepTimerValue.roundToInt().toString(),
-                                selection = TextRange(sleepTimerValue.roundToInt().toString().length),
+                                selection = TextRange(0, sleepTimerValue.roundToInt().toString().length),
                             ),
                             placeholder = { pluralString },
                             singleLine = true,
