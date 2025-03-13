@@ -313,15 +313,8 @@ fun PlayerMenu(
                             placeholder = { pluralString },
                             singleLine = true,
                             keyboardType = KeyboardType.Number,
-                            isInputValid = {
-                                it.isNotBlank() && try {
-                                    parseFloat(it)
-                                    true
-                                } catch (e: Exception) {
-                                    false
-                                }
-                            },
-                            onDone = { sleepTimerValue = parseFloat(it) },
+                            isInputValid = { it.toFloatOrNull() != null },
+                            onDone = { sleepTimerValue = it.toFloatOrNull() ?: sleepTimerValue },
                             onDismiss = { showDialog = false }
                         )
                     }
