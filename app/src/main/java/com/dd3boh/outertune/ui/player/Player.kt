@@ -667,21 +667,30 @@ fun BottomSheetPlayer(
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = 0.3f))
                     )
-                } else if (playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.size >= 2) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Brush.verticalGradient(gradientColors), alpha = 0.8f)
-                    )
                 }
+            }
 
-                if (playerBackground != PlayerBackgroundStyle.DEFAULT && showLyrics) {
+            AnimatedContent(
+                targetState = gradientColors,
+                transitionSpec = {
+                    fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+                }
+            ) { colors ->
+                if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f))
+                            .background(Brush.verticalGradient(colors), alpha = 0.8f)
                     )
                 }
+            }
+
+            if (playerBackground != PlayerBackgroundStyle.DEFAULT && showLyrics) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
+                )
             }
         }
 
