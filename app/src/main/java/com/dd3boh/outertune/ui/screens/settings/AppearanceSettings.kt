@@ -301,20 +301,6 @@ fun AppearanceSettings(
             onCheckedChange = onDynamicThemeChange
         )
         EnumListPreference(
-            title = { Text(stringResource(R.string.player_background_style)) },
-            icon = { Icon(Icons.Rounded.BlurOn, null) },
-            selectedValue = playerBackground,
-            onValueSelected = onPlayerBackgroundChange,
-            valueText = {
-                when (it) {
-                    PlayerBackgroundStyle.DEFAULT -> stringResource(R.string.player_background_default)
-                    PlayerBackgroundStyle.GRADIENT -> stringResource(R.string.player_background_gradient)
-                    PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
-                }
-            },
-            values = availableBackgroundStyles
-        )
-        EnumListPreference(
             title = { Text(stringResource(R.string.dark_theme)) },
             icon = { Icon(Icons.Rounded.DarkMode, null) },
             selectedValue = darkMode,
@@ -332,6 +318,20 @@ fun AppearanceSettings(
             icon = { Icon(Icons.Rounded.Contrast, null) },
             checked = pureBlack,
             onCheckedChange = onPureBlackChange
+        )
+        EnumListPreference(
+            title = { Text(stringResource(R.string.player_background_style)) },
+            icon = { Icon(Icons.Rounded.BlurOn, null) },
+            selectedValue = playerBackground,
+            onValueSelected = onPlayerBackgroundChange,
+            valueText = {
+                when (it) {
+                    PlayerBackgroundStyle.DEFAULT -> stringResource(R.string.player_background_default)
+                    PlayerBackgroundStyle.GRADIENT -> stringResource(R.string.player_background_gradient)
+                    PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
+                }
+            },
+            values = availableBackgroundStyles
         )
 
         PreferenceGroupTitle(
