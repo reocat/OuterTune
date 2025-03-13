@@ -69,6 +69,7 @@ import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -190,6 +191,7 @@ fun TextFieldDialog(
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else 10,
     isInputValid: (String) -> Boolean = { it.isNotEmpty() },
+    keyboardType: KeyboardType = KeyboardType.Text,
     onDone: (String) -> Unit,
     onDismiss: () -> Unit,
     extraContent: (@Composable () -> Unit)? = null,
@@ -235,7 +237,10 @@ fun TextFieldDialog(
             singleLine = singleLine,
             maxLines = maxLines,
             colors = OutlinedTextFieldDefaults.colors(),
-            keyboardOptions = KeyboardOptions(imeAction = if (singleLine) ImeAction.Done else ImeAction.None),
+            keyboardOptions = KeyboardOptions(
+                imeAction = if (singleLine) ImeAction.Done else ImeAction.None,
+                keyboardType = keyboardType
+            ),
             keyboardActions = KeyboardActions(
                 onDone = {
                     onDone(textFieldValue.text)
