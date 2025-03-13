@@ -170,6 +170,7 @@ import com.dd3boh.outertune.ui.screens.AlbumScreen
 import com.dd3boh.outertune.ui.screens.HistoryScreen
 import com.dd3boh.outertune.ui.screens.HomeScreen
 import com.dd3boh.outertune.ui.screens.LoginScreen
+import com.dd3boh.outertune.ui.screens.MixedPlaylistScreen
 import com.dd3boh.outertune.ui.screens.MoodAndGenresScreen
 import com.dd3boh.outertune.ui.screens.NewReleaseScreen
 import com.dd3boh.outertune.ui.screens.Screens
@@ -1113,6 +1114,9 @@ class MainActivity : ComponentActivity() {
                                 }
                                 composable("account") {
                                     AccountScreen(navController, scrollBehavior)
+                                }
+                                composable("mixed_for_you") {
+                                    MixedPlaylistScreen(navController, scrollBehavior)
                                 }
                                 composable("new_release") {
                                     NewReleaseScreen(navController, scrollBehavior)
