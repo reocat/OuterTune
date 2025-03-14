@@ -15,16 +15,23 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.OndemandVideo
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +86,8 @@ fun Thumbnail(
                 .fillMaxSize()
                 .statusBarsPadding()
         ) {
+            var isRectangularImage by remember { mutableStateOf(false) }
+
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -86,35 +95,59 @@ fun Thumbnail(
                     .fillMaxSize()
                     .padding(horizontal = PlayerHorizontalPadding)
             ) {
-                if (mediaMetadata?.isLocal == true) {
-                    // local thumbnail arts
-                    mediaMetadata?.let { // required to re render when song changes
-                        AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(it.localPath) },
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .weight(1f, false)
+                ) {
+                    if (mediaMetadata?.isLocal == true) {
+                        // local thumbnail arts
+                        mediaMetadata.let { // required to re render when song changes
+                            val image = imageCache.getLocalThumbnail(it.localPath, true)
+                            if (image != null)
+                                isRectangularImage = image.width.toFloat() / image.height != 1f
+
+                            AsyncImageLocal(
+                                image = { image },
+                                contentDescription = null,
+                                contentScale = contentScale,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                                    .aspectRatio(ratio = 1f)
+                                    .clickable(enabled = showLyricsOnClick) {
+                                        showLyrics = !showLyrics
+                                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    }
+                            )
+                        }
+                    } else {
+                        // YTM thumbnail arts
+                        AsyncImage(
+                            model = mediaMetadata?.thumbnailUrl,
                             contentDescription = null,
                             contentScale = contentScale,
+                            onSuccess = { success ->
+                                val width = success.result.drawable.intrinsicWidth
+                                val height = success.result.drawable.intrinsicHeight
+
+                                isRectangularImage = width.toFloat() / height != 1f
+                            },
                             modifier = Modifier
-                                .weight(1f, false)
+                                .aspectRatio(1f)
                                 .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
-                                .aspectRatio(ratio = 1f)
-                                .clickable(enabled = showLyricsOnClick) {
-                                    showLyrics = !showLyrics
-                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                                }
+                                .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics }
                         )
                     }
-                } else {
-                    // YTM thumbnail arts
-                    AsyncImage(
-                        model = mediaMetadata?.thumbnailUrl,
-                        contentDescription = null,
-                        contentScale = contentScale,
-                        modifier = Modifier
-                            .weight(1f, false)
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
-                            .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics }
-                    )
+
+                    if (isRectangularImage) {
+                        Icon(
+                            imageVector = Icons.Rounded.OndemandVideo,
+                            contentDescription = "Video icon",
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .size(maxWidth / 10)
+                                .padding(8.dp)
+                        )
+                    }
                 }
             }
         }
