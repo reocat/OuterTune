@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.OndemandVideo
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Replay
@@ -43,6 +45,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -152,14 +155,23 @@ fun MiniMediaInfo(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        Box(modifier = Modifier.padding(6.dp)) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .padding(6.dp)
+                .size(48.dp)
+        ) {
+            var isRectangularImage by remember { mutableStateOf(false) }
+
             if (mediaMetadata.isLocal) {
                 // local thumbnail arts
+                val image = imageCache.getLocalThumbnail(mediaMetadata.localPath, true)
+                if (image != null)
+                    isRectangularImage = image.width.toFloat() / image.height != 1f
+
                 AsyncImageLocal(
-                    image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, true) },
+                    image = { image },
                     contentDescription = null,
                     modifier = Modifier
-                        .size(48.dp)
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
                         .aspectRatio(ratio = 1f)
                 )
@@ -169,12 +181,29 @@ fun MiniMediaInfo(
                     model = mediaMetadata.thumbnailUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    onSuccess = { success ->
+                        val width = success.result.drawable.intrinsicWidth
+                        val height = success.result.drawable.intrinsicHeight
+
+                        isRectangularImage = width.toFloat() / height != 1f
+                    },
                     modifier = Modifier
-                        .size(48.dp)
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
                 )
             }
+
+            if (isRectangularImage) {
+                Icon(
+                    imageVector = Icons.Rounded.OndemandVideo,
+                    contentDescription = "Video icon",
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 2.dp)
+                        .size(maxWidth / 3)
+                )
+            }
+
             androidx.compose.animation.AnimatedVisibility(
                 visible = error != null || isWaitingForNetwork,
                 enter = fadeIn(),
@@ -182,7 +211,6 @@ fun MiniMediaInfo(
             ) {
                 Box(
                     Modifier
-                        .size(48.dp)
                         .background(
                             color = Color.Black.copy(alpha = 0.6f),
                             shape = RoundedCornerShape(ThumbnailCornerRadius)
