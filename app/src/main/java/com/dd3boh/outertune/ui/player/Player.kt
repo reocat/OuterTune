@@ -730,6 +730,7 @@ fun BottomSheetPlayer(
                                     modifier = Modifier
                                         .width(horizontalLazyGridItemWidth)
                                         .animateContentSize(),
+                                    contentScale = ContentScale.Crop,
                                     showLyricsOnClick = true,
                                     customMediaMetadata = it
                                 )
@@ -784,6 +785,7 @@ fun BottomSheetPlayer(
                                     modifier = Modifier
                                         .width(horizontalLazyGridItemWidth)
                                         .animateContentSize(),
+                                    contentScale = ContentScale.Crop,
                                     sliderPositionProvider = { sliderPosition },
                                     showLyricsOnClick = true,
                                     customMediaMetadata = it
