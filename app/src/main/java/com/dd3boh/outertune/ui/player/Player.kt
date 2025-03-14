@@ -682,6 +682,11 @@ fun BottomSheetPlayer(
                             .fillMaxSize()
                             .background(Brush.verticalGradient(colors), alpha = 0.8f)
                     )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White.copy(alpha = 0.15f))
+                    )
                 }
             }
 

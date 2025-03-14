@@ -61,7 +61,7 @@ fun OuterTuneTheme(
 
 fun Bitmap.extractThemeColor(): Color {
     val colorsToPopulation = Palette.from(this)
-        .maximumColorCount(8)
+        .maximumColorCount(64)
         .generate()
         .swatches
         .associate { it.rgb to it.population }
@@ -71,7 +71,7 @@ fun Bitmap.extractThemeColor(): Color {
 
 fun Bitmap.extractGradientColors(): List<Color> {
     val extractedColors = Palette.from(this)
-        .maximumColorCount(16)
+        .maximumColorCount(64)
         .generate()
         .swatches
         .associate { it.rgb to it.population }
