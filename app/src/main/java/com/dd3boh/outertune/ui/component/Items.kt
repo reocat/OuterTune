@@ -50,6 +50,7 @@ import androidx.compose.material.icons.rounded.FolderCopy
 import androidx.compose.material.icons.rounded.LibraryAddCheck
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.OfflinePin
+import androidx.compose.material.icons.rounded.OndemandVideo
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -1422,10 +1423,12 @@ fun ItemThumbnail(
     // ehhhh make a nicer thing for later
     val context = LocalContext.current
 
-    Box(
+    BoxWithConstraints(
         contentAlignment = Alignment.Center,
         modifier = modifier
     ) {
+        var isRectangularImage by remember { mutableStateOf(false) }
+
         if (albumIndex != null) {
             AnimatedVisibility(
                 visible = !isActive,
@@ -1438,9 +1441,13 @@ fun ItemThumbnail(
                 )
             }
         } else if (thumbnailUrl?.startsWith("/storage") == true) {
+            val image = imageCache.getLocalThumbnail(thumbnailUrl, true)
+            if (image != null)
+                isRectangularImage = image.width.toFloat() / image.height != 1f
+
             // local thumbnail arts
             AsyncImageLocal(
-                image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
+                image = { image },
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -1453,9 +1460,26 @@ fun ItemThumbnail(
                 model = thumbnailUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                onSuccess = { success ->
+                    val width = success.result.drawable.intrinsicWidth
+                    val height = success.result.drawable.intrinsicHeight
+
+                    isRectangularImage = width.toFloat() / height != 1f
+                },
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(shape)
+            )
+        }
+
+        if (isRectangularImage) {
+            Icon(
+                imageVector = Icons.Rounded.OndemandVideo,
+                contentDescription = "Video icon",
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 2.dp)
+                    .size(maxWidth / 3)
             )
         }
 
