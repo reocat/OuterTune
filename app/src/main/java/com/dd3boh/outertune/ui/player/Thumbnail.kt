@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
@@ -49,6 +50,7 @@ fun Thumbnail(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
     showLyricsOnClick: Boolean = false,
+    contentScale: ContentScale = ContentScale.Fit,
     customMediaMetadata: MediaMetadata? = null
 ) {
     val haptic = LocalHapticFeedback.current
@@ -90,6 +92,7 @@ fun Thumbnail(
                         AsyncImageLocal(
                             image = { imageCache.getLocalThumbnail(it.localPath) },
                             contentDescription = null,
+                            contentScale = contentScale,
                             modifier = Modifier
                                 .weight(1f, false)
                                 .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
@@ -105,6 +108,7 @@ fun Thumbnail(
                     AsyncImage(
                         model = mediaMetadata?.thumbnailUrl,
                         contentDescription = null,
+                        contentScale = contentScale,
                         modifier = Modifier
                             .weight(1f, false)
                             .aspectRatio(1f)
