@@ -1442,6 +1442,7 @@ fun ItemThumbnail(
             AsyncImageLocal(
                 image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(shape)
@@ -1451,6 +1452,7 @@ fun ItemThumbnail(
             AsyncImage(
                 model = thumbnailUrl,
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(shape)
