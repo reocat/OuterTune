@@ -115,7 +115,6 @@ class MusicDatabase(
         AutoMigration(from = 12, to = 13, spec = Migration12To13::class), // Migration from InnerTune
         AutoMigration(from = 13, to = 14), // Initial queue as database
         AutoMigration(from = 17, to = 18, spec = Migration17To18::class), // Fix Room nonsense
-        AutoMigration(from = 18, to = 19)
     ]
 )
 @TypeConverters(Converters::class)
@@ -132,6 +131,7 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_14_15)
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
+                    .addMigrations(MIGRATION_18_19)
                     .build()
             )
     }
@@ -458,6 +458,26 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
                 )
             )
         }
+    }
+}
+
+val MIGRATION_18_19 = object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `RecentActivityItem` (
+                `date` INTEGER NOT NULL,
+                `explicit` INTEGER NOT NULL,
+                `id` TEXT NOT NULL,
+                `playlistId` TEXT,
+                `radioPlaylistId` TEXT,
+                `shareLink` TEXT NOT NULL,
+                `shufflePlaylistId` TEXT,
+                `thumbnail` TEXT,
+                `title` TEXT NOT NULL,
+                `type` TEXT NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+        """)
     }
 }
 
