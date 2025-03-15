@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -71,6 +72,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -139,6 +141,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.sqrt
 
 const val ActiveBoxAlpha = 0.6f
 
@@ -1410,7 +1413,6 @@ fun YouTubeCardItem(
     }
 }
 
-
 @Composable
 fun ItemThumbnail(
     thumbnailUrl: String?,
@@ -1473,14 +1475,28 @@ fun ItemThumbnail(
         }
 
         if (isRectangularImage) {
-            Icon(
-                imageVector = Icons.Rounded.OndemandVideo,
-                contentDescription = "Video icon",
+            val radial = Brush.radialGradient(
+                0.0f to Color.Black.copy(alpha = 0.5f),
+                0.8f to Color.Black.copy(alpha = 0.05f),
+                1.0f to Color.Transparent,
+                radius = (sqrt(maxWidth.value)) * 9f - 28f
+            )
+
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 2.dp)
-                    .size(maxWidth / 3)
-            )
+                    .size((maxWidth / 3) + 6.dp)
+                    .offset(x = -maxWidth / 25)
+                    .background(brush = radial)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.OndemandVideo,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.padding(3.dp)
+                )
+            }
         }
 
         PlayingIndicatorBox(

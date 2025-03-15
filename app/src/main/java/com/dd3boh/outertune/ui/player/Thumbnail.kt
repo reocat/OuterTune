@@ -12,6 +12,7 @@ package com.dd3boh.outertune.ui.player
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -36,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -139,14 +143,27 @@ fun Thumbnail(
                     }
 
                     if (isRectangularImage) {
-                        Icon(
-                            imageVector = Icons.Rounded.OndemandVideo,
-                            contentDescription = "Video icon",
+                        val radial = Brush.radialGradient(
+                            0.0f to Color.Black.copy(alpha = 0.5f),
+                            0.8f to Color.Black.copy(alpha = 0.05f),
+                            1.0f to Color.Transparent,
+                            radius = 57f
+                        )
+
+                        Box(
+                            contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
-                                .size(maxWidth / 10)
-                                .padding(8.dp)
-                        )
+                                .size(maxWidth / 8)
+                                .offset(x = -maxWidth / 75)
+                                .background(brush = radial, shape = RoundedCornerShape(ThumbnailCornerRadius * 2))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.OndemandVideo,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
             }
