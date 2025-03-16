@@ -141,7 +141,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.sqrt
 
 const val ActiveBoxAlpha = 0.6f
 
@@ -1479,7 +1478,6 @@ fun ItemThumbnail(
                 0.0f to Color.Black.copy(alpha = 0.5f),
                 0.8f to Color.Black.copy(alpha = 0.05f),
                 1.0f to Color.Transparent,
-                radius = (sqrt(maxWidth.value)) * 9f - 28f
             )
 
             Box(

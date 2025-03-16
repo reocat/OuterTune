@@ -147,7 +147,6 @@ fun Thumbnail(
                             0.0f to Color.Black.copy(alpha = 0.5f),
                             0.8f to Color.Black.copy(alpha = 0.05f),
                             1.0f to Color.Transparent,
-                            radius = 57f
                         )
 
                         Box(
