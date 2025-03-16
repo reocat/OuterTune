@@ -367,7 +367,7 @@ fun AppearanceSettings(
             }
         )
 
-        if (showTabArrangement)
+        if (showTabArrangement) {
             ActionPromptDialog(
                 title = stringResource(R.string.tab_arrangement),
                 onDismiss = { showTabArrangement = false },
@@ -447,13 +447,14 @@ fun AppearanceSettings(
 
                 InfoLabel(stringResource(R.string.tab_arrangement_home_required))
             }
+        }
 
         EnumListPreference(
             title = { Text(stringResource(R.string.default_open_tab)) },
             icon = { Icon(Icons.Rounded.Tab, null) },
             selectedValue = defaultOpenTab,
             onValueSelected = onDefaultOpenTabChange,
-            values = NavigationTab.entries.filter { it != NavigationTab.NULL },
+            values = NavigationTab.entries.filter { decodeTabString(enabledTabs).contains(it) },
             valueText = {
                 when (it) {
                     NavigationTab.HOME -> stringResource(R.string.home)
