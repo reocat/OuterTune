@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Info
@@ -208,7 +209,7 @@ fun MiniMediaInfo(
                         .align(Alignment.BottomEnd)
                         .size((maxWidth / 3) + 6.dp)
                         .offset(x = -maxWidth / 25)
-                        .background(brush = radial, shape = RoundedCornerShape(ThumbnailCornerRadius * 2))
+                        .background(brush = radial, shape = CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.OndemandVideo,
