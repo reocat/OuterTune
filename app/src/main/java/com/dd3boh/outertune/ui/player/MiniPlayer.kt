@@ -69,7 +69,6 @@ import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.utils.imageCache
-import kotlin.math.sqrt
 
 @Composable
 fun MiniPlayer(
@@ -201,7 +200,6 @@ fun MiniMediaInfo(
                     0.0f to Color.Black.copy(alpha = 0.5f),
                     0.8f to Color.Black.copy(alpha = 0.05f),
                     1.0f to Color.Transparent,
-                    radius = (sqrt(maxWidth.value)) * 9f - 28f
                 )
 
                 Box(
