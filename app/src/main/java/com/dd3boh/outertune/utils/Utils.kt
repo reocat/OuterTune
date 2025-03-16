@@ -29,6 +29,7 @@ fun decodeTabString(str: String): List<NavigationTab> {
             'A' -> NavigationTab.ARTIST
             'B' -> NavigationTab.ALBUM
             'L' -> NavigationTab.PLAYLIST
+            'M' -> NavigationTab.LIBRARY
             else -> {
                 NavigationTab.NULL // this case should never happen. Just shut the compiler up
             }
@@ -51,6 +52,7 @@ fun encodeTabString(list: List<NavigationTab>): String {
             NavigationTab.ARTIST -> "A"
             NavigationTab.ALBUM -> "B"
             NavigationTab.PLAYLIST -> "L"
+            NavigationTab.LIBRARY -> "M"
             else -> { "" }
         }
     }

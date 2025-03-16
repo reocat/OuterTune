@@ -37,8 +37,7 @@ sealed class Screens(
     data object Library : Screens(R.string.library, Icons.Rounded.LibraryMusic, "library")
 
     companion object {
-        val MainScreens = listOf(Home, Songs, Folders, Artists, Albums, Playlists)
-        val MainScreensNew = listOf(Home, Library)
+        val MainScreens = listOf(Home, Library)
 
         fun getScreens(screens: String): List<Screens> {
             val result = ArrayList<Screens>()
@@ -52,6 +51,7 @@ sealed class Screens(
                     'A' -> Artists
                     'B' -> Albums
                     'L' -> Playlists
+                    'M' -> Library
                     else -> Home
                 })
             }
