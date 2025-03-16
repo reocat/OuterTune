@@ -23,7 +23,6 @@ import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.rounded.ClearAll
 import androidx.compose.material.icons.rounded.History
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +45,6 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DisableScreenshotKey
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
-import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -54,7 +52,6 @@ import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
-import com.zionhuang.innertube.YouTube
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,10 +66,6 @@ fun PrivacySettings(
     )
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(
         key = PauseSearchHistoryKey,
-        defaultValue = false
-    )
-    val (useLoginForBrowse, onUseLoginForBrowseChange) = rememberPreference(
-        key = UseLoginForBrowse,
         defaultValue = false
     )
     val (disableScreenshot, onDisableScreenshotChange) = rememberPreference(
@@ -194,21 +187,6 @@ fun PrivacySettings(
             icon = { Icon(Icons.Default.Screenshot, null) },
             checked = disableScreenshot,
             onCheckedChange = onDisableScreenshotChange
-        )
-        
-        PreferenceGroupTitle(
-            title = stringResource(R.string.account)
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.use_login_for_browse)) },
-            description = stringResource(R.string.use_login_for_browse_desc),
-            icon = { Icon(Icons.Rounded.Person, null) },
-            checked = useLoginForBrowse,
-            onCheckedChange = {
-                YouTube.useLoginForBrowse = it
-                onUseLoginForBrowseChange(it)
-            }
         )
     }
 
