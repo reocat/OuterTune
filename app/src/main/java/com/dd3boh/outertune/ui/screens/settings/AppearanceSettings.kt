@@ -375,9 +375,8 @@ fun AppearanceSettings(
                     var encoded = encodeTabString(mutableTabs)
 
                     // reset defaultOpenTab if it got disabled
-                    if (!mutableTabs.contains(defaultOpenTab)) {
+                    if (!decodeTabString(encoded).contains(defaultOpenTab))
                         onDefaultOpenTabChange(NavigationTab.HOME)
-                    }
 
                     // home is required
                     if (!encoded.contains('H')) {
