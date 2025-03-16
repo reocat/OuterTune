@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.OndemandVideo
@@ -155,7 +156,7 @@ fun Thumbnail(
                                 .align(Alignment.BottomEnd)
                                 .size(maxWidth / 8)
                                 .offset(x = -maxWidth / 75)
-                                .background(brush = radial, shape = RoundedCornerShape(ThumbnailCornerRadius * 2))
+                                .background(brush = radial, shape = CircleShape)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.OndemandVideo,
