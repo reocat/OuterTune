@@ -174,12 +174,12 @@ fun AppearanceSettings(
 
     val mutableFilters = remember { mutableStateListOf<LibraryFilter>() }
 
-    val lazySongsListState = rememberLazyListState()
+    val lazyTabsListState = rememberLazyListState()
     var dragInfo by remember {
         mutableStateOf<Pair<Int, Int>?>(null)
     }
     val reorderableState = rememberReorderableLazyListState(
-        lazyListState = lazySongsListState,
+        lazyListState = lazyTabsListState,
         scrollThresholdPadding = WindowInsets.systemBars.add(
             WindowInsets(
                 top = ListItemHeight,
@@ -237,8 +237,12 @@ fun AppearanceSettings(
         }
     }
 
-    LaunchedEffect(showTabArrangement) {
+    LaunchedEffect(showTabArrangement, enabledTabs) {
         updateTabs()
+    }
+
+    LaunchedEffect(showFilterArrangement, enabledFilters) {
+        updateFilters()
     }
 
     var showSliderOptionDialog by rememberSaveable {
@@ -447,7 +451,7 @@ fun AppearanceSettings(
             ) {
                 // tabs list
                 LazyColumn(
-                    state = lazySongsListState,
+                    state = lazyTabsListState,
                     modifier = Modifier
                         .padding(vertical = 12.dp)
                         .border(
