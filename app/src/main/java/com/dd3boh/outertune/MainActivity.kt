@@ -172,7 +172,7 @@ import com.dd3boh.outertune.ui.screens.HomeScreen
 import com.dd3boh.outertune.ui.screens.LoginScreen
 import com.dd3boh.outertune.ui.screens.MixedPlaylistScreen
 import com.dd3boh.outertune.ui.screens.MoodAndGenresScreen
-import com.dd3boh.outertune.ui.screens.NewReleaseScreen
+import com.dd3boh.outertune.ui.screens.BrowseScreen
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.SetupWizard
 import com.dd3boh.outertune.ui.screens.StatsScreen
@@ -218,7 +218,6 @@ import com.dd3boh.outertune.ui.theme.extractThemeColor
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.appBarScrollBehavior
-import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.ui.utils.resetHeightOffset
 import com.dd3boh.outertune.utils.ActivityLauncherHelper
@@ -246,7 +245,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.internal.trimSubstring
 import java.net.URLDecoder
 import javax.inject.Inject
 
@@ -1115,13 +1113,21 @@ class MainActivity : ComponentActivity() {
                                 composable("account") {
                                     AccountScreen(navController, scrollBehavior)
                                 }
-                                composable("mixed_for_you") {
-                                    MixedPlaylistScreen(navController, scrollBehavior)
-                                }
-                                composable("new_release") {
-                                    NewReleaseScreen(navController, scrollBehavior)
-                                }
 
+                                composable(
+                                    route = "browse/{browseId}",
+                                    arguments = listOf(
+                                        navArgument("browseId") {
+                                            type = NavType.StringType
+                                        }
+                                    )
+                                ) {
+                                    BrowseScreen(
+                                        navController,
+                                        scrollBehavior,
+                                        it.arguments?.getString("browseId")
+                                    )
+                                }
                                 composable(
                                     route = "search/{query}",
                                     arguments = listOf(
