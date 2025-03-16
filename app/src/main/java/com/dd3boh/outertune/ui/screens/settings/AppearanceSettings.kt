@@ -78,6 +78,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DefaultOpenTabKey
 import com.dd3boh.outertune.constants.DynamicThemeKey
+import com.dd3boh.outertune.constants.EnabledFiltersKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
 import com.dd3boh.outertune.constants.FlatSubfoldersKey
 import com.dd3boh.outertune.constants.GridCellSize
@@ -101,7 +102,9 @@ import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
+import com.dd3boh.outertune.utils.decodeFilterString
 import com.dd3boh.outertune.utils.decodeTabString
+import com.dd3boh.outertune.utils.encodeFilterString
 import com.dd3boh.outertune.utils.encodeTabString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -123,6 +126,17 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
  * E: Search
  */
 const val DEFAULT_ENABLED_TABS = "HM"
+
+/**
+ * A: Albums
+ * R: Artists
+ * P: Playlists
+ * S: Songs
+ * F: Folders
+ * L: All
+ */
+const val DEFAULT_ENABLED_FILTERS = "ARPSF"
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppearanceSettings(
@@ -134,6 +148,7 @@ fun AppearanceSettings(
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
     val (enabledTabs, onEnabledTabsChange) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
+    val (enabledFilters, onEnabledFiltersChange) = rememberPreference(EnabledFiltersKey, defaultValue = DEFAULT_ENABLED_FILTERS)
     val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME)
     val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(SliderStyleKey, defaultValue = SliderStyle.DEFAULT)
     val (gridCellSize, onGridCellSizeChange) = rememberEnumPreference(GridCellSizeKey, defaultValue = GridCellSize.SMALL)
@@ -150,8 +165,14 @@ fun AppearanceSettings(
     var showTabArrangement by rememberSaveable {
         mutableStateOf(false)
     }
+
+    var showFilterArrangement by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     val mutableTabs = remember { mutableStateListOf<NavigationTab>() }
 
+    val mutableFilters = remember { mutableStateListOf<LibraryFilter>() }
 
     val lazySongsListState = rememberLazyListState()
     var dragInfo by remember {
@@ -175,6 +196,25 @@ fun AppearanceSettings(
         mutableTabs.move(from.index, to.index)
     }
 
+    val lazyFiltersListState = rememberLazyListState()
+    val filtersReorderableState = rememberReorderableLazyListState(
+        lazyListState = lazyFiltersListState,
+        scrollThresholdPadding = WindowInsets.systemBars.add(
+            WindowInsets(
+                top = ListItemHeight,
+                bottom = ListItemHeight
+            )
+        ).asPaddingValues()
+    ) { from, to ->
+        val currentDragInfo = dragInfo
+        dragInfo = if (currentDragInfo == null) {
+            from.index to to.index
+        } else {
+            currentDragInfo.first to to.index
+        }
+        mutableFilters.move(from.index, to.index)
+    }
+
     fun updateTabs() {
         mutableTabs.apply {
             clear()
@@ -183,6 +223,17 @@ fun AppearanceSettings(
             addAll(enabled)
             add(NavigationTab.NULL)
             addAll(NavigationTab.entries.filter { item -> enabled.none { it == item || item == NavigationTab.NULL } })
+        }
+    }
+
+    fun updateFilters() {
+        mutableFilters.apply {
+            clear()
+
+            val enabled = decodeFilterString(enabledFilters)
+            addAll(enabled)
+            add(LibraryFilter.NULL)
+            addAll(LibraryFilter.entries.filter { item -> enabled.none { it == item || item == LibraryFilter.NULL } }.filterNot { it == LibraryFilter.ALL })
         }
     }
 
@@ -448,6 +499,82 @@ fun AppearanceSettings(
             }
         }
 
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.filter_arrangement)) },
+            icon = { Icon(Icons.Rounded.Reorder, null) },
+            onClick = {
+                showFilterArrangement = true
+            }
+        )
+
+        if (showFilterArrangement) {
+            ActionPromptDialog(
+                title = stringResource(R.string.filter_arrangement),
+                onDismiss = { showFilterArrangement = false },
+                onConfirm = {
+                    val encoded = encodeFilterString(mutableFilters)
+
+                    onEnabledFiltersChange(encoded)
+                    showFilterArrangement = false
+                },
+                onReset = {
+                    onEnabledFiltersChange(DEFAULT_ENABLED_FILTERS)
+                    updateFilters()
+                },
+                onCancel = {
+                    showFilterArrangement = false
+                }
+            ) {
+                // tabs list
+                LazyColumn(
+                    state = lazyFiltersListState,
+                    modifier = Modifier
+                        .padding(vertical = 12.dp)
+                        .border(
+                            2.dp,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            RoundedCornerShape(ThumbnailCornerRadius)
+                        )
+                ) {
+                    itemsIndexed(
+                        items = mutableFilters,
+                        key = { _, item -> item.hashCode() }
+                    ) { index, filter ->
+                        ReorderableItem(
+                            state = filtersReorderableState,
+                            key = filter.hashCode()
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = when (filter) {
+                                        LibraryFilter.ALBUMS -> stringResource(R.string.albums)
+                                        LibraryFilter.ARTISTS -> stringResource(R.string.artists)
+                                        LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
+                                        LibraryFilter.SONGS -> stringResource(R.string.songs)
+                                        LibraryFilter.FOLDERS -> stringResource(R.string.folders)
+                                        else -> {
+                                            stringResource(R.string.tab_arrangement_disable_tip)
+                                        }
+                                    }
+                                )
+                                Icon(
+                                    imageVector = Icons.Rounded.DragHandle,
+                                    contentDescription = null,
+                                    modifier = Modifier.draggableHandle()
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         EnumListPreference(
             title = { Text(stringResource(R.string.default_open_tab)) },
             icon = { Icon(Icons.Rounded.Tab, null) },
@@ -549,8 +676,12 @@ enum class PlayerBackgroundStyle {
 enum class NavigationTab {
     HOME, SONG, FOLDERS, ARTIST, ALBUM, PLAYLIST, LIBRARY, NULL
 }
-enum class NavigationTabNew {
-    HOME, LIBRARY
+
+/**
+ * NULL is used to separate enabled and disabled tabs. It should be ignored in regular use
+ */
+enum class LibraryFilter {
+    ALL, ALBUMS, ARTISTS, PLAYLISTS, SONGS, FOLDERS, NULL
 }
 
 enum class LyricsPosition {
