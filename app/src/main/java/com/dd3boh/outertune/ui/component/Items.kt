@@ -1488,7 +1488,7 @@ fun ItemThumbnail(
                     .align(Alignment.BottomEnd)
                     .size((maxWidth / 3) + 6.dp)
                     .offset(x = -maxWidth / 25)
-                    .background(brush = radial)
+                    .background(brush = radial, shape = RoundedCornerShape(ThumbnailCornerRadius * 2))
             ) {
                 Icon(
                     imageVector = Icons.Rounded.OndemandVideo,
