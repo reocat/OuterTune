@@ -32,10 +32,10 @@ fun decodeTabString(str: String): List<NavigationTab> {
             'L' -> NavigationTab.PLAYLIST
             'M' -> NavigationTab.LIBRARY
             else -> {
-                NavigationTab.NULL // this case should never happen. Just shut the compiler up
+                NavigationTab.HOME // this case should never happen. Just shut the compiler up
             }
         }
-    }
+    }.distinct()
 }
 
 /**
@@ -45,7 +45,7 @@ fun decodeTabString(str: String): List<NavigationTab> {
  */
 fun encodeTabString(list: List<NavigationTab>): String {
     var encoded = ""
-    list.subList(0, list.indexOf(NavigationTab.NULL)).forEach {
+    list.forEach {
         encoded += when (it) {
             NavigationTab.HOME -> "H"
             NavigationTab.SONG -> "S"
@@ -54,7 +54,6 @@ fun encodeTabString(list: List<NavigationTab>): String {
             NavigationTab.ALBUM -> "B"
             NavigationTab.PLAYLIST -> "L"
             NavigationTab.LIBRARY -> "M"
-            else -> { "" }
         }
     }
 
@@ -75,7 +74,7 @@ fun decodeFilterString(str: String): List<LibraryFilter> {
             'S' -> LibraryFilter.SONGS
             'F' -> LibraryFilter.FOLDERS
             'L' -> LibraryFilter.ALL
-            else -> LibraryFilter.NULL
+            else -> LibraryFilter.ALL
         }
     }
 }
@@ -87,7 +86,7 @@ fun decodeFilterString(str: String): List<LibraryFilter> {
  */
 fun encodeFilterString(list: List<LibraryFilter>): String {
     var encoded = ""
-    list.subList(0, list.indexOf(LibraryFilter.NULL)).forEach {
+    list.forEach {
         encoded += when (it) {
             LibraryFilter.ALBUMS -> "A"
             LibraryFilter.ARTISTS -> "R"
@@ -95,7 +94,6 @@ fun encodeFilterString(list: List<LibraryFilter>): String {
             LibraryFilter.SONGS -> "S"
             LibraryFilter.FOLDERS -> "F"
             LibraryFilter.ALL -> "L"
-            else -> { "" }
         }
     }
     return encoded
