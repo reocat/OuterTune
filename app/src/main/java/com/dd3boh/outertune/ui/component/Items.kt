@@ -1484,8 +1484,8 @@ fun ItemThumbnail(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .size((maxWidth / 3) + 6.dp)
-                    .offset(x = -maxWidth / 25)
+                    .size((maxHeight / 3) + 6.dp)
+                    .offset(x = -maxHeight / 25)
                     .background(brush = radial, shape = CircleShape)
             ) {
                 Icon(

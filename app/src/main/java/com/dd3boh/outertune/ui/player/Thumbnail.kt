@@ -154,8 +154,8 @@ fun Thumbnail(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
-                                .size(maxWidth / 8)
-                                .offset(x = -maxWidth / 75)
+                                .size(maxHeight / 8)
+                                .offset(x = -maxHeight / 75)
                                 .background(brush = radial, shape = CircleShape)
                         ) {
                             Icon(
