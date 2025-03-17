@@ -313,7 +313,7 @@ fun ActionPromptDialog(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (onReset != null)
+                if (onReset != null) {
                     Row(modifier = Modifier.weight(1f)) {
                         TextButton(
                             onClick = { onReset() },
@@ -321,19 +321,21 @@ fun ActionPromptDialog(
                             Text(stringResource(R.string.reset))
                         }
                     }
+                }
+
+                if (onCancel != null) {
+                    TextButton(
+                        onClick = { onCancel() }
+                    ) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                }
 
                 TextButton(
                     onClick = { onConfirm() }
                 ) {
                     Text(stringResource(android.R.string.ok))
                 }
-
-                if (onCancel != null)
-                    TextButton(
-                        onClick = { onCancel() }
-                    ) {
-                        Text(stringResource(android.R.string.cancel))
-                    }
             }
         }
     }
