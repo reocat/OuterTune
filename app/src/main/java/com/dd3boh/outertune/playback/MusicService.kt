@@ -630,6 +630,18 @@ class MusicService : MediaLibraryService(),
         queuePlaylistId = queue.playlistId
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (queue.preloadItem != null) {
+                queueBoard.addQueue(
+                    queueTitle ?: "Queue",
+                    listOf(queue.preloadItem),
+                    player = this@MusicService,
+                    shuffled = queue.startShuffled,
+                    replace = replace,
+                    isRadio = isRadio
+                )
+                queueBoard.setCurrQueue(this@MusicService)
+            }
+
             val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
             if (queueTitle == null && initialStatus.title != null) { // do not find a title if an override is provided
                 queueTitle = initialStatus.title
@@ -653,7 +665,7 @@ class MusicService : MediaLibraryService(),
                 player = this@MusicService,
                 shuffled = queue.startShuffled,
                 startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
-                replace = replace,
+                replace = replace || preloadItem != null,
                 isRadio = isRadio
             )
             queueBoard.setCurrQueue(this@MusicService)
