@@ -716,6 +716,20 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         }
     }
 
+    fun renameQueue(queue: MultiQueueObject, newName: String, player: MusicService) {
+        val index = masterQueues.indexOf(queue)
+        if (index != -1) {
+            val updatedQueue = queue.copy(title = newName)
+            masterQueues[index] = updatedQueue
+
+            // Save the renamed queue to the database
+            saveQueue(updatedQueue, player)
+
+            if (QUEUE_DEBUG)
+                Timber.tag(TAG).d("Renamed queue from \"${queue.title}\" to \"$newName\"")
+        }
+    }
+
     /**
      * Load the current queue into the media player
      *
