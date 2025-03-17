@@ -205,7 +205,7 @@ fun BottomSheetPlayer(
         }
     }
 
-    LaunchedEffect(mediaMetadata) {
+    LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
         val index = mediaItems.indexOf(mediaMetadata)
         if (index >= 0) {
             try {
