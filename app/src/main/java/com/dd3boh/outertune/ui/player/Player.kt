@@ -206,10 +206,13 @@ fun BottomSheetPlayer(
     }
 
     LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
-        val index = mediaItems.indexOf(mediaMetadata)
+        val index = maxOf(0, currentMediaIndex)
         if (index >= 0) {
             try {
-                thumbnailLazyGridState.animateScrollToItem(index)
+                if (state.isCollapsed)
+                    thumbnailLazyGridState.scrollToItem(index)
+                else
+                    thumbnailLazyGridState.animateScrollToItem(index)
             } catch (e: Exception) {
                 thumbnailLazyGridState.scrollToItem(index)
             }
@@ -332,50 +335,50 @@ fun BottomSheetPlayer(
         val actionButtons: @Composable RowScope.() -> Unit = {
             Spacer(modifier = Modifier.width(10.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .offset(y = 5.dp)
-                            .size(36.dp)
-                    ) {
-                        ResizableIconButton(
-                            icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
-                            color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else onBackgroundColor,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(24.dp),
-                            onClick = playerConnection::toggleLike
-                        )
-                    }
+            Box(
+                modifier = Modifier
+                    .offset(y = 5.dp)
+                    .size(36.dp)
+            ) {
+                ResizableIconButton(
+                    icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
+                    color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else onBackgroundColor,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(24.dp),
+                    onClick = playerConnection::toggleLike
+                )
+            }
 
             Spacer(modifier = Modifier.width(7.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .offset(y = 5.dp)
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                    ) {
-                        ResizableIconButton(
-                            icon = Icons.Rounded.MoreVert,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.Center),
-                            onClick = {
-                                menuState.show {
-                                    PlayerMenu(
-                                        mediaMetadata = mediaMetadata,
-                                        navController = navController,
-                                        playerBottomSheetState = state,
-                                        onDismiss = menuState::dismiss
-                                    )
-                                }
-                            }
-                        )
+            Box(
+                modifier = Modifier
+                    .offset(y = 5.dp)
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                ResizableIconButton(
+                    icon = Icons.Rounded.MoreVert,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.Center),
+                    onClick = {
+                        menuState.show {
+                            PlayerMenu(
+                                mediaMetadata = mediaMetadata,
+                                navController = navController,
+                                playerBottomSheetState = state,
+                                onDismiss = menuState::dismiss
+                            )
+                        }
                     }
-                }
-                        val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
+                )
+            }
+        }
+        val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
             val playPauseRoundness by animateDpAsState(
                 targetValue = if (isPlaying) 24.dp else 36.dp,
                 animationSpec = tween(durationMillis = 100, easing = LinearEasing),
