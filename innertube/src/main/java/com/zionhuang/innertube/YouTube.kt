@@ -375,8 +375,8 @@ object YouTube {
             PlaylistContinuationPage(
                 songs = continuationItems?.getItems()?.mapNotNull {
                         PlaylistPage.fromMusicResponsiveListItemRenderer(it)
-                    }!!,
-                continuation = continuationItems.getContinuation()
+                    } ?: emptyList(),
+                continuation = continuationItems?.getContinuation()
             )
         }
     }
