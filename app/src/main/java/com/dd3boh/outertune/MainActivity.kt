@@ -220,6 +220,7 @@ import com.dd3boh.outertune.utils.ActivityLauncherHelper
 import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.dataStore
+import com.dd3boh.outertune.utils.decodeTabString
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -492,9 +493,12 @@ class MainActivity : ComponentActivity() {
                     val (slimNav) = rememberPreference(SlimNavBarKey, defaultValue = false)
                     val (enabledTabs) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
                     val navigationItems = Screens.getScreens(enabledTabs)
-                    val defaultOpenTab = remember {
-                        dataStore[DefaultOpenTabKey].toEnum(defaultValue = NavigationTab.HOME)
+                    val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME)
+                    // reset to home if somehow this gets set to a disabled tab
+                    if (decodeTabString(enabledTabs).none { it == defaultOpenTab }) {
+                        onDefaultOpenTabChange(NavigationTab.HOME)
                     }
+
                     val tabOpenedFromShortcut = remember {
                         // reroute to library page for new layout is handled in NavHost section
                         when (intent?.action) {
