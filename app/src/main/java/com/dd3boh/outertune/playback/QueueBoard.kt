@@ -84,7 +84,8 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      * @param index
      */
     private fun bubbleUp(index: Int, player: MusicService) {
-        if (index == masterQueues.size - 1) {
+        if (index < 0 || index == masterQueues.size - 1) {
+            Log.w(TAG, "Bubble up index out of bounds")
             return
         }
 
@@ -140,7 +141,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         delta: Boolean = true,
         isRadio: Boolean = false,
         startIndex: Int = 0
-    ): Boolean {
+    ): MultiQueueObject? {
         if (QUEUE_DEBUG)
             Timber.tag(TAG).d(
                 "Adding to queue \"$title\". medialist size = ${mediaList.size}. " +
@@ -148,7 +149,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             )
 
         if (mediaList.isEmpty()) {
-            return false
+            return null
         }
 
         val match = masterQueues.firstOrNull { it.title == title } // look for matching queue. Title is uid
@@ -172,7 +173,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 }
 
                 bubbleUp(match, player)  // move queue to end of list so it shows as most recent
-                return true
+                return match
             }
 
             // don't add songs to the queue if it's just one EXISTING song AND the new medialist is a subset of what we have
@@ -193,7 +194,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
                 }
 
                 bubbleUp(match, player)  // move queue to end of list so it shows as most recent
-                return true
+                return match
             } else if (delta) {
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: delta additive")
@@ -217,7 +218,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 saveQueueSongs(match, player)
                 bubbleUp(match, player) // move queue to end of list so it shows as most recent
-                return true
+                return match
             } else if (match.title.endsWith("+\u200B") || anyExts != null) { // this queue is an already an extension queue
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: extension queue additive")
@@ -241,7 +242,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 // don't change index
                 bubbleUp(match, player) // move queue to end of list so it shows as most recent
-                return false
+                return match
             } else { // make new extension queue
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: extension queue creation (and additive)")
@@ -276,7 +277,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
                 // don't change index, don't move match queue to end
                 masterIndex = masterQueues.size - 1 // track the newly modified queue
-                return true
+                return newQueue
             }
         } else {
             // add entirely new queue
@@ -306,7 +307,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
 
             saveQueue(newQueue, player)
             masterIndex = masterQueues.size - 1 // track the newly modified queue
-            return true
+            return newQueue
         }
     }
 
@@ -717,13 +718,11 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
     }
 
     fun renameQueue(queue: MultiQueueObject, newName: String, player: MusicService) {
-        val index = masterQueues.indexOf(queue)
-        if (index != -1) {
-            val updatedQueue = queue.copy(title = newName)
-            masterQueues[index] = updatedQueue
-
-            // Save the renamed queue to the database
-            saveQueue(updatedQueue, player)
+        if (masterQueues.remove(queue)) {
+            val updatedQueue = queue.copy(id = queue.id, title = newName)
+            if (!masterQueues.any { it.title == newName }) {
+                masterQueues.add(updatedQueue)
+            }
 
             if (QUEUE_DEBUG)
                 Timber.tag(TAG).d("Renamed queue from \"${queue.title}\" to \"$newName\"")
@@ -863,6 +862,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
         }
 
         bubbleUp(item, player)
+        player.queueTitle = item.title
         return queuePos
     }
 
