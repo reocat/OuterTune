@@ -141,11 +141,9 @@ fun SongMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            val shouldReload = queueBoard.addQueue(queueName, listOf(song.toMediaMetadata()), playerConnection,
+            queueBoard.addQueue(queueName, listOf(song.toMediaMetadata()), playerConnection,
                 forceInsert = true, delta = false)
-            if (shouldReload) {
-                queueBoard.setCurrQueue(playerConnection)
-            }
+            queueBoard.setCurrQueue(playerConnection)
         },
         onDismiss = {
             showChooseQueueDialog = false

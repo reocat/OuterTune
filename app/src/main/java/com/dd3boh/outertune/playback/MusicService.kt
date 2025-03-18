@@ -98,6 +98,7 @@ import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.setOffloadEnabled
 import com.dd3boh.outertune.lyrics.LyricsHelper
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.playback.queues.ListQueue
@@ -316,7 +317,6 @@ class MusicService : MediaLibraryService(),
                         updateNotification() // also updates when queue changes
 
                         queueBoard.setCurrQueuePosIndex(player.currentMediaItemIndex, this@MusicService)
-                        queueTitle = q?.title
                     }
                 })
                 sleepTimer = SleepTimer(scope, this)
@@ -626,14 +626,15 @@ class MusicService : MediaLibraryService(),
             initQueue()
             queueBoard.initialized = true
         }
-        queueTitle = title
+        var queueTitle = title
         queuePlaylistId = queue.playlistId
+        var q: MultiQueueObject? = null
 
         val preloadItem = queue.preloadItem
         CoroutineScope(Dispatchers.Main).launch {
             if (preloadItem != null) {
-                queueBoard.addQueue(
-                    queueTitle ?: "Queue",
+                q = queueBoard.addQueue(
+                    queueTitle ?: "Radio\u2060temp",
                     listOf(preloadItem),
                     player = this@MusicService,
                     shuffled = queue.startShuffled,
@@ -648,14 +649,8 @@ class MusicService : MediaLibraryService(),
             if ((title == null) && initialStatus.title != null) {
                 queueTitle = initialStatus.title
 
-                if (preloadItem != null) {
-                    queueBoard.getCurrentQueue()?.let {
-                        queueBoard.renameQueue(
-                            it,
-                            queueTitle ?: "Queue",
-                            this@MusicService
-                        )
-                    }
+                if (preloadItem != null && q != null) {
+                    queueBoard.renameQueue(q!!, queueTitle, this@MusicService)
                 }
             }
 

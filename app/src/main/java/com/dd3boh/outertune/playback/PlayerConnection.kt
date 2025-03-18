@@ -105,6 +105,7 @@ class PlayerConnection(
 
     fun playQueue(queue: Queue, replace: Boolean = true, isRadio: Boolean = false, title: String? = null) {
         service.playQueue(queue, replace = replace, title = title, isRadio = isRadio)
+        queueTitle.value = service.queueTitle // hax for when seamlessly switching queues
     }
 
     /**
