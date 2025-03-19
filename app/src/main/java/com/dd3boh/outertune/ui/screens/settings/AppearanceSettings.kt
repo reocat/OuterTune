@@ -100,9 +100,11 @@ import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
+import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
+import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.decodeFilterString
 import com.dd3boh.outertune.utils.decodeTabString
@@ -151,7 +153,7 @@ fun AppearanceSettings(
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
     val (enabledTabs, onEnabledTabsChange) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     val (enabledFilters, onEnabledFiltersChange) = rememberPreference(EnabledFiltersKey, defaultValue = DEFAULT_ENABLED_FILTERS)
-    val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME)
+    val (defaultOpenTab, onDefaultOpenTabChange) = rememberPreference(DefaultOpenTabKey, defaultValue = "home")
     val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(SliderStyleKey, defaultValue = SliderStyle.DEFAULT)
     val (gridCellSize, onGridCellSizeChange) = rememberEnumPreference(GridCellSizeKey, defaultValue = GridCellSize.SMALL)
     val (showLikedAndDownloadedPlaylist, onShowLikedAndDownloadedPlaylistChange) = rememberPreference(key = ShowLikedAndDownloadedPlaylist, defaultValue = true)
@@ -172,8 +174,7 @@ fun AppearanceSettings(
         mutableStateOf(false)
     }
 
-    val mutableTabs = remember { mutableStateListOf<Pair<NavigationTab, Boolean>>() }
-
+    val mutableTabs = remember { mutableStateListOf<Pair<Screens, Boolean>>() }
     val mutableFilters = remember { mutableStateListOf<Pair<LibraryFilter, Boolean>>() }
 
     val lazyTabsListState = rememberLazyListState()
@@ -221,9 +222,9 @@ fun AppearanceSettings(
         mutableTabs.apply {
             clear()
 
-            val enabled = decodeTabString(enabledTabs)
+            val enabled = Screens.getScreens(enabledTabs)
             addAll(enabled.map { it to true })
-            addAll(NavigationTab.entries
+            addAll(Screens.getAllScreens()
                 .filterNot { it in enabled }
                 .map { it to false }
             )
@@ -433,11 +434,11 @@ fun AppearanceSettings(
                 title = stringResource(R.string.tab_arrangement),
                 onDismiss = { showTabArrangement = false },
                 onConfirm = {
-                    var encoded = encodeTabString(mutableTabs.filter { it.second }.map { it.first })
+                    var encoded = Screens.encodeScreens(mutableTabs.filter { it.second }.map { it.first })
 
                     // reset defaultOpenTab if it got disabled
-                    if (!decodeTabString(encoded).contains(defaultOpenTab))
-                        onDefaultOpenTabChange(NavigationTab.HOME)
+                    if (Screens.getScreens(encoded).find { it.route == defaultOpenTab } == null)
+                        onDefaultOpenTabChange(Screens.Home.route)
 
                     // home is required
                     if (!encoded.contains('H')) {
@@ -494,15 +495,7 @@ fun AppearanceSettings(
                                             .background(MaterialTheme.colorScheme.surface)
                                     ) {
                                         Text(
-                                            text = when (tab.first) {
-                                                NavigationTab.HOME -> stringResource(R.string.home)
-                                                NavigationTab.SONG -> stringResource(R.string.songs)
-                                                NavigationTab.FOLDERS -> stringResource(R.string.folders)
-                                                NavigationTab.ARTIST -> stringResource(R.string.artists)
-                                                NavigationTab.ALBUM -> stringResource(R.string.albums)
-                                                NavigationTab.PLAYLIST -> stringResource(R.string.playlists)
-                                                NavigationTab.LIBRARY -> stringResource(R.string.library)
-                                            },
+                                            text = stringResource(tab.first.titleId),
                                             modifier = Modifier.padding(start = 8.dp)
                                         )
                                     }
@@ -613,23 +606,15 @@ fun AppearanceSettings(
             }
         }
 
-        EnumListPreference(
+        ListPreference(
             title = { Text(stringResource(R.string.default_open_tab)) },
             icon = { Icon(Icons.Rounded.Tab, null) },
-            selectedValue = defaultOpenTab,
-            onValueSelected = onDefaultOpenTabChange,
-            values = NavigationTab.entries.filter { decodeTabString(enabledTabs).contains(it) },
-            valueText = {
-                when (it) {
-                    NavigationTab.HOME -> stringResource(R.string.home)
-                    NavigationTab.SONG -> stringResource(R.string.songs)
-                    NavigationTab.FOLDERS -> stringResource(R.string.folders)
-                    NavigationTab.ARTIST -> stringResource(R.string.artists)
-                    NavigationTab.ALBUM -> stringResource(R.string.albums)
-                    NavigationTab.PLAYLIST -> stringResource(R.string.playlists)
-                    NavigationTab.LIBRARY -> stringResource(R.string.library)
-                }
-            }
+            selectedValue = Screens.getAllScreens().find { it.route == defaultOpenTab } ?: Screens.Home,
+            onValueSelected = { screen ->
+                onDefaultOpenTabChange(screen.route)
+            },
+            values = Screens.getAllScreens().filter { Screens.getScreens(enabledTabs).contains(it) },
+            valueText = { stringResource(it.titleId) }
         )
 
         // flatten subfolders
@@ -705,10 +690,6 @@ enum class DarkMode {
 
 enum class PlayerBackgroundStyle {
     DEFAULT, GRADIENT, BLUR
-}
-
-enum class NavigationTab {
-    HOME, SONG, FOLDERS, ARTIST, ALBUM, PLAYLIST, LIBRARY
 }
 
 enum class LibraryFilter {
