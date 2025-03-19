@@ -235,7 +235,11 @@ fun AppearanceSettings(
             clear()
 
             val enabled = decodeFilterString(enabledFilters)
-            addAll(LibraryFilter.entries.map { Pair(it, it in enabled)}.filterNot { it.first == LibraryFilter.ALL })
+            addAll(enabled.map { it to true })
+            addAll(LibraryFilter.entries
+                .filterNot { it in enabled }
+                .map { it to false }
+                .filterNot { it.first == LibraryFilter.ALL })
         }
     }
 
