@@ -200,7 +200,6 @@ import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
-import com.dd3boh.outertune.ui.screens.settings.NavigationTab
 import com.dd3boh.outertune.ui.screens.settings.PlayerBackgroundStyle
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.PrivacySettings
@@ -220,7 +219,6 @@ import com.dd3boh.outertune.utils.ActivityLauncherHelper
 import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.dataStore
-import com.dd3boh.outertune.utils.decodeTabString
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -493,18 +491,18 @@ class MainActivity : ComponentActivity() {
                     val (slimNav) = rememberPreference(SlimNavBarKey, defaultValue = false)
                     val (enabledTabs) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
                     val navigationItems = Screens.getScreens(enabledTabs)
-                    val (defaultOpenTab, onDefaultOpenTabChange) = rememberEnumPreference(DefaultOpenTabKey, defaultValue = NavigationTab.HOME)
+                    val (defaultOpenTab, onDefaultOpenTabChange) = rememberPreference(DefaultOpenTabKey, defaultValue = Screens.Home.route)
                     // reset to home if somehow this gets set to a disabled tab
-                    if (decodeTabString(enabledTabs).none { it == defaultOpenTab }) {
-                        onDefaultOpenTabChange(NavigationTab.HOME)
+                    if (Screens.getScreens(enabledTabs).none { it.route == defaultOpenTab }) {
+                        onDefaultOpenTabChange("home")
                     }
 
                     val tabOpenedFromShortcut = remember {
                         // reroute to library page for new layout is handled in NavHost section
                         when (intent?.action) {
-                            ACTION_SONGS -> if (navigationItems.contains(Screens.Songs)) NavigationTab.SONG else NavigationTab.LIBRARY
-                            ACTION_ALBUMS -> if (navigationItems.contains(Screens.Albums)) NavigationTab.ALBUM else NavigationTab.LIBRARY
-                            ACTION_PLAYLISTS -> if (navigationItems.contains(Screens.Playlists)) NavigationTab.PLAYLIST else NavigationTab.LIBRARY
+                            ACTION_SONGS -> if (navigationItems.contains(Screens.Songs)) Screens.Songs else Screens.Library
+                            ACTION_ALBUMS -> if (navigationItems.contains(Screens.Albums)) Screens.Albums else Screens.Library
+                            ACTION_PLAYLISTS -> if (navigationItems.contains(Screens.Playlists)) Screens.Playlists else Screens.Library
                             else -> null
                         }
                     }
@@ -828,16 +826,7 @@ class MainActivity : ComponentActivity() {
                                                         contentDescription = null
                                                     )
                                                 }
-                                            } else if (navBackStackEntry?.destination?.route in listOf(
-                                                    Screens.Home.route,
-                                                    Screens.Songs.route,
-                                                    Screens.Folders.route,
-                                                    Screens.Artists.route,
-                                                    Screens.Albums.route,
-                                                    Screens.Playlists.route,
-                                                    Screens.Library.route
-                                                )
-                                            ) {
+                                            } else if (navBackStackEntry?.destination?.route in Screens.getAllScreens().map { it.route }) {
                                                 IconButton(
                                                     onClick = {
                                                         navController.navigate("settings")
@@ -1013,16 +1002,9 @@ class MainActivity : ComponentActivity() {
                         ) {
                             NavHost(
                                 navController = navController,
-                                startDestination =  when (tabOpenedFromShortcut ?: defaultOpenTab) {
-                                    NavigationTab.HOME -> Screens.Home
-                                    NavigationTab.SONG -> Screens.Songs
-                                    NavigationTab.FOLDERS -> Screens.Folders
-                                    NavigationTab.ARTIST -> Screens.Artists
-                                    NavigationTab.ALBUM -> Screens.Albums
-                                    NavigationTab.PLAYLIST -> Screens.Playlists
-                                    NavigationTab.LIBRARY -> Screens.Library
-                                    else -> Screens.Home
-                                }.route,
+                                startDestination = (tabOpenedFromShortcut ?: Screens.getAllScreens()
+                                    .find { it.route == defaultOpenTab })?.route
+                                    ?: Screens.Home.route,
                                 enterTransition = {
                                     val currentRouteIndex = navigationItems.indexOfFirst {
                                         it.route == targetState.destination.route

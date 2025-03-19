@@ -37,24 +37,29 @@ sealed class Screens(
     data object Library : Screens(R.string.library, Icons.Rounded.LibraryMusic, "library")
 
     companion object {
+        fun getScreenPairs() = listOf(
+            Home to 'H',
+            Songs to 'S',
+            Folders to 'F',
+            Artists to 'A',
+            Albums to 'B',
+            Playlists to 'L',
+            Library to 'M'
+        )
+
+        fun getAllScreens() = getScreenPairs().map { it.first }
         fun getScreens(screens: String): List<Screens> {
-            val result = ArrayList<Screens>()
+            val charToScreenMap = getScreenPairs().associate { (screen, char) -> char to screen }
 
-            screens.toCharArray().forEach {
-                result.add(
-                when (it) {
-                    'H' -> Home
-                    'S' -> Songs
-                    'F' -> Folders
-                    'A' -> Artists
-                    'B' -> Albums
-                    'L' -> Playlists
-                    'M' -> Library
-                    else -> Home
-                })
+            return screens.toCharArray().map { char -> charToScreenMap[char] ?: Home }
+        }
+
+        fun encodeScreens(list: List<Screens>): String {
+            val charToScreenMap = getScreenPairs().associate { (screen, char) -> char to screen }
+
+            return list.joinToString("") { screen ->
+                charToScreenMap.entries.first { it.value == screen }.key.toString()
             }
-
-            return result
         }
     }
 }
