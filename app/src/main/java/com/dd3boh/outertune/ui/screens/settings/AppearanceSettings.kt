@@ -222,7 +222,11 @@ fun AppearanceSettings(
             clear()
 
             val enabled = decodeTabString(enabledTabs)
-            addAll(NavigationTab.entries.map { Pair(it, it in enabled)})
+            addAll(enabled.map { it to true })
+            addAll(NavigationTab.entries
+                .filterNot { it in enabled }
+                .map { it to false }
+            )
         }
     }
 
