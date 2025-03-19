@@ -37,8 +37,6 @@ sealed class Screens(
     data object Library : Screens(R.string.library, Icons.Rounded.LibraryMusic, "library")
 
     companion object {
-        val MainScreens = listOf(Home, Library)
-
         fun getScreens(screens: String): List<Screens> {
             val result = ArrayList<Screens>()
 
