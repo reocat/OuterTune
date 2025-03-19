@@ -689,8 +689,7 @@ class MainActivity : ComponentActivity() {
                          * is not in the current navigation items, we need to remove the entry
                          * to avoid entering a "ghost" screen.
                          */
-                        if (Screens.MainScreens.fastAny { it.route == navBackStackEntry?.destination?.route } ||
-                            Screens.getScreens(enabledTabs).fastAny { it.route == navBackStackEntry?.destination?.route }) {
+                        if (Screens.getScreens(enabledTabs).fastAny { it.route == navBackStackEntry?.destination?.route }) {
                             if (!navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
                                 navController.popBackStack()
                                 navController.navigate(Screens.Home.route)
