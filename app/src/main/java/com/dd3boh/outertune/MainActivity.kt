@@ -307,15 +307,10 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         unbindService(serviceConnection)
 
-        if (dataStore.get(StopMusicOnTaskClearKey, false) && playerConnection?.isPlaying?.value == true
-            && isFinishing
-        ) {
-            if (dataStore.get(PersistentQueueKey, true)) {
+        if (dataStore.get(StopMusicOnTaskClearKey, false) && isFinishing) {
 //                stopService(Intent(this, MusicService::class.java)) // Believe me, this doesn't actually stop
-                playerConnection?.service?.onDestroy()
-
-                playerConnection = null
-            }
+            playerConnection?.service?.onDestroy()
+            playerConnection = null
         } else {
             playerConnection?.service?.saveQueueToDisk()
         }
