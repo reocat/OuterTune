@@ -1011,28 +1011,6 @@ class MainActivity : ComponentActivity() {
                                 .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
                                 .background(MaterialTheme.colorScheme.surface)
                         ) {
-                            var transitionDirection = AnimatedContentTransitionScope.SlideDirection.Left
-
-                            if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
-                                if (navigationItems.fastAny { it.route == previousTab }) {
-                                    val curIndex = navigationItems.indexOf(
-                                        navigationItems.fastFirstOrNull {
-                                            it.route == navBackStackEntry?.destination?.route
-                                        }
-                                    )
-
-                                    val prevIndex = navigationItems.indexOf(
-                                        navigationItems.fastFirstOrNull {
-                                            it.route == previousTab
-                                        }
-                                    )
-
-                                    if (prevIndex > curIndex)
-                                        transitionDirection =
-                                            AnimatedContentTransitionScope.SlideDirection.Right
-                                }
-                            }
-
                             NavHost(
                                 navController = navController,
                                 startDestination =  when (tabOpenedFromShortcut ?: defaultOpenTab) {
@@ -1046,16 +1024,56 @@ class MainActivity : ComponentActivity() {
                                     else -> Screens.Home
                                 }.route,
                                 enterTransition = {
-                                    fadeIn(tween(250)) + slideInHorizontally { it / 2 }
+                                    val currentRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == targetState.destination.route
+                                    }
+                                    val previousRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == initialState.destination.route
+                                    }
+
+                                    if (currentRouteIndex == -1 || currentRouteIndex > previousRouteIndex)
+                                        slideInHorizontally { it / 2 } + fadeIn(tween(250))
+                                    else
+                                        slideInHorizontally { -it / 2 } + fadeIn(tween(250))
                                 },
                                 exitTransition = {
-                                    fadeOut(tween(200)) + slideOutHorizontally { -it / 2 }
+                                    val currentRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == initialState.destination.route
+                                    }
+                                    val targetRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == targetState.destination.route
+                                    }
+
+                                    if (targetRouteIndex == -1 || targetRouteIndex > currentRouteIndex)
+                                        slideOutHorizontally { -it / 2 } + fadeOut(tween(250))
+                                    else
+                                        slideOutHorizontally { it / 2 } + fadeOut(tween(250))
                                 },
                                 popEnterTransition = {
-                                    fadeIn(tween(250)) + slideInHorizontally { -it / 2 }
+                                    val currentRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == targetState.destination.route
+                                    }
+                                    val previousRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == initialState.destination.route
+                                    }
+
+                                    if (previousRouteIndex != -1 && previousRouteIndex < currentRouteIndex)
+                                        slideInHorizontally { it / 2 } + fadeIn(tween(250))
+                                    else
+                                        slideInHorizontally { -it / 2 } + fadeIn(tween(250))
                                 },
                                 popExitTransition = {
-                                    fadeOut(tween(200)) + slideOutHorizontally { it / 2 }
+                                    val currentRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == initialState.destination.route
+                                    }
+                                    val targetRouteIndex = navigationItems.indexOfFirst {
+                                        it.route == targetState.destination.route
+                                    }
+
+                                    if (currentRouteIndex != -1 && currentRouteIndex < targetRouteIndex)
+                                        slideOutHorizontally { -it / 2 } + fadeOut(tween(250))
+                                    else
+                                        slideOutHorizontally { it / 2 } + fadeOut(tween(250))
                                 },
                                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                             ) {
