@@ -54,6 +54,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
@@ -174,13 +175,17 @@ fun BottomSheetPlayer(
     val thumbnailLazyGridState = rememberLazyGridState()
 
     val previousMediaMetadata = if (playerConnection.player.hasPreviousMediaItem()) {
-        val previousIndex = playerConnection.player.previousMediaItemIndex
-        playerConnection.player.getMediaItemAt(previousIndex).metadata
+        val previousIndex = playerConnection.player.currentMediaItemIndex - 1
+        if (previousIndex >= 0) {
+            playerConnection.player.getMediaItemAt(previousIndex).metadata
+        } else null
     } else null
 
     val nextMediaMetadata = if (playerConnection.player.hasNextMediaItem()) {
-        val nextIndex = playerConnection.player.nextMediaItemIndex
-        playerConnection.player.getMediaItemAt(nextIndex).metadata
+        val nextIndex = playerConnection.player.currentMediaItemIndex + 1
+        if (nextIndex < playerConnection.player.mediaItemCount) {
+            playerConnection.player.getMediaItemAt(nextIndex).metadata
+        } else null
     } else null
 
     val mediaItems = listOfNotNull(previousMediaMetadata, mediaMetadata, nextMediaMetadata)
@@ -190,17 +195,31 @@ fun BottomSheetPlayer(
     val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
 
     LaunchedEffect(itemScrollOffset) {
-        if (itemScrollOffset != 0) return@LaunchedEffect
+        if (itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
 
-        if (currentItem > currentMediaIndex)
+        if (currentItem > currentMediaIndex && canSkipNext) {
             playerConnection.player.seekToNext()
-        else if (currentItem < currentMediaIndex)
+        } else if (currentItem < currentMediaIndex && canSkipPrevious) {
             playerConnection.player.seekToPrevious()
+        }
     }
 
     LaunchedEffect(mediaMetadata) {
-        // When the current media changes, scroll to it
-        thumbnailLazyGridState.animateScrollToItem(maxOf(0, mediaItems.indexOf(mediaMetadata)))
+        val index = mediaItems.indexOf(mediaMetadata)
+        if (index >= 0) {
+            try {
+                thumbnailLazyGridState.animateScrollToItem(index)
+            } catch (e: Exception) {
+                thumbnailLazyGridState.scrollToItem(index)
+            }
+        }
+    }
+
+    LaunchedEffect(playerConnection.player.currentMediaItemIndex) {
+        val index = mediaItems.indexOf(mediaMetadata)
+        if (index >= 0 && index != currentItem) {
+            thumbnailLazyGridState.scrollToItem(index)
+        }
     }
 
     val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
@@ -713,27 +732,44 @@ fun BottomSheetPlayer(
                             .weight(1f)
                             .nestedScroll(state.preUpPostDownNestedScrollConnection)
                     ) {
-                        val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+                        val horizontalLazyGridItemWidth = this.maxWidth * horizontalLazyGridItemWidthFactor
 
                         LazyHorizontalGrid(
                             state = thumbnailLazyGridState,
                             rows = GridCells.Fixed(1),
-                            flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                            flingBehavior = rememberSnapFlingBehavior(
+                                thumbnailSnapLayoutInfoProvider
+                            ),
                             userScrollEnabled = state.isExpanded && swipeToSkip
                         ) {
                             items(
                                 items = mediaItems,
-                                key = { it.id }
-                            ) {
-                                Thumbnail(
-                                    sliderPositionProvider = { sliderPosition },
+                                key = { it.id + "-" + mediaItems.indexOf(it) }
+                            ) { item ->
+                                Box(
                                     modifier = Modifier
                                         .width(horizontalLazyGridItemWidth)
-                                        .animateContentSize(),
-                                    contentScale = ContentScale.Crop,
-                                    showLyricsOnClick = true,
-                                    customMediaMetadata = it
-                                )
+                                        .animateContentSize()
+                                ) {
+                                    Thumbnail(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
+                                        sliderPositionProvider = { sliderPosition },
+                                        showLyricsOnClick = true,
+                                        customMediaMetadata = item
+                                    )
+
+                                    if (item == mediaMetadata) {
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(8.dp)
+                                                .size(12.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primary)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -769,7 +805,7 @@ fun BottomSheetPlayer(
                             .weight(1f)
                             .nestedScroll(state.preUpPostDownNestedScrollConnection)
                     ) {
-                        val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+                        val horizontalLazyGridItemWidth = this.maxWidth * horizontalLazyGridItemWidthFactor
 
                         LazyHorizontalGrid(
                             state = thumbnailLazyGridState,
