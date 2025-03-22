@@ -14,12 +14,12 @@ plugins {
 
 android {
     namespace = "com.dd3boh.outertune"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.dd3boh.outertune"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 30
         versionName = SimpleDateFormat("yyyyMMdd").format(Date())
 
