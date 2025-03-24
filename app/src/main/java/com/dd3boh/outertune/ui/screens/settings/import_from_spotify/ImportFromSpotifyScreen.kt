@@ -1,5 +1,6 @@
-package com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify
+package com.dd3boh.outertune.ui.screens.settings.import_from_spotify
 
+import android.content.ClipData
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
@@ -63,6 +64,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -77,14 +79,21 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.Playlist
+import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.Playlist
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.withLink
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ImportFromSpotifyScreen(
     navController: NavController, isMiniPlayerVisible: MutableState<Boolean>
 ) {
+    val scope = rememberCoroutineScope()
     val importFromSpotifyViewModel: ImportFromSpotifyViewModel = hiltViewModel()
     val importFromSpotifyScreenState = importFromSpotifyViewModel.importFromSpotifyScreenState
     val userPlaylists = importFromSpotifyViewModel.importFromSpotifyScreenState.value.playlists
@@ -100,7 +109,8 @@ fun ImportFromSpotifyScreen(
     val textFieldPaddingValues = remember {
         PaddingValues(start = 15.dp, end = 15.dp, top = 7.5.dp, bottom = 7.5.dp)
     }
-    val localClipBoardManager = LocalClipboardManager.current
+
+    val clipboard = LocalClipboard.current
     val context = LocalContext.current
     val localUriHandler = LocalUriHandler.current
     val lazyListState = rememberLazyListState()
@@ -386,29 +396,26 @@ fun ImportFromSpotifyScreen(
                     val firstInstruction = remember {
                         buildAnnotatedString {
                             append("1. Visit ")
-                            pushStringAnnotation(
-                                tag = "spotify for developers",
-                                annotation = "https://developer.spotify.com/dashboard/"
-                            )
-                            withStyle(SpanStyle(color = colorScheme.primary)) {
+                            withLink(
+                                link = LinkAnnotation.Url(
+                                    url = "https://developer.spotify.com/dashboard/",
+                                    styles = TextLinkStyles(
+                                        style = SpanStyle(color = colorScheme.primary)
+                                    )
+                                )
+                            ) {
                                 append("Spotify for developers dashboard")
                             }
-                            pop()
                             append(" and click on \"Create app\".")
                         }
                     }
-                    ClickableText(
+
+                    Text(
                         text = firstInstruction,
-                        onClick = { offset ->
-                            firstInstruction.getStringAnnotations(
-                                tag = "spotify for developers", start = offset, end = offset
-                            ).first().let {
-                                localUriHandler.openUri(it.item)
-                            }
-                        },
                         style = TextStyle(fontSize = 16.sp, color = LocalContentColor.current),
                         modifier = Modifier.padding(instructionPadding)
                     )
+
                     SelectionContainer {
                         Text(fontSize = 16.sp, text = buildAnnotatedString {
                             append("2. Enter the necessary details and use ")
@@ -502,9 +509,15 @@ fun ImportFromSpotifyScreen(
                         Text(text = "Stacktrace", fontWeight = FontWeight.Bold)
                         importFromSpotifyScreenState.value.exception?.stackTrace?.joinToString()
                             ?.let {
-                                IconButton(onClick = {
-                                    localClipBoardManager.setText(AnnotatedString(text = it))
-                                }) {
+                                IconButton(
+                                    onClick = {
+                                        val clipData = ClipData.newPlainText("label", it)
+                                        scope.launch {
+                                            clipboard.setClipEntry(ClipEntry(clipData))
+                                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                ) {
                                     Icon(
                                         imageVector = Icons.Rounded.ContentCopy,
                                         contentDescription = null
@@ -635,7 +648,7 @@ fun ImportFromSpotifyScreen(
                 Spacer(Modifier.height(5.dp))
                 HorizontalDivider(modifier = Modifier.fillMaxWidth())
             }
-        }) {
+        }) { it ->
             Box(modifier = Modifier
                 .padding(it)
                 .clickable { }

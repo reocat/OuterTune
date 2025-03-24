@@ -17,9 +17,9 @@ import com.dd3boh.outertune.models.SpotifyUserProfile
 import com.dd3boh.outertune.models.spotify.tracks.TrackItem
 import com.dd3boh.outertune.models.spotify.tracks.SpotifyResultPaginatedResponse
 import com.dd3boh.outertune.models.spotify.playlists.SpotifyPlaylistPaginatedResponse
-import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.ImportFromSpotifyScreenState
-import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.ImportProgressEvent
-import com.dd3boh.outertune.ui.screens.settings.content.import_from_spotify.model.Playlist
+import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.ImportFromSpotifyScreenState
+import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.ImportProgressEvent
+import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.Playlist
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -87,7 +87,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                     clientSecret = clientSecret,
                     authorizationCode = authorizationCode,
                     context = context
-                ).onSuccess {
+                ).onSuccess { it ->
                     it.let { response ->
                         if (response.status.isSuccess()) {
                             importFromSpotifyScreenState.value =
@@ -189,7 +189,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                         name = it.playlistName, id = it.playlistId
                     )
                 })
-                logTheString(url.toString())
+                logTheString(url)
                 url = response.nextUrl
             }
         }
@@ -288,7 +288,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _playlistsImportProgress.collectLatest {
+            _playlistsImportProgress.collectLatest { it ->
                 "Importing playlist \"${it.playlistName}\" – ${it.progressedTrackCount}/${it.totalTracksCount} tracks completed".let {
                     importLogs.add(it)
                     logTheString(it)
@@ -296,7 +296,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            _likedSongsImportProgress.collectLatest {
+            _likedSongsImportProgress.collectLatest { it ->
                 "Importing Liked Songs – ${it.currentCount} of ${it.totalTracksCount} completed".let {
                     importLogs.add(it)
                     logTheString(it)
@@ -432,7 +432,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
             try {
                 httpClient.get(url) {
                     bearerAuth(authToken)
-                }.body<SpotifyResultPaginatedResponse>().let {
+                }.body<SpotifyResultPaginatedResponse>().let { it ->
                     tracks.addAll(it.tracks.map { it.trackItem })
                     url = it.nextPaginatedUrl
                 }
