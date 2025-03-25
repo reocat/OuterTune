@@ -691,100 +691,82 @@ fun HomeScreen(
                 }
             }
 
-            homePage?.sections?.forEach {
-                item {
-                    NavigationTitle(
-                        title = it.title,
-                        label = it.label,
-                        thumbnail = it.thumbnail?.let { thumbnailUrl ->
-                            {
-                                val shape =
-                                    if (it.endpoint?.isArtistEndpoint == true) CircleShape else RoundedCornerShape(
-                                        ThumbnailCornerRadius
+            if (!isLoggedIn) {
+                homePage?.sections?.forEach {
+                    item {
+                        NavigationTitle(
+                            title = it.title,
+                            label = it.label,
+                            thumbnail = it.thumbnail?.let { thumbnailUrl ->
+                                {
+                                    val shape =
+                                        if (it.endpoint?.isArtistEndpoint == true) CircleShape else RoundedCornerShape(
+                                            ThumbnailCornerRadius
+                                        )
+                                    AsyncImage(
+                                        model = thumbnailUrl,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(ListThumbnailSize)
+                                            .clip(shape)
                                     )
-                                AsyncImage(
-                                    model = thumbnailUrl,
-                                    contentDescription = null,
+                                }
+                            },
+                            onClick = it.endpoint?.browseId?.let { browseId ->
+                                {
+                                    if (browseId == "FEmusic_moods_and_genres")
+                                        navController.navigate("mood_and_genres")
+                                    else
+                                        navController.navigate("browse/$browseId")
+                                }
+                            },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+
+                    item {
+                        LazyRow(
+                            contentPadding = WindowInsets.systemBars
+                                .only(WindowInsetsSides.Horizontal)
+                                .asPaddingValues(),
+                            modifier = Modifier.animateItem()
+                        ) {
+                            items(it.items) { item ->
+                                ytGridItem(item)
+                            }
+                        }
+                    }
+                }
+
+                explorePage?.moodAndGenres?.let { moodAndGenres ->
+                    item {
+                        NavigationTitle(
+                            title = stringResource(R.string.mood_and_genres),
+                            onClick = {
+                                navController.navigate("mood_and_genres")
+                            },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+                    item {
+                        LazyHorizontalGrid(
+                            rows = GridCells.Fixed(4),
+                            contentPadding = PaddingValues(6.dp),
+                            modifier = Modifier
+                                .height((MoodAndGenresButtonHeight + 12.dp) * 4 + 12.dp)
+                                .animateItem()
+                        ) {
+                            items(moodAndGenres) {
+                                MoodAndGenresButton(
+                                    title = it.title,
+                                    onClick = {
+                                        navController.navigate("youtube_browse/${it.endpoint.browseId}?params=${it.endpoint.params}")
+                                    },
                                     modifier = Modifier
-                                        .size(ListThumbnailSize)
-                                        .clip(shape)
+                                        .padding(6.dp)
+                                        .width(180.dp)
                                 )
                             }
-                        },
-                        onClick = it.endpoint?.browseId?.let { browseId ->
-                            {
-                                if (browseId == "FEmusic_moods_and_genres")
-                                    navController.navigate("mood_and_genres")
-                                else
-                                    navController.navigate("browse/$browseId")
-                            }
-                        },
-                        modifier = Modifier.animateItem()
-                    )
-                }
-
-                item {
-                    LazyRow(
-                        contentPadding = WindowInsets.systemBars
-                            .only(WindowInsetsSides.Horizontal)
-                            .asPaddingValues(),
-                        modifier = Modifier.animateItem()
-                    ) {
-                        items(it.items) { item ->
-                            ytGridItem(item)
-                        }
-                    }
-                }
-            }
-
-            if (homePage?.continuation != null) {
-                item {
-                    ShimmerHost(
-                        modifier = Modifier.animateItem()
-                    ) {
-                        TextPlaceholder(
-                            height = 36.dp,
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .width(250.dp),
-                        )
-                        LazyRow {
-                            items(4) {
-                                GridItemPlaceHolder()
-                            }
-                        }
-                    }
-                }
-            }
-
-            explorePage?.moodAndGenres?.let { moodAndGenres ->
-                item {
-                    NavigationTitle(
-                        title = stringResource(R.string.mood_and_genres),
-                        onClick = {
-                            navController.navigate("mood_and_genres")
-                        },
-                        modifier = Modifier.animateItem()
-                    )
-                }
-                item {
-                    LazyHorizontalGrid(
-                        rows = GridCells.Fixed(4),
-                        contentPadding = PaddingValues(6.dp),
-                        modifier = Modifier
-                            .height((MoodAndGenresButtonHeight + 12.dp) * 4 + 12.dp)
-                            .animateItem()
-                    ) {
-                        items(moodAndGenres) {
-                            MoodAndGenresButton(
-                                title = it.title,
-                                onClick = {
-                                    navController.navigate("youtube_browse/${it.endpoint.browseId}?params=${it.endpoint.params}")
-                                },
-                                modifier = Modifier
-                                    .padding(6.dp)
-                                    .width(180.dp)
-                            )
                         }
                     }
                 }
