@@ -619,35 +619,7 @@ fun HomeScreen(
                     }
                 }
             }
-
-            mixedPlaylist?.takeIf { it.isNotEmpty() }?.let { mixedPlaylists ->
-                item {
-                    NavigationTitle(
-                        title = stringResource(R.string.youtube_mixed),
-                        onClick = {
-                            navController.navigate("mixed_for_you")
-                        },
-                        modifier = Modifier.animateItem()
-                    )
-                }
-
-                item {
-                    LazyRow(
-                        contentPadding = WindowInsets.systemBars
-                            .only(WindowInsetsSides.Horizontal)
-                            .asPaddingValues(),
-                        modifier = Modifier.animateItem()
-                    ) {
-                        items(
-                            items = mixedPlaylists,
-                            key = { it.id },
-                        ) { item ->
-                            ytGridItem(item)
-                        }
-                    }
-                }
-            }
-
+            
             similarRecommendations?.forEach {
                 item {
                     NavigationTitle(
