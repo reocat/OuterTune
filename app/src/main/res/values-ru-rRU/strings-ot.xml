@@ -205,5 +205,14 @@
     <string name="discord_integration">Интеграция с Discord</string>
     <string name="discord_information">OuterTune использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.\n\nOuterTune будет извлекать только ваш токен, а все остальное хранится локально.</string>
     <string name="enable_discord_rpc">Включить Rich Presence</string>
+    <string name="rpc_listen_ytm">Слушать в YouTube Music</string>
+    <string name="rpc_visit">Посетить OuterTune</string>
 
+    <!-- Library screen placeholder -->
+    <string name="library_empty">Ваша библиотека пуста</string>
+    <string name="library_empty_description">Начните пополнять свою библиотеку, открывая для себя новых исполнителей, песни и плейлисты</string>
+
+    <!-- Import from Spotify -->
+    <string name="spot_import_title">Импорт из Spotify</string>
+    
 </resources>
