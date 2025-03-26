@@ -19,8 +19,10 @@ class DiscordRPC(
             largeText = song.album?.title,
             smallText = song.artists.firstOrNull()?.name,
             buttons = listOf(
-                "Listen on YouTube Music" to "https://music.youtube.com/watch?v=${song.song.id}",
-                "Visit InnerTune" to "https://github.com/z-huang/InnerTune"
+                context.getString(R.string.rpc_listen_ytm) to
+                        "https://music.youtube.com/watch?v=${song.song.id}",
+                context.getString(R.string.rpc_visit) to
+                        "https://github.com/OuterTune/OuterTune"
             ),
             type = Type.LISTENING,
             since = System.currentTimeMillis(),
