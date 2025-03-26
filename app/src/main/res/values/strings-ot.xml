@@ -233,9 +233,14 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="discord_integration">Discord Integration</string>
     <string name="discord_information">OuterTune uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.  OuterTune will only extract your token, and everything else is stored locally.</string>
     <string name="enable_discord_rpc">Enable Rich Presence</string>
+    <string name="rpc_listen_ytm">Listen on YouTube Music</string>
+    <string name="rpc_visit">Visit OuterTune</string>
 
     <!-- Library screen placeholder -->
     <string name="library_empty">Your library is empty</string>
     <string name="library_empty_description">Start adding music to your library by exploring new artists, songs and playlists</string>
+
+    <!-- Import from Spotify -->
+    <string name="spot_import_title">Import from Spotify</string>
 
 </resources>

@@ -1074,7 +1074,7 @@ private fun FinalPage(
             modifier = Modifier.padding(vertical = 16.dp)
         ) {
             FilledTonalIconButton(
-                onClick = { uriHandler.openUri("https://github.com/DD3Boh/OuterTune") },
+                onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune") },
                 modifier = Modifier.padding(horizontal = 8.dp)
             ) {
                 Icon(

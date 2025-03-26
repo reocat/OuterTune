@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -52,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
@@ -272,7 +272,7 @@ fun RichPresence(
                         .padding(horizontal = 6.dp)
                 ) {
                     Text(
-                        text = song?.song?.title ?: "Song Title",
+                        text = song?.song?.title ?: context.getString(R.string.song_title),
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -280,7 +280,7 @@ fun RichPresence(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = song?.artists?.joinToString { it.name } ?: "Artist",
+                        text = song?.artists?.joinToString { it.name } ?: context.getString(R.string.artist_name),
                         color = MaterialTheme.colorScheme.secondary,
                         fontSize = 16.sp,
                         maxLines = 1,
@@ -301,24 +301,27 @@ fun RichPresence(
             OutlinedButton(
                 enabled = song != null,
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://music.youtube.com/watch?v=${song?.id}"))
+                    val intent = Intent(Intent.ACTION_VIEW,
+                        "https://music.youtube.com/watch?v=${song?.id}".toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Listen on YouTube Music")
+                Text(
+                    text = stringResource(R.string.rpc_listen_ytm)
+                )
             }
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/DD3Boh/OuterTune"))
+                    val intent = Intent(Intent.ACTION_VIEW,
+                        "https://github.com/OuterTune/OuterTune".toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(buildString {
-                    append("Visit ")
-                    append(stringResource(id = R.string.app_name))
-                })
+                Text(
+                    text = stringResource(R.string.rpc_visit)
+                )
             }
         }
     }

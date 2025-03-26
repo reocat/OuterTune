@@ -153,7 +153,7 @@ fun ExperimentalSettings(
         )
 
         PreferenceEntry(
-            title = { Text(text = "Import from Spotify") },
+            title = { Text(stringResource(R.string.spot_import_title)) },
             description = null,
             icon = { Icon(painterResource(R.drawable.spotify), null) },
             onClick = {
