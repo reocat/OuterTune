@@ -115,6 +115,9 @@ android {
         disable += "ImpliedQuantity"
     }
 
+    androidResources {
+        generateLocaleConfig = true
+    }
 }
 
 ksp {
