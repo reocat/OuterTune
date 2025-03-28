@@ -111,6 +111,7 @@ import com.dd3boh.outertune.utils.YTPlayerUtils
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.enumPreference
 import com.dd3boh.outertune.utils.get
+import com.dd3boh.outertune.utils.reportException
 import com.google.common.util.concurrent.MoreExecutors
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
@@ -268,7 +269,7 @@ class MusicService : MediaLibraryService(),
 
                         Toast.makeText(
                             this@MusicService,
-                            "Error: ${error.message} (${error.errorCode}): ${error.cause?.message ?: "No further errors."} ",
+                            "${getString(R.string.err_general)}: ${error.message} (${error.errorCode}): ${error.cause?.message ?: ""} ",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -631,54 +632,55 @@ class MusicService : MediaLibraryService(),
         var q: MultiQueueObject? = null
 
         val preloadItem = queue.preloadItem
-        CoroutineScope(Dispatchers.Main).launch {
-            if (preloadItem != null) {
-                q = queueBoard.addQueue(
-                    queueTitle ?: "Radio\u2060temp",
-                    listOf(preloadItem),
+        scope.launch {
+            try {
+                if (preloadItem != null) {
+                    q = queueBoard.addQueue(
+                        queueTitle ?: "Radio\u2060temp",
+                        listOf(preloadItem),
+                        player = this@MusicService,
+                        shuffled = queue.startShuffled,
+                        replace = replace,
+                        isRadio = isRadio
+                    )
+                    queueBoard.setCurrQueue(this@MusicService)
+                }
+
+                val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
+                // do not find a title if an override is provided
+                if ((title == null) && initialStatus.title != null) {
+                    queueTitle = initialStatus.title
+
+                    if (preloadItem != null && q != null) {
+                        queueBoard.renameQueue(q!!, queueTitle, this@MusicService)
+                    }
+                }
+
+                val items = ArrayList<MediaMetadata>()
+                if (initialStatus.items.isEmpty()) return@launch
+                if (preloadItem != null) {
+                    items.add(preloadItem)
+                    items.addAll(initialStatus.items.subList(1, initialStatus.items.size))
+                } else {
+                    items.addAll(initialStatus.items)
+                }
+                queueBoard.addQueue(
+                    queueTitle ?: getString(R.string.queue),
+                    items,
                     player = this@MusicService,
                     shuffled = queue.startShuffled,
-                    replace = replace,
+                    startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
+                    replace = replace || preloadItem != null,
                     isRadio = isRadio
                 )
                 queueBoard.setCurrQueue(this@MusicService)
+                player.prepare()
+                player.playWhenReady = playWhenReady
+            } catch (e: Exception) {
+                reportException(e)
+                Toast.makeText(this@MusicService, "${getString(R.string.err_general)}: ${e.message}", Toast.LENGTH_LONG)
+                    .show()
             }
-
-            val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
-            // do not find a title if an override is provided
-            if ((title == null) && initialStatus.title != null) {
-                queueTitle = initialStatus.title
-
-                if (preloadItem != null && q != null) {
-                    queueBoard.renameQueue(q!!, queueTitle, this@MusicService)
-                }
-            }
-
-            val items = ArrayList<MediaMetadata>()
-
-            // print out queue
-//            println("-----------------------------")
-//            initialStatus.items.map { println(it.title) }
-            if (initialStatus.items.isEmpty()) return@launch
-            if (preloadItem != null) {
-                items.add(preloadItem)
-                items.addAll(initialStatus.items.subList(1, initialStatus.items.size))
-            } else {
-                items.addAll(initialStatus.items)
-            }
-            queueBoard.addQueue(
-                queueTitle ?: "Queue",
-                items,
-                player = this@MusicService,
-                shuffled = queue.startShuffled,
-                startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
-                replace = replace || preloadItem != null,
-                isRadio = isRadio
-            )
-            queueBoard.setCurrQueue(this@MusicService)
-
-            player.prepare()
-            player.playWhenReady = playWhenReady
         }
     }
 

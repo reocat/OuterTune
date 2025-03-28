@@ -86,9 +86,6 @@ class DownloadUtil @Inject constructor(
         )
     ) { dataSpec ->
         val mediaId = dataSpec.key ?: error("No media id")
-        if (mediaId.startsWith("LA")) { // downloads are hidden for local songs, this is a last resort
-            throw Exception("Local song are non-downloadable")
-        }
 
         songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
             return@Factory dataSpec.withUri(it.first.toUri())
