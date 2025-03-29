@@ -30,7 +30,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.PlaylistSongMapPreview
 import com.dd3boh.outertune.db.entities.QueueEntity
 import com.dd3boh.outertune.db.entities.QueueSongMap
-import com.dd3boh.outertune.db.entities.RecentActivityItem
+import com.dd3boh.outertune.db.entities.RecentActivityEntity
 import com.dd3boh.outertune.db.entities.RelatedSongMap
 import com.dd3boh.outertune.db.entities.SearchHistory
 import com.dd3boh.outertune.db.entities.SongAlbumMap
@@ -92,8 +92,8 @@ class MusicDatabase(
         PlayCountEntity::class,
         Event::class,
         RelatedSongMap::class,
-        RecentActivityItem::class
-    ],
+        RecentActivityEntity::class
+   ],
     views = [
         SortedSongArtistMap::class,
         SortedSongAlbumMap::class,
@@ -464,7 +464,7 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
 val MIGRATION_18_19 = object : Migration(18, 19) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("""
-            CREATE TABLE IF NOT EXISTS `RecentActivityItem` (
+            CREATE TABLE IF NOT EXISTS `recent_activity` (
                 `date` INTEGER NOT NULL,
                 `explicit` INTEGER NOT NULL,
                 `id` TEXT NOT NULL,

@@ -9,6 +9,7 @@
 
 package com.dd3boh.outertune.ui.component
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.PowerManager
 import androidx.compose.animation.AnimatedVisibility
@@ -112,7 +113,7 @@ import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSong
-import com.dd3boh.outertune.db.entities.RecentActivityItem
+import com.dd3boh.outertune.db.entities.RecentActivityEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.extensions.toMediaItem
@@ -1330,7 +1331,7 @@ fun YouTubeGridItem(
 
 @Composable
 fun YouTubeCardItem(
-    item: RecentActivityItem,
+    item: RecentActivityEntity,
     modifier: Modifier = Modifier,
     isActive: Boolean,
     isPlaying: Boolean,
@@ -1412,6 +1413,7 @@ fun YouTubeCardItem(
     }
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun ItemThumbnail(
     thumbnailUrl: String?,
