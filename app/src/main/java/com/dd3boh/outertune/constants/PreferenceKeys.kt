@@ -27,6 +27,8 @@ enum class GridCellSize {
 
 val SlimNavBarKey = booleanPreferencesKey("slimNavBar")
 
+val SlimHomeScreenTilesKey = booleanPreferencesKey("SlimHomeScreenTiles")
+
 val PlayerTextAlignmentKey = stringPreferencesKey("playerTextAlignment")
 val SliderStyleKey = stringPreferencesKey("sliderStyle")
 

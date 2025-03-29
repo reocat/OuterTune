@@ -6,6 +6,8 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="library">Library</string>
 
     <!-- Home -->
+    <string name="liked">Liked</string>
+    <string name="offline">Downloaded</string>
     <string name="recent_activity">Recent activity</string>
 
     <!-- History screen-->
@@ -84,6 +86,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="show_liked_and_downloaded_playlist">Show liked and downloaded playlists in library</string>
     <string name="slim_navbar_title">Slim navbar</string>
     <string name="slim_navbar_description">Remove text labels to reduce navbar height</string>
+    <string name="slim_hs_tiles">Compact home navigation</string>
+    <string name="slim_hs_tiles_description">Display navigation options as compact chips instead of large tiles.</string>
+
     <string name="tab_arrangement">Arrange tabs</string>
     <string name="tab_arrangement_disable_tip">--- Drag below here to disable ---</string>
     <string name="tab_arrangement_home_required">The Home tab is required.</string>
