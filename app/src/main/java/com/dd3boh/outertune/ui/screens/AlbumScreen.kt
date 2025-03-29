@@ -368,8 +368,9 @@ fun AlbumScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
-                                        items = songsAvailable().shuffled(),
-                                        playlistId = albumWithSongsLocal.album.playlistId
+                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()?: emptyList(),
+                                        playlistId = albumWithSongsLocal.album.playlistId,
+                                        startShuffled = true,
                                     )
                                 )
                             },
