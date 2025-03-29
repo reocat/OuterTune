@@ -10,9 +10,9 @@ enum class RecentActivityType {
     PLAYLIST, ALBUM, ARTIST
 }
 
-@Entity
+@Entity(tableName = "recent_activity")
 @Immutable
-data class RecentActivityItem(
+data class RecentActivityEntity(
     @PrimaryKey val id: String,
     val title: String,
     val thumbnail: String?,

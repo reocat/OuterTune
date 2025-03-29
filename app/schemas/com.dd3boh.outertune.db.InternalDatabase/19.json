@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "520514ada06ccb06ffaee555e70d74d9",
+    "identityHash": "f3b7a7d892360536b63c545bb65d5499",
     "entities": [
       {
         "tableName": "song",
@@ -1243,7 +1243,7 @@
         ]
       },
       {
-        "tableName": "RecentActivityItem",
+        "tableName": "recent_activity",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `thumbnail` TEXT, `explicit` INTEGER NOT NULL, `shareLink` TEXT NOT NULL, `type` TEXT NOT NULL, `playlistId` TEXT, `radioPlaylistId` TEXT, `shufflePlaylistId` TEXT, `date` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
@@ -1333,7 +1333,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '520514ada06ccb06ffaee555e70d74d9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f3b7a7d892360536b63c545bb65d5499')"
     ]
   }
 }
