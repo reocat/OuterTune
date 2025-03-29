@@ -11,7 +11,6 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -49,6 +48,8 @@ import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Reorder
 import androidx.compose.material.icons.rounded.Tab
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -69,7 +70,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -91,6 +91,7 @@ import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
+import com.dd3boh.outertune.constants.SlimHomeScreenTilesKey
 import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.constants.SwipeToQueueKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
@@ -157,6 +158,7 @@ fun AppearanceSettings(
     val (showLikedAndDownloadedPlaylist, onShowLikedAndDownloadedPlaylistChange) = rememberPreference(key = ShowLikedAndDownloadedPlaylist, defaultValue = true)
     val (swipe2Queue, onSwipe2QueueChange) = rememberPreference(SwipeToQueueKey, defaultValue = true)
     val (slimNav, onSlimNavChange) = rememberPreference(SlimNavBarKey, defaultValue = false)
+    val (slimHSTiles, onSlimHSTilesChange) = rememberPreference(SlimHomeScreenTilesKey, defaultValue = false)
     val (flatSubfolders, onFlatSubfoldersChange) = rememberPreference(FlatSubfoldersKey, defaultValue = true)
 
     val availableBackgroundStyles = PlayerBackgroundStyle.entries.filter {
@@ -417,6 +419,14 @@ fun AppearanceSettings(
             icon = { Icon(Icons.Rounded.MoreHoriz, null) },
             checked = slimNav,
             onCheckedChange = onSlimNavChange
+        )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.slim_hs_tiles)) },
+            description = stringResource(R.string.slim_hs_tiles_description),
+            icon = { Icon(Icons.Rounded.Tune, null) },
+            checked = slimHSTiles,
+            onCheckedChange = onSlimHSTilesChange
         )
 
         PreferenceEntry(

@@ -1,11 +1,13 @@
 package com.dd3boh.outertune.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -66,6 +68,7 @@ import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.ListThumbnailSize
+import com.dd3boh.outertune.constants.SlimHomeScreenTilesKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
@@ -82,6 +85,7 @@ import com.dd3boh.outertune.playback.queues.YouTubeAlbumRadio
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.AlbumGridItem
 import com.dd3boh.outertune.ui.component.ArtistGridItem
+import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTile
@@ -116,6 +120,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.random.Random
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -162,6 +167,8 @@ fun HomeScreen(
     val lazylistState = rememberLazyListState()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
+
+    val slimHomeScreenTiles by rememberPreference(SlimHomeScreenTilesKey, false)
 
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
@@ -374,36 +381,62 @@ fun HomeScreen(
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         ) {
             item {
-                Row(
-                    modifier = Modifier
-                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                        .fillMaxWidth()
-                        .animateItem()
-                ) {
-                    NavigationTile(
-                        title = stringResource(R.string.history),
-                        icon = Icons.Rounded.History,
-                        onClick = { navController.navigate("history") },
-                        modifier = Modifier.weight(1f)
+                if (slimHomeScreenTiles) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    ChipsRow(
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .fillMaxWidth()
+                            .animateItem(),
+                        chips = listOfNotNull(
+                            if (isLoggedIn) Pair("account", stringResource(R.string.account)) else null,
+                            Pair("history", stringResource(R.string.history)),
+                            Pair("stats", stringResource(R.string.stats)),
+                            Pair("liked", stringResource(R.string.liked)),
+                            Pair("downloads", stringResource(R.string.offline))
+                        ),
+                        currentValue = "",
+                        onValueUpdate = { value ->
+                            when (value) {
+                                "account" -> navController.navigate("account")
+                                "history" -> navController.navigate("history")
+                                "stats" -> navController.navigate("stats")
+                                "liked" -> navController.navigate("auto_playlist/liked")
+                                "downloads" -> navController.navigate("auto_playlist/downloaded")
+                            }
+                        },
                     )
-
-                    NavigationTile(
-                        title = stringResource(R.string.stats),
-                        icon = Icons.AutoMirrored.Rounded.TrendingUp,
-                        onClick = { navController.navigate("stats") },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    if (isLoggedIn) {
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .fillMaxWidth()
+                            .animateItem()
+                    ) {
                         NavigationTile(
-                            title = stringResource(R.string.account),
-                            icon = Icons.Rounded.Person,
-                            onClick = {
-                                navController.navigate("account")
-                            },
+                            title = stringResource(R.string.history),
+                            icon = Icons.Rounded.History,
+                            onClick = { navController.navigate("history") },
                             modifier = Modifier.weight(1f)
                         )
+
+                        NavigationTile(
+                            title = stringResource(R.string.stats),
+                            icon = Icons.AutoMirrored.Rounded.TrendingUp,
+                            onClick = { navController.navigate("stats") },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (isLoggedIn) {
+                            NavigationTile(
+                                title = stringResource(R.string.account),
+                                icon = Icons.Rounded.Person,
+                                onClick = { navController.navigate("account") },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
