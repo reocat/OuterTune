@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.ui.screens.library
 
-import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -45,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -78,7 +76,6 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsLazyRow
-import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.LibraryAlbumGridItem
 import com.dd3boh.outertune.ui.component.LibraryAlbumListItem
 import com.dd3boh.outertune.ui.component.LibraryArtistGridItem
@@ -100,7 +97,6 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val menuState = LocalMenuState.current
-    val context = LocalContext.current
 
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -133,7 +129,7 @@ fun LibraryScreen(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
 
-    val filterString = when (filter) {
+    when (filter) {
         LibraryFilter.ALBUMS -> stringResource(R.string.albums)
         LibraryFilter.ARTISTS -> stringResource(R.string.artists)
         LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
@@ -142,7 +138,7 @@ fun LibraryScreen(
         LibraryFilter.ALL -> ""
     }
 
-    val defaultFilter: Collection<Pair<LibraryFilter, String>> = decodeTabString(enabledTabs).map {
+    val defaultFilter: List<Pair<LibraryFilter, String>> = decodeTabString(enabledTabs).map {
         when(it) {
             NavigationTab.ALBUM -> LibraryFilter.ALBUMS to stringResource(R.string.albums)
             NavigationTab.ARTIST -> LibraryFilter.ARTISTS to stringResource(R.string.artists)
@@ -160,23 +156,24 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (filter == LibraryFilter.ALL)
-            chips.addAll(defaultFilter)
-        else
-            chips.add(filter to filterString)
+        if (filter == LibraryFilter.ALL) {
+            defaultFilter.forEach { chip ->
+                chips.add(chip)
+            }
+        }
     }
 
     LaunchedEffect(filter) {
         if (filter == LibraryFilter.ALL) {
             defaultFilter.forEachIndexed { index, it ->
-                if (!chips.contains(it)) chips.add(index, it)
+                if (!chips.any { chip -> chip == it }) chips.add(index, it)
             }
             filterSelected = LibraryFilter.ALL
         } else {
             filterSelected = filter
             chips.filter { it.first != filter }
                 .onEach {
-                    if (chips.contains(it)) chips.remove(it)
+                    if (chips.any { chip -> chip == it }) chips.removeElement(it)
                 }
         }
     }
@@ -196,9 +193,9 @@ fun LibraryScreen(
                 selected = { it == filterSelected },
                 isLoading = { filter ->
                     (filter == LibraryFilter.PLAYLISTS && isSyncingRemotePlaylists)
-                    || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
-                    || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
-                    || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
+                            || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
+                            || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
+                            || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
                 }
             )
 
@@ -211,10 +208,10 @@ fun LibraryScreen(
                 ) {
                     Icon(
                         imageVector =
-                        when (viewType) {
-                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                            LibraryViewType.GRID -> Icons.Rounded.GridView
-                        },
+                            when (viewType) {
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                            },
                         contentDescription = null
                     )
                 }
@@ -345,8 +342,8 @@ fun LibraryScreen(
                             }
 
                             items(
-                                items = allItems.distinctBy { it.hashCode() },
-                                key = { it.hashCode() },
+                                items = allItems.distinctBy { getObjectHashCode(it) },
+                                key = { getObjectHashCode(it) },
                                 contentType = { CONTENT_TYPE_LIST }
                             ) { item ->
                                 when (item) {
@@ -451,8 +448,8 @@ fun LibraryScreen(
                             }
 
                             items(
-                                items = allItems.distinctBy { it.hashCode() },
-                                key = { it.hashCode() },
+                                items = allItems.distinctBy { getObjectHashCode(it) },
+                                key = { getObjectHashCode(it) },
                                 contentType = { CONTENT_TYPE_LIST }
                             ) { item ->
                                 when (item) {
@@ -499,6 +496,20 @@ fun LibraryScreen(
             isVisible = allItems.isEmpty() && !showLikedAndDownloadedPlaylist,
         )
     }
+}
+
+private fun getObjectHashCode(obj: Any): Long {
+    return System.identityHashCode(obj).toLong()
+}
+
+private fun <T> SnapshotStateList<T>.removeElement(element: T): Boolean {
+    for (i in indices) {
+        if (this[i] == element) {
+            removeAt(i)
+            return true
+        }
+    }
+    return false
 }
 
 @Composable
