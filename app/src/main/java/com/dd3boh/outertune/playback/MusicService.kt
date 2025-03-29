@@ -18,6 +18,7 @@ import android.media.audiofx.AudioEffect
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Binder
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -88,6 +89,7 @@ import com.dd3boh.outertune.db.entities.Event
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.db.entities.QueueEntity
 import com.dd3boh.outertune.db.entities.RelatedSongMap
+import com.dd3boh.outertune.di.AppModule.PlayerCache
 import com.dd3boh.outertune.di.DownloadCache
 import com.dd3boh.outertune.extensions.SilentHandler
 import com.dd3boh.outertune.extensions.collect
@@ -97,6 +99,7 @@ import com.dd3boh.outertune.extensions.findNextMediaItemById
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.setOffloadEnabled
 import com.dd3boh.outertune.lyrics.LyricsHelper
+import com.dd3boh.outertune.models.HybridCacheDataSinkFactory
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -155,6 +158,8 @@ const val MAX_CONSECUTIVE_ERR = 3
 class MusicService : MediaLibraryService(),
     Player.Listener,
     PlaybackStatsListener.Callback {
+    val TAG = MusicService::class.simpleName.toString()
+
     @Inject
     lateinit var database: MusicDatabase
 
@@ -196,6 +201,10 @@ class MusicService : MediaLibraryService(),
     val playerVolume = MutableStateFlow(dataStore.get(PlayerVolumeKey, 1f).coerceIn(0f, 1f))
 
     lateinit var sleepTimer: SleepTimer
+
+    @Inject
+    @PlayerCache
+    lateinit var playerCache: SimpleCache
 
     @Inject
     @DownloadCache
@@ -796,21 +805,34 @@ class MusicService : MediaLibraryService(),
         }
     }
 
-    private fun createCacheDataSource(): CacheDataSource.Factory =
-        CacheDataSource.Factory()
+
+    private fun createCacheDataSource(): CacheDataSource.Factory {
+        return CacheDataSource.Factory()
             .setCache(downloadCache)
             .setUpstreamDataSourceFactory(
-                DefaultDataSource.Factory(
-                    this,
-                    OkHttpDataSource.Factory(
-                        OkHttpClient.Builder()
-                            .proxy(YouTube.proxy)
-                            .build()
+                CacheDataSource.Factory()
+                    .setCache(playerCache)
+                    .setUpstreamDataSourceFactory(
+                        DefaultDataSource.Factory(
+                            this,
+                            OkHttpDataSource.Factory(
+                                OkHttpClient.Builder()
+                                    .proxy(YouTube.proxy)
+                                    .build()
+                            )
+                        )
                     )
-                )
+                    .setCacheWriteDataSinkFactory(
+                        HybridCacheDataSinkFactory(playerCache) { dataSpec ->
+                            Log.d(TAG, "SONG CACHE: ${dataSpec.key?.startsWith("LA") == false}")
+                            dataSpec.key?.startsWith("LA") == false
+                        }
+                    )
+                    .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
             )
             .setCacheWriteDataSinkFactory(null)
             .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+    }
 
     private fun createDataSourceFactory(): DataSource.Factory {
         val songUrlCache = HashMap<String, Pair<String, Long>>()
@@ -819,6 +841,7 @@ class MusicService : MediaLibraryService(),
 
             // find a better way to detect local files later...
             if (mediaId.startsWith("LA")) {
+                Log.d(TAG, "PLAYING: local song")
                 val songPath = runBlocking(Dispatchers.IO) {
                     database.song(mediaId).firstOrNull()?.song?.localPath
                 }
@@ -833,15 +856,22 @@ class MusicService : MediaLibraryService(),
                 return@Factory dataSpec.withUri(Uri.fromFile(File(songPath)))
             }
 
-            if (downloadCache.isCached(mediaId, dataSpec.position, if (dataSpec.length >= 0) dataSpec.length else 1)) {
+            val isDownload =
+                downloadCache.isCached(mediaId, dataSpec.position, if (dataSpec.length >= 0) dataSpec.length else 1)
+            val isCache = playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)
+            if (isDownload || isCache) {
+                Log.d(TAG, "PLAYING: remote song (cache = ${isCache}, download = ${isDownload})")
                 scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
                 return@Factory dataSpec
             }
 
             songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
+                Log.d(TAG, "PLAYING: remote song (temp cache)")
                 scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
+
+            Log.d(TAG, "PLAYING: remote song (online fetch)")
 
             // Check whether format exists so that users from older version can view format details
             // There may be inconsistent between the downloaded file and the displayed info if user change audio quality frequently
