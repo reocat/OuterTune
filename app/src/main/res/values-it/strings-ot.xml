@@ -142,4 +142,8 @@
     <string name="action_cancel">Annulla</string>
     <string name="queues_title">Code</string>
     <string name="queues_empty">Nessuna coda</string>
+    <string name="filter_arrangement">Organizzare i filtri</string>
+    <string name="image_cache_tooltip">Riavviare l\'app per applicare le modifiche</string>
+    <string name="swipe_to_skip_title">Scorri orizzontalmente per cambiare conzone</string>
+    <string name="swipe_to_skip_description">Abilitare scorrimento orizzontale nel player per cambiare canzone</string>
 </resources>
