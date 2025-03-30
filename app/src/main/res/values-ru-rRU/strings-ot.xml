@@ -72,6 +72,7 @@
     <string name="tab_arrangement">Расположение вкладок</string>
     <string name="tab_arrangement_disable_tip">--- Потяните вниз, чтобы выключить ---</string>
     <string name="tab_arrangement_home_required">Вкладка «Главная» обязательна.</string>
+    <string name="filter_arrangement">Порядок фильтров</string>
 
     <!-- Content settings -->
     <string name="like_autodownload">Автоматически скачивать понравившиеся песни</string>
@@ -159,6 +160,9 @@
 
     <string name="scanner_variant_rescan">Пересканировать всю библиотеку и обновить метаданные всех треков</string>
     <string name="scanner_online_artist_linking">Попытаться связать исполнителей локальных файлов с исполнителями на YouTube Music</string>
+
+    <!-- Storage settings -->
+    <string name="image_cache_tooltip">Перезапустите приложение, чтобы изменения вступили в силу</string>
 
     <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Приостановить обмен историей прослушивания с YouTube Music</string>
