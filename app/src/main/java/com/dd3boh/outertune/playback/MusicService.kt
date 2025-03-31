@@ -335,6 +335,7 @@ class MusicService : MediaLibraryService(),
             }
 
         mediaLibrarySessionCallback.apply {
+            service = this@MusicService
             toggleLike = ::toggleLike
             toggleStartRadio = ::toggleStartRadio
             toggleLibrary = ::toggleLibrary
