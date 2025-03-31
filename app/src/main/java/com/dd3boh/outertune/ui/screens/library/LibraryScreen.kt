@@ -135,7 +135,6 @@ fun LibraryScreen(
         LibraryFilter.SONGS -> stringResource(R.string.songs)
         LibraryFilter.FOLDERS -> stringResource(R.string.folders)
         LibraryFilter.ALL -> ""
-        else -> ""
     }
 
     val defaultFilter: Collection<Pair<LibraryFilter, String>> = decodeFilterString(enabledFilters).map {
@@ -490,7 +489,6 @@ fun LibraryScreen(
                         }
                     }
                 }
-            else -> {}
         }
         LibraryEmptyState(
             isVisible = allItems.isEmpty() && !showLikedAndDownloadedPlaylist,

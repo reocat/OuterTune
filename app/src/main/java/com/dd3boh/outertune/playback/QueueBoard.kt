@@ -85,7 +85,7 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
      */
     private fun bubbleUp(index: Int, player: MusicService) {
         if (index < 0 || index == masterQueues.size - 1) {
-            Log.w(TAG, "Bubble up index out of bounds")
+            Timber.w(TAG, "Bubble up index out of bounds")
             return
         }
 
@@ -819,13 +819,13 @@ class QueueBoard(queues: MutableList<MultiQueueObject> = ArrayList()) {
             return 0
         }
 
-        Timber.tag(TAG).d("%snull", "Setting current queue. in bounds: ${queuePos >= 0 && queuePos < mediaItems.size}, " +
+        Timber.tag(TAG).d("%snull", "Setting current queue. in bounds: ${queuePos < mediaItems.size}, " +
                 "queuePos: $queuePos, real queuePos: ${realQueuePos}, ids: ${player.player.currentMetadata?.id}, "
         )
         /**
          * current playing == jump target, do seamlessly
          */
-        val seamlessSupported = (queuePos >= 0 && queuePos < mediaItems.size)
+        val seamlessSupported = (queuePos < mediaItems.size)
                 && player.player.currentMetadata?.id == mediaItems[queuePos].id
         if (seamlessSupported) {
             Timber.tag(TAG).d("Trying seamless queue switch. Is first song?: ${queuePos == 0}")
