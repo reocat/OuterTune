@@ -21,10 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.models.MultiQueueObject
-import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.ListItem
 import com.dd3boh.outertune.ui.component.QueueListItem
@@ -38,6 +38,7 @@ fun AddToQueueDialog(
     onAdd: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val playerConnection = LocalPlayerConnection.current
     var queues by remember {
         mutableStateOf(emptyList<MultiQueueObject>())
     }
@@ -47,7 +48,7 @@ fun AddToQueueDialog(
 
 
     LaunchedEffect(Unit) {
-        queues = queueBoard.getAllQueues().reversed()
+        queues = playerConnection?.service?.queueBoard?.getAllQueues()?.reversed() ?: emptyList()
     }
 
     if (isVisible) {

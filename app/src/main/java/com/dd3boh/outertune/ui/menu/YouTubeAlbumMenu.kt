@@ -52,7 +52,6 @@ import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
-import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.playback.queues.YouTubeAlbumRadio
 import com.dd3boh.outertune.ui.component.DownloadGridMenu
 import com.dd3boh.outertune.ui.component.GridMenu
@@ -121,10 +120,12 @@ fun YouTubeAlbumMenu(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
             album?.songs?.let { song ->
-                queueBoard.addQueue(queueName, song.map { it.toMediaMetadata() }, playerConnection,
-                    forceInsert = true, delta = false)
+                playerConnection.service.queueBoard.addQueue(
+                    queueName, song.map { it.toMediaMetadata() },
+                    forceInsert = true, delta = false
+                )
             }
-            queueBoard.setCurrQueue(playerConnection)
+            playerConnection.service.queueBoard.setCurrQueue()
         },
         onDismiss = {
             showChooseQueueDialog = false

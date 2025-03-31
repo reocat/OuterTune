@@ -24,7 +24,6 @@ import com.dd3boh.outertune.db.entities.Event
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
 import com.dd3boh.outertune.ui.component.SongFolderItem
@@ -52,9 +51,9 @@ fun FolderMenu(
     AddToQueueDialog(
         isVisible = showChooseQueueDialog,
         onAdd = { queueName ->
-            queueBoard.addQueue(queueName, allFolderSongs.map { it.toMediaMetadata() }, playerConnection,
+            playerConnection.service.queueBoard.addQueue(queueName, allFolderSongs.map { it.toMediaMetadata() },
                 forceInsert = true, delta = false)
-            queueBoard.setCurrQueue(playerConnection)
+            playerConnection.service.queueBoard.setCurrQueue()
         },
         onDismiss = {
             showChooseQueueDialog = false
