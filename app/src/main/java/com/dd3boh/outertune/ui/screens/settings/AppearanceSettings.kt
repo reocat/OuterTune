@@ -107,9 +107,7 @@ import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.decodeFilterString
-import com.dd3boh.outertune.utils.decodeTabString
 import com.dd3boh.outertune.utils.encodeFilterString
-import com.dd3boh.outertune.utils.encodeTabString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import me.saket.squiggles.SquigglySlider
