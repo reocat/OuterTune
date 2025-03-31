@@ -202,8 +202,4 @@ class PlayerConnection(
     fun dispose() {
         player.removeListener(this)
     }
-
-    companion object {
-        var queueBoard = QueueBoard()
-    }
 }

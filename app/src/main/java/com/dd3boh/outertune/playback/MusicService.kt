@@ -103,7 +103,6 @@ import com.dd3boh.outertune.models.HybridCacheDataSinkFactory
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.PlayerConnection.Companion.queueBoard
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.Queue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
@@ -183,6 +182,7 @@ class MusicService : MediaLibraryService(),
 
     private val audioQuality by enumPreference(this, AudioQualityKey, AudioQuality.AUTO)
 
+    var queueBoard = QueueBoard(this)
     var queueTitle: String? = null
     var queuePlaylistId: String? = null
     private var lastMediaItemIndex = -1
@@ -308,7 +308,7 @@ class MusicService : MediaLibraryService(),
                             scope.launch(SilentHandler) {
                                 val mediaItems = YouTubeQueue(WatchEndpoint(songId)).nextPage()
                                 if (player.playbackState != STATE_IDLE) {
-                                    queueBoard.enqueueEnd(mediaItems.drop(1), this@MusicService, isRadio = true)
+                                    queueBoard.enqueueEnd(mediaItems.drop(1), isRadio = true)
                                 }
                             }
                         }
@@ -319,14 +319,14 @@ class MusicService : MediaLibraryService(),
                             (reason == MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) &&
                             isShuffleEnabled.value && player.repeatMode == REPEAT_MODE_ALL
                         ) {
-                            queueBoard.shuffleCurrent(this@MusicService, false) // reshuffle queue
-                            queueBoard.setCurrQueue(this@MusicService)
+                            queueBoard.shuffleCurrent(false) // reshuffle queue
+                            queueBoard.setCurrQueue()
                         }
                         lastMediaItemIndex = player.currentMediaItemIndex
 
                         updateNotification() // also updates when queue changes
 
-                        queueBoard.setCurrQueuePosIndex(player.currentMediaItemIndex, this@MusicService)
+                        queueBoard.setCurrQueuePosIndex(player.currentMediaItemIndex)
                     }
                 })
                 sleepTimer = SleepTimer(scope, this)
@@ -437,7 +437,7 @@ class MusicService : MediaLibraryService(),
                     isShuffleEnabled.value = queue.shuffled
                     initQueue()
                     CoroutineScope(Dispatchers.Main).launch {
-                        val queuePos = queueBoard.setCurrQueue(this@MusicService, false)
+                        val queuePos = queueBoard.setCurrQueue(false)
                         if (queuePos != null) {
                             player.seekTo(queuePos, dataStore.get(LastPosKey, C.TIME_UNSET))
                             dataStore.edit { settings ->
@@ -497,13 +497,13 @@ class MusicService : MediaLibraryService(),
 
     fun initQueue() {
         if (dataStore.get(PersistentQueueKey, true)) {
-            queueBoard = QueueBoard(database.readQueue().toMutableList())
+            queueBoard = QueueBoard(this, database.readQueue().toMutableList())
             queueBoard.getCurrentQueue()?.let {
                 isShuffleEnabled.value = it.shuffled
                 queueBoard.initialized = true
             }
         } else {
-            queueBoard = QueueBoard()
+            queueBoard = QueueBoard(this)
         }
     }
 
@@ -647,12 +647,11 @@ class MusicService : MediaLibraryService(),
                     q = queueBoard.addQueue(
                         queueTitle ?: "Radio\u2060temp",
                         listOf(preloadItem),
-                        player = this@MusicService,
                         shuffled = queue.startShuffled,
                         replace = replace,
                         isRadio = isRadio
                     )
-                    queueBoard.setCurrQueue(this@MusicService)
+                    queueBoard.setCurrQueue()
                 }
 
                 val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
@@ -661,7 +660,7 @@ class MusicService : MediaLibraryService(),
                     queueTitle = initialStatus.title
 
                     if (preloadItem != null && q != null) {
-                        queueBoard.renameQueue(q!!, queueTitle, this@MusicService)
+                        queueBoard.renameQueue(q!!, queueTitle)
                     }
                 }
 
@@ -676,13 +675,13 @@ class MusicService : MediaLibraryService(),
                 queueBoard.addQueue(
                     queueTitle ?: getString(R.string.queue),
                     items,
-                    player = this@MusicService,
                     shuffled = queue.startShuffled,
                     startIndex = if (initialStatus.mediaItemIndex > 0) initialStatus.mediaItemIndex else 0,
                     replace = replace || preloadItem != null,
                     isRadio = isRadio
                 )
-                queueBoard.setCurrQueue(this@MusicService)
+                queueBoard.setCurrQueue()
+
                 player.prepare()
                 player.playWhenReady = playWhenReady
             } catch (e: Exception) {
@@ -712,8 +711,8 @@ class MusicService : MediaLibraryService(),
             }
         } else {
             // enqueue next
-            queueBoard.getCurrentQueue()?.let { it ->
-                queueBoard.addSongsToQueue(it, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata }, this)
+            queueBoard.getCurrentQueue()?.let {
+                queueBoard.addSongsToQueue(it, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata })
             }
         }
     }
@@ -722,7 +721,7 @@ class MusicService : MediaLibraryService(),
      * Add items to end of current queue
      */
     fun enqueueEnd(items: List<MediaItem>) {
-        queueBoard.enqueueEnd(items.mapNotNull { it.metadata }, this)
+        queueBoard.enqueueEnd(items.mapNotNull { it.metadata })
     }
 
     fun toggleLibrary() {
@@ -972,16 +971,16 @@ class MusicService : MediaLibraryService(),
      */
     fun triggerShuffle() {
         val oldIndex = player.currentMediaItemIndex
-        queueBoard.setCurrQueuePosIndex(oldIndex, this)
+        queueBoard.setCurrQueuePosIndex(oldIndex)
         val currentQueue = queueBoard.getCurrentQueue() ?: return
 
         // shuffle and update player playlist
         if (!currentQueue.shuffled) {
-            queueBoard.shuffleCurrent(this)
+            queueBoard.shuffleCurrent()
         } else {
-            queueBoard.unShuffleCurrent(this)
+            queueBoard.unShuffleCurrent()
         }
-        queueBoard.setCurrQueue(this)
+        queueBoard.setCurrQueue()
 
         updateNotification()
     }
