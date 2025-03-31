@@ -464,7 +464,7 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
 val MIGRATION_18_19 = object : Migration(18, 19) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("""
-            CREATE TABLE IF NOT EXISTS `recent_activity` (
+            CREATE TABLE IF NOT EXISTS `recent_activity_new` (
                 `date` INTEGER NOT NULL,
                 `explicit` INTEGER NOT NULL,
                 `id` TEXT NOT NULL,
@@ -478,6 +478,13 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
                 PRIMARY KEY(`id`)
             )
         """)
+        db.execSQL("""
+            INSERT INTO recent_activity_new (date, explicit, id, playlistId, radioPlaylistId, shareLink, shufflePlaylistId, thumbnail, title, type)
+            SELECT date, explicit, id, playlistId, radioPlaylistId, shareLink, shufflePlaylistId, thumbnail, title, type
+            FROM RecentActivityItem
+        """)
+        db.execSQL("DROP TABLE RecentActivityItem")
+        db.execSQL("ALTER TABLE recent_activity_new RENAME TO recent_activity")
     }
 }
 
