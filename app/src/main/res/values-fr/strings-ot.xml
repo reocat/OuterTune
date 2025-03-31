@@ -144,4 +144,6 @@
     <string name="pause_remote_listen_history">Partager l\'historique d\'écoute avec YouTube Music</string>
     <string name="swipe_to_skip_title">Balayer horizontalement pour changer de titre</string>
     <string name="swipe_to_skip_description">Activer le balayage horizontal dans le lecteur pour changer de titre</string>
+    <string name="filter_arrangement">Organiser les filtres</string>
+    <string name="image_cache_tooltip">Redémarrez l\'application afin que les modifications prennent effet</string>
 </resources>
