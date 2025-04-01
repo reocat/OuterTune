@@ -1118,6 +1118,7 @@ class MusicService : MediaLibraryService(),
         const val ARTIST = "artist"
         const val ALBUM = "album"
         const val PLAYLIST = "playlist"
+        const val SEARCH = "search"
 
         const val CHANNEL_ID = "music_channel_01"
         const val NOTIFICATION_ID = 888
