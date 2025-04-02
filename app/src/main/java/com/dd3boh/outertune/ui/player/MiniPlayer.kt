@@ -167,12 +167,8 @@ fun MiniMediaInfo(
 
             if (mediaMetadata.isLocal) {
                 // local thumbnail arts
-                val image = imageCache.getLocalThumbnail(mediaMetadata.localPath, true)
-                if (image != null)
-                    isRectangularImage = image.width.toFloat() / image.height != 1f
-
                 AsyncImageLocal(
-                    image = { image },
+                    image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, true) },
                     contentDescription = null,
                     modifier = Modifier
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))

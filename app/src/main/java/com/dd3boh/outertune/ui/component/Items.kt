@@ -1444,13 +1444,9 @@ fun ItemThumbnail(
                 )
             }
         } else if (thumbnailUrl?.startsWith("/storage") == true) {
-            val image = imageCache.getLocalThumbnail(thumbnailUrl, true)
-            if (image != null)
-                isRectangularImage = image.width.toFloat() / image.height != 1f
-
             // local thumbnail arts
             AsyncImageLocal(
-                image = { image },
+                image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
