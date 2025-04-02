@@ -107,12 +107,8 @@ fun Thumbnail(
                     if (mediaMetadata?.isLocal == true) {
                         // local thumbnail arts
                         mediaMetadata.let { // required to re render when song changes
-                            val image = imageCache.getLocalThumbnail(it.localPath, false)
-                            if (image != null)
-                                isRectangularImage = image.width.toFloat() / image.height != 1f
-
                             AsyncImageLocal(
-                                image = { image },
+                                image = { imageCache.getLocalThumbnail(it.localPath, false) },
                                 contentDescription = null,
                                 contentScale = contentScale,
                                 modifier = Modifier
