@@ -10,7 +10,7 @@
     <string name="scan_paths_excl">Caminhos de busca exclusos</string>
     <string name="audio_offload">Ativar descarga</string>
     <string name="scanner_strict_file_name_description">Quando ativado, os nomes de arquivo NÃO serão ignorados. Por exemplo, música.ogg será uma diferente de música.flac. A configuração de sensibilidade da busca ainda se aplica</string>
-    <string name="lyrics_prefer_local_description">Priorizar arquivos de letras locais antes de usar os fornecedidos pela nuvem. Desative isso para priorizar os forcenidos pela nuvem</string>
+    <string name="lyrics_prefer_local_description">Priorizar arquivos de letras locais antes de usar os fornecidos pela nuvem. Desative isso para priorizar os fornecidos pela nuvem</string>
     <string name="local_library_enable_description">Desativar isto ocultará a biblioteca local do app</string>
     <string name="flat_subfolders_description">Desative isto para preservar como a estrutura de arquivos é no armazenamento</string>
     <string name="auto_scanner_description">Buscar músicas automaticamente ao abrir o app. Isso não recarrega os metadados de músicas existentes.</string>
@@ -101,7 +101,7 @@
     <string name="select">Modo de seleção</string>
     <string name="sort_by_play_count">Número de reproduções</string>
     <string name="scan_paths_tooltip">Todas as subpastas também serão afetadas</string>
-    <string name="token_adv_login_description">Esse é um método de login AVANÇADO. Como uma alternativa ao portal web, você pode digitar ou atualizar seu token de login diretamente aqui. Por exemplo, isso pode fazer com que fazer login em vários dispositivos seja mais rápido. Observa que qualquer formato de token inválido qual o app não consegue entender não será aceitado</string>
+    <string name="token_adv_login_description">Esse é um método de login AVANÇADO. Como uma alternativa ao portal web, você pode digitar ou atualizar seu token de login diretamente aqui. Por exemplo, isso pode fazer com que fazer login em vários dispositivos seja mais rápido. Note que qualquer formato de token inválido qual o app não consegue entender não será aceitado</string>
     <string name="min_playback_duration_description">A duração mínima que uma música deve ser reproduzida antes que seja considerada realmente reproduzida</string>
     <string name="scan_paths_add_folder">Adicionar uma nova pasta</string>
     <string name="scanner_progress_scanning">Buscando…</string>
@@ -127,7 +127,7 @@
         <item quantity="many">%d de músicas encontradas</item>
         <item quantity="other">%d músicas encontradas</item>
     </plurals>
-    <string name="scanner_missing_ffmpeg">O eztrator FFmpeg não foi detectado</string>
+    <string name="scanner_missing_ffmpeg">O extrator FFmpeg não foi detectado</string>
     <string name="sync_progress_active">Sincronizando com a conta do YouTube…</string>
     <string name="grp_lyrics_format">Formatação</string>
     <string name="grp_lyrics_source">Fontes das letras</string>
