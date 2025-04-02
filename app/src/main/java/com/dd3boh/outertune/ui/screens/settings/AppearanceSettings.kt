@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -483,31 +484,33 @@ fun AppearanceSettings(
                             state = reorderableState,
                             key = tab.hashCode()
                         ) {
+                            val isHome = tab.first == Screens.Home
                             fun onChecked() {
-                                mutableTabs[mutableTabs.indexOf(tab)] = tab.copy(second = !tab.second)
-                            }
-
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .padding(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
-                                    .fillMaxWidth()
-                                    .clickable { onChecked() }
-                            ) {
-                                Row(modifier = Modifier
-                                    .background(if (tab.second) MaterialTheme.colorScheme.primary else Color.Transparent)
-                                ) {
-                                    Row(
-                                        Modifier.padding(start = 8.dp)
-                                            .background(MaterialTheme.colorScheme.surface)
-                                    ) {
-                                        Text(
-                                            text = stringResource(tab.first.titleId),
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                    }
+                                if (!isHome) {
+                                    mutableTabs[mutableTabs.indexOf(tab)] = tab.copy(second = !tab.second)
                                 }
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = !isHome) { onChecked() }
+                                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(
+                                    checked = tab.second,
+                                    enabled = !isHome,
+                                    onCheckedChange = { onChecked() }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(tab.first.titleId),
+                                    modifier = Modifier.weight(1f),
+                                    color = if (isHome)
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    else
+                                        MaterialTheme.colorScheme.onSurface
+                                )
                                 Icon(
                                     imageVector = Icons.Rounded.DragHandle,
                                     contentDescription = null,
@@ -570,38 +573,29 @@ fun AppearanceSettings(
                             fun onChecked() {
                                 mutableFilters[mutableFilters.indexOf(filter)] = filter.copy(second = !filter.second)
                             }
-
                             Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .padding(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
                                     .fillMaxWidth()
                                     .clickable { onChecked() }
+                                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Row(modifier = Modifier
-                                    .background(if (filter.second) MaterialTheme.colorScheme.primary else Color.Transparent)
-                                ) {
-                                    Row(
-                                        Modifier.padding(start = 8.dp)
-                                            .background(MaterialTheme.colorScheme.surface)
-                                    ) {
-                                        Text(
-                                            text = when (filter.first) {
-                                                LibraryFilter.ALBUMS -> stringResource(R.string.albums)
-                                                LibraryFilter.ARTISTS -> stringResource(R.string.artists)
-                                                LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
-                                                LibraryFilter.SONGS -> stringResource(R.string.songs)
-                                                LibraryFilter.FOLDERS -> stringResource(R.string.folders)
-                                                else -> {
-                                                    // TODO: Do we even need this?
-                                                    stringResource(R.string.tab_arrangement_disable_tip)
-                                                }
-                                            },
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                    }
-                                }
+                                Checkbox(
+                                    checked = filter.second,
+                                    onCheckedChange = { onChecked() }
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = when (filter.first) {
+                                        LibraryFilter.ALBUMS -> stringResource(R.string.albums)
+                                        LibraryFilter.ARTISTS -> stringResource(R.string.artists)
+                                        LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
+                                        LibraryFilter.SONGS -> stringResource(R.string.songs)
+                                        LibraryFilter.FOLDERS -> stringResource(R.string.folders)
+                                        LibraryFilter.ALL -> stringResource(R.string.tab_arrangement_disable_tip)
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
                                 Icon(
                                     imageVector = Icons.Rounded.DragHandle,
                                     contentDescription = null,
