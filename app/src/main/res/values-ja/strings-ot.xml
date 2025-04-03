@@ -141,4 +141,5 @@
     <string name="filter_arrangement">フィルターの配置</string>
     <string name="swipe_to_skip_title">曲を変えるには横にスワイプしてください</string>
     <string name="swipe_to_skip_description">プレーヤー内で水平にスワイプして曲を切り替える</string>
+    <string name="image_cache_tooltip">変更を反映するには、アプリを再起動してください</string>
 </resources>
