@@ -41,7 +41,7 @@
     <string name="new_interface">Nova organização da interface</string>
     <string name="player_background_blur">Borrado</string>
     <string name="player_background_style">Estilo do fundo do reprodutor</string>
-    <string name="show_liked_and_downloaded_playlist">Mostrar playlists favoritas e baixadas na biblioteca</string>
+    <string name="show_liked_and_downloaded_playlist">Mostrar playlists de favoritos e baixados na biblioteca</string>
     <string name="slim_navbar_title">Barra de navegação pequena</string>
     <string name="slim_navbar_description">Remover legendas para diminuir a altura da barra de navegação</string>
     <string name="tab_arrangement">Organizar abas</string>
