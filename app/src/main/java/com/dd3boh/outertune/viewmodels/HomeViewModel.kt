@@ -47,6 +47,8 @@ class HomeViewModel @Inject constructor(
     val accountPlaylists = MutableStateFlow<List<PlaylistItem>?>(null)
     val mixedPlaylist = MutableStateFlow<List<PlaylistItem>?>(null)
     val homePage = MutableStateFlow<HomePage?>(null)
+    val selectedChip = MutableStateFlow<HomePage.Chip?>(null)
+    private val previousHomePage = MutableStateFlow<HomePage?>(null)
     val explorePage = MutableStateFlow<ExplorePage?>(null)
     val playlists = database.playlists(PlaylistFilter.LIBRARY, PlaylistSortType.NAME, true)
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
@@ -163,9 +165,32 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
             homePage.value = nextSections.copy(
+                chips = homePage.value?.chips,
                 sections = homePage.value?.sections.orEmpty() + nextSections.sections
             )
             _isLoadingMore.value = false
+        }
+    }
+
+    fun toggleChip(chip: HomePage.Chip?) {
+        if (chip == null || chip == selectedChip.value && previousHomePage.value != null) {
+            homePage.value = previousHomePage.value
+            previousHomePage.value = null
+            selectedChip.value = null
+            return
+        }
+
+        if (selectedChip.value == null) {
+            // store the actual homepage for deselecting chips
+            previousHomePage.value = homePage.value
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            val nextSections = YouTube.home(params = chip?.endpoint?.params).getOrNull() ?: return@launch
+            homePage.value = nextSections.copy(
+                chips = homePage.value?.chips,
+                sections = nextSections.sections
+            )
+            selectedChip.value = chip
         }
     }
 
