@@ -1,6 +1,7 @@
 package com.dd3boh.outertune.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -149,6 +150,8 @@ fun HomeScreen(
     val playlists by viewModel.playlists.collectAsState()
     val recentActivity by viewModel.recentActivity.collectAsState()
 
+    val selectedChip by viewModel.selectedChip.collectAsState()
+
     val allLocalItems by viewModel.allLocalItems.collectAsState()
     val allYtItems by viewModel.allYtItems.collectAsState()
 
@@ -188,6 +191,13 @@ fun HomeScreen(
                     viewModel.loadMoreYouTubeItems(homePage?.continuation)
                 }
             }
+    }
+
+    if (selectedChip != null) {
+        BackHandler {
+            // if a chip is selected, go back to the normal homepage first
+            viewModel.toggleChip(selectedChip)
+        }
     }
 
 
@@ -454,6 +464,17 @@ fun HomeScreen(
                     }
                 }
             }
+
+            item {
+                ChipsRow(
+                    chips = homePage?.chips?.mapNotNull { it to it.title } ?: emptyList(),
+                    currentValue = selectedChip,
+                    onValueUpdate = {
+                        viewModel.toggleChip(it)
+                    }
+                )
+            }
+
 
             if (isLoggedIn && !recentActivity.isNullOrEmpty()) {
                 item {
