@@ -151,7 +151,7 @@ interface ArtistsDao {
 
         return _getArtists(query).map { artists ->
             artists
-                .filter { it.artist.isYouTubeArtist || it.artist.isLocalArtist } // TODO: add ui to filter by local or remote or something idk
+                .filter { it.artist.isYouTubeArtist || it.artist.isLocal } // TODO: add ui to filter by local or remote or something idk
                 .reversed(descending)
         }
     }

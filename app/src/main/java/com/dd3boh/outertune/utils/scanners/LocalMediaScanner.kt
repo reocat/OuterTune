@@ -660,7 +660,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                     runBlocking(Dispatchers.IO) {
                         database.fuzzySearchArtists(artistVal).first().filter { artist ->
                             // only look for remote artists here
-                            return@filter artist.name == artistVal && !artist.isLocalArtist
+                            return@filter artist.name == artistVal && !artist.isLocal
                         }
                     }
 

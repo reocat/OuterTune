@@ -24,8 +24,6 @@ class GenreEntity(
     // In hopes of not having to modify the database again, I barf vals
 ) {
 
-    val isLocalGenre: Boolean
-        get() = id.startsWith("LG")
     companion object {
         fun generateGenreId() = "LG" + RandomStringUtil.random(8,
             includeLetters = true,
