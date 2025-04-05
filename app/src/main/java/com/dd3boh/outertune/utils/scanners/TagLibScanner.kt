@@ -57,7 +57,7 @@ class TagLibScanner : MetadataScanner {
             var albumName: String? = null
             var year: Int? = null
             var date: LocalDateTime? = null
-            var codec: String? = null
+            var codec: String
             var type: String? = null
             var bitrate: Int
             var sampleRate: Int
@@ -77,6 +77,7 @@ class TagLibScanner : MetadataScanner {
             channels = audioProperties.channels
             sampleRate = audioProperties.sampleRate
             bitrate = audioProperties.bitrate * 1000
+            codec = audioProperties.codec
 
 
             // Read metadata
@@ -209,8 +210,8 @@ class TagLibScanner : MetadataScanner {
                 FormatEntity(
                     id = songId,
                     itag = -1,
-                    mimeType = "Not implemented", // mime,
-                    codecs = "Not implemented", //codec?.trim() ?: "Unknown",
+                    mimeType = "audio/$codec",
+                    codecs = codec,
                     bitrate = bitrate,
                     sampleRate = sampleRate,
                     contentLength = duration.toLong(),
