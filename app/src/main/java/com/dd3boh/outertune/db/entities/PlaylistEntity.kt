@@ -39,9 +39,6 @@ data class PlaylistEntity(
         )
     }
 
-    val isLocalPlaylist: Boolean
-        get() = id.startsWith("LP")
-
     val shareLink: String?
         get() {
             return if (browseId != null)

@@ -692,7 +692,7 @@ fun ArtistListItem(
         }
 
         // assume if they have a non local artist ID, they are not local
-        if (artist.artist.isLocalArtist) {
+        if (artist.artist.isLocal) {
             Icon(
                 Icons.Rounded.CloudOff,
                 contentDescription = null,
@@ -741,7 +741,7 @@ fun ArtistGridItem(
         }
 
         // assume if they have a non local artist ID, they are not local
-        if (artist.artist.isLocalArtist) {
+        if (artist.artist.isLocal) {
             Icon(
                 Icons.Rounded.CloudOff,
                 contentDescription = null,

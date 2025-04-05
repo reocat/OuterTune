@@ -43,8 +43,6 @@ data class SongEntity(
     val localPath: String?,
     val dateDownload: LocalDateTime? = null, // doubles as "isDownloaded"
 ) {
-    val isLocalSong: Boolean
-        get() = id.startsWith("LA")
 
     fun localToggleLike() = copy(
         liked = !liked,

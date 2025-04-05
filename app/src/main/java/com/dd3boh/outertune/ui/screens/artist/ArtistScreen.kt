@@ -148,7 +148,7 @@ fun ArtistScreen(
 
     LaunchedEffect(isNetworkConnected, libraryArtist) {
         // always show local page for local artists. Show local page remote artist when offline
-        showLocal = !isNetworkConnected || libraryArtist?.artist?.isLocalArtist == true
+        showLocal = libraryArtist?.artist?.isLocal == true
     }
 
     val artistHead = @Composable {
@@ -526,7 +526,7 @@ fun ArtistScreen(
         }
 
         HideOnScrollFAB(
-            visible = librarySongs.isNotEmpty(),
+            visible = librarySongs.isNotEmpty() && libraryArtist?.artist?.isLocal != true,
             lazyListState = lazyListState,
             icon = if (showLocal) Icons.Rounded.LibraryMusic else Icons.Rounded.Language,
             onClick = {
