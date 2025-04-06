@@ -201,6 +201,10 @@ fun LyricsSettings(
     )
 }
 
+enum class LyricsPosition {
+    LEFT, CENTER, RIGHT
+}
+
 @Composable
 fun FontSizeDialog(
     initialValue: Int,
