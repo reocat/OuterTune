@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -31,12 +29,8 @@ import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Swipe
-import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.WarningAmber
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,13 +38,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -63,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
-import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
@@ -93,7 +84,7 @@ fun ExperimentalSettings(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
-    val syncUtils = LocalSyncUtils.current
+    val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
 
     // state variables and such
@@ -101,11 +92,7 @@ fun ExperimentalSettings(
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
 
-    val isSyncingRemotePlaylists by syncUtils.isSyncingRemotePlaylists.collectAsState()
-    val isSyncingRemoteAlbums by syncUtils.isSyncingRemoteAlbums.collectAsState()
-    val isSyncingRemoteArtists by syncUtils.isSyncingRemoteArtists.collectAsState()
-    val isSyncingRemoteSongs by syncUtils.isSyncingRemoteSongs.collectAsState()
-    val isSyncingRemoteLikedSongs by syncUtils.isSyncingRemoteLikedSongs.collectAsState()
+
 
     val (scannerImpl) = rememberEnumPreference(
         key = ScannerImplKey,
@@ -138,34 +125,7 @@ fun ExperimentalSettings(
             onCheckedChange = onDevSettingsChange
         )
 
-        // TODO: move to home screen as button?
-        // TODO: rename scanner_manual_btn to sync_manual_btn
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.scanner_manual_btn)) },
-            icon = { Icon(Icons.Rounded.Sync, null) },
-            onClick = {
-                Toast.makeText(context, context.getString(R.string.sync_progress_active), Toast.LENGTH_SHORT).show()
-                coroutineScope.launch(Dispatchers.Main) {
-                    syncUtils.syncAll()
-                    Toast.makeText(context, context.getString(R.string.sync_progress_success), Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
 
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.spot_import_title)) },
-            description = null,
-            icon = { Icon(painterResource(R.drawable.spotify), null) },
-            onClick = {
-                navController.navigate("settings/content/import_from_spotify")
-            }
-        )
-
-        SyncProgressItem(stringResource(R.string.songs), isSyncingRemoteSongs)
-        SyncProgressItem(stringResource(R.string.liked_songs), isSyncingRemoteLikedSongs)
-        SyncProgressItem(stringResource(R.string.artists), isSyncingRemoteArtists)
-        SyncProgressItem(stringResource(R.string.albums), isSyncingRemoteAlbums)
-        SyncProgressItem(stringResource(R.string.playlists), isSyncingRemotePlaylists)
 
         if (devSettings) {
             PreferenceGroupTitle(
@@ -315,144 +275,3 @@ fun SyncProgressItem(text: String, isSyncing: Boolean) {
         }
     }
 }
-
-@Composable
-fun MaterialColorsTestSection() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .wrapContentHeight(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = "Material Colors Test",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-            ColorRow("Primary", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
-            ColorRow("Secondary", MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.onSecondary)
-            ColorRow("Tertiary", MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.onTertiary)
-            ColorRow("Surface", MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Inverse Surface", MaterialTheme.colorScheme.inverseSurface, MaterialTheme.colorScheme.onSurfaceVariant)
-            ColorRow("Surface Variant", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
-            ColorRow("Surface Bright", MaterialTheme.colorScheme.surfaceBright, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Surface Tint", MaterialTheme.colorScheme.surfaceTint, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Surface Dim", MaterialTheme.colorScheme.surfaceDim, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Surface Container Highest", MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Surface Container High", MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Surface Container Low", MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.colorScheme.onSurface)
-            ColorRow("Error Container", MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
-        }
-    }
-}
-
-@Composable
-fun ColorRow(label: String, backgroundColor: Color, textColor: Color) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(backgroundColor)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            color = textColor,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-}
-
-@Composable
-fun HapticsTestSection() {
-    val haptic = LocalHapticFeedback.current
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .wrapContentHeight(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = "Haptics Test",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-
-            hapticFeedbackTypes.forEach { hapticType ->
-                HapticFeedbackItem(
-                    name = hapticType.name,
-                    onClick = {
-                        haptic.performHapticFeedback(hapticType.type)
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HapticFeedbackItem(
-    name: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Vibration,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-data class HapticFeedbackTypeItem(
-    val name: String,
-    val type: HapticFeedbackType
-)
-
-val hapticFeedbackTypes = listOf(
-    HapticFeedbackTypeItem("LongPress", HapticFeedbackType.LongPress),
-    HapticFeedbackTypeItem("TextHandle", HapticFeedbackType.TextHandleMove),
-    HapticFeedbackTypeItem("VirtualKey", HapticFeedbackType.VirtualKey),
-    HapticFeedbackTypeItem("GestureEnd", HapticFeedbackType.GestureEnd),
-    HapticFeedbackTypeItem("Threshold", HapticFeedbackType.GestureThresholdActivate),
-    HapticFeedbackTypeItem("Tick", HapticFeedbackType.SegmentTick),
-    HapticFeedbackTypeItem("FrequentTick", HapticFeedbackType.SegmentFrequentTick),
-    HapticFeedbackTypeItem("ContextClick", HapticFeedbackType.ContextClick),
-    HapticFeedbackTypeItem("Confirm", HapticFeedbackType.Confirm),
-    HapticFeedbackTypeItem("Reject", HapticFeedbackType.Reject),
-    HapticFeedbackTypeItem("ToggleOn", HapticFeedbackType.ToggleOn),
-    HapticFeedbackTypeItem("ToggleOff", HapticFeedbackType.ToggleOff)
-)
