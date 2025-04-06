@@ -9,6 +9,7 @@
 package com.dd3boh.outertune.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,26 +39,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.NavigateBefore
 import androidx.compose.material.icons.automirrored.rounded.NavigateNext
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Autorenew
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.LibraryMusic
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Lyrics
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.MusicVideo
+import androidx.compose.material.icons.rounded.NotInterested
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.SdCard
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.VpnKey
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -88,8 +88,6 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -98,35 +96,39 @@ import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.AutomaticScannerKey
+import com.dd3boh.outertune.constants.ContentCountryKey
+import com.dd3boh.outertune.constants.ContentLanguageKey
+import com.dd3boh.outertune.constants.CountryCodeToName
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
+import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.LibraryFilterKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.PureBlackKey
+import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
+import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
-import com.dd3boh.outertune.db.entities.ArtistEntity
-import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.ui.component.EnumListPreference
-import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.ListPreference
+import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
+import com.dd3boh.outertune.ui.component.ResizableIconButton
+import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
+import com.dd3boh.outertune.ui.screens.settings.fragments.AccountFrag
+import com.dd3boh.outertune.ui.screens.settings.fragments.LocalScannerExtraFrag
+import com.dd3boh.outertune.ui.screens.settings.fragments.LocalScannerFrag
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
-import java.time.LocalDateTime
+import java.util.Locale
 
-data class Feature(
-    val title: String,
-    val description: String,
-    val icon: ImageVector
-)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupWizard(
     navController: NavController,
@@ -137,6 +139,13 @@ fun SetupWizard(
     val uriHandler = LocalUriHandler.current
 
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
+
+    // theme & interface
+    val (contentLanguage, onContentLanguageChange) = rememberPreference(
+        key = ContentLanguageKey,
+        defaultValue = "system"
+    )
+    val (contentCountry, onContentCountryChange) = rememberPreference(key = ContentCountryKey, defaultValue = "system")
 
     // content prefs
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -153,6 +162,7 @@ fun SetupWizard(
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
     val (ytmSync, onYtmSyncChange) = rememberPreference(LyricTrimKey, defaultValue = true)
+    val (useLoginForBrowse, onUseLoginForBrowseChange) = rememberPreference(UseLoginForBrowse, true)
 
     // local media prefs
     val (localLibEnable, onLocalLibEnableChange) = rememberPreference(LocalLibraryEnableKey, defaultValue = true)
@@ -178,7 +188,7 @@ fun SetupWizard(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -509,318 +519,237 @@ private fun WelcomePage(
     }
 }
 
-@Composable
-private fun InterfacePage(
-    navController: NavController,
-    darkMode: DarkMode,
-    onDarkModeChange: (DarkMode) -> Unit,
-    pureBlack: Boolean,
-    onPureBlackChange: (Boolean) -> Unit
-) {
-    val dummySong = Song(
-        artists = listOf(
-            ArtistEntity(
-                id = "uwu",
-                name = "Artist",
-                isLocal = true
-            )
-        ),
-        song = SongEntity(
-            id = "owo",
-            title = "Title",
-            duration = 310,
-            inLibrary = LocalDateTime.now(),
-            isLocal = true,
-            localPath = "/storage"
-        ),
-    )
-
-    val dummySongs = ArrayList<Song>()
-    for (i in 0..4) {
-        dummySongs.add(dummySong)
-    }
-
-    Text(
-        text = stringResource(R.string.grp_interface),
-        style = MaterialTheme.typography.headlineLarge,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp)
-    )
-
-    // light/dark theme
-    EnumListPreference(
-        title = { Text(stringResource(R.string.dark_theme)) },
-        icon = { Icon(Icons.Rounded.DarkMode, null) },
-        selectedValue = darkMode,
-        onValueSelected = onDarkModeChange,
-        valueText = {
-            when (it) {
-                DarkMode.ON -> stringResource(R.string.dark_theme_on)
-                DarkMode.OFF -> stringResource(R.string.dark_theme_off)
-                DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
-            }
-        }
-    )
-    SwitchPreference(
-        title = { Text(stringResource(R.string.pure_black)) },
-        icon = { Icon(Icons.Rounded.Contrast, null) },
-        checked = pureBlack,
-        onCheckedChange = onPureBlackChange
-    )
-}
-@Composable
-private fun AccountPage(
-    navController: NavController,
-    isLoggedIn: Boolean,
-    accountName: String,
-    accountEmail: String,
-    accountChannelHandle: String,
-    innerTubeCookie: String,
-    onInnerTubeCookieChange: (String) -> Unit,
-    ytmSync: Boolean,
-    onYtmSyncChange: (Boolean) -> Unit,
-    visitorData: String,
-    onVisitorDataChange: (String) -> Unit,
-    dataSyncId: String,
-    onDataSyncIdChange: (String) -> Unit,
-    onAccountNameChange: (String) -> Unit,
-    onAccountEmailChange: (String) -> Unit,
-    onAccountChannelHandleChange: (String) -> Unit
-) {
-    var showToken by remember { mutableStateOf(false) }
-    var showTokenEditor by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Title, Subtitle, and Icon
-        Icon(
-            imageVector = Icons.Rounded.AccountCircle,
-            contentDescription = null,
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            text = stringResource(R.string.oobe_ytm_logon_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Text(
-            text = stringResource(R.string.oobe_ytm_logon_subtitle),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        // Login/Account Info Card
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            PreferenceEntry(
-                title = { Text(if (isLoggedIn) accountName else stringResource(R.string.login)) },
-                description = if (isLoggedIn) {
-                    accountEmail.takeIf { it.isNotEmpty() }
-                        ?: accountChannelHandle.takeIf { it.isNotEmpty() }
-                } else null,
-                icon = { Icon(Icons.Rounded.Person, null) },
-                onClick = { navController.navigate("login") }
-            )
-        }
-
-        // Add spacing between cards
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Logout Card (if logged in)
-        if (isLoggedIn) {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                PreferenceEntry(
-                    title = { Text(stringResource(R.string.logout)) },
-                    icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
-                    onClick = { onInnerTubeCookieChange("") }
-                )
-            }
-
-            // Add spacing between cards
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Token Management Card
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            PreferenceEntry(
-                title = {
-                    if (showToken) {
-                        Text(stringResource(R.string.token_shown))
+                    // appearance
+                    1 -> {
                         Text(
-                            text = if (isLoggedIn) innerTubeCookie else stringResource(R.string.not_logged_in),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Light,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
+                            text = stringResource(R.string.grp_interface),
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 8.dp)
                         )
-                    } else {
-                        Text(stringResource(R.string.token_hidden))
+
+                        // light/dark theme
+                        EnumListPreference(
+                            title = { Text(stringResource(R.string.dark_theme)) },
+                            icon = { Icon(Icons.Rounded.DarkMode, null) },
+                            selectedValue = darkMode,
+                            onValueSelected = onDarkModeChange,
+                            valueText = {
+                                when (it) {
+                                    DarkMode.ON -> stringResource(R.string.dark_theme_on)
+                                    DarkMode.OFF -> stringResource(R.string.dark_theme_off)
+                                    DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
+                                }
+                            }
+                        )
+                        SwitchPreference(
+                            title = { Text(stringResource(R.string.pure_black)) },
+                            icon = { Icon(Icons.Rounded.Contrast, null) },
+                            checked = pureBlack,
+                            onCheckedChange = onPureBlackChange
+                        )
+
+                        ListPreference(
+                            title = { Text(stringResource(R.string.content_language)) },
+                            icon = { Icon(Icons.Rounded.Language, null) },
+                            selectedValue = contentLanguage,
+                            values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
+                            valueText = {
+                                LanguageCodeToName.getOrElse(it) {
+                                    stringResource(R.string.system_default)
+                                }
+                            },
+                            onValueSelected = { newValue ->
+                                val locale = Locale.getDefault()
+                                val languageTag = locale.toLanguageTag().replace("-Hant", "")
+
+                                YouTube.locale = YouTube.locale.copy(
+                                    hl = newValue.takeIf { it != SYSTEM_DEFAULT }
+                                        ?: locale.language.takeIf { it in LanguageCodeToName }
+                                        ?: languageTag.takeIf { it in LanguageCodeToName }
+                                        ?: "en"
+                                )
+
+                                onContentLanguageChange(newValue)
+                            }
+                        )
+                        ListPreference(
+                            title = { Text(stringResource(R.string.content_country)) },
+                            icon = { Icon(Icons.Rounded.LocationOn, null) },
+                            selectedValue = contentCountry,
+                            values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
+                            valueText = {
+                                CountryCodeToName.getOrElse(it) {
+                                    stringResource(R.string.system_default)
+                                }
+                            },
+                            onValueSelected = { newValue ->
+                                val locale = Locale.getDefault()
+
+                                YouTube.locale = YouTube.locale.copy(
+                                    gl = newValue.takeIf { it != SYSTEM_DEFAULT }
+                                        ?: locale.country.takeIf { it in CountryCodeToName }
+                                        ?: "US"
+                                )
+
+                                onContentCountryChange(newValue)
+                            }
+                        )
                     }
-                },
-                onClick = {
-                    if (!showToken) {
-                        showToken = true
-                    } else {
-                        showTokenEditor = true
+
+                    // account
+                    2 -> {
+                        Text(
+                            text = stringResource(R.string.account),
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+
+                        AccountFrag(navController)
+
+                        SwitchPreference(
+                            title = { Text(stringResource(R.string.ytm_sync)) },
+                            icon = { Icon(Icons.Rounded.Lyrics, null) },
+                            checked = ytmSync,
+                            onCheckedChange = onYtmSyncChange,
+                            isEnabled = isLoggedIn
+                        )
                     }
-                },
-                icon = {
-                    Icon(Icons.Rounded.VpnKey, null)
+
+                    // local media
+                    3 -> {
+                        Text(
+                            text = stringResource(R.string.local_player_settings_title),
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+
+
+                        SwitchPreference(
+                            title = { Text(stringResource(R.string.local_library_enable_title)) },
+                            description = stringResource(R.string.local_library_enable_description),
+                            icon = { Icon(Icons.Rounded.SdCard, null) },
+                            checked = localLibEnable,
+                            onCheckedChange = onLocalLibEnableChange
+                        )
+
+                        AnimatedVisibility(localLibEnable) {
+                            Column {
+                                SwitchPreference(
+                                    title = { Text(stringResource(R.string.auto_scanner_title)) },
+                                    description = stringResource(R.string.auto_scanner_description),
+                                    icon = { Icon(Icons.Rounded.Autorenew, null) },
+                                    checked = autoScan,
+                                    onCheckedChange = onAutoScanChange
+                                )
+                                PreferenceGroupTitle(
+                                    title = stringResource(R.string.grp_manual_scanner)
+                                )
+                                LocalScannerFrag()
+
+                                SettingsClickToReveal(stringResource(R.string.grp_extra_scanner_settings)) {
+                                    LocalScannerExtraFrag()
+                                }
+                            }
+                        }
+                    }
+
+                    // exiting
+                    4 -> {
+
+                        Column(verticalArrangement = Arrangement.Center) {
+                            Text(
+                                text = stringResource(R.string.oobe_complete),
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                            )
+                        }
+
+
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(vertical = 20.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.info),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                )
+                            }
+
+                            Spacer(Modifier.height(4.dp))
+
+
+                            Row {
+                                IconButton(
+                                    onClick = { uriHandler.openUri("https://github.com/DD3Boh/OuterTune") }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.github),
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.height(8.dp))
+                        }
+
+
+                        Row {
+                            Text(
+                                text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
                 }
-            )
-        }
+            }
 
-        // Add spacing between cards
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // YTM Sync Card
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.ytm_sync)) },
-                icon = { Icon(Icons.Rounded.Lyrics, null) },
-                checked = ytmSync,
-                onCheckedChange = onYtmSyncChange,
-                isEnabled = isLoggedIn
-            )
-        }
-
-        if (showTokenEditor) {
-            TokenEditorDialog(
-                initialValue = innerTubeCookie,
-                onDone = { newToken ->
-                    onInnerTubeCookieChange(newToken)
-                    showTokenEditor = false
-                },
-                onDismiss = { showTokenEditor = false },
-                modifier = Modifier,
-                visitorData = visitorData,
-                dataSyncId = dataSyncId,
-                accountName = accountName,
-                accountEmail = accountEmail,
-                accountChannelHandle = accountChannelHandle,
-                onInnerTubeCookieChange = onInnerTubeCookieChange,
-                onVisitorDataChange = onVisitorDataChange,
-                onDataSyncIdChange = onDataSyncIdChange,
-                onAccountNameChange = onAccountNameChange,
-                onAccountEmailChange = onAccountEmailChange,
-                onAccountChannelHandleChange = onAccountChannelHandleChange
-            )
-        }
-    }
-}
-@Composable
-private fun LocalMediaPage(
-    navController: NavController,
-    localLibEnable: Boolean,
-    onLocalLibEnableChange: (Boolean) -> Unit,
-    autoScan: Boolean,
-    onAutoScanChange: (Boolean) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Title, Subtitle, and Icon
-        Icon(
-            imageVector = Icons.Rounded.LibraryMusic,
-            contentDescription = null,
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            text = stringResource(R.string.oobe_local_media_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Text(
-            text = stringResource(R.string.oobe_local_media_subtitle),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.local_library_enable_title)) },
-                description = stringResource(R.string.local_library_enable_description),
-                icon = { Icon(Icons.Rounded.SdCard, null) },
-                checked = localLibEnable,
-                onCheckedChange = onLocalLibEnableChange
-            )
-        }
-
-        // Add spacing between cards
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Automatic Scanner Card
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.auto_scanner_title)) },
-                description = stringResource(R.string.auto_scanner_description),
-                icon = { Icon(Icons.Rounded.Autorenew, null) },
-                checked = autoScan,
-                onCheckedChange = onAutoScanChange,
-                isEnabled = localLibEnable
-            )
-        }
-
-        // Add spacing between cards
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Manual Scan Button (if local library is enabled)
-        if (localLibEnable) {
-            ElevatedButton(
-                onClick = { navController.navigate("settings/local") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Icon(
-                    Icons.Rounded.Search,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(stringResource(R.string.oobe_scan_for_local_music))
+            if (position == 0 || position == MAX_POS) {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.BottomEnd),
+                    onClick = {
+                        if (position == 0) {
+                            position += 1
+                        } else {
+                            onFirstSetupPassedChange(true)
+                            navController.navigateUp()
+                        }
+                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null
+                    )
+                }
             }
         }
     }
 }
+
+
 @Composable
 private fun FinalPage(
     uriHandler: UriHandler,
