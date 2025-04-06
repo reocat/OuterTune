@@ -118,20 +118,6 @@ fun PlayerSettings(
     var showMinPlaybackDur by remember {
         mutableStateOf(false)
     }
-    var tempminPlaybackDur by remember {
-        mutableIntStateOf(minPlaybackDur)
-    }
-
-    if (showMinPlaybackDur) {
-        MinPlaybackDurDialog(
-            initialValue = minPlaybackDur,
-            onDismiss = { showMinPlaybackDur = false },
-            onConfirm = {
-                showMinPlaybackDur = false
-                onMinPlaybackDurChange(it)
-            }
-        )
-    }
 
     var showAdvanced by remember {
         mutableStateOf(false)
@@ -147,23 +133,17 @@ fun PlayerSettings(
             title = stringResource(R.string.grp_general)
         )
         SwitchPreference(
-            title = { Text(stringResource(R.string.persistent_queue)) },
-            description = stringResource(R.string.persistent_queue_desc),
-            icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
-            checked = persistentQueue,
-            onCheckedChange = onPersistentQueueChange
-        )
-        SwitchPreference(
             title = { Text(stringResource(R.string.auto_load_more)) },
             description = stringResource(R.string.auto_load_more_desc),
             icon = { Icon(Icons.Rounded.Autorenew, null) },
             checked = autoLoadMore,
             onCheckedChange = onAutoLoadMoreChange
         )
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.min_playback_duration)) },
-            icon = { Icon(Icons.Rounded.Sync, null) },
-            onClick = { showMinPlaybackDur = true }
+        SwitchPreference(
+            title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
+            icon = { Icon(Icons.Rounded.ClearAll, null) },
+            checked = stopMusicOnTaskClear,
+            onCheckedChange = onStopMusicOnTaskClearChange
         )
 
         PreferenceGroupTitle(
@@ -227,10 +207,16 @@ fun PlayerSettings(
         AnimatedVisibility(showAdvanced) {
             Column {
                 SwitchPreference(
-                    title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
-                    icon = { Icon(Icons.Rounded.ClearAll, null) },
-                    checked = stopMusicOnTaskClear,
-                    onCheckedChange = onStopMusicOnTaskClearChange
+                    title = { Text(stringResource(R.string.persistent_queue)) },
+                    description = stringResource(R.string.persistent_queue_desc_ot),
+                    icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
+                    checked = persistentQueue,
+                    onCheckedChange = onPersistentQueueChange
+                )
+                PreferenceEntry(
+                    title = { Text(stringResource(R.string.min_playback_duration)) },
+                    icon = { Icon(Icons.Rounded.Sync, null) },
+                    onClick = { showMinPlaybackDur = true }
                 )
                 SwitchPreference(
                     title = { Text(stringResource(R.string.audio_offload)) },
@@ -249,6 +235,33 @@ fun PlayerSettings(
             }
         }
         Spacer(Modifier.height(96.dp))
+    }
+
+
+    /**
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
+     */
+
+
+    if (showMinPlaybackDur) {
+        CounterDialog(
+            title = stringResource(R.string.min_playback_duration),
+            description = stringResource(R.string.min_playback_duration_description),
+            initialValue = minPlaybackDur,
+            upperBound = 100,
+            lowerBound = 0,
+            unitDisplay = "%",
+            onDismiss = { showMinPlaybackDur = false },
+            onConfirm = {
+                showMinPlaybackDur = false
+                onMinPlaybackDurChange(it)
+            },
+            onCancel = {
+                showMinPlaybackDur = false
+            }
+        )
     }
 
     TopAppBar(
