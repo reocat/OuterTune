@@ -195,6 +195,7 @@ import com.dd3boh.outertune.ui.screens.settings.DarkMode
 import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
 import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
+import com.dd3boh.outertune.ui.screens.settings.InterfaceSettings
 import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
@@ -1218,6 +1219,9 @@ class MainActivity : ComponentActivity() {
                                 }
                                 composable("settings/appearance") {
                                     AppearanceSettings(navController, scrollBehavior)
+                                }
+                                composable("settings/interface") {
+                                    InterfaceSettings(navController, scrollBehavior)
                                 }
                                 composable("settings/content") {
                                     ContentSettings(navController, scrollBehavior)
