@@ -16,12 +16,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,13 +64,7 @@ import com.dd3boh.outertune.constants.GridCellSize
 import com.dd3boh.outertune.constants.GridCellSizeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
-<<<<<<< HEAD
-import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
-import com.dd3boh.outertune.constants.SliderStyle
-import com.dd3boh.outertune.constants.SliderStyleKey
-import com.dd3boh.outertune.constants.SlimHomeScreenTilesKey
-=======
->>>>>>> ff673386 (settings: Create new library settings)
+import com.dd3boh.outertune.constants.SettingsTopBarHeight
 import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
@@ -202,11 +194,10 @@ fun AppearanceSettings(
 
     Column(
         Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
-
+        Spacer(Modifier.height(SettingsTopBarHeight))
         PreferenceGroupTitle(
             title = stringResource(R.string.theme)
         )
