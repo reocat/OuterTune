@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
@@ -67,10 +66,13 @@ import com.dd3boh.outertune.constants.GridCellSize
 import com.dd3boh.outertune.constants.GridCellSizeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
+<<<<<<< HEAD
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SlimHomeScreenTilesKey
+=======
+>>>>>>> ff673386 (settings: Create new library settings)
 import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
@@ -93,9 +95,12 @@ fun AppearanceSettings(
     val (playerBackground, onPlayerBackgroundChange) = rememberEnumPreference(key = PlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
+<<<<<<< HEAD
     val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(SliderStyleKey, defaultValue = SliderStyle.DEFAULT)
     val (gridCellSize, onGridCellSizeChange) = rememberEnumPreference(GridCellSizeKey, defaultValue = GridCellSize.SMALL)
     val (showLikedAndDownloadedPlaylist, onShowLikedAndDownloadedPlaylistChange) = rememberPreference(key = ShowLikedAndDownloadedPlaylist, defaultValue = true)
+=======
+>>>>>>> ff673386 (settings: Create new library settings)
     val (slimNav, onSlimNavChange) = rememberPreference(SlimNavBarKey, defaultValue = false)
     val (slimHSTiles, onSlimHSTilesChange) = rememberPreference(SlimHomeScreenTilesKey, defaultValue = false)
 
@@ -246,6 +251,7 @@ fun AppearanceSettings(
             values = availableBackgroundStyles
         )
 
+<<<<<<< HEAD
         SwitchPreference(
             title = { Text(stringResource(R.string.show_liked_and_downloaded_playlist)) },
             icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistPlay, null) },
@@ -253,6 +259,8 @@ fun AppearanceSettings(
             onCheckedChange = onShowLikedAndDownloadedPlaylistChange
         )
 
+=======
+>>>>>>> ff673386 (settings: Create new library settings)
         SwitchPreference(
             title = { Text(stringResource(R.string.slim_navbar_title)) },
             description = stringResource(R.string.slim_navbar_description),
@@ -329,8 +337,4 @@ enum class DarkMode {
 
 enum class PlayerBackgroundStyle {
     DEFAULT, GRADIENT, BLUR
-}
-
-enum class LyricsPosition {
-    LEFT, CENTER, RIGHT
 }

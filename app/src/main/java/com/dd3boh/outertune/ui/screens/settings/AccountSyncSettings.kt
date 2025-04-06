@@ -9,7 +9,7 @@
 
 package com.dd3boh.outertune.ui.screens.settings
 
-import androidx.compose.animation.AnimatedVisibility
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -51,13 +51,9 @@ import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
-import com.dd3boh.outertune.constants.ProxyEnabledKey
-import com.dd3boh.outertune.constants.ProxyTypeKey
-import com.dd3boh.outertune.constants.ProxyUrlKey
 import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.constants.YtmSyncKey
-import com.dd3boh.outertune.ui.component.EditTextPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -69,7 +65,6 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
-import java.net.Proxy
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,10 +85,6 @@ fun ContentSettings(
     }
     val (ytmSync, onYtmSyncChange) = rememberPreference(YtmSyncKey, defaultValue = true)
     val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(LikedAutoDownloadKey, LikedAutodownloadMode.OFF)
-
-    val (proxyEnabled, onProxyEnabledChange) = rememberPreference(key = ProxyEnabledKey, defaultValue = false)
-    val (proxyType, onProxyTypeChange) = rememberEnumPreference(key = ProxyTypeKey, defaultValue = Proxy.Type.HTTP)
-    val (proxyUrl, onProxyUrlChange) = rememberPreference(key = ProxyUrlKey, defaultValue = "host:port")
 
     val (useLoginForBrowse, onUseLoginForBrowseChange) = rememberPreference(UseLoginForBrowse, true)
 
@@ -221,30 +212,6 @@ fun ContentSettings(
                 onUseLoginForBrowseChange(it)
             }
         )
-        PreferenceGroupTitle(
-            title = stringResource(R.string.grp_proxy)
-        )
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_proxy)) },
-            checked = proxyEnabled,
-            onCheckedChange = onProxyEnabledChange
-        )
-
-        AnimatedVisibility(proxyEnabled) {
-            ListPreference(
-                title = { Text(stringResource(R.string.proxy_type)) },
-                selectedValue = proxyType,
-                values = listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS),
-                valueText = { it.name },
-                onValueSelected = onProxyTypeChange
-            )
-            EditTextPreference(
-                title = { Text(stringResource(R.string.proxy_url)) },
-                value = proxyUrl,
-                onValueChange = onProxyUrlChange
-            )
-        }
     }
 
     TopAppBar(
