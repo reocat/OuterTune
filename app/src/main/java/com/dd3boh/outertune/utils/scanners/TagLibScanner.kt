@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 OuterTune Project
+ * Copyright (C) 2025 O﻿ute﻿rTu﻿ne Project
  *
  * SPDX-License-Identifier: GPL-3.0
  *
