@@ -18,7 +18,6 @@ import android.media.audiofx.AudioEffect
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Binder
-import android.util.Log
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -429,26 +428,6 @@ class MusicService : MediaLibraryService(),
                 }
             }
 
-        if (dataStore.get(PersistentQueueKey, true)) {
-            queueBoard = QueueBoard(database.readQueue().toMutableList())
-            isShuffleEnabled.value = queueBoard.getCurrentQueue()?.shuffled == true
-            if (queueBoard.getAllQueues().isNotEmpty()) {
-                val queue = queueBoard.getCurrentQueue()
-                if (queue != null) {
-                    isShuffleEnabled.value = queue.shuffled
-                    initQueue()
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val queuePos = queueBoard.setCurrQueue(false)
-                        if (queuePos != null) {
-                            player.seekTo(queuePos, dataStore.get(LastPosKey, C.TIME_UNSET))
-                            dataStore.edit { settings ->
-                                settings[LastPosKey] = C.TIME_UNSET
-                            }
-                        }
-                    }
-                }
-            }
-        }
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider(
                 this,
@@ -712,7 +691,7 @@ class MusicService : MediaLibraryService(),
             }
         } else {
             // enqueue next
-            queueBoard.getCurrentQueue()?.let {
+            queueBoard.getCurrentQueue()?.let { it ->
                 queueBoard.addSongsToQueue(it, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata })
             }
         }
@@ -825,7 +804,7 @@ class MusicService : MediaLibraryService(),
                     .setCacheWriteDataSinkFactory(
                         HybridCacheDataSinkFactory(playerCache) { dataSpec ->
                             val isLocal = queueBoard.getCurrentQueue()?.findSong(dataSpec.key ?: "")?.isLocal == true
-                            Log.d(TAG, "SONG CACHE: ${!isLocal}")
+                            Timber.tag(TAG).d("SONG CACHE: ${!isLocal}")
                             !isLocal
                         }
                     )
@@ -839,12 +818,12 @@ class MusicService : MediaLibraryService(),
         val songUrlCache = HashMap<String, Pair<String, Long>>()
         return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
             val mediaId = dataSpec.key ?: error("No media id")
-            Log.d(TAG, "PLAYING: song id = $mediaId")
+            Timber.d("PLAYING: song id = $mediaId")
 
             // find a better way to detect local files later...
             val song = queueBoard.getCurrentQueue()?.findSong(mediaId)
             if (song?.isLocal == true) {
-                Log.d(TAG, "PLAYING: local song")
+                Timber.tag(TAG).d("PLAYING: local song")
                 val songPath = runBlocking(Dispatchers.IO) {
                     database.song(mediaId).firstOrNull()?.song?.localPath
                 }
@@ -863,18 +842,18 @@ class MusicService : MediaLibraryService(),
                 downloadCache.isCached(mediaId, dataSpec.position, if (dataSpec.length >= 0) dataSpec.length else 1)
             val isCache = playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)
             if (isDownload || isCache) {
-                Log.d(TAG, "PLAYING: remote song (cache = ${isCache}, download = ${isDownload})")
+                Timber.tag(TAG).d("PLAYING: remote song (cache = ${isCache}, download = ${isDownload})")
                 scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
                 return@Factory dataSpec
             }
 
             songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
-                Log.d(TAG, "PLAYING: remote song (temp cache)")
+                Timber.tag(TAG).d("PLAYING: remote song (temp cache)")
                 scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
 
-            Log.d(TAG, "PLAYING: remote song (online fetch)")
+            Timber.tag(TAG).d("PLAYING: remote song (online fetch)")
 
             // Check whether format exists so that users from older version can view format details
             // There may be inconsistent between the downloaded file and the displayed info if user change audio quality frequently

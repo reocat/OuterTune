@@ -7,6 +7,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { setUrl("https://jitpack.io") }
+        maven {
+            setUrl("https://reocat.github.io/taglib/")
+        }
     }
 }
 
