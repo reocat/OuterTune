@@ -14,7 +14,7 @@ ksp = "2.1.20-1.0.32"
 multidex = "2.0.1"
 materialKolor = "2.1.1"
 newpipe = "dev-SNAPSHOT"
-taglib = "1.0.0-alpha25"
+taglib = "07b93e4"
 leakcanary = "2.14"
 
 [libraries]
@@ -39,7 +39,7 @@ compose-animation = { group = "androidx.compose.animation", name = "animation-gr
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version = "2.4.3" }
 compose-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.7.8" }
 
-taglib = { module = "com.github.Kyant0:taglib", version.ref = "taglib" }
+taglib = { module = "com.kyant:taglib", version.ref = "taglib" }
 viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 

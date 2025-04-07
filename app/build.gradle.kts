@@ -1,9 +1,6 @@
 import java.text.SimpleDateFormat
 import java.util.Date
 
-@Suppress("UnstableApiUsage")
-val isFullBuild: Boolean by rootProject.extra
-
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -116,6 +113,7 @@ android {
     }
 
     androidResources {
+        @Suppress("UnstableApiUsage")
         generateLocaleConfig = true
     }
 }
