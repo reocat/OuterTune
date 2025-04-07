@@ -26,7 +26,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
@@ -100,7 +99,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -163,11 +161,11 @@ import com.dd3boh.outertune.ui.menu.YouTubeSongMenu
 import com.dd3boh.outertune.ui.player.BottomSheetPlayer
 import com.dd3boh.outertune.ui.screens.AccountScreen
 import com.dd3boh.outertune.ui.screens.AlbumScreen
+import com.dd3boh.outertune.ui.screens.BrowseScreen
 import com.dd3boh.outertune.ui.screens.HistoryScreen
 import com.dd3boh.outertune.ui.screens.HomeScreen
 import com.dd3boh.outertune.ui.screens.LoginScreen
 import com.dd3boh.outertune.ui.screens.MoodAndGenresScreen
-import com.dd3boh.outertune.ui.screens.BrowseScreen
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.SetupWizard
 import com.dd3boh.outertune.ui.screens.StatsScreen
@@ -375,19 +373,14 @@ class MainActivity : ComponentActivity() {
                 playerConnection.service.currentMediaMetadata.collectLatest { song ->
                     themeColor = if (song != null) {
                         withContext(Dispatchers.IO) {
-                            if (!song.isLocal) {
-                                val result = imageLoader.execute(
-                                    ImageRequest.Builder(this@MainActivity)
-                                        .data(song.thumbnailUrl)
-                                        .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
-                                        .build()
-                                )
-                                (result.drawable as? BitmapDrawable)?.bitmap?.extractThemeColor()
-                                    ?: DefaultThemeColor
-                            } else {
-                                imageCache.getLocalThumbnail(song.localPath)?.extractThemeColor()
-                                    ?: DefaultThemeColor
-                            }
+                            val result = imageLoader.execute(
+                                ImageRequest.Builder(this@MainActivity)
+                                    .data(song.thumbnailUrl)
+                                    .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
+                                    .build()
+                            )
+                            (result.drawable as? BitmapDrawable)?.bitmap?.extractThemeColor()
+                                ?: DefaultThemeColor
                         }
                     } else DefaultThemeColor
                 }
