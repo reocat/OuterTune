@@ -103,3 +103,6 @@ lint/tmp/
 
 # backup files
 *.bak
+
+# shell scripts
+*.sh
