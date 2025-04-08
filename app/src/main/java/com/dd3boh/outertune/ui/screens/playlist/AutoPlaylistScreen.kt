@@ -546,7 +546,10 @@ fun AutoPlaylistScreen(
                     inSelectMode = inSelectMode,
                     isSelected = selection.contains(song.id),
                     navController = navController,
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
+                    snackbarHostState = snackbarHostState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background),
                 )
             }
         }

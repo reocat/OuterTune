@@ -198,7 +198,10 @@ fun ArtistSongsScreen(
                     inSelectMode = inSelectMode,
                     isSelected = selection.contains(song.id),
                     navController = navController,
-                    modifier = Modifier.fillMaxWidth().animateItem()
+                    snackbarHostState = snackbarHostState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItem()
                 )
             }
         }

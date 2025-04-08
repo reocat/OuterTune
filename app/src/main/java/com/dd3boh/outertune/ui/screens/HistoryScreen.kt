@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -430,7 +431,10 @@ fun HistoryScreen(
                             inSelectMode = inSelectMode,
                             isSelected = selection.contains(event.event.id),
                             navController = navController,
-                            modifier = Modifier.fillMaxWidth().animateItem()
+                            snackbarHostState = snackbarHostState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem()
                         )
                     }
                 }
@@ -450,6 +454,12 @@ fun HistoryScreen(
                     )
                 )
             }
+        )
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .align(Alignment.BottomCenter)
         )
     }
 

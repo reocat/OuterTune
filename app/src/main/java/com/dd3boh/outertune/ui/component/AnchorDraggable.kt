@@ -64,7 +64,7 @@ fun SwipeToQueueBox(
     modifier: Modifier = Modifier,
     item: MediaItem,
     content: @Composable BoxScope.() -> Unit,
-    snackbarHostState: SnackbarHostState,
+    snackbarHostState: SnackbarHostState? = null,
     enabled: Boolean = true
 ) {
     val context = LocalContext.current
@@ -100,7 +100,7 @@ fun SwipeToQueueBox(
                                 playerConnection?.enqueueEnd(item)
 
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
+                                    snackbarHostState?.showSnackbar(
                                         message = context.getString(
                                             R.string.song_added_to_queue_end,
                                             item.mediaMetadata.title
@@ -116,7 +116,7 @@ fun SwipeToQueueBox(
                                 playerConnection?.enqueueNext(item)
 
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
+                                    snackbarHostState?.showSnackbar(
                                         message = context.getString(
                                             R.string.song_added_to_queue,
                                             item.mediaMetadata.title
