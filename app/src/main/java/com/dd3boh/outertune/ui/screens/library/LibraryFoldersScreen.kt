@@ -61,6 +61,7 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
+import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.SelectHeader
@@ -205,7 +206,8 @@ fun LibraryFoldersScreen(
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             item(
                 key = "header",
@@ -222,49 +224,33 @@ fun LibraryFoldersScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        if (inSelectMode) {
-                            SelectHeader(
-                                selectedItems = selection.mapNotNull { songId ->
-                                    mutableSongs.find { it.id == songId }
-                                }.map { it.toMediaMetadata()},
-                                totalItemCount = mutableSongs.size,
-                                onSelectAll = {
-                                    selection.clear()
-                                    selection.addAll(mutableSongs.map { it.id })
-                                },
-                                onDeselectAll = { selection.clear() },
-                                menuState = menuState,
-                                onDismiss = onExitSelectionMode
-                            )
-                        } else {
-                            SortHeader(
-                                sortType = sortType,
-                                sortDescending = sortDescending,
-                                onSortTypeChange = onSortTypeChange,
-                                onSortDescendingChange = onSortDescendingChange,
-                                sortTypeText = { sortType ->
-                                    when (sortType) {
-                                        SongSortType.CREATE_DATE -> R.string.sort_by_create_date
-                                        SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
-                                        SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
-                                        SongSortType.NAME -> R.string.sort_by_name
-                                        SongSortType.ARTIST -> R.string.sort_by_artist
-                                        SongSortType.PLAY_TIME -> R.string.sort_by_play_time
-                                        SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
-                                    }
+                        SortHeader(
+                            sortType = sortType,
+                            sortDescending = sortDescending,
+                            onSortTypeChange = onSortTypeChange,
+                            onSortDescendingChange = onSortDescendingChange,
+                            sortTypeText = { sortType ->
+                                when (sortType) {
+                                    SongSortType.CREATE_DATE -> R.string.sort_by_create_date
+                                    SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
+                                    SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
+                                    SongSortType.NAME -> R.string.sort_by_name
+                                    SongSortType.ARTIST -> R.string.sort_by_artist
+                                    SongSortType.PLAY_TIME -> R.string.sort_by_play_time
+                                    SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
                                 }
-                            )
+                            }
+                        )
 
-                            Spacer(Modifier.weight(1f))
+                        Spacer(Modifier.weight(1f))
 
-                            Text(
-                                text = pluralStringResource(
-                                    R.plurals.n_song, currDir.toList().size, currDir.toList().size
-                                ),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
+                        Text(
+                            text = pluralStringResource(
+                                R.plurals.n_song, currDir.toList().size, currDir.toList().size
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
             }
@@ -367,6 +353,21 @@ fun LibraryFoldersScreen(
             }
         )
 
+        FloatingFooter(inSelectMode) {
+            SelectHeader(
+                selectedItems = selection.mapNotNull { songId ->
+                    mutableSongs.find { it.id == songId }
+                }.map { it.toMediaMetadata()},
+                totalItemCount = mutableSongs.size,
+                onSelectAll = {
+                    selection.clear()
+                    selection.addAll(mutableSongs.map { it.id })
+                },
+                onDeselectAll = { selection.clear() },
+                menuState = menuState,
+                onDismiss = onExitSelectionMode
+            )
+        }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier

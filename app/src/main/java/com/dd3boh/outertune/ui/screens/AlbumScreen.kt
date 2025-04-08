@@ -84,7 +84,6 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AlbumThumbnailSize
-import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.extensions.getAvailableSongs
@@ -92,6 +91,7 @@ import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
+import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.FontSizeRange
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -182,7 +182,8 @@ fun AlbumScreen(
 
     LazyColumn(
         state = state,
-        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+        modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
     ) {
         val albumWithSongsLocal = albumWithSongs
         if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
@@ -389,33 +390,6 @@ fun AlbumScreen(
                 }
             }
 
-            stickyHeader(
-                key = "header",
-                contentType = CONTENT_TYPE_HEADER
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 16.dp)
-                ) {
-                    if (inSelectMode) {
-                        SelectHeader(
-                            selectedItems = selection.mapNotNull { id ->
-                                albumWithSongsLocal.songs.find { it.song.id == id }
-                            }.map { it.toMediaMetadata() },
-                            totalItemCount = albumWithSongsLocal.songs.getAvailableSongs(isNetworkConnected).size,
-                            onSelectAll = {
-                                selection.clear()
-                                selection.addAll(albumWithSongsLocal.songs.getAvailableSongs(isNetworkConnected).map { it.id })
-                            },
-                            onDeselectAll = { selection.clear() },
-                            menuState = menuState,
-                            onDismiss = onExitSelectionMode
-                        )
-                    }
-                }
-            }
-
-
             itemsIndexed(
                 items = albumWithSongs!!.songs,
                 key = { _, song -> song.id }
@@ -547,6 +521,24 @@ fun AlbumScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+        FloatingFooter(inSelectMode) {
+            val albumWithSongsLocal = albumWithSongs
+            if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
+                SelectHeader(
+                    selectedItems = selection.mapNotNull { id ->
+                        albumWithSongsLocal.songs.find { it.song.id == id }
+                    }.map { it.toMediaMetadata() },
+                    totalItemCount = albumWithSongsLocal.songs.size,
+                    onSelectAll = {
+                        selection.clear()
+                        selection.addAll(albumWithSongsLocal.songs.map { it.id })
+                    },
+                    onDeselectAll = { selection.clear() },
+                    menuState = menuState,
+                    onDismiss = onExitSelectionMode
+                )
+            }
+        }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier

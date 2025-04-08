@@ -108,6 +108,7 @@ import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
+import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.FontSizeRange
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -369,6 +370,7 @@ fun LocalPlaylistScreen(
         LazyColumn(
             state = lazyListState,
             contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
+            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             playlist?.let { playlist ->
                 if (playlist.songCount == 0) {
@@ -403,48 +405,32 @@ fun LocalPlaylistScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(start = 16.dp)
                         ) {
-                            if (inSelectMode) {
-                                SelectHeader(
-                                    selectedItems = selection.mapNotNull { id ->
-                                        songs.find { it.song.id == id }?.song
-                                    }.map { it.toMediaMetadata() },
-                                    totalItemCount = songs.map { it.song }.getAvailableSongs(isNetworkConnected).size,
-                                    onSelectAll = {
-                                        selection.clear()
-                                        selection.addAll(songs.map { it.song }.getAvailableSongs(isNetworkConnected).map { it.song.id })
-                                    },
-                                    onDeselectAll = { selection.clear() },
-                                    menuState = menuState,
-                                    onDismiss = onExitSelectionMode
-                                )
-                            } else {
-                                SortHeader(
-                                    sortType = sortType,
-                                    sortDescending = sortDescending,
-                                    onSortTypeChange = onSortTypeChange,
-                                    onSortDescendingChange = onSortDescendingChange,
-                                    sortTypeText = { sortType ->
-                                        when (sortType) {
-                                            PlaylistSongSortType.CUSTOM -> R.string.sort_by_custom
-                                            PlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
-                                            PlaylistSongSortType.NAME -> R.string.sort_by_name
-                                            PlaylistSongSortType.ARTIST -> R.string.sort_by_artist
-                                            PlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                if (editable) {
-                                    IconButton(
-                                        onClick = { locked = !locked },
-                                        modifier = Modifier.padding(horizontal = 6.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
-                                            contentDescription = null
-                                        )
+                            SortHeader(
+                                sortType = sortType,
+                                sortDescending = sortDescending,
+                                onSortTypeChange = onSortTypeChange,
+                                onSortDescendingChange = onSortDescendingChange,
+                                sortTypeText = { sortType ->
+                                    when (sortType) {
+                                        PlaylistSongSortType.CUSTOM -> R.string.sort_by_custom
+                                        PlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
+                                        PlaylistSongSortType.NAME -> R.string.sort_by_name
+                                        PlaylistSongSortType.ARTIST -> R.string.sort_by_artist
+                                        PlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
                                     }
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            if (editable) {
+                                IconButton(
+                                    onClick = { locked = !locked },
+                                    modifier = Modifier.padding(horizontal = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                                        contentDescription = null
+                                    )
                                 }
                             }
                         }
@@ -513,6 +499,21 @@ fun LocalPlaylistScreen(
             scrollBehavior = scrollBehavior
         )
 
+        FloatingFooter(inSelectMode) {
+            SelectHeader(
+                selectedItems = selection.mapNotNull { id ->
+                    songs.find { it.song.id == id }?.song
+                }.map { it.toMediaMetadata() },
+                totalItemCount = songs.map { it.song }.size,
+                onSelectAll = {
+                    selection.clear()
+                    selection.addAll(songs.map { it.song }.map { it.song.id })
+                },
+                onDeselectAll = { selection.clear() },
+                menuState = menuState,
+                onDismiss = onExitSelectionMode
+            )
+        }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
