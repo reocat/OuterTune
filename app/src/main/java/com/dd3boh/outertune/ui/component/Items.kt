@@ -373,8 +373,6 @@ fun SongListItem(
     inSelectMode: Boolean?,
     isSelected: Boolean,
     navController: NavController,
-    modifier: Modifier = Modifier,
-    enableSwipeToQueue: Boolean = true,
     albumIndex: Int? = null,
     showLikedIcon: Boolean = true,
     showInLibraryIcon: Boolean = true,
@@ -385,6 +383,9 @@ fun SongListItem(
     showDragHandle: Boolean = false,
     dragHandleModifier: Modifier? = null,
     disableShowMenu: Boolean = false,
+    enableSwipeToQueue: Boolean = true,
+    snackbarHostState: SnackbarHostState? = null,
+    modifier: Modifier = Modifier,
 ) {
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
@@ -396,8 +397,6 @@ fun SongListItem(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
     val isActive = song.id == mediaMetadata?.id
-
-    val snackbarHostState = remember { SnackbarHostState() }
 
     val listItem: @Composable () -> Unit = {
         ListItem(

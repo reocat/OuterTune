@@ -318,7 +318,10 @@ fun ArtistScreen(
                                 inSelectMode = false,
                                 isSelected = false,
                                 navController = navController,
-                                modifier = Modifier.fillMaxWidth().animateItem()
+                                snackbarHostState = snackbarHostState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateItem()
                             )
 
                         }
