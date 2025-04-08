@@ -1,2 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="err_stop_on_error">Ein Fehler ist aufgetreten. Wiedergabe angehalten</string>
+    <string name="queue_searched_songs_ot">Suche:</string>
+    <string name="recent_activity">Neueste Aktivität</string>
+    <string name="folders">Ordner</string>
+    <string name="library">Bibliothek</string>
+    <string name="local_history">Lokal</string>
+    <string name="queue_local_history">Verlauf (lokal)</string>
+    <string name="queue_remote_history">Verlauf (online)</string>
+    <string name="remote_history">Online</string>
+    <string name="queues_title">Warteschlangen</string>
+    <string name="create_queue">Neue Warteschlange</string>
+    <string name="song_added_to_queue">\"%s\" wurde der Warteschlange hinzugefügt</string>
+    <string name="song_added_to_queue_end">\"%s\" wurde an das Ende der Warteschlange hinzugefügt</string>
+    <string name="queues_empty">Keine Warteschlangen</string>
+    <string name="auto_playlist">Automatische Playlist</string>
+    <string name="like_all">Alle liken</string>
+    <string name="delete_lyric_confirm">Möchtest du wirklich den gespeicherten Songtext für \"%s\" löschen?</string>
+    <string name="err_play_next_on_error">Ein Fehler ist aufgetreten. Nächstes wird abgespielt</string>
+    <string name="android_auto">Android Auto</string>
+    <string name="select">Auswählungsmodus</string>
+</resources>
