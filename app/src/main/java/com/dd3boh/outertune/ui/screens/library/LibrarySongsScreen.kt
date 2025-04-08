@@ -59,6 +59,7 @@ import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
+import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.SelectHeader
@@ -172,43 +173,25 @@ fun LibrarySongsScreen(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
-            if (inSelectMode && songs != null) {
-                val s: List<Song> = (songs as Iterable<Song>)
-                    .filter { it.song.isAvailableOffline() || isNetworkConnected }
-                    .toList()
-                SelectHeader(
-                    selectedItems = selection.mapNotNull { songId ->
-                        s.find { it.id == songId }
-                    }.map { it.toMediaMetadata()},
-                    totalItemCount = s.size,
-                    onSelectAll = {
-                        selection.clear()
-                        selection.addAll(s.map { it.id })
-                    },
-                    onDeselectAll = { selection.clear() },
-                    menuState = menuState,
-                    onDismiss = onExitSelectionMode
-                )
-            } else {
-                SortHeader(
-                    sortType = sortType,
-                    sortDescending = sortDescending,
-                    onSortTypeChange = onSortTypeChange,
-                    onSortDescendingChange = onSortDescendingChange,
-                    sortTypeText = { sortType ->
-                        when (sortType) {
-                            SongSortType.CREATE_DATE -> if (filter == SongFilter.LIKED) R.string.sort_by_like_date else R.string.sort_by_create_date
-                            SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
-                            SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
-                            SongSortType.NAME -> R.string.sort_by_name
-                            SongSortType.ARTIST -> R.string.sort_by_artist
-                            SongSortType.PLAY_TIME -> R.string.sort_by_play_time
-                            SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
-                        }
+            SortHeader(
+                sortType = sortType,
+                sortDescending = sortDescending,
+                onSortTypeChange = onSortTypeChange,
+                onSortDescendingChange = onSortDescendingChange,
+                sortTypeText = { sortType ->
+                    when (sortType) {
+                        SongSortType.CREATE_DATE -> if (filter == SongFilter.LIKED) R.string.sort_by_like_date else R.string.sort_by_create_date
+                        SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
+                        SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
+                        SongSortType.NAME -> R.string.sort_by_name
+                        SongSortType.ARTIST -> R.string.sort_by_artist
+                        SongSortType.PLAY_TIME -> R.string.sort_by_play_time
+                        SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
                     }
-                )
+                }
+            )
 
-                Spacer(Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
 
                 songs?.let { songs ->
                     Text(
@@ -221,40 +204,13 @@ fun LibrarySongsScreen(
         }
     }
 
-    @Composable
-    fun FabAndSnackbar() {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            HideOnScrollFAB(
-                visible = !songs.isNullOrEmpty(),
-                lazyListState = lazyListState,
-                icon = Icons.Rounded.Shuffle,
-                onClick = {
-                    playerConnection.playQueue(
-                        ListQueue(
-                            title = context.getString(R.string.queue_all_songs),
-                            items = songs!!.shuffled().map { it.toMediaMetadata()}
-                        )
-                    )
-                }
-            )
-
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier
-                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                    .align(Alignment.BottomCenter)
-            )
-        }
-    }
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             item(
                 key = "header",
@@ -313,6 +269,43 @@ fun LibrarySongsScreen(
             }
         }
 
-        FabAndSnackbar()
+        HideOnScrollFAB(
+            visible = !songs.isNullOrEmpty(),
+            lazyListState = lazyListState,
+            icon = Icons.Rounded.Shuffle,
+            onClick = {
+                playerConnection.playQueue(
+                    ListQueue(
+                        title = context.getString(R.string.queue_all_songs),
+                        items =  songs?.map { it.toMediaMetadata() } ?: emptyList(),
+                        startShuffled = true,
+                    )
+                )
+            }
+        )
+
+
+        FloatingFooter(visible = inSelectMode && songs != null) {
+            val s: List<Song> = (songs as Iterable<Song>).toList()
+            SelectHeader(
+                selectedItems = selection.mapNotNull { songId ->
+                    s.find { it.id == songId }
+                }.map { it.toMediaMetadata() },
+                totalItemCount = s.size,
+                onSelectAll = {
+                    selection.clear()
+                    selection.addAll(s.map { it.id })
+                },
+                onDeselectAll = { selection.clear() },
+                menuState = menuState,
+                onDismiss = onExitSelectionMode
+            )
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .align(Alignment.BottomCenter)
+        )
     }
 }

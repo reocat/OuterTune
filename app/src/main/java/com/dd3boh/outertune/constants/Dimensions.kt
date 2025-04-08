@@ -27,6 +27,7 @@ val SmallGridThumbnailHeight = 92.dp
 val AlbumThumbnailSize = 144.dp
 
 val ThumbnailCornerRadius = 6.dp
+val MenuCornerRadius = 16.dp
 val DialogCornerRadius = 32.dp
 val ContextDialogCornerRadius = 6.dp
 

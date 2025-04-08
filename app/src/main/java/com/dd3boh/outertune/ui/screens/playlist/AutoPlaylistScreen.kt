@@ -93,11 +93,11 @@ import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
+import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.FontSizeRange
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongListItem
-import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.utils.getNSongsString
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -261,6 +261,7 @@ fun AutoPlaylistScreen(
         LazyColumn(
             state = lazyListState,
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             item {
                 Column(
@@ -462,47 +463,11 @@ fun AutoPlaylistScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        if (inSelectMode) {
-                            SelectHeader(
-                                selectedItems = selection.mapNotNull { id ->
-                                        songs.find { it.song.id == id }
-                                    }.map { it.toMediaMetadata() },
-                                totalItemCount = songs.getAvailableSongs(isNetworkConnected).size,
-                                onSelectAll = {
-                                    selection.clear()
-                                    selection.addAll(songs.getAvailableSongs(isNetworkConnected).map { it.song.id })
-                                },
-                                onDeselectAll = { selection.clear() },
-                                menuState = menuState,
-                                onDismiss = onExitSelectionMode
-                            )
-                        } else {
-                            SortHeader(
-                                sortType = sortType,
-                                sortDescending = sortDescending,
-                                onSortTypeChange = onSortTypeChange,
-                                onSortDescendingChange = onSortDescendingChange,
-                                sortTypeText = { sortType ->
-                                    when (sortType) {
-                                        SongSortType.CREATE_DATE -> R.string.sort_by_create_date
-                                        SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
-                                        SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
-                                        SongSortType.NAME -> R.string.sort_by_name
-                                        SongSortType.ARTIST -> R.string.sort_by_artist
-                                        SongSortType.PLAY_TIME -> R.string.sort_by_play_time
-                                        SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
-                                    }
-                                }
-                            )
-
-                            Spacer(Modifier.weight(1f))
-
-                            Text(
-                                text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
+                        Text(
+                            text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
             } else {
@@ -569,6 +534,21 @@ fun AutoPlaylistScreen(
             scrollBehavior = scrollBehavior
         )
 
+        FloatingFooter(inSelectMode) {
+            SelectHeader(
+                selectedItems = selection.mapNotNull { id ->
+                    songs.find { it.song.id == id }
+                }.map { it.toMediaMetadata() },
+                totalItemCount = songs.size,
+                onSelectAll = {
+                    selection.clear()
+                    selection.addAll(songs.map { it.song.id })
+                },
+                onDeselectAll = { selection.clear() },
+                menuState = menuState,
+                onDismiss = onExitSelectionMode
+            )
+        }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
