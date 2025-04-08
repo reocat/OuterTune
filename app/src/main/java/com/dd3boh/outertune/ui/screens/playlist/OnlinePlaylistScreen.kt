@@ -85,7 +85,6 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AlbumThumbnailSize
-import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
@@ -96,6 +95,7 @@ import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
+import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.FontSizeRange
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -238,7 +238,8 @@ fun OnlinePlaylistScreen(
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             playlist.let { playlist ->
                 if (playlist != null) {
@@ -487,32 +488,6 @@ fun OnlinePlaylistScreen(
                         }
                     }
 
-                    item(
-                        key = "header",
-                        contentType = CONTENT_TYPE_HEADER
-                    ) {
-                        if (inSelectMode) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                SelectHeader(
-                                    selectedItems = selection.map {
-                                            songs[it]
-                                        }.map { it.toMediaMetadata() },
-                                    totalItemCount = songs.size,
-                                    onSelectAll = {
-                                        selection.clear()
-                                        selection.addAll(songs.indices)
-                                    },
-                                    onDeselectAll = { selection.clear() },
-                                    menuState = menuState,
-                                    onDismiss = onExitSelectionMode
-                                )
-                            }
-                        }
-                    }
-
                     itemsIndexed(
                         items = songs
                     ) { index, song ->
@@ -649,6 +624,21 @@ fun OnlinePlaylistScreen(
             scrollBehavior = scrollBehavior
         )
 
+        FloatingFooter(inSelectMode) {
+            SelectHeader(
+                selectedItems = selection.map {
+                    songs[it]
+                }.map { it.toMediaMetadata() },
+                totalItemCount = songs.size,
+                onSelectAll = {
+                    selection.clear()
+                    selection.addAll(songs.indices)
+                },
+                onDeselectAll = { selection.clear() },
+                menuState = menuState,
+                onDismiss = onExitSelectionMode
+            )
+        }
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier

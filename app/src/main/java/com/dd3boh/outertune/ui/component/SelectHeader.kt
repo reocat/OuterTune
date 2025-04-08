@@ -46,7 +46,9 @@ fun SelectHeader(
     ) {
         Text(
             text = "${selectedItems.size}/${context.resources.getQuantityString(R.plurals.n_selected, totalItemCount, totalItemCount)}",
-            modifier = Modifier.weight(1f, false)
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f, false)
         )
 
         // option menu
