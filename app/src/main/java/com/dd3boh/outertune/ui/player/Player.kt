@@ -126,7 +126,6 @@ import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.playback.isShuffleEnabled
-import com.dd3boh.outertune.playback.PlayerConnection
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
@@ -175,14 +174,15 @@ fun BottomSheetPlayer(
 
     val thumbnailLazyGridState = rememberLazyGridState()
 
-    val previousMediaMetadata = if (playerConnection.player.hasPreviousMediaItem()) {
+    val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
+    val previousMediaMetadata = if (swipeToSkip && playerConnection.player.hasPreviousMediaItem()) {
         val previousIndex = playerConnection.player.currentMediaItemIndex - 1
         if (previousIndex >= 0) {
             playerConnection.player.getMediaItemAt(previousIndex).metadata
         } else null
     } else null
 
-    val nextMediaMetadata = if (playerConnection.player.hasNextMediaItem()) {
+    val nextMediaMetadata = if (swipeToSkip && playerConnection.player.hasNextMediaItem()) {
         val nextIndex = playerConnection.player.currentMediaItemIndex + 1
         if (nextIndex < playerConnection.player.mediaItemCount) {
             playerConnection.player.getMediaItemAt(nextIndex).metadata
@@ -196,7 +196,7 @@ fun BottomSheetPlayer(
     val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
 
     LaunchedEffect(itemScrollOffset) {
-        if (itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
+        if (!swipeToSkip || itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
 
         if (currentItem > currentMediaIndex && canSkipNext) {
             playerConnection.player.seekToNext()
@@ -213,7 +213,7 @@ fun BottomSheetPlayer(
                     thumbnailLazyGridState.scrollToItem(index)
                 else
                     thumbnailLazyGridState.animateScrollToItem(index)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 thumbnailLazyGridState.scrollToItem(index)
             }
         }
@@ -226,7 +226,6 @@ fun BottomSheetPlayer(
         }
     }
 
-    val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
     val horizontalLazyGridItemWidthFactor = 1f
     val thumbnailSnapLayoutInfoProvider = remember(thumbnailLazyGridState) {
         SnapLayoutInfoProvider(
