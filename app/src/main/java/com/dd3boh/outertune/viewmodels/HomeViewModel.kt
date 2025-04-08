@@ -188,7 +188,8 @@ class HomeViewModel @Inject constructor(
             val nextSections = YouTube.home(params = chip?.endpoint?.params).getOrNull() ?: return@launch
             homePage.value = nextSections.copy(
                 chips = homePage.value?.chips,
-                sections = nextSections.sections
+                sections = nextSections.sections,
+                continuation = nextSections.continuation
             )
             selectedChip.value = chip
         }
