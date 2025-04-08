@@ -752,7 +752,7 @@ fun HomeScreen(
                 }
             }
 
-            if (homePage?.continuation != null) {
+            if (homePage?.continuation != null && homePage?.sections?.isNotEmpty() == true) {
                 item {
                     ShimmerHost(
                         modifier = Modifier.animateItem()
