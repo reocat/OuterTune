@@ -41,6 +41,7 @@ enum class SliderStyle {
  */
 const val SYSTEM_DEFAULT = "SYSTEM_DEFAULT"
 val YtmSyncKey = booleanPreferencesKey("ytmSync")
+val YtmSyncContent = stringPreferencesKey("ytmSyncContent")
 val LikedAutoDownloadKey = stringPreferencesKey("likedAutoDownloadKey")
 val ContentLanguageKey = stringPreferencesKey("contentLanguage")
 val ContentCountryKey = stringPreferencesKey("contentCountry")
