@@ -107,7 +107,10 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="edit_token">Edit Token</string>
     <string name="invalid_token">Invalid token. Please ensure it includes the SAPISID cookie.</string>
     <string name="ytm_sync">Automatically sync with your YouTube Music account</string>
-    <string name="wifi_only">Wifi only</string>
+    <string name="sync_mode">Sync mode</string>
+    <string name="sync_read_only">Read only (View remote content)</string>
+    <string name="sync_read_write">Read write (Also allow changes to remote content)</string>
+    <string name="wifi_only">Wi-Fi only</string>
 
     <!-- Player settings -->
     <string name="audio_offload">Enable offload</string>
