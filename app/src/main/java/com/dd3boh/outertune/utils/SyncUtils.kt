@@ -9,6 +9,8 @@
 package com.dd3boh.outertune.utils
 
 import android.content.Context
+import android.util.Log
+import com.dd3boh.outertune.constants.YtmSyncContent
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity
@@ -70,6 +72,10 @@ class SyncUtils @Inject constructor(
 
     private val TAG = "SyncUtils"
 
+    companion object {
+        const val DEFAULT_SYNC_CONTENT = "ARPLS"
+    }
+
     suspend fun syncAll() {
         coroutineScope {
             launch { syncRemoteLikedSongs() }
@@ -78,6 +84,10 @@ class SyncUtils @Inject constructor(
             launch { syncRemoteArtists() }
             launch { syncRemotePlaylists() }
         }
+    }
+
+    private fun checkEnabled(context: Context, item: SyncContent): Boolean {
+        return decodeSyncString(context.dataStore.get(YtmSyncContent, DEFAULT_SYNC_CONTENT)).contains(item)
     }
 
     /**
@@ -104,7 +114,7 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemoteLikedSongs
      */
     suspend fun syncRemoteLikedSongs() {
-        if (!context.isInternetConnected()) {
+        if (!checkEnabled(context, SyncContent.LIKED_SONGS) || !context.isInternetConnected()) {
             return
         }
 
@@ -163,7 +173,7 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemoteSongs
      */
     suspend fun syncRemoteSongs() {
-        if (!context.isInternetConnected()) {
+        if (!checkEnabled(context, SyncContent.PRIVATE_SONGS) || !context.isInternetConnected()) {
             return
         }
         if (!_isSyncingRemoteSongs.compareAndSet(expect = false, update = true)) {
@@ -222,7 +232,7 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemoteAlbums
      */
     suspend fun syncRemoteAlbums() {
-        if (!context.isInternetConnected()) {
+        if (!checkEnabled(context, SyncContent.ALBUMS) || !context.isInternetConnected()) {
             return
         }
         if (!_isSyncingRemoteAlbums.compareAndSet(expect = false, update = true)) {
@@ -279,7 +289,7 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemoteArtists
      */
     suspend fun syncRemoteArtists() {
-        if (!context.isInternetConnected()) {
+        if (!checkEnabled(context, SyncContent.ARTISTS) || !context.isInternetConnected()) {
             return
         }
         if (!_isSyncingRemoteArtists.compareAndSet(expect = false, update = true)) {
@@ -359,7 +369,7 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemotePlaylists
      */
     suspend fun syncRemotePlaylists() {
-        if (!context.isInternetConnected()) {
+        if (!checkEnabled(context, SyncContent.PLAYLISTS) || !context.isInternetConnected()) {
             return
         }
         if (!_isSyncingRemotePlaylists.compareAndSet(expect = false, update = true)) {
@@ -442,6 +452,7 @@ class SyncUtils @Inject constructor(
     }
 
     suspend fun syncPlaylist(browseId: String, playlistId: String) {
+        // this is also used for individual playlist sync
         if (!context.isInternetConnected()) {
             return
         }
