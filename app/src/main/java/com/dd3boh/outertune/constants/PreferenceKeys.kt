@@ -42,12 +42,17 @@ enum class SliderStyle {
 const val SYSTEM_DEFAULT = "SYSTEM_DEFAULT"
 val YtmSyncKey = booleanPreferencesKey("ytmSync")
 val YtmSyncContent = stringPreferencesKey("ytmSyncContent")
+val YtmSyncMode = stringPreferencesKey("ytmSyncMode")
 val LikedAutoDownloadKey = stringPreferencesKey("likedAutoDownloadKey")
 val ContentLanguageKey = stringPreferencesKey("contentLanguage")
 val ContentCountryKey = stringPreferencesKey("contentCountry")
 val ProxyEnabledKey = booleanPreferencesKey("proxyEnabled")
 val ProxyUrlKey = stringPreferencesKey("proxyUrl")
 val ProxyTypeKey = stringPreferencesKey("proxyType")
+
+enum class SyncMode {
+    RO, RW, // USER_CHOICE
+}
 
 /**
  * Discord Integration
@@ -57,6 +62,7 @@ val DiscordInfoDismissedKey = booleanPreferencesKey("discordInfoDismissed_v2")
 val DiscordUsernameKey = stringPreferencesKey("discordUsername")
 val DiscordNameKey = stringPreferencesKey("discordName")
 val EnableDiscordRPCKey = booleanPreferencesKey("discordRPCEnable")
+
 
 /**
  * Player & audio
