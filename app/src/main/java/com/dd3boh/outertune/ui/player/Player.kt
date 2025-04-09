@@ -196,7 +196,7 @@ fun BottomSheetPlayer(
     val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
 
     LaunchedEffect(itemScrollOffset) {
-        if (!swipeToSkip || itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
+        if (!thumbnailLazyGridState.isScrollInProgress || !swipeToSkip || itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
 
         if (currentItem > currentMediaIndex && canSkipNext) {
             playerConnection.player.seekToNext()
@@ -209,10 +209,10 @@ fun BottomSheetPlayer(
         val index = maxOf(0, currentMediaIndex)
         if (index >= 0) {
             try {
-                if (state.isCollapsed)
-                    thumbnailLazyGridState.scrollToItem(index)
-                else
+                if (state.isExpanded)
                     thumbnailLazyGridState.animateScrollToItem(index)
+                else
+                    thumbnailLazyGridState.scrollToItem(index)
             } catch (_: Exception) {
                 thumbnailLazyGridState.scrollToItem(index)
             }
@@ -827,7 +827,7 @@ fun BottomSheetPlayer(
                             state = thumbnailLazyGridState,
                             rows = GridCells.Fixed(1),
                             flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
-                            userScrollEnabled = state.isExpanded && swipeToSkip
+                            userScrollEnabled = swipeToSkip && state.isExpanded
                         ) {
                             items(
                                 items = mediaItems,
