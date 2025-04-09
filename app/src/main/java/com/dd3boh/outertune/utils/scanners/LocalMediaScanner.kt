@@ -121,7 +121,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                             SongEntity(
                                 SongEntity.generateSongId(),
                                 path.substringAfterLast('/'),
-                                thumbnailUrl = path,
+                                thumbnailUrl = null,
                                 isLocal = true,
                                 inLibrary = LocalDateTime.now(),
                                 localPath = path

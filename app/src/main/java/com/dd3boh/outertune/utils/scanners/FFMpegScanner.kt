@@ -202,8 +202,8 @@ class FFMpegScanner(context: Context) : MetadataScanner {
                 song = SongEntity(
                     id = songId,
                     title = title,
-                    duration = duration.toInt(),
-                    thumbnailUrl = path,
+                    duration = duration.toInt(), // we use seconds for duration
+                    thumbnailUrl = null,
                     albumId = albumId,
                     albumName = albumName,
                     year = year,
