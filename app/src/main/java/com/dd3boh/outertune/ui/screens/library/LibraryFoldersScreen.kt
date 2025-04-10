@@ -173,7 +173,7 @@ fun LibraryFoldersScreen(
     LaunchedEffect(sortType, sortDescending, currDir) {
         val tempList = currDir.files.map { it }.toMutableList()
         // sort songs
-        tempList.sortBy {
+        tempList.sortBy { it ->
             when (sortType) {
                 SongSortType.CREATE_DATE -> numberToAlpha(it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC)?: -1L)
                 SongSortType.MODIFIED_DATE -> numberToAlpha(it.song.getDateModifiedLong()?: -1L)

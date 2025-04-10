@@ -27,13 +27,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.SettingsTopBarHeight
 import com.dd3boh.outertune.ui.component.IconButton
+import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
+import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.ui.screens.settings.fragments.AccountFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.SyncFrag
 import com.dd3boh.outertune.ui.utils.backToMain
@@ -66,6 +69,16 @@ fun AccountSyncSettings(
             title = stringResource(R.string.sync)
         )
         SyncFrag()
+        SettingsClickToReveal(stringResource(R.string.advanced)) {
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.spot_import_title)) },
+                description = null,
+                icon = { Icon(painterResource(R.drawable.spotify), null) },
+                onClick = {
+                    navController.navigate("settings/content/import_from_spotify")
+                }
+            )
+        }
     }
 
     TopAppBar(
