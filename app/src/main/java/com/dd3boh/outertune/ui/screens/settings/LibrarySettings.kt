@@ -50,7 +50,6 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.FlatSubfoldersKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
-import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.constants.ProxyEnabledKey
 import com.dd3boh.outertune.constants.ProxyTypeKey
@@ -87,10 +86,6 @@ fun LibrarySettings(
     val isLoggedIn = remember(innerTubeCookie) {
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
-    val (pauseRemoteListenHistory, onPauseRemoteListenHistoryChange) = rememberPreference(
-        key = PauseRemoteListenHistoryKey,
-        defaultValue = false
-    )
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(
         key = PauseSearchHistoryKey,
         defaultValue = false
@@ -153,13 +148,6 @@ fun LibrarySettings(
             icon = { Icon(Icons.Rounded.History, null) },
             checked = pauseListenHistory,
             onCheckedChange = onPauseListenHistoryChange
-        )
-        SwitchPreference(
-            title = { Text(stringResource(R.string.pause_remote_listen_history)) },
-            icon = { Icon(Icons.Rounded.History, null) },
-            checked = pauseRemoteListenHistory,
-            onCheckedChange = onPauseRemoteListenHistoryChange,
-            isEnabled = !pauseListenHistory && isLoggedIn
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.clear_listen_history)) },

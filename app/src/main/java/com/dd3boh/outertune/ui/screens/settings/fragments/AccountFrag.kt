@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.VpnKey
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -23,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -36,10 +36,9 @@ import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
-import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.component.TextFieldDialog
+import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
@@ -102,8 +101,9 @@ fun ColumnScope.AccountFrag(navController: NavController) {
                 Text(stringResource(R.string.token_hidden))
             }
         },
+        icon = { Icon(Icons.Rounded.VpnKey, null) },
         onClick = {
-            if (showToken == false) {
+            if (!showToken) {
                 showToken = true
             } else {
                 showTokenEditor = true
@@ -130,43 +130,25 @@ fun ColumnScope.AccountFrag(navController: NavController) {
 
 
     if (showTokenEditor) {
-        val text =
-            "***INNERTUBE COOKIE*** =${innerTubeCookie}\n\n***VISITOR DATA*** =${visitorData}\n\n***DATASYNC ID*** =${dataSyncId}\n\n***ACCOUNT NAME*** =${accountName}\n\n***ACCOUNT EMAIL*** =${accountEmail}\n\n***ACCOUNT CHANNEL HANDLE*** =${accountChannelHandle}"
-        TextFieldDialog(
-            modifier = Modifier,
-            initialTextFieldValue = TextFieldValue(text),
-            onDone = { data ->
-                data.split("\n").forEach {
-                    if (it.startsWith("***INNERTUBE COOKIE*** =")) {
-                        onInnerTubeCookieChange(it.substringAfter("***INNERTUBE COOKIE*** ="))
-                    } else if (it.startsWith("***VISITOR DATA*** =")) {
-                        onVisitorDataChange(it.substringAfter("***VISITOR DATA*** ="))
-                    } else if (it.startsWith("***DATASYNC ID*** =")) {
-                        onDataSyncIdChange(it.substringAfter("***DATASYNC ID*** ="))
-                    } else if (it.startsWith("***ACCOUNT NAME*** =")) {
-                        onAccountNameChange(it.substringAfter("***ACCOUNT NAME*** ="))
-                    } else if (it.startsWith("***ACCOUNT EMAIL*** =")) {
-                        onAccountEmailChange(it.substringAfter("***ACCOUNT EMAIL*** ="))
-                    } else if (it.startsWith("***ACCOUNT CHANNEL HANDLE*** =")) {
-                        onAccountChannelHandleChange(it.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
-                    }
-                }
-            },
+        TokenEditorDialog(
+            initialValue = innerTubeCookie,
+            visitorData = visitorData,
+            dataSyncId = dataSyncId,
+            accountName = accountName,
+            accountEmail = accountEmail,
+            accountChannelHandle = accountChannelHandle,
+            onInnerTubeCookieChange = onInnerTubeCookieChange,
+            onVisitorDataChange = onVisitorDataChange,
+            onDataSyncIdChange = onDataSyncIdChange,
+            onAccountNameChange = onAccountNameChange,
+            onAccountEmailChange = onAccountEmailChange,
+            onAccountChannelHandleChange = onAccountChannelHandleChange,
             onDismiss = { showTokenEditor = false },
-            singleLine = false,
-            maxLines = 20,
-            isInputValid = {
-                it.isNotEmpty() &&
-                        try {
-                            "SAPISID" in parseCookieString(it)
-                            true
-                        } catch (e: Exception) {
-                            false
-                        }
+            onDone = { newToken ->
+                onInnerTubeCookieChange(newToken)
+                showTokenEditor = false
             },
-            extraContent = {
-                InfoLabel(text = stringResource(R.string.token_adv_login_description))
-            }
+            modifier = Modifier
         )
     }
 }

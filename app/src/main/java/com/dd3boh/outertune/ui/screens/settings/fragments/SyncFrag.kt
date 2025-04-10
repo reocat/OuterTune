@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncLock
 import androidx.compose.material3.Checkbox
@@ -41,7 +40,6 @@ import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
-import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
 import com.dd3boh.outertune.constants.SyncMode
 import com.dd3boh.outertune.constants.YtmSyncContent
 import com.dd3boh.outertune.constants.YtmSyncKey
@@ -79,10 +77,7 @@ fun ColumnScope.SyncFrag() {
     )
     val (syncMode, onSyncModeChange) = rememberEnumPreference(key = YtmSyncMode, defaultValue = SyncMode.RO)
     val pauseListenHistory by rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
-    val (pauseRemoteListenHistory, onPauseRemoteListenHistoryChange) = rememberPreference(
-        key = PauseRemoteListenHistoryKey,
-        defaultValue = false
-    )
+
     val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(
         LikedAutoDownloadKey,
         LikedAutodownloadMode.OFF
@@ -181,13 +176,6 @@ fun ColumnScope.SyncFrag() {
             )
         }
     }
-    SwitchPreference(
-        title = { Text(stringResource(R.string.pause_remote_listen_history)) },
-        icon = { Icon(Icons.Rounded.History, null) },
-        checked = pauseRemoteListenHistory,
-        onCheckedChange = onPauseRemoteListenHistoryChange,
-        isEnabled = !pauseListenHistory && isLoggedIn
-    )
     ListPreference(
         title = { Text(stringResource(R.string.like_autodownload)) },
         icon = { Icon(Icons.Rounded.Favorite, null) },
@@ -195,8 +183,8 @@ fun ColumnScope.SyncFrag() {
         selectedValue = likedAutoDownload,
         valueText = {
             when (it) {
-                LikedAutodownloadMode.OFF -> stringResource(androidx.compose.ui.R.string.state_off)
-                LikedAutodownloadMode.ON -> stringResource(androidx.compose.ui.R.string.state_on)
+                LikedAutodownloadMode.OFF -> stringResource(R.string.off)
+                LikedAutodownloadMode.ON -> stringResource(R.string.on)
                 LikedAutodownloadMode.WIFI_ONLY -> stringResource(R.string.wifi_only)
             }
         },

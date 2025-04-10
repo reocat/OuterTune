@@ -9,7 +9,6 @@
 package com.dd3boh.outertune.utils
 
 import android.content.Context
-import android.util.Log
 import com.dd3boh.outertune.constants.YtmSyncContent
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -40,8 +39,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import kotlinx.coroutines.newSingleThreadContext
+import timber.log.Timber
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -70,7 +69,7 @@ class SyncUtils @Inject constructor(
     @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     val syncCoroutine = newSingleThreadContext("syncUtils")
 
-    private val TAG = "SyncUtils"
+    private val logTag = "SyncUtils"
 
     companion object {
         const val DEFAULT_SYNC_CONTENT = "ARPLS"
