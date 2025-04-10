@@ -28,7 +28,7 @@ val GridThumbnailHeight = 128.dp
 val SmallGridThumbnailHeight = 92.dp
 val AlbumThumbnailSize = 144.dp
 @OptIn(ExperimentalMaterial3Api::class)
-val SettingsTopBarHeight = TopAppBarDefaults.TopAppBarExpandedHeight + 32.dp
+val SettingsTopBarHeight = TopAppBarDefaults.TopAppBarExpandedHeight + 48.dp
 
 val ThumbnailCornerRadius = 6.dp
 val MenuCornerRadius = 16.dp

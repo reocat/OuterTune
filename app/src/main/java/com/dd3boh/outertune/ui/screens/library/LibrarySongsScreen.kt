@@ -42,7 +42,6 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.dd3boh.outertune.LocalIsNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -78,8 +77,6 @@ fun LibrarySongsScreen(
     val context = LocalContext.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val isNetworkConnected = LocalIsNetworkConnected.current
-
     val snackbarHostState = remember { SnackbarHostState() }
 
     var filter by rememberEnumPreference(SongFilterKey, SongFilter.LIKED)
@@ -101,12 +98,6 @@ fun LibrarySongsScreen(
             lazyListState.animateScrollToItem(0)
             backStackEntry?.savedStateHandle?.set("scrollToTop", false)
         }
-    }
-
-    val songsAvailable = {
-        songs?.filter { it.song.isAvailableOffline() || isNetworkConnected }
-            ?.map { it.toMediaMetadata() }
-            ?.toList() ?: emptyList()
     }
 
     // multiselect
@@ -193,13 +184,12 @@ fun LibrarySongsScreen(
 
             Spacer(Modifier.weight(1f))
 
-                songs?.let { songs ->
-                    Text(
-                        text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
+            songs?.let { songs ->
+                Text(
+                    text = pluralStringResource(R.plurals.n_song, songs.size, songs.size),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
             }
         }
     }
