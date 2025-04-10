@@ -94,7 +94,9 @@ import com.dd3boh.outertune.constants.PlaylistEditLockKey
 import com.dd3boh.outertune.constants.PlaylistSongSortDescendingKey
 import com.dd3boh.outertune.constants.PlaylistSongSortType
 import com.dd3boh.outertune.constants.PlaylistSongSortTypeKey
+import com.dd3boh.outertune.constants.SyncMode
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.constants.YtmSyncMode
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
@@ -153,6 +155,7 @@ fun LocalPlaylistScreen(
     val (sortType, onSortTypeChange) = rememberEnumPreference(PlaylistSongSortTypeKey, PlaylistSongSortType.CUSTOM)
     val (sortDescending, onSortDescendingChange) = rememberPreference(PlaylistSongSortDescendingKey, true)
     var locked by rememberPreference(PlaylistEditLockKey, defaultValue = false)
+    val syncMode by rememberEnumPreference(key = YtmSyncMode, defaultValue = SyncMode.RO)
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -171,7 +174,8 @@ fun LocalPlaylistScreen(
         BackHandler(onBack = onExitSelectionMode)
     }
 
-    val editable: Boolean = playlist?.playlist?.isLocal == true || playlist?.playlist?.isEditable == true
+    val editable: Boolean =
+        playlist?.playlist?.isLocal == true || (playlist?.playlist?.isEditable == true && syncMode == SyncMode.RW)
 
     LaunchedEffect(songs) {
         mutableSongs.apply {
