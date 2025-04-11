@@ -43,6 +43,7 @@ const val SYSTEM_DEFAULT = "SYSTEM_DEFAULT"
 val YtmSyncKey = booleanPreferencesKey("ytmSync")
 val YtmSyncContent = stringPreferencesKey("ytmSyncContent")
 val YtmSyncMode = stringPreferencesKey("ytmSyncMode")
+val YtmSyncConflict = stringPreferencesKey("ytmSyncConflict")
 val LikedAutoDownloadKey = stringPreferencesKey("likedAutoDownloadKey")
 val ContentLanguageKey = stringPreferencesKey("contentLanguage")
 val ContentCountryKey = stringPreferencesKey("contentCountry")
@@ -52,6 +53,9 @@ val ProxyTypeKey = stringPreferencesKey("proxyType")
 
 enum class SyncMode {
     RO, RW, // USER_CHOICE
+}
+enum class SyncConflictResolution {
+    ADD_ONLY, OVERWRITE_WITH_REMOTE, // OVERWRITE_WITH_LOCAL, USER_CHOICE
 }
 
 /**
