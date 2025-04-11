@@ -1,4 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- General -->
+    <string name="android_auto">Android Auto</string>
+
     <!-- Bottom navigation -->
     <string name="library">Библиотека</string>
     <string name="folders">Папки</string>
