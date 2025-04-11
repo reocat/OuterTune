@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncLock
+import androidx.compose.material.icons.rounded.SyncProblem
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +42,9 @@ import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
+import com.dd3boh.outertune.constants.SyncConflictResolution
 import com.dd3boh.outertune.constants.SyncMode
+import com.dd3boh.outertune.constants.YtmSyncConflict
 import com.dd3boh.outertune.constants.YtmSyncContent
 import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.constants.YtmSyncMode
@@ -75,6 +79,7 @@ fun ColumnScope.SyncFrag() {
         YtmSyncContent,
         defaultValue = SyncUtils.DEFAULT_SYNC_CONTENT
     )
+    val (syncConflict, onSyncConflictChange) = rememberEnumPreference(key = YtmSyncConflict, defaultValue = SyncConflictResolution.ADD_ONLY)
     val (syncMode, onSyncModeChange) = rememberEnumPreference(key = YtmSyncMode, defaultValue = SyncMode.RO)
     val pauseListenHistory by rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
 
@@ -176,6 +181,31 @@ fun ColumnScope.SyncFrag() {
             )
         }
     }
+
+    EnumListPreference(
+        title = { Text(stringResource(R.string.sync_mode)) },
+        icon = { Icon(Icons.Rounded.SyncLock, null) },
+        selectedValue = syncMode,
+        onValueSelected = onSyncModeChange,
+        valueText = {
+            when (it) {
+                SyncMode.RO -> stringResource(R.string.sync_mode_ro)
+                SyncMode.RW -> stringResource(R.string.sync_mode_rw)
+            }
+        }
+    )
+    EnumListPreference(
+        title = { Text(stringResource(R.string.sync_conflict_title)) },
+        icon = { Icon(Icons.Rounded.SyncProblem, null) },
+        selectedValue = syncConflict,
+        onValueSelected = onSyncConflictChange,
+        valueText = {
+            when (it) {
+                SyncConflictResolution.ADD_ONLY -> stringResource(R.string.sync_conflict_add_only)
+                SyncConflictResolution.OVERWRITE_WITH_REMOTE -> stringResource(R.string.sync_conflict_overwrite)
+            }
+        },
+    )
     ListPreference(
         title = { Text(stringResource(R.string.like_autodownload)) },
         icon = { Icon(Icons.Rounded.Favorite, null) },
