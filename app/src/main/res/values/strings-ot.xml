@@ -103,13 +103,16 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="token_adv_login_description">This is an ADVANCED login method. As an alternative to the web portal, you may directly enter or update your login token here. For example, this can speed up logging in on multiple devices. Please note that any invalid token formats the app fails to parse will not be accepted</string>
     <string name="token_hidden">Tap to show token</string>
     <string name="token_shown">Tap again to copy or edit</string>
+    <string name="sync_conflict_add_only">Keep all local content, add new remote content</string>
+    <string name="sync_conflict_overwrite">Overwrite local content with remote content</string>
+    <string name="sync_conflict_title">Conflict resolution</string>
     <string name="token">Token</string>
     <string name="edit_token">Edit Token</string>
     <string name="invalid_token">Invalid token. Please ensure it includes the SAPISID cookie.</string>
     <string name="ytm_sync">Automatically sync with your YouTube Music account</string>
     <string name="sync_mode">Sync mode</string>
-    <string name="sync_read_only">Read only (View remote content)</string>
-    <string name="sync_read_write">Read write (Also allow changes to remote content)</string>
+    <string name="sync_mode_ro">Read only (View remote content)</string>
+    <string name="sync_mode_rw">Read write (Also allow changes to remote content)</string>
     <string name="wifi_only">Wi-Fi only</string>
 
     <!-- Player settings -->
