@@ -708,7 +708,8 @@ fun LocalPlaylistHeader(
                                     }
                                     snackbarHostState.showSnackbar(context.getString(R.string.playlist_synced))
                                 }
-                            }
+                            },
+                            enabled = isNetworkConnected
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Sync,
