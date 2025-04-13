@@ -20,6 +20,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="remote_history">Remote</string>
 
     <!-- Library screens -->
+    <string name="missing_media_permission_warning">Storage permissions is required for local media. Click to grant permission.</string>
 
     <!-- Queue -->
     <string name="queues_title">Queues</string>
