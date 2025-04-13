@@ -274,7 +274,7 @@ class MainActivity : ComponentActivity() {
             if (isGranted) {
 //                Toast.makeText(this, "Granted", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.scanner_missing_storage_perm), Toast.LENGTH_SHORT).show()
             }
         }
 
