@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.utils
 import android.content.Context
+import androidx.compose.ui.res.stringResource
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.db.entities.Song
 import com.my.kizzy.rpc.KizzyRPC
@@ -21,7 +22,7 @@ class DiscordRPC(
             buttons = listOf(
                 context.getString(R.string.rpc_listen_ytm) to
                         "https://music.youtube.com/watch?v=${song.song.id}",
-                context.getString(R.string.rpc_visit) to
+                context.getString(R.string.rpc_visit, context.getString(R.string.app_name)) to
                         "https://github.com/OuterTune/OuterTune"
             ),
             type = Type.LISTENING,

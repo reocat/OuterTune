@@ -170,7 +170,7 @@ fun PlayerSettings(
             onCheckedChange = onSkipOnErrorChange
         )
 
-        SettingsClickToReveal(stringResource(R.string.advanced)) {
+        SettingsClickToReveal(stringResource(R.string.prefs_advanced)) {
             SwitchPreference(
                 title = { Text(stringResource(R.string.persistent_queue)) },
                 description = stringResource(R.string.persistent_queue_desc_ot),

@@ -69,7 +69,7 @@ fun AccountSyncSettings(
             title = stringResource(R.string.sync)
         )
         SyncFrag()
-        SettingsClickToReveal(stringResource(R.string.advanced)) {
+        SettingsClickToReveal(stringResource(R.string.prefs_advanced)) {
             PreferenceEntry(
                 title = { Text(stringResource(R.string.spot_import_title)) },
                 description = null,
