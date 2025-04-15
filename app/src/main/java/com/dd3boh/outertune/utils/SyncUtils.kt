@@ -210,7 +210,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLikeSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).d("Liked songs synchronization ended")
+            Log.i(TAG, "Liked songs synchronization ended")
             _isSyncingRemoteLikedSongs.value = false
         }
     }
@@ -275,7 +275,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLibSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).d("Library songs synchronization ended")
+            Log.i(TAG, "Library songs synchronization ended")
             _isSyncingRemoteSongs.value = false
         }
     }
@@ -341,7 +341,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastAlbumSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).d("Library albums synchronization ended")
+            Log.i(TAG, "Library albums synchronization ended")
             _isSyncingRemoteAlbums.value = false // Use the correct AtomicBoolean
         }
     }
@@ -350,7 +350,7 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemoteArtists
      */
     suspend fun syncRemoteArtists(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(context, SyncContent.ARTISTS) || !context.isInternetConnected()) {
+        if (context.isSyncEnabled() || !checkEnabled(SyncContent.ARTISTS) || !context.isInternetConnected()) {
             return
         }
         if (!_isSyncingRemoteArtists.compareAndSet(expect = false, update = true)) {
@@ -429,7 +429,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastArtistSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).d("Artist subscriptions synchronization ended")
+            Log.i(TAG, "Artist subscriptions synchronization ended")
             _isSyncingRemoteArtists.value = false
         }
     }
@@ -438,14 +438,11 @@ class SyncUtils @Inject constructor(
      * Singleton syncRemotePlaylists
      */
     suspend fun syncRemotePlaylists(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(context, SyncContent.PLAYLISTS) || !context.isInternetConnected()) {
+        if (context.isSyncEnabled() || !checkEnabled(SyncContent.PLAYLISTS) || !context.isInternetConnected()) {
             return
         }
         if (!_isSyncingRemotePlaylists.compareAndSet(expect = false, update = true)) {
             Timber.tag(logTag).d("Library playlist synchronization already in progress")
-            return
-        }
-        if (!bypassCd && !checkPartialSyncEligibility(LastPlaylistSyncKey)) {
             return
         }
         if (!bypassCd && !checkPartialSyncEligibility(LastPlaylistSyncKey)) {

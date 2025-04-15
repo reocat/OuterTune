@@ -59,6 +59,7 @@ import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
 import com.dd3boh.outertune.constants.SmallGridThumbnailHeight
 import com.dd3boh.outertune.constants.SongFilter
+import com.dd3boh.outertune.constants.SongFilter
 import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
