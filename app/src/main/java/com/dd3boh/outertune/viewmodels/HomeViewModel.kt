@@ -9,7 +9,6 @@ import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.LocalItem
 import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.models.SimilarRecommendation
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.reportException
