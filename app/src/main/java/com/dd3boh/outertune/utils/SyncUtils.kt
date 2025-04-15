@@ -27,7 +27,7 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.extensions.isInternetConnected
-import com.dd3boh.outertune.extensions.isSyncEnabled
+import com.dd3boh.outertune.extensions.isAutoSyncEnabled
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.DownloadUtil
@@ -73,12 +73,14 @@ class SyncUtils @Inject constructor(
     private val _isSyncingRemoteAlbums = MutableStateFlow(false)
     private val _isSyncingRemoteArtists = MutableStateFlow(false)
     private val _isSyncingRemotePlaylists = MutableStateFlow(false)
+    private val _isSyncingRecentActivity = MutableStateFlow(false)
 
     val isSyncingRemoteLikedSongs: StateFlow<Boolean> = _isSyncingRemoteLikedSongs.asStateFlow()
     val isSyncingRemoteSongs: StateFlow<Boolean> = _isSyncingRemoteSongs.asStateFlow()
     val isSyncingRemoteAlbums: StateFlow<Boolean> = _isSyncingRemoteAlbums.asStateFlow()
     val isSyncingRemoteArtists: StateFlow<Boolean> = _isSyncingRemoteArtists.asStateFlow()
     val isSyncingRemotePlaylists: StateFlow<Boolean> = _isSyncingRemotePlaylists.asStateFlow()
+    val isSyncingRecentActivity: StateFlow<Boolean> = _isSyncingRecentActivity.asStateFlow()
 
     @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     val syncCoroutine = newSingleThreadContext("syncUtils")
@@ -91,6 +93,9 @@ class SyncUtils @Inject constructor(
     }
 
     suspend fun tryAutoSync(bypassCd: Boolean = false) {
+        if (!context.isAutoSyncEnabled()) {
+            return
+        }
         Timber.tag(logTag).d("Starting auto sync job")
         if (!bypassCd) {
             val lastSync = context.dataStore.get(LastFullSyncKey, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
@@ -155,18 +160,20 @@ class SyncUtils @Inject constructor(
     /**
      * Singleton syncRemoteLikedSongs
      */
-    suspend fun syncRemoteLikedSongs(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(SyncContent.LIKED_SONGS) || !context.isInternetConnected()) {
+    suspend fun syncRemoteLikedSongs(bypass: Boolean = false) {
+        // REQUIRED: internet, no ongoing sync, and category enabled
+        if (!_isSyncingRemoteLikedSongs.value && (!checkEnabled(SyncContent.LIKED_SONGS) || !context.isInternetConnected())) {
+            if (_isSyncingRemoteLikedSongs.value)
+                Log.i(TAG, "Library songs synchronization already in progress")
             return
         }
-        if (!bypassCd && !checkPartialSyncEligibility(LastLikeSongSyncKey)) {
-            return
+        // OPTIONAL: auto sync and cooldown
+        if (!bypass) {
+            if (!context.isAutoSyncEnabled() || !checkPartialSyncEligibility(LastLikeSongSyncKey)) {
+                return
+            }
         }
-
-        if (!_isSyncingRemoteLikedSongs.compareAndSet(expect = false, update = true)) {
-            Timber.tag(logTag).d("Liked songs synchronization already in progress")
-            return // Synchronization already in progress
-        }
+        _isSyncingRemoteLikedSongs.value = true
 
         try {
             Timber.tag(logTag).d("Liked songs synchronization started")
@@ -220,17 +227,20 @@ class SyncUtils @Inject constructor(
     /**
      * Singleton syncRemoteSongs
      */
-    suspend fun syncRemoteSongs(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(SyncContent.PRIVATE_SONGS) || !context.isInternetConnected()) {
+    suspend fun syncRemoteSongs(bypass: Boolean = false) {
+        // REQUIRED: internet, no ongoing sync, and category enabled
+        if (!_isSyncingRemoteSongs.value && (!checkEnabled(SyncContent.PRIVATE_SONGS) || !context.isInternetConnected())) {
+            if (_isSyncingRemoteSongs.value)
+                Log.i(TAG, "Library songs synchronization already in progress")
             return
         }
-        if (!_isSyncingRemoteSongs.compareAndSet(expect = false, update = true)) {
-            Timber.tag(logTag).d("Library songs synchronization already in progress")
-            return // Synchronization already in progress
+        // OPTIONAL: auto sync and cooldown
+        if (!bypass) {
+            if (!context.isAutoSyncEnabled() || !checkPartialSyncEligibility(LastLibSongSyncKey)) {
+                return
+            }
         }
-        if (!bypassCd && !checkPartialSyncEligibility(LastLibSongSyncKey)) {
-            return
-        }
+        _isSyncingRemoteSongs.value = true
 
         try {
             Timber.tag(logTag).d("Library songs synchronization started")
@@ -285,17 +295,20 @@ class SyncUtils @Inject constructor(
     /**
      * Singleton syncRemoteAlbums
      */
-    suspend fun syncRemoteAlbums(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(SyncContent.ALBUMS) || !context.isInternetConnected()) {
+    suspend fun syncRemoteAlbums(bypass: Boolean = false) {
+        // REQUIRED: internet, no ongoing sync, and category enabled
+        if (!_isSyncingRemoteAlbums.value && (!checkEnabled(SyncContent.ALBUMS) || !context.isInternetConnected())) {
+            if (_isSyncingRemoteAlbums.value)
+                Log.i(TAG, "Library songs synchronization already in progress")
             return
         }
-        if (!_isSyncingRemoteAlbums.compareAndSet(expect = false, update = true)) {
-            Timber.tag(logTag).d("Library albums synchronization already in progress")
-            return // Synchronization already in progress
+        // OPTIONAL: auto sync and cooldown
+        if (!bypass) {
+            if (!context.isAutoSyncEnabled() || !checkPartialSyncEligibility(LastAlbumSyncKey)) {
+                return
+            }
         }
-        if (!bypassCd && !checkPartialSyncEligibility(LastAlbumSyncKey)) {
-            return
-        }
+        _isSyncingRemoteAlbums.value = true
 
         try {
             Timber.tag(logTag).d("Library albums synchronization started")
@@ -351,17 +364,20 @@ class SyncUtils @Inject constructor(
     /**
      * Singleton syncRemoteArtists
      */
-    suspend fun syncRemoteArtists(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(SyncContent.ARTISTS) || !context.isInternetConnected()) {
+    suspend fun syncRemoteArtists(bypass: Boolean = false) {
+        // REQUIRED: internet, no ongoing sync, and category enabled
+        if (!_isSyncingRemoteArtists.value && (!checkEnabled(SyncContent.ARTISTS) || !context.isInternetConnected())) {
+            if (_isSyncingRemoteArtists.value)
+                Log.i(TAG, "Library songs synchronization already in progress")
             return
         }
-        if (!_isSyncingRemoteArtists.compareAndSet(expect = false, update = true)) {
-            Timber.tag(logTag).d("Artist subscriptions synchronization already in progress")
-            return // Synchronization already in progress
+        // OPTIONAL: auto sync and cooldown
+        if (!bypass) {
+            if (!context.isAutoSyncEnabled() || !checkPartialSyncEligibility(LastArtistSyncKey)) {
+                return
+            }
         }
-        if (!bypassCd && !checkPartialSyncEligibility(LastArtistSyncKey)) {
-            return
-        }
+        _isSyncingRemoteArtists.value = true
 
         try {
             Timber.tag(logTag).d("Artist subscriptions synchronization started")
@@ -439,17 +455,20 @@ class SyncUtils @Inject constructor(
     /**
      * Singleton syncRemotePlaylists
      */
-    suspend fun syncRemotePlaylists(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !checkEnabled(SyncContent.PLAYLISTS) || !context.isInternetConnected()) {
+    suspend fun syncRemotePlaylists(bypass: Boolean = false) {
+        // REQUIRED: internet, no ongoing sync, and category enabled
+        if (!_isSyncingRemotePlaylists.value && (!checkEnabled(SyncContent.PLAYLISTS) || !context.isInternetConnected())) {
+            if (_isSyncingRemotePlaylists.value)
+                Log.i(TAG, "Library songs synchronization already in progress")
             return
         }
-        if (!_isSyncingRemotePlaylists.compareAndSet(expect = false, update = true)) {
-            Timber.tag(logTag).d("Library playlist synchronization already in progress")
-            return
+        // OPTIONAL: auto sync and cooldown
+        if (!bypass) {
+            if (!context.isAutoSyncEnabled() || !checkPartialSyncEligibility(LastPlaylistSyncKey)) {
+                return
+            }
         }
-        if (!bypassCd && !checkPartialSyncEligibility(LastPlaylistSyncKey)) {
-            return
-        }
+        _isSyncingRemotePlaylists.value = true
 
         try {
             Timber.tag(logTag).d("Library playlist synchronization started")
@@ -563,13 +582,21 @@ class SyncUtils @Inject constructor(
         }
     }
 
-    suspend fun syncRecentActivity(bypassCd: Boolean = false) {
-        if (context.isSyncEnabled() || !context.isInternetConnected()) {
+    suspend fun syncRecentActivity(bypass: Boolean = false) {
+        // REQUIRED: internet, no ongoing sync, and category enabled
+        if (!_isSyncingRecentActivity.value && !context.isInternetConnected()) {
+            if (_isSyncingRecentActivity.value)
+                Log.i(TAG, "Library songs synchronization already in progress")
             return
         }
-        if (!bypassCd && !checkPartialSyncEligibility(LastRecentActivitySyncKey)) {
-            return
+        // OPTIONAL: auto sync and cooldown
+        if (!bypass) {
+            if (!context.isAutoSyncEnabled() || !checkPartialSyncEligibility(LastRecentActivitySyncKey)) {
+                return
+            }
         }
+        _isSyncingRecentActivity.value = true
+
         YouTube.libraryRecentActivity().onSuccess { page ->
             val recentActivity = page.items.take(9).drop(1)
 

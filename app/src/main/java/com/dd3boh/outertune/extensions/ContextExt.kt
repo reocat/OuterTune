@@ -12,17 +12,16 @@ import com.dd3boh.outertune.utils.get
 import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.runBlocking
 
-fun Context.isSyncEnabled(): Boolean {
+fun Context.isAutoSyncEnabled(): Boolean {
     return runBlocking {
-        val ytmSync = dataStore[YtmSyncKey] ?: true
-        ytmSync && isUserLoggedIn()
+        dataStore.get(YtmSyncKey, true) && isUserLoggedIn()
     }
 }
 
 fun Context.isUserLoggedIn(): Boolean {
     return runBlocking {
         val cookie = dataStore[InnerTubeCookieKey] ?: ""
-        "SAPISID" in parseCookieString(cookie) && isInternetConnected()
+        "SAPISID" in parseCookieString(cookie)
     }
 }
 
