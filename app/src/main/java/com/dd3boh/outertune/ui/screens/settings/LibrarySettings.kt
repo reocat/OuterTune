@@ -166,7 +166,7 @@ fun LibrarySettings(
             onClick = { showClearSearchHistoryDialog = true }
         )
 
-        SettingsClickToReveal(stringResource(R.string.advanced)) {
+        SettingsClickToReveal(stringResource(R.string.prefs_advanced)) {
             SwitchPreference(
                 title = { Text(stringResource(R.string.show_liked_and_downloaded_playlist)) },
                 icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistPlay, null) },

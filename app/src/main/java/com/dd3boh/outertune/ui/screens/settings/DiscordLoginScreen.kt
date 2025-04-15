@@ -71,8 +71,9 @@ fun DiscordLoginScreen(
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
-                    setSupportZoom(true)
-                    builtInZoomControls = true
+                    setSupportZoom(false)
+                    builtInZoomControls = false
+                    displayZoomControls = false
                 }
                 val cookieManager = CookieManager.getInstance()
                 cookieManager.removeAllCookies(null)
