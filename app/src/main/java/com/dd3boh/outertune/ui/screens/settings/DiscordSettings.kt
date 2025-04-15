@@ -223,7 +223,7 @@ fun RichPresence(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = buildString { append("Listening to ${stringResource(id = R.string.app_name)}") },
+                text = stringResource(id = R.string.rpc_preview_title, stringResource(id = R.string.app_name)),
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.ExtraBold,
@@ -320,7 +320,7 @@ fun RichPresence(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(R.string.rpc_visit)
+                    text = stringResource(id = R.string.rpc_visit, stringResource(id = R.string.app_name))
                 )
             }
         }
