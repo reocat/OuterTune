@@ -10,7 +10,7 @@
     <string name="create_queue">Nuova coda</string>
     <string name="queue_searched_songs_ot">Cerca:</string>
     <string name="song_added_to_queue_end">\"%s\" aggiunto alla fine della coda</string>
-    <string name="auto_playlist">Playliat automatica</string>
+    <string name="auto_playlist">Playlist automatica</string>
     <string name="select">Modalità selezione</string>
     <string name="sort_by_date_modified">Data di modifica</string>
     <string name="folders">Cartelle</string>
@@ -146,4 +146,5 @@
     <string name="image_cache_tooltip">Riavviare l\'app per applicare le modifiche</string>
     <string name="swipe_to_skip_title">Scorri orizzontalmente per cambiare conzone</string>
     <string name="swipe_to_skip_description">Abilitare scorrimento orizzontale nel player per cambiare canzone</string>
+    <string name="android_auto">Android Auto</string>
 </resources>
