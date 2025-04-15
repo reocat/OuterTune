@@ -134,6 +134,7 @@ class SyncUtils @Inject constructor(
     /**
      * Like single song
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun likeSong(s: SongEntity) {
         CoroutineScope(syncCoroutine).launch {
             YouTube.likeVideo(s.id, s.liked)
