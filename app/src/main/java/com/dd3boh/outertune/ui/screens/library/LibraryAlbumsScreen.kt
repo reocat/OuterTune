@@ -1,5 +1,7 @@
 package com.dd3boh.outertune.ui.screens.library
 
+import android.content.pm.PackageManager
+import androidx.compose.foundation.background
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -60,8 +62,6 @@ import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.LibraryViewType
 import com.dd3boh.outertune.constants.LibraryViewTypeKey
 import com.dd3boh.outertune.constants.SmallGridThumbnailHeight
-import com.dd3boh.outertune.constants.SongFilter
-import com.dd3boh.outertune.extensions.isSyncEnabled
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.LibraryAlbumGridItem
@@ -71,7 +71,6 @@ import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryAlbumsViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
