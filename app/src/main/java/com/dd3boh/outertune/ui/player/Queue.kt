@@ -41,7 +41,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.ExpandLess
@@ -54,6 +56,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -65,6 +68,8 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -77,10 +82,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -88,9 +96,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
@@ -127,6 +138,9 @@ import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
+/**
+ * TODO: Rewrite this monstrosity.
+ */
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun Queue(
@@ -166,8 +180,25 @@ fun Queue(
         selectedItems.clear()
     }
 
+    // search
+    var isSearching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(isSearching) {
+        if (isSearching && state.isExpanded) {
+            focusRequester.requestFocus()
+        }
+    }
+
     if (inSelectMode) {
         BackHandler(onBack = onExitSelectionMode)
+    } else if (isSearching) {
+        BackHandler {
+            isSearching = false
+            query = TextFieldValue()
+        }
     }
 
     BottomSheet(
@@ -256,6 +287,16 @@ fun Queue(
                     playerConnection.player.moveMediaItem(from, to)
                     dragInfo = null
                 }
+            }
+        }
+
+        val filteredSongs = remember(mutableQueueWindows, query) {
+            if (query.text.isEmpty()) mutableQueueWindows
+            else mutableQueueWindows.filter { song ->
+                song.mediaItem.metadata?.title?.contains(query.text, ignoreCase = true) == true
+                        || song.mediaItem.metadata?.artists?.fastAny {
+                    it.name.contains(query.text, ignoreCase = true) == true
+                } == true
             }
         }
 
@@ -540,6 +581,14 @@ fun Queue(
                         },
                         modifier = Modifier.size(32.dp)
                     )
+                } else if (!isSearching) {
+                    ResizableIconButton(
+                        icon = Icons.Rounded.Search,
+                        onClick = {
+                            isSearching = true
+                        },
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
             }
         }
@@ -590,7 +639,7 @@ fun Queue(
                         .nestedScroll(state.preUpPostDownNestedScrollConnection)
                 ) {
                     itemsIndexed(
-                        items = mutableQueueWindows,
+                        items = if (isSearching) filteredSongs else mutableQueueWindows,
                         key = { _, item -> item.uid.hashCode() }
                     ) { index, window ->
                         ReorderableItem(
@@ -734,6 +783,52 @@ fun Queue(
             }
         }
 
+        val searchBar: @Composable ColumnScope.() -> Unit = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        if (isSearching) {
+                            isSearching = false
+                            query = TextFieldValue()
+                        } else {
+                            navController.navigateUp()
+                        }
+                    },
+                    modifier = Modifier.padding(start = 16.dp)
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = null
+                    )
+                }
+                TextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.search),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.titleLarge,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                )
+            }
+        }
+
         // queue info + player controls
         val bottomNav: @Composable ColumnScope.() -> Unit = {
             // queue info
@@ -743,7 +838,7 @@ fun Queue(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
             ) {
                 // handle selection mode
-                if (inSelectMode) {
+                if (inSelectMode && !isSearching) {
                     SelectHeader(
                         navController = navController,
                         selectedItems = selectedItems.mapNotNull { uidHash ->
