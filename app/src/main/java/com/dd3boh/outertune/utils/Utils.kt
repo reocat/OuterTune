@@ -67,6 +67,7 @@ fun decodeSyncString(str: String): List<SyncContent> {
             'P' -> SyncContent.PLAYLISTS
             'L' -> SyncContent.LIKED_SONGS
             'S' -> SyncContent.PRIVATE_SONGS
+            'C' -> SyncContent.RECENT_ACTIVITY
             else -> SyncContent.NULL
         }
     }.distinct()
@@ -86,6 +87,7 @@ fun encodeSyncString(list: List<SyncContent>): String {
             SyncContent.PLAYLISTS -> 'P'
             SyncContent.LIKED_SONGS -> 'L'
             SyncContent.PRIVATE_SONGS -> 'S'
+            SyncContent.RECENT_ACTIVITY -> 'C'
             else -> ""
         }
     }

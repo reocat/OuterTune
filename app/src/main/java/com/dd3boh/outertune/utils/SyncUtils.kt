@@ -89,7 +89,7 @@ class SyncUtils @Inject constructor(
     private val syncCd = 60000 * 30
 
     companion object {
-        const val DEFAULT_SYNC_CONTENT = "ARPLS"
+        const val DEFAULT_SYNC_CONTENT = "ARPLSC"
     }
 
     suspend fun tryAutoSync(bypassCd: Boolean = false) {
@@ -584,7 +584,7 @@ class SyncUtils @Inject constructor(
 
     suspend fun syncRecentActivity(bypass: Boolean = false) {
         // REQUIRED: internet, no ongoing sync, and category enabled
-        if (!_isSyncingRecentActivity.value && !context.isInternetConnected()) {
+        if (!_isSyncingRecentActivity.value && (!checkEnabled(SyncContent.RECENT_ACTIVITY) || !context.isInternetConnected())) {
             if (_isSyncingRecentActivity.value)
                 Log.i(TAG, "Library songs synchronization already in progress")
             return
@@ -637,11 +637,17 @@ class SyncUtils @Inject constructor(
     }
 }
 
+// when adding an enum:
+// 1. add settings checkbox string and state
+// 2. add to DEFAULT_SYNC_CONTENT
+// 3. add to encode/decode
+// 4. figure out if it's necessary to update existing user's keys
 enum class SyncContent {
     ALBUMS,
     ARTISTS,
     LIKED_SONGS,
     PLAYLISTS,
     PRIVATE_SONGS,
+    RECENT_ACTIVITY,
     NULL
 }
