@@ -94,6 +94,7 @@ fun ColumnScope.SyncFrag() {
     val isSyncingRemoteArtists by syncUtils.isSyncingRemoteArtists.collectAsState()
     val isSyncingRemoteSongs by syncUtils.isSyncingRemoteSongs.collectAsState()
     val isSyncingRemoteLikedSongs by syncUtils.isSyncingRemoteLikedSongs.collectAsState()
+    val isSyncingRecentActivity by syncUtils.isSyncingRecentActivity.collectAsState()
     // TODO: move to home screen as button?
     // TODO: rename scanner_manual_btn to sync_manual_btn
 
@@ -144,6 +145,7 @@ fun ColumnScope.SyncFrag() {
                 SyncContent.PLAYLISTS -> stringResource(R.string.playlists)
                 SyncContent.LIKED_SONGS -> stringResource(R.string.liked_songs)
                 SyncContent.PRIVATE_SONGS -> stringResource(R.string.songs)
+                SyncContent.RECENT_ACTIVITY -> stringResource(R.string.recent_activity)
                 else -> ""
             }
             val syncProgressIndicator = when (item) {
@@ -152,6 +154,7 @@ fun ColumnScope.SyncFrag() {
                 SyncContent.PLAYLISTS -> isSyncingRemotePlaylists
                 SyncContent.LIKED_SONGS -> isSyncingRemoteLikedSongs
                 SyncContent.PRIVATE_SONGS -> isSyncingRemoteSongs
+                SyncContent.RECENT_ACTIVITY -> isSyncingRecentActivity
                 else -> false
             }
 
