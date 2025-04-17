@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncLock
 import androidx.compose.material.icons.rounded.SyncProblem
@@ -36,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dd3boh.outertune.LocalNetworkConnected
+import com.dd3boh.outertune.LocalIsNetworkConnected
 import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
@@ -67,7 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ColumnScope.SyncFrag() {
     val context = LocalContext.current
-    val isNetworkConnected = LocalNetworkConnected.current
+    val isNetworkConnected = LocalIsNetworkConnected.current
     val syncUtils = LocalSyncUtils.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -126,8 +125,8 @@ fun ColumnScope.SyncFrag() {
         onValueSelected = onSyncModeChange,
         valueText = {
             when (it) {
-                SyncMode.RO -> stringResource(R.string.sync_read_only)
-                SyncMode.RW -> stringResource(R.string.sync_read_write)
+                SyncMode.RO -> stringResource(R.string.sync_mode_ro)
+                SyncMode.RW -> stringResource(R.string.sync_mode_rw)
             }
         }
     )

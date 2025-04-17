@@ -9,7 +9,6 @@
 package com.dd3boh.outertune.utils
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.dd3boh.outertune.constants.LastAlbumSyncKey
@@ -92,12 +91,13 @@ class SyncUtils @Inject constructor(
     }
 
     suspend fun tryAutoSync(bypassCd: Boolean = false) {
-        Log.d(TAG, "Starting auto sync job")
+        Timber.tag(logTag).d("Starting auto sync job")
         if (!bypassCd) {
             val lastSync = context.dataStore.get(LastFullSyncKey, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
             val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             if (currentTime - lastSync > syncCd) {
-                Log.d(TAG, "Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
+                Timber.tag(logTag)
+                    .d("Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
                 return
             }
         }
@@ -120,7 +120,8 @@ class SyncUtils @Inject constructor(
         val lastSync = context.dataStore.get(key, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
         val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         if (currentTime - lastSync > syncCd) {
-            Log.d(TAG, "Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
+            Timber.tag(logTag)
+                .d("Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
             return false
         }
         return true
@@ -211,7 +212,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLikeSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Liked songs synchronization ended")
+            Timber.tag(logTag).i("Liked songs synchronization ended")
             _isSyncingRemoteLikedSongs.value = false
         }
     }
@@ -276,7 +277,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLibSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Library songs synchronization ended")
+            Timber.tag(logTag).i("Library songs synchronization ended")
             _isSyncingRemoteSongs.value = false
         }
     }
@@ -342,7 +343,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastAlbumSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Library albums synchronization ended")
+            Timber.tag(logTag).i("Library albums synchronization ended")
             _isSyncingRemoteAlbums.value = false // Use the correct AtomicBoolean
         }
     }
@@ -430,7 +431,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastArtistSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Artist subscriptions synchronization ended")
+            Timber.tag(logTag).i("Artist subscriptions synchronization ended")
             _isSyncingRemoteArtists.value = false
         }
     }

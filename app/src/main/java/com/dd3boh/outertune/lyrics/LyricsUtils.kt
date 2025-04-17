@@ -11,6 +11,7 @@ import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
 import com.dd3boh.outertune.lyrics.SemanticLyrics.Word
 import com.dd3boh.outertune.ui.component.animateScrollDuration
+import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
 import kotlin.math.min
@@ -31,17 +32,17 @@ object LyricsUtils {
         return (try {
             parseTtml(lyrics, parserOptions.trim)
         } catch (e: Exception) {
-            Log.e(TAG, Log.getStackTraceString(e))
+            Timber.tag(TAG).e(Log.getStackTraceString(e))
             SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText))
         } ?: try {
             parseSrt(lyrics, parserOptions.trim)
         } catch (e: Exception) {
-            Log.e(TAG, Log.getStackTraceString(e))
+            Timber.tag(TAG).e(Log.getStackTraceString(e))
             SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText))
         } ?: try {
             parseLrc(lyrics, parserOptions.trim, parserOptions.multiLine)
         } catch (e: Exception) {
-            Log.e(TAG, Log.getStackTraceString(e))
+            Timber.tag(TAG).e(Log.getStackTraceString(e))
             SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText))
         })?.let {
             if (it is SemanticLyrics.SyncedLyrics)
@@ -98,7 +99,7 @@ object LyricsUtils {
                 lrcFile.readBytes().toString(Charset.defaultCharset())
             else null
         } catch (e: Exception) {
-            Log.e(TAG, Log.getStackTraceString(e))
+            Timber.tag(TAG).e(Log.getStackTraceString(e))
             return errorText
         }
     }
@@ -201,7 +202,7 @@ object LyricsUtils {
                 try {
                     parseLrcStringLegacy(it, parserOptions)
                 } catch (e: Exception) {
-                    Log.e(TAG, Log.getStackTraceString(e))
+                    Timber.tag(TAG).e(Log.getStackTraceString(e))
                     mutableListOf(LyricsEntry(timeStamp = 0L, content = parserOptions.errorText))
                 }
             }
@@ -220,7 +221,7 @@ object LyricsUtils {
             try {
                 parseLrcStringLegacy(it, parserOptions)
             } catch (e: Exception) {
-                Log.e(TAG, Log.getStackTraceString(e))
+                Timber.tag(TAG).e(Log.getStackTraceString(e))
                 null
             }
         }
