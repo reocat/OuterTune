@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.core.net.toUri
 import androidx.media3.common.C
@@ -42,6 +41,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.plus
+import timber.log.Timber
 import javax.inject.Inject
 
 class MediaLibrarySessionCallback @Inject constructor(
@@ -49,7 +49,7 @@ class MediaLibrarySessionCallback @Inject constructor(
     val database: MusicDatabase,
     val downloadUtil: DownloadUtil,
 ) : MediaLibrarySession.Callback {
-    private val TAG = MediaLibrarySessionCallback::class.simpleName.toString()
+    private val logTag = MediaLibrarySessionCallback::class.simpleName.toString()
     private val scope = CoroutineScope(Dispatchers.Main) + Job()
     lateinit var service: MusicService
     var toggleLike: () -> Unit = {}
@@ -198,11 +198,11 @@ class MediaLibrarySessionCallback @Inject constructor(
         startPositionMs: Long,
     ): ListenableFuture<MediaItemsWithStartPosition> = scope.future {
         // Play from Android Auto
-        Log.d(TAG, "MediaLibrarySessionCallback.onSetMediaItems")
+        Timber.tag(logTag).d("MediaLibrarySessionCallback.onSetMediaItems")
         val defaultResult = MediaItemsWithStartPosition(emptyList(), startIndex, startPositionMs)
         val path = mediaItems.firstOrNull()?.mediaId?.split("/")
             ?: return@future defaultResult
-        Log.d(TAG, "Path: " + path.joinToString(";"))
+        Timber.tag(logTag).d("Path: %s", path.joinToString(";"))
 
         val queue: Triple<List<MediaItem>, Int, Long> = when (path.firstOrNull()) {
             MusicService.SONG -> {
@@ -269,7 +269,7 @@ class MediaLibrarySessionCallback @Inject constructor(
                 Triple(items, if (index > 0) index else 0, C.TIME_UNSET)
             }
 
-            else -> Triple(emptyList<MediaItem>(), startIndex, startPositionMs)
+            else -> Triple(emptyList(), startIndex, startPositionMs)
         }
 
         val queueTitle = context.getString(R.string.android_auto)
@@ -291,7 +291,7 @@ class MediaLibrarySessionCallback @Inject constructor(
         query: String,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<Void>> {
-        Log.d(TAG, "MediaLibrarySessionCallback.onSearch: $query")
+        Timber.tag(logTag).d("MediaLibrarySessionCallback.onSearch: $query")
         session.notifySearchResultChanged(browser, query, 1, params)
         return Futures.immediateFuture(LibraryResult.ofVoid())
     }
@@ -304,7 +304,7 @@ class MediaLibrarySessionCallback @Inject constructor(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-        Log.d(TAG, "MediaLibrarySessionCallback.onGetSearchResult: $query")
+        Timber.tag(logTag).d("MediaLibrarySessionCallback.onGetSearchResult: $query")
         return scope.future {
             if (query.isEmpty()) {
                 return@future LibraryResult.ofItemList(emptyList(), params)
@@ -322,7 +322,7 @@ class MediaLibrarySessionCallback @Inject constructor(
                     .map { it.toMediaItem(path = "${MusicService.SEARCH}/$query", isPlayable = true, isBrowsable = true) }
                 LibraryResult.ofItemList(items, params)
             } catch (e: Exception) {
-                Log.d(TAG, "Could not get search results")
+                Timber.tag(logTag).d("Could not get search results")
                 reportException(e)
                 LibraryResult.ofItemList(emptyList(), params)
             }
