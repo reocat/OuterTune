@@ -100,7 +100,6 @@ import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.constants.YtmSyncModeKey
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistSong
-import com.dd3boh.outertune.extensions.getAvailableSongs
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -694,7 +693,6 @@ fun LocalPlaylistHeader(
                                     snackbarHostState.showSnackbar(context.getString(R.string.playlist_synced))
                                 }
                             },
-                            enabled = isNetworkConnected
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Sync,
