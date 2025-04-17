@@ -86,8 +86,8 @@
     <string name="token_shown">Нажмите еще раз, чтобы скопировать или изменить</string>
     <string name="ytm_sync">Авто-синхронизация с аккаунтом YouTube Music</string>
     <string name="sync_mode">Режим синхронизации</string>
-    <string name="sync_read_only">Только чтение (просмотр удаленного контента)</string>
-    <string name="sync_read_write">Чтение и запись (позволяет изменять удаленный контент)</string>
+    <string name="sync_mode_ro">Только чтение (просмотр удаленного контента)</string>
+    <string name="sync_mode_rw">Чтение и запись (позволяет изменять удаленный контент)</string>
     <string name="wifi_only">Только по Wi-Fi</string>
 
     <!-- Player settings -->

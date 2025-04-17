@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.utils.potoken
 
-import android.util.Log
 import android.webkit.CookieManager
 import com.dd3boh.outertune.App
 import kotlinx.coroutines.Dispatchers
@@ -8,9 +7,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class PoTokenGenerator {
-    private val TAG = "PoTokenGenerator"
+    private val logTag = "PoTokenGenerator"
 
     private val webViewSupported by lazy { runCatching { CookieManager.getInstance() }.isSuccess }
     private var webViewBadImpl = false // whether the system has a bad WebView implementation
@@ -30,7 +30,7 @@ class PoTokenGenerator {
         } catch (e: Exception) {
             when (e) {
                 is BadWebViewException -> {
-                    Log.e(TAG, "Could not obtain poToken because WebView is broken", e)
+                    Timber.tag(logTag).e(e, "Could not obtain poToken because WebView is broken")
                     webViewBadImpl = true
                     null
                 }
@@ -45,7 +45,7 @@ class PoTokenGenerator {
      * [PoTokenWebView.generatePoToken] was called
      */
     private suspend fun getWebClientPoToken(videoId: String, sessionId: String, forceRecreate: Boolean): PoTokenResult {
-        Log.d(TAG, "Web poToken requested: $videoId, $sessionId")
+        Timber.tag(logTag).d("Web poToken requested: $videoId, $sessionId")
 
         val (poTokenGenerator, streamingPot, hasBeenRecreated) =
             webPoTokenGenLock.withLock {
@@ -84,12 +84,12 @@ class PoTokenGenerator {
                 // retry, this time recreating the [webPoTokenGenerator] from scratch;
                 // this might happen for example if the app goes in the background and the WebView
                 // content is lost
-                Log.e(TAG, "Failed to obtain poToken, retrying", throwable)
+                Timber.tag(logTag).e(throwable, "Failed to obtain poToken, retrying")
                 return getWebClientPoToken(videoId = videoId, sessionId = sessionId, forceRecreate = true)
             }
         }
 
-        Log.d(TAG, "[$videoId] playerPot=$playerPot, streamingPot=$streamingPot")
+        Timber.tag(logTag).d("[$videoId] playerPot=$playerPot, streamingPot=$streamingPot")
 
         return PoTokenResult(playerPot, streamingPot)
     }
