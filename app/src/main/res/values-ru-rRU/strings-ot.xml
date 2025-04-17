@@ -72,7 +72,7 @@
     <string name="player_background_default">Следовать теме</string>
     <string name="player_background_gradient">Градиент</string>
     <string name="player_background_style">Стиль фона плеера</string>
-    <string name="show_liked_and_downloaded_playlist">Показывать понравившиеся треки и загруженную музыку в библиотеке</string>
+    <string name="show_liked_and_downloaded_playlist">Показывать плейлисты для понравившихся треков и загруженной музыки в библиотеке</string>    
     <string name="slim_navbar_title">Тонкая панель навигации</string>
     <string name="slim_navbar_description">Убрать подписи с панели навигации чтобы уменьшить её высоту</string>
     <string name="slim_hs_tiles">Компактная навигация главного экрана</string>
