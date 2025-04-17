@@ -467,7 +467,7 @@ fun HomeScreen(
 
             item {
                 ChipsRow(
-                    chips = homePage?.chips?.mapNotNull { it to it.title } ?: emptyList(),
+                    chips = homePage?.chips?.map { it to it.title } ?: emptyList(),
                     currentValue = selectedChip,
                     onValueUpdate = {
                         viewModel.toggleChip(it)
