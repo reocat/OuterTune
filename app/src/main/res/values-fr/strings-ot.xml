@@ -75,7 +75,7 @@
     <string name="slim_navbar_title">Barre de navigation fine</string>
     <string name="scanner_warning">Par défaut, l\'analyse ne rechargera pas les métadonnées des titres existants, sauf si vous spécifiez le contraire ci-dessus. Selon la taille de votre bibliothèque, cela peut prendre un certain temps.</string>
     <string name="slim_navbar_description">Supprimer les étiquettes de texte pour réduire la hauteur de la barre de navigation</string>
-    <string name="show_liked_and_downloaded_playlist">Afficher les playlists appréciées et téléchargées dans la bibliothèque</string>
+    <string name="show_liked_and_downloaded_playlist">Afficher les playlists des titres appréciés et téléchargés dans la bibliothèque</string>
     <string name="keep_alive_title">Empêcher le système de tuer l\'application</string>
     <string name="lyrics_prefer_local_description">Donnez la priorité à la résolution des fichiers de paroles locaux avant d\'utiliser tous les fournisseurs de cloud. Désactivez cette option pour donner la priorité aux fournisseurs de cloud</string>
     <string name="persistent_queue_desc_ot">Restaurer les précédentes files d\'attente ouvertes au démarrage de l\'application</string>
