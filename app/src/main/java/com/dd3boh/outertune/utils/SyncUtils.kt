@@ -9,6 +9,7 @@
 package com.dd3boh.outertune.utils
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.dd3boh.outertune.constants.LastAlbumSyncKey
@@ -53,7 +54,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
-import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import javax.inject.Inject
@@ -85,7 +85,7 @@ class SyncUtils @Inject constructor(
     @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     val syncCoroutine = newSingleThreadContext("syncUtils")
 
-    private val logTag = "SyncUtils"
+    private val TAG = "SyncUtils"
     private val syncCd = 60000 * 30
 
     companion object {
@@ -96,13 +96,12 @@ class SyncUtils @Inject constructor(
         if (!context.isAutoSyncEnabled()) {
             return
         }
-        Timber.tag(logTag).d("Starting auto sync job")
+        Log.d(TAG, "Starting auto sync job")
         if (!bypassCd) {
             val lastSync = context.dataStore.get(LastFullSyncKey, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
             val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             if (currentTime - lastSync > syncCd) {
-                Timber.tag(logTag)
-                    .d("Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
+                Log.d(TAG, "Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
                 return
             }
         }
@@ -125,8 +124,7 @@ class SyncUtils @Inject constructor(
         val lastSync = context.dataStore.get(key, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
         val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         if (currentTime - lastSync > syncCd) {
-            Timber.tag(logTag)
-                .d("Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
+            Log.d(TAG, "Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
             return false
         }
         return true
@@ -176,7 +174,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteLikedSongs.value = true
 
         try {
-            Timber.tag(logTag).d("Liked songs synchronization started")
+            Log.d(TAG, "Liked songs synchronization started")
 
             // Get remote and local liked songs
             YouTube.playlist("LM").completed().onSuccess { page ->
@@ -219,7 +217,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLikeSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).i("Liked songs synchronization ended")
+            Log.i(TAG, "Liked songs synchronization ended")
             _isSyncingRemoteLikedSongs.value = false
         }
     }
@@ -243,7 +241,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteSongs.value = true
 
         try {
-            Timber.tag(logTag).d("Library songs synchronization started")
+            Log.i(TAG, "Library songs synchronization started")
 
             // Get remote songs (from library and uploads)
             val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
@@ -287,7 +285,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLibSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).i("Library songs synchronization ended")
+            Log.i(TAG, "Library songs synchronization ended")
             _isSyncingRemoteSongs.value = false
         }
     }
@@ -311,7 +309,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteAlbums.value = true
 
         try {
-            Timber.tag(logTag).d("Library albums synchronization started")
+            Log.i(TAG, "Library albums synchronization started")
 
             // Get remote albums (from library and uploads)
             val remoteAlbums =
@@ -356,7 +354,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastAlbumSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).i("Library albums synchronization ended")
+            Log.i(TAG, "Library albums synchronization ended")
             _isSyncingRemoteAlbums.value = false // Use the correct AtomicBoolean
         }
     }
@@ -380,7 +378,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteArtists.value = true
 
         try {
-            Timber.tag(logTag).d("Artist subscriptions synchronization started")
+            Log.i(TAG, "Artist subscriptions synchronization started")
 
             // Get remote artists (from library and uploads)
             val likedArtists = getRemoteData<ArtistItem>(
@@ -447,7 +445,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastArtistSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Timber.tag(logTag).i("Artist subscriptions synchronization ended")
+            Log.i(TAG, "Artist subscriptions synchronization ended")
             _isSyncingRemoteArtists.value = false
         }
     }
@@ -471,7 +469,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemotePlaylists.value = true
 
         try {
-            Timber.tag(logTag).d("Library playlist synchronization started")
+            Log.i(TAG, "Library playlist synchronization started")
 
             // Get remote and local playlists
             YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
@@ -545,7 +543,7 @@ class SyncUtils @Inject constructor(
                 settings[LastPlaylistSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
             _isSyncingRemotePlaylists.value = false
-            Timber.tag(logTag).d("Library playlist synchronization ended")
+            Log.i(TAG, "Library playlist synchronization ended")
         }
     }
 
