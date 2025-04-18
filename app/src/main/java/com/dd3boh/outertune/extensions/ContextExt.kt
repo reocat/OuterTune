@@ -1,8 +1,10 @@
 package com.dd3boh.outertune.extensions
 
+import android.Manifest
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import androidx.annotation.RequiresPermission
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
@@ -25,6 +27,7 @@ fun Context.isUserLoggedIn(): Boolean {
     }
 }
 
+@RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
 fun Context.isInternetConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
