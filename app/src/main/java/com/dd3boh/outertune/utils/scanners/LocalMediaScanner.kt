@@ -192,7 +192,13 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                             }
                             try {
                                 ret = advancedScan(path)
-                                scannerProgressTotal.value ++
+                                scannerProgressProbe ++
+                                if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
+                                    Log.d(TAG, "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
+                                }
+                                if (scannerProgressProbe % 20 == 0) {
+                                    scannerProgressCurrent.value = scannerProgressProbe
+                                }
                             } catch (e: InvalidAudioFileException) {
                                 ret = null
                             }
@@ -213,7 +219,13 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                         newDirectoryStructure.insert(
                             s.substringAfter(STORAGE_ROOT), toInsert.song
                         )
-                        scannerProgressTotal.value ++
+                        scannerProgressProbe ++
+                        if (SCANNER_DEBUG) {
+                            Log.d(TAG, "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
+                        }
+                        if (scannerProgressProbe % 5 == 0) {
+                            scannerProgressCurrent.value = scannerProgressProbe
+                        }
                     }
                 }
             }
