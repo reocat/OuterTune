@@ -47,7 +47,7 @@
     <string name="grp_lyrics_parser">Intérprete</string>
     <string name="special_thanks">Agradecimiento especial</string>
     <string name="new_interface">Nuevo layout de interfaz</string>
-    <string name="show_liked_and_downloaded_playlist">Mostrar playlists con me gusta y descargadas en la librería</string>
+    <string name="show_liked_and_downloaded_playlist">Mostrar playlist con me gusta y descargadas en la librería</string>
     <string name="slim_navbar_title">Barra de navegación delgada</string>
     <string name="tab_arrangement">Organizar pestañas</string>
     <string name="tab_arrangement_home_required">La pestaña Inicio es obligatoria.</string>
