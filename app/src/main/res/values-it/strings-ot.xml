@@ -30,7 +30,7 @@
     <string name="new_interface">Nuovo layout dell\'interfaccia</string>
     <string name="attrib_zhuang">Zion Huang per InnerTune</string>
     <string name="grp_interface">Interfaccia</string>
-    <string name="show_liked_and_downloaded_playlist">Visualizza le playlist che ti piacciono e che hai scaricato in libreria</string>
+    <string name="show_liked_and_downloaded_playlist">Visualizza le playlist dei brani che piaciuti e scaricati nella libreria</string>
     <string name="slim_navbar_title">Barra di navigazione sottile</string>
     <string name="import_m3u">Importa una playlist (m3u)</string>
     <string name="sync_progress_active">Sincronizzando con l\'account di YouYube…</string>
