@@ -194,7 +194,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                                 ret = advancedScan(path)
                                 scannerProgressProbe ++
                                 if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
-                                    Log.d(TAG, "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
+                                    Timber.tag(TAG).d("------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
                                 }
                                 if (scannerProgressProbe % 20 == 0) {
                                     scannerProgressCurrent.value = scannerProgressProbe
@@ -221,7 +221,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                         )
                         scannerProgressProbe ++
                         if (SCANNER_DEBUG) {
-                            Log.d(TAG, "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
+                            Timber.tag(TAG).d("------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
                         }
                         if (scannerProgressProbe % 5 == 0) {
                             scannerProgressCurrent.value = scannerProgressProbe
@@ -806,6 +806,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
 
         var scannerProgressTotal = MutableStateFlow(-1)
         var scannerProgressCurrent = MutableStateFlow(-1)
+        var scannerProgressProbe = -1
 
 
         /**
@@ -837,6 +838,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
             if (localScanner?.get() == null) {
                 localScanner = WeakReference(LocalMediaScanner(context, scannerImpl))
                 scannerProgressTotal.value = 0
+                scannerProgressProbe = 0
             }
 
             return localScanner?.get() ?: throw IllegalStateException("Scanner is null")
@@ -850,8 +852,9 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
             scannerRequestCancel = false
             scannerProgressTotal.value = -1
             scannerProgressCurrent.value = -1
-            if (EXTRACTOR_DEBUG)
-                Timber.tag(EXTRACTOR_TAG).d("Scanner instance destroyed")
+            scannerProgressProbe = -1
+
+               Timber.tag(EXTRACTOR_TAG).d("Scanner instance destroyed")
         }
 
 
