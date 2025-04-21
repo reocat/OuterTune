@@ -174,6 +174,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 )
             )
         }
+        /*
         mediaMetadata.album?.let {
             val album = albumsByName(it.title)
             val albumId = album?.id ?: GenreEntity.generateGenreId()
@@ -192,6 +193,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 )
             )
         }
+       */
     }
 
     @Transaction

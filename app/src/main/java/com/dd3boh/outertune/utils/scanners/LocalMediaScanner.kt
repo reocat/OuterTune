@@ -410,7 +410,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
 
                         artistPos++
                     }
-
+                    /*
                     song.song.album?.let {
                         val dbQuery =
                             database.searchAlbums(it.title).firstOrNull()?.sortedBy { item -> item.album.title.length }
@@ -427,6 +427,7 @@ class LocalMediaScanner(val context: Context, private val scannerImpl: ScannerIm
                             }
                         }
                     }
+                     */
                     // update format
                     if (song.format != null) {
                         database.query {
