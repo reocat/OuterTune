@@ -147,4 +147,14 @@
     <string name="filter_arrangement">Organiser les filtres</string>
     <string name="image_cache_tooltip">Redémarrez l\'application afin que les modifications prennent effet</string>
     <string name="android_auto">Android Auto</string>
+    <string name="missing_media_permission_warning">Des autorisations de stockage sont requises pour les médias locaux. Cliquez pour accorder l\'autorisation.</string>
+    <string name="more_settings">Paramètres Avancés</string>
+    <string name="grp_account_sync">Compte et Synchronisation</string>
+    <string name="sync_conflict_overwrite">Remplacer le contenu local par du contenu distant</string>
+    <string name="sync_conflict_title">Résolution des conflits</string>
+    <string name="sync_mode">Mode de synchronisation</string>
+    <string name="sync_mode_ro">Lecture seule (Afficher le contenu distant)</string>
+    <string name="grp_library_and_content">Bibliothèque et Contenu</string>
+    <string name="sync_conflict_add_only">Conservez tout le contenu local, ajoutez du nouveau contenu distant</string>
+    <string name="sync_mode_rw">Lecture / Écriture (permet également de modifier le contenu distant)</string>
 </resources>
