@@ -149,4 +149,14 @@
     <string name="image_cache_tooltip">Перезапустіть застосунок, щоби зміни набули чинності</string>
     <string name="filter_arrangement">Упорядкувати фільтри</string>
     <string name="android_auto">Android Auto</string>
+    <string name="more_settings">Більше налаштувань</string>
+    <string name="sync_mode_rw">Читати, записувати (також дозволити змінювати віддалений вміст)</string>
+    <string name="grp_library_and_content">Бібліотека та вміст</string>
+    <string name="sync_conflict_add_only">Зберігати весь локальний вміст, додавати новий віддалений вміст</string>
+    <string name="grp_account_sync">Обліковий запис і синхронізація</string>
+    <string name="missing_media_permission_warning">Для локальних носіїв потрібні дозволи на зберігання. Натисніть, щоб надати дозвіл.</string>
+    <string name="sync_conflict_overwrite">Перезаписати локальний вміст віддаленим вмістом</string>
+    <string name="sync_conflict_title">Вирішення конфлікту</string>
+    <string name="sync_mode">Режим синхронізації</string>
+    <string name="sync_mode_ro">Лише читання (перегляд віддаленого вмісту)</string>
 </resources>
