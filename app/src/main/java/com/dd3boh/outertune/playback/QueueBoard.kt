@@ -756,7 +756,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                         "autoSeek = $autoSeek shuffle state = ${item?.shuffled}"
             )
 
-        if (item == null) {
+        if (item == null || item.queue.isEmpty()) {
             player.player.setMediaItems(ArrayList())
             return null
         }

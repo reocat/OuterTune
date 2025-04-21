@@ -96,6 +96,10 @@ android {
         jvmTarget = "21"
     }
 
+    tasks.withType<KotlinCompile> {
+        exclude("**/*FFMpegScanner.kt")
+    }
+
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false

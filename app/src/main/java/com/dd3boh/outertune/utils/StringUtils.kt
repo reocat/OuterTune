@@ -1,6 +1,7 @@
 package com.dd3boh.outertune.utils
 
 import android.net.Uri
+import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -53,6 +54,26 @@ fun closestMatch(query: String, stringList: List<Artist>): Artist? {
     val substringMatches = stringList.filter { it.artist.name.contains(query) }
     if (substringMatches.isNotEmpty()) {
         return substringMatches.minByOrNull { it.artist.name.length }
+    }
+
+    return null
+}
+
+/**
+ * Find the matching string, if not found the closest super string
+ */
+fun closestAlbumMatch(query: String, stringList: List<Album>): Album? {
+    // Check for exact match first
+
+    val exactMatch = stringList.find { query.lowercase() == it.title.lowercase() }
+    if (exactMatch != null) {
+        return exactMatch
+    }
+
+    // Check for query as substring in any of the strings
+    val substringMatches = stringList.filter { it.title.contains(query) }
+    if (substringMatches.isNotEmpty()) {
+        return substringMatches.minByOrNull { it.title.length }
     }
 
     return null

@@ -174,6 +174,24 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 )
             )
         }
+        mediaMetadata.album?.let {
+            val album = albumsByName(it.title)
+            val albumId = album?.id ?: GenreEntity.generateGenreId()
+            insert(
+                GenreEntity(
+                    id = albumId,
+                    title = it.title,
+                    isLocal = it.isLocal
+                )
+            )
+            insert(
+                SongAlbumMap(
+                    songId = mediaMetadata.id,
+                    albumId = albumId,
+                    index = album?.songCount ?: 0
+                )
+            )
+        }
     }
 
     @Transaction
