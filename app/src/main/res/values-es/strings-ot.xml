@@ -151,4 +151,14 @@
     <string name="android_auto">Android Auto</string>
     <string name="swipe_to_skip_description">Habilitar deslizar horizontalmente en el reproductor para cambiar de canción</string>
     <string name="image_cache_tooltip">Reinicia la aplicación para que los cambios tengan efecto</string>
+    <string name="more_settings">Más ajustes</string>
+    <string name="grp_account_sync">Cuenta y Sincronización</string>
+    <string name="grp_library_and_content">Librería y Contenido</string>
+    <string name="sync_mode_rw">Lectura/Escritura (También permite cambios en el contenido remoto)</string>
+    <string name="sync_conflict_add_only">Mantener todo el contenido local, añadir contenido remoto nuevo</string>
+    <string name="sync_conflict_overwrite">Sobreescribir contenido local con el contenido remoto</string>
+    <string name="sync_mode">Modo de sincronización</string>
+    <string name="missing_media_permission_warning">Los permisos de almacenamiento son necesarios para los medios locales. Pulsa para conceder los permisos.</string>
+    <string name="sync_conflict_title">Resolución de conflicto</string>
+    <string name="sync_mode_ro">Sólo lectura (Ver contenido remoto)</string>
 </resources>
