@@ -200,6 +200,9 @@ interface AlbumsDao : ArtistsDao {
     fun albumsInLibraryAsc() = albums(AlbumFilter.LIBRARY, AlbumSortType.CREATE_DATE, false)
     fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
    
+    @Query("SELECT * FROM album WHERE title = :name")
+    fun albumsByName(name: String): AlbumEntity?
+
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
@@ -304,6 +307,10 @@ interface AlbumsDao : ArtistsDao {
     @Transaction
     @Query("DELETE FROM song_artist_map WHERE songId = :songID")
     fun unlinkSongArtists(songID: String)
+
+    @Transaction
+    @Query("DELETE FROM song_album_map WHERE songId = :songID")
+    fun unlinkSongAlbums(songID: String)
     // endregion
 
     // region Deletes

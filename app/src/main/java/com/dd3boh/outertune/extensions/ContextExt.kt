@@ -15,16 +15,12 @@ import com.zionhuang.innertube.utils.parseCookieString
 import kotlinx.coroutines.runBlocking
 
 fun Context.isAutoSyncEnabled(): Boolean {
-    return runBlocking {
-        dataStore.get(YtmSyncKey, true) && isUserLoggedIn()
-    }
+    return dataStore.get(YtmSyncKey, true) && isUserLoggedIn()
 }
 
 fun Context.isUserLoggedIn(): Boolean {
-    return runBlocking {
-        val cookie = dataStore[InnerTubeCookieKey] ?: ""
-        "SAPISID" in parseCookieString(cookie)
-    }
+    val cookie = dataStore.get(InnerTubeCookieKey, "")
+    return "SAPISID" in parseCookieString(cookie)
 }
 
 @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
@@ -34,6 +30,6 @@ fun Context.isInternetConnected(): Boolean {
     return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
 }
 
-fun Context.getLikeAutoDownload(): LikedAutodownloadMode  {
+fun Context.getLikeAutoDownload(): LikedAutodownloadMode {
     return dataStore[LikedAutoDownloadKey].toEnum(LikedAutodownloadMode.OFF)
 }

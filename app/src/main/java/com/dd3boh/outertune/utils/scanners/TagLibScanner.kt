@@ -38,9 +38,7 @@ class TagLibScanner : MetadataScanner {
      *
      * @param path Full file path
      */
-    override fun getAllMetadataFromPath(path: String): SongTempData {
-        throw NotImplementedError("TagLib extractor does not support direct paths. Please provide a file. This assumes the file exists.")
-    }
+    override fun getAllMetadataFromPath(path: String) = getAllMetadataFromFile(File(path))
 
     /**
      * Given a path to a file, extract necessary metadata.
@@ -104,7 +102,7 @@ class TagLibScanner : MetadataScanner {
                             }
                         }
 
-                        "ALBUM", "album" -> albumName == it
+                        "ALBUM", "album" -> albumName = it
                         "TITLE", "title" -> rawTitle = it
                         "GENRE", "genre" -> {
                             val splitGenres = it.split(ARTIST_SEPARATORS)
@@ -158,7 +156,6 @@ class TagLibScanner : MetadataScanner {
 
             val duration: Long = (rawDuration / 1000).toLong()
 
-
             // should never be invalid if scanner even gets here fine...
             val dateModified = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneOffset.UTC)
             val albumId = if (albumName != null) AlbumEntity.generateAlbumId() else null
@@ -172,7 +169,8 @@ class TagLibScanner : MetadataScanner {
                 id = albumId,
                 title = albumName,
                 songCount = 1,
-                duration = duration.toInt()
+                duration = duration.toInt(),
+                isLocal = true
             ) else null
 
 

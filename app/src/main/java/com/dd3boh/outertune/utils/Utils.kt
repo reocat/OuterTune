@@ -8,7 +8,6 @@
 
 package com.dd3boh.outertune.utils
 
-import android.content.pm.PackageManager
 import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
 
 fun reportException(throwable: Throwable) {
@@ -92,17 +91,4 @@ fun encodeSyncString(list: List<SyncContent>): String {
         }
     }
     return encoded
-}
-
-
-/**
- * Check if a package with the specified package name is installed
- */
-fun isPackageInstalled(packageName: String, packageManager: PackageManager): Boolean {
-    return try {
-        packageManager.getPackageInfo(packageName, 0)
-        true
-    } catch (e: PackageManager.NameNotFoundException) {
-        false
-    }
 }
