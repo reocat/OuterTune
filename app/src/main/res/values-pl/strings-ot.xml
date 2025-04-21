@@ -153,4 +153,8 @@
     <string name="oobe_complete">Konfiguracja zakończona</string>
     <string name="oobe_ytm_content_description">YouTube Music na wyciągnięcie ręki</string>
     <string name="oobe_use_backup">Mam kopię zapasową</string>
+    <string name="more_settings">Więcej ustawień</string>
+    <string name="grp_account_sync">Konto i synchronizacja</string>
+    <string name="sync_mode">Tryb synchronizacji</string>
+    <string name="grp_library_and_content">Biblioteka i treści</string>
 </resources>
