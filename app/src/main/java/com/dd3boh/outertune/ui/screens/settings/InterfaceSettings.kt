@@ -665,7 +665,7 @@ enum class LibraryFilter {
  * Q: Queue
  * E: Search
  */
-const val DEFAULT_ENABLED_TABS = "HM"
+const val DEFAULT_ENABLED_TABS = "HSFM"
 
 /**
  * A: Albums
@@ -675,4 +675,4 @@ const val DEFAULT_ENABLED_TABS = "HM"
  * F: Folders
  * L: All
  */
-const val DEFAULT_ENABLED_FILTERS = "ARPSF"
+const val DEFAULT_ENABLED_FILTERS = "ARP"

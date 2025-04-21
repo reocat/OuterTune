@@ -43,7 +43,7 @@ interface QueueDao {
 
         queues.forEach { queue ->
             val shuffledSongs = runBlocking { getQueueSongs(queue.id).first() }
-
+            if (shuffledSongs.isEmpty()) return@forEach
             resultQueues.add(
                 MultiQueueObject(
                     id = queue.id,
