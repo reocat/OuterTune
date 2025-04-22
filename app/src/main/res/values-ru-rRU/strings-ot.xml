@@ -176,7 +176,7 @@
     <string name="image_cache_tooltip">Перезапустите приложение, чтобы изменения вступили в силу</string>
 
     <!-- Privacy settings -->
-    <string name="pause_remote_listen_history">Приостановить обмен историей прослушивания с YouTube Music</string>
+    <string name="pause_remote_listen_history">Не делиться историей прослушиваний с YouTube Music</string>
 
     <!-- Backup and restore settings -->
     <string name="import_innertune_tooltip">Восстановление резервных копий InnerTune поддерживается, однако возможны аномалии из-за технических ограничений</string>
