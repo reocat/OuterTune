@@ -119,6 +119,7 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.AutomaticScannerKey
+import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DefaultOpenTabKey
 import com.dd3boh.outertune.constants.DisableScreenshotKey
@@ -133,6 +134,7 @@ import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
 import com.dd3boh.outertune.constants.NavigationBarHeight
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
+import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.ScanPathsKey
@@ -167,6 +169,7 @@ import com.dd3boh.outertune.ui.screens.HomeScreen
 import com.dd3boh.outertune.ui.screens.LoginScreen
 import com.dd3boh.outertune.ui.screens.MoodAndGenresScreen
 import com.dd3boh.outertune.ui.screens.Screens
+import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
 import com.dd3boh.outertune.ui.screens.SetupWizard
 import com.dd3boh.outertune.ui.screens.StatsScreen
 import com.dd3boh.outertune.ui.screens.YouTubeBrowseScreen
@@ -190,17 +193,14 @@ import com.dd3boh.outertune.ui.screens.settings.AboutScreen
 import com.dd3boh.outertune.ui.screens.settings.AccountSyncSettings
 import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
 import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
-import com.dd3boh.outertune.ui.screens.settings.DEFAULT_ENABLED_TABS
-import com.dd3boh.outertune.ui.screens.settings.DarkMode
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
 import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.InterfaceSettings
-import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
 import com.dd3boh.outertune.ui.screens.settings.LibrarySettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
-import com.dd3boh.outertune.ui.screens.settings.PlayerBackgroundStyle
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings

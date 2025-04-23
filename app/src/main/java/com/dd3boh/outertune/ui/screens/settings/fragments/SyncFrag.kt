@@ -52,10 +52,10 @@ import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.utils.SyncContent
+import com.dd3boh.outertune.constants.SyncContent
+import com.dd3boh.outertune.constants.decodeSyncString
+import com.dd3boh.outertune.constants.encodeSyncString
 import com.dd3boh.outertune.utils.SyncUtils
-import com.dd3boh.outertune.utils.decodeSyncString
-import com.dd3boh.outertune.utils.encodeSyncString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.utils.parseCookieString

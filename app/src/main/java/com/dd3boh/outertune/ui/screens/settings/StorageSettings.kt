@@ -60,7 +60,7 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.ui.utils.formatFileSize
+import com.dd3boh.outertune.utils.formatFileSize
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
