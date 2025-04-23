@@ -38,8 +38,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DynamicThemeKey
+import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.SettingsTopBarHeight
@@ -148,12 +150,4 @@ fun AppearanceSettings(
         },
         scrollBehavior = scrollBehavior
     )
-}
-
-enum class DarkMode {
-    ON, OFF, AUTO
-}
-
-enum class PlayerBackgroundStyle {
-    DEFAULT, GRADIENT, BLUR
 }

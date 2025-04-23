@@ -12,7 +12,6 @@ import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.zionhuang.innertube.utils.parseCookieString
-import kotlinx.coroutines.runBlocking
 
 fun Context.isAutoSyncEnabled(): Boolean {
     return dataStore.get(YtmSyncKey, true) && isUserLoggedIn()

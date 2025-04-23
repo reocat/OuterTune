@@ -104,7 +104,3 @@ fun LyricsSettings(
         scrollBehavior = scrollBehavior
     )
 }
-
-enum class LyricsPosition {
-    LEFT, CENTER, RIGHT
-}

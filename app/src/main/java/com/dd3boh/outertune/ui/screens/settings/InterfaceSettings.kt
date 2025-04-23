@@ -73,6 +73,8 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ContentCountryKey
 import com.dd3boh.outertune.constants.ContentLanguageKey
 import com.dd3boh.outertune.constants.CountryCodeToName
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_FILTERS
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.constants.DefaultOpenTabKey
 import com.dd3boh.outertune.constants.EnabledFiltersKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
@@ -98,10 +100,8 @@ import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.Screens
+import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.utils.decodeFilterString
-import com.dd3boh.outertune.utils.encodeFilterString
-import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import me.saket.squiggles.SquigglySlider
@@ -224,7 +224,7 @@ fun InterfaceSettings(
         mutableFilters.apply {
             clear()
 
-            val enabled = decodeFilterString(enabledFilters)
+            val enabled = Screens.getFilters(enabledFilters)
             addAll(enabled.map { it to true })
             addAll(
                 LibraryFilter.entries.filterNot { it in enabled }.map { it to false }
@@ -472,7 +472,7 @@ fun InterfaceSettings(
             title = stringResource(R.string.filter_arrangement),
             onDismiss = { showFilterArrangement = false },
             onConfirm = {
-                val encoded = encodeFilterString(mutableFilters.filter { it.second }.map { it.first })
+                val encoded = Screens.encodeFilters(mutableFilters.filter { it.second }.map { it.first })
 
                 onEnabledFiltersChange(encoded)
                 showFilterArrangement = false
@@ -647,32 +647,3 @@ fun InterfaceSettings(
     )
 }
 
-enum class LibraryFilter {
-    ALL, ALBUMS, ARTISTS, PLAYLISTS, SONGS, FOLDERS
-}
-
-/**
- * H: Home
- * S: Songs
- * F: Folders
- * A: Artists
- * B: Albums
- * L: Playlists
- * M: Library
- *
- * Not/won't implement
- * P: Player
- * Q: Queue
- * E: Search
- */
-const val DEFAULT_ENABLED_TABS = "HSFM"
-
-/**
- * A: Albums
- * R: Artists
- * P: Playlists
- * S: Songs
- * F: Folders
- * L: All
- */
-const val DEFAULT_ENABLED_FILTERS = "ARP"

@@ -87,9 +87,10 @@ import com.dd3boh.outertune.ui.component.LibraryPlaylistGridItem
 import com.dd3boh.outertune.ui.component.LibraryPlaylistListItem
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.SortHeader
-import com.dd3boh.outertune.ui.screens.settings.DEFAULT_ENABLED_FILTERS
-import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
-import com.dd3boh.outertune.utils.decodeFilterString
+import com.dd3boh.outertune.ui.screens.Screens
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_FILTERS
+import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
+import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryViewModel
@@ -143,7 +144,7 @@ fun LibraryScreen(
         LibraryFilter.ALL -> ""
     }
 
-    val defaultFilter: Collection<Pair<LibraryFilter, String>> = decodeFilterString(enabledFilters).map {
+    val defaultFilter: Collection<Pair<LibraryFilter, String>> = Screens.getFilters(enabledFilters).map {
         when(it) {
             LibraryFilter.ALBUMS -> LibraryFilter.ALBUMS to stringResource(R.string.albums)
             LibraryFilter.ARTISTS -> LibraryFilter.ARTISTS to stringResource(R.string.artists)

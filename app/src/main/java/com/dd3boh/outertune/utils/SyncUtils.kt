@@ -20,8 +20,10 @@ import com.dd3boh.outertune.constants.LastLikeSongSyncKey
 import com.dd3boh.outertune.constants.LastPlaylistSyncKey
 import com.dd3boh.outertune.constants.LastRecentActivitySyncKey
 import com.dd3boh.outertune.constants.SyncConflictResolution
+import com.dd3boh.outertune.constants.SyncContent
 import com.dd3boh.outertune.constants.YtmSyncConflictKey
 import com.dd3boh.outertune.constants.YtmSyncContentKey
+import com.dd3boh.outertune.constants.decodeSyncString
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity
@@ -633,19 +635,4 @@ class SyncUtils @Inject constructor(
 
         return remote
     }
-}
-
-// when adding an enum:
-// 1. add settings checkbox string and state
-// 2. add to DEFAULT_SYNC_CONTENT
-// 3. add to encode/decode
-// 4. figure out if it's necessary to update existing user's keys
-enum class SyncContent {
-    ALBUMS,
-    ARTISTS,
-    LIKED_SONGS,
-    PLAYLISTS,
-    PRIVATE_SONGS,
-    RECENT_ACTIVITY,
-    NULL
 }

@@ -10,6 +10,7 @@ package com.dd3boh.outertune.ui.utils
 
 import android.Manifest
 import android.os.Build
+import com.dd3boh.outertune.constants.MAX_CONCURRENT_JOBS
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.utils.LmImageCacheMgr
 import kotlinx.coroutines.Dispatchers
@@ -18,16 +19,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 const val TAG = "LocalMediaUtils"
 
-/**
- * For easier debugging, set SCANNER_CRASH_AT_FIRST_ERROR to stop at first error
- */
-const val SCANNER_CRASH_AT_FIRST_ERROR = false // crash at first FFmpeg scanner error. Currently not implemented
-const val SYNC_SCANNER = false // true will not use multithreading for scanner
-const val MAX_CONCURRENT_JOBS = 4
-const val SCANNER_DEBUG = false
-
-const val EXTRACTOR_DEBUG = false
-const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
 const val EXTRACTOR_TAG = "MetadataExtractor"
 
 @OptIn(ExperimentalCoroutinesApi::class)
