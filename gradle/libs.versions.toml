@@ -14,7 +14,7 @@ ksp = "2.1.20-2.0.0"
 multidex = "2.0.1"
 materialKolor = "2.1.1"
 newpipe = "dev-SNAPSHOT"
-taglib = "8ed57e1"
+taglib = "c4d562e"
 leakcanary = "2.14"
 
 [libraries]
