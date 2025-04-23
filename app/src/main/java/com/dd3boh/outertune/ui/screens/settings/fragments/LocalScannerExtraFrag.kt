@@ -67,76 +67,27 @@ fun ColumnScope.LocalScannerExtraFrag() {
         onCheckedChange = onStrictExtensionsChange
     )
     // scanner type
-    val isFFmpegInstalled = rememberFFmpegAvailability()
-
-    // if plugin is not found, although we reset if a scan is run, ensure the user is made aware if in settings page
-    LaunchedEffect(isFFmpegInstalled) {
-        if (scannerImpl == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled) {
-            onScannerImplChange(ScannerImpl.TAGLIB)
-        }
-    }
-
-    EnumListPreference(
-        title = { Text(stringResource(R.string.scanner_type_title)) },
-        icon = { Icon(Icons.Rounded.Speed, null) },
-        selectedValue = scannerImpl,
-        onValueSelected = {
-            if (it == ScannerImpl.FFMPEG_EXT && isFFmpegInstalled) {
-                onScannerImplChange(it)
-            } else {
-                Toast.makeText(context, context.getString(R.string.scanner_missing_ffmpeg), Toast.LENGTH_LONG)
-                    .show()
-                // Explicitly revert to TagLib if FFmpeg is not available
-                onScannerImplChange(ScannerImpl.TAGLIB)
-            }
-        },
-        valueText = {
-            when (it) {
-                ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
-                ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
-            }
-        },
-        values = ScannerImpl.entries,
-        disabled = { it == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled }
-    )
-}
-
-@Composable
-fun rememberFFmpegAvailability(): Boolean {
-    val context = LocalContext.current
-    var isFFmpegInstalled by remember {
-        mutableStateOf(isPackageInstalled("wah.mikooomich.ffMetadataEx", context.packageManager))
-    }
-
-    DisposableEffect(context) {
-        val packageReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                when (intent?.action) {
-                    Intent.ACTION_PACKAGE_REMOVED,
-                    Intent.ACTION_PACKAGE_ADDED -> {
-                        isFFmpegInstalled = context?.packageManager?.let {
-                            isPackageInstalled(
-                                "wah.mikooomich.ffMetadataEx",
-                                it
-                            )
-                        } == true
-                    }
-                }
-            }
-        }
-
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addDataScheme("package")
-        }
-
-        context.registerReceiver(packageReceiver, filter)
-
-        onDispose {
-            context.unregisterReceiver(packageReceiver)
-        }
-    }
-
-    return isFFmpegInstalled
+//    EnumListPreference(
+//        title = { Text(stringResource(R.string.scanner_type_title)) },
+//        icon = { Icon(Icons.Rounded.Speed, null) },
+//        selectedValue = scannerImpl,
+//        onValueSelected = {
+//            if (it == ScannerImpl.FFMPEG_EXT && isFFmpegInstalled) {
+//                onScannerImplChange(it)
+//            } else {
+//                Toast.makeText(context, context.getString(R.string.scanner_missing_ffmpeg), Toast.LENGTH_LONG)
+//                    .show()
+//                // Explicitly revert to TagLib if FFmpeg is not available
+//                onScannerImplChange(ScannerImpl.TAGLIB)
+//            }
+//        },
+//        valueText = {
+//            when (it) {
+//                ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
+//                ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
+//            }
+//        },
+//        values = ScannerImpl.entries,
+//        disabled = { it == ScannerImpl.FFMPEG_EXT && !isFFmpegInstalled }
+//    )
 }

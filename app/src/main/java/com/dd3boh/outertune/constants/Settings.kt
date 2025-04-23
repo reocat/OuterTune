@@ -96,10 +96,9 @@ fun encodeSyncString(list: List<SyncContent>): String {
     val charToSyncMap = syncPairs.associate { (sync, char) -> char to sync }
 
     return list.distinct().joinToString("") { sync ->
-        charToSyncMap.entries.first { it.value == sync }.key.toString()
+        charToSyncMap.entries.firstOrNull { it.value == sync }?.key?.toString() ?: ""
     }
 }
-
 
 /*
 ---------------------------

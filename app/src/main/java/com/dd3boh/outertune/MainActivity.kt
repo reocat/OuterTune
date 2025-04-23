@@ -119,6 +119,7 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.AutomaticScannerKey
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DefaultOpenTabKey
@@ -149,7 +150,6 @@ import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.SearchHistory
-import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.MusicService
 import com.dd3boh.outertune.playback.MusicService.MusicBinder
@@ -193,7 +193,6 @@ import com.dd3boh.outertune.ui.screens.settings.AboutScreen
 import com.dd3boh.outertune.ui.screens.settings.AccountSyncSettings
 import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
 import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
-import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
 import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
@@ -1264,13 +1263,15 @@ class MainActivity : ComponentActivity() {
                                     SetupWizard(navController)
                                 }
                                 composable("settings/content/import_from_spotify") {
-                                    val isMiniPlayerVisible = rememberSaveable {
-                                        mutableStateOf(false)
-                                    }
+                                    val isMiniPlayerVisible = rememberSaveable { mutableStateOf(false) }
                                     LaunchedEffect(playerBottomSheetState.isCollapsed) {
                                         isMiniPlayerVisible.value = playerBottomSheetState.isCollapsed
                                     }
-                                    ImportFromSpotifyScreen(navController, isMiniPlayerVisible = isMiniPlayerVisible)
+                                    ImportFromSpotifyScreen(
+                                        navController = navController,
+                                        scrollBehavior = scrollBehavior,
+                                        isMiniPlayerVisible = isMiniPlayerVisible
+                                    )
                                 }
                             }
                         }

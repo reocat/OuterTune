@@ -187,18 +187,6 @@ fun ColumnScope.SyncFrag() {
     }
 
     EnumListPreference(
-        title = { Text(stringResource(R.string.sync_mode)) },
-        icon = { Icon(Icons.Rounded.SyncLock, null) },
-        selectedValue = syncMode,
-        onValueSelected = onSyncModeChange,
-        valueText = {
-            when (it) {
-                SyncMode.RO -> stringResource(R.string.sync_mode_ro)
-                SyncMode.RW -> stringResource(R.string.sync_mode_rw)
-            }
-        }
-    )
-    EnumListPreference(
         title = { Text(stringResource(R.string.sync_conflict_title)) },
         icon = { Icon(Icons.Rounded.SyncProblem, null) },
         selectedValue = syncConflict,
