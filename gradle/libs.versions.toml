@@ -1,13 +1,13 @@
 [versions]
-androidGradlePlugin = "8.11.0-alpha07"
+androidGradlePlugin = "8.11.0-alpha08"
 annotation = "1.9.1"
 json = "20250107"
 kotlin = "2.1.20"
-compose = "1.8.0-rc03"
-lifecycle = "2.8.7"
-material3 = "1.4.0-alpha12"
+compose = "1.9.0-alpha01"
+lifecycle = "2.9.0-rc01"
+material3 = "1.4.0-alpha13"
 media3 = "1.6.1"
-room = "2.7.0"
+room = "2.7.1"
 hilt = "2.56.2"
 ktor = "3.1.2"
 ksp = "2.1.20-2.0.0"
@@ -15,20 +15,20 @@ multidex = "2.0.1"
 materialKolor = "2.1.1"
 newpipe = "dev-SNAPSHOT"
 taglib = "c4d562e"
-leakcanary = "2.14"
+leakcanary = "3.0-alpha-8"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 error-prone-core = { module = "com.google.errorprone:error_prone_core", version = "2.38.0" }
 guava = { group = "com.google.guava", name = "guava", version = "33.4.8-android" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.10.2" }
-concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.2.0" }
+concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.3.0-alpha01" }
 
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
-activity = { group = "androidx.activity", name = "activity-compose", version = "1.10.1" }
-navigation = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.0-beta01" }
+activity = { group = "androidx.activity", name = "activity-compose", version = "1.11.0-rc01" }
+navigation = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.0-rc01" }
 hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.2.0" }
-datastore = { group = "androidx.datastore", name = "datastore-preferences", version = "1.1.4" }
+datastore = { group = "androidx.datastore", name = "datastore-preferences", version = "1.2.0-alpha01" }
 
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "compose" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
