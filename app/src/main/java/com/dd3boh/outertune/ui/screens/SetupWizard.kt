@@ -47,7 +47,9 @@ import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LibraryMusic
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
@@ -98,28 +100,36 @@ import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.AutomaticScannerKey
+import com.dd3boh.outertune.constants.ContentCountryKey
+import com.dd3boh.outertune.constants.ContentLanguageKey
+import com.dd3boh.outertune.constants.CountryCodeToName
+import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
+import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.LibraryFilterKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.PureBlackKey
+import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.ui.component.EnumListPreference
+import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.TokenEditorDialog
-import com.dd3boh.outertune.ui.screens.settings.DarkMode
-import com.dd3boh.outertune.ui.screens.settings.LibraryFilter
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
+import org.intellij.lang.annotations.Language
 import java.time.LocalDateTime
+import java.util.Locale
 
 data class Feature(
     val title: String,
@@ -138,10 +148,15 @@ fun SetupWizard(
 
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
 
+    val (contentLanguage, onContentLanguageChange) = rememberPreference(
+        key = ContentLanguageKey,
+        defaultValue = "system"
+    )
+    val (contentCountry, onContentCountryChange) = rememberPreference(key = ContentCountryKey, defaultValue = "system")
+
     // content prefs
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
-    var filter by rememberEnumPreference(LibraryFilterKey, LibraryFilter.ALL)
 
     val (accountName, onAccountNameChange) = rememberPreference(AccountNameKey, "")
     val (accountEmail, onAccountEmailChange) = rememberPreference(AccountEmailKey, "")
@@ -214,7 +229,6 @@ fun SetupWizard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
                     if (position == 1) {
-                        filter = LibraryFilter.ALL // hax
                     }
 
                     if (position < MAX_POS) {
@@ -296,7 +310,11 @@ fun SetupWizard(
                             darkMode = darkMode,
                             onDarkModeChange = onDarkModeChange,
                             pureBlack = pureBlack,
-                            onPureBlackChange = onPureBlackChange
+                            onPureBlackChange = onPureBlackChange,
+                            contentLanguage = contentLanguage,
+                            onContentLanguageChange = onContentLanguageChange,
+                            contentCountry = contentCountry,
+                            onContentCountryChange = onContentCountryChange
                         )
                     }
 
@@ -515,61 +533,125 @@ private fun InterfacePage(
     darkMode: DarkMode,
     onDarkModeChange: (DarkMode) -> Unit,
     pureBlack: Boolean,
-    onPureBlackChange: (Boolean) -> Unit
+    onPureBlackChange: (Boolean) -> Unit,
+    contentLanguage: String,
+    onContentLanguageChange: (String) -> Unit,
+    contentCountry: String,
+    onContentCountryChange: (String) -> Unit
 ) {
-    val dummySong = Song(
-        artists = listOf(
-            ArtistEntity(
-                id = "uwu",
-                name = "Artist",
-                isLocal = true
-            )
-        ),
-        song = SongEntity(
-            id = "owo",
-            title = "Title",
-            duration = 310,
-            inLibrary = LocalDateTime.now(),
-            isLocal = true,
-            localPath = "/storage"
-        ),
-    )
-
-    val dummySongs = ArrayList<Song>()
-    for (i in 0..4) {
-        dummySongs.add(dummySong)
-    }
-
-    Text(
-        text = stringResource(R.string.grp_interface),
-        style = MaterialTheme.typography.headlineLarge,
-        fontWeight = FontWeight.Bold,
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp)
-    )
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.DarkMode,
+            contentDescription = null,
+            modifier = Modifier
+                .size(80.dp)
+                .padding(16.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
 
-    // light/dark theme
-    EnumListPreference(
-        title = { Text(stringResource(R.string.dark_theme)) },
-        icon = { Icon(Icons.Rounded.DarkMode, null) },
-        selectedValue = darkMode,
-        onValueSelected = onDarkModeChange,
-        valueText = {
-            when (it) {
-                DarkMode.ON -> stringResource(R.string.dark_theme_on)
-                DarkMode.OFF -> stringResource(R.string.dark_theme_off)
-                DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
-            }
+        Text(
+            text = stringResource(R.string.grp_interface),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        Text(
+            text = stringResource(R.string.oobe_interface_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            EnumListPreference(
+                title = { Text(stringResource(R.string.dark_theme)) },
+                icon = { Icon(Icons.Rounded.DarkMode, null) },
+                selectedValue = darkMode,
+                onValueSelected = onDarkModeChange,
+                valueText = {
+                    when (it) {
+                        DarkMode.ON -> stringResource(R.string.dark_theme_on)
+                        DarkMode.OFF -> stringResource(R.string.dark_theme_off)
+                        DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
+                    }
+                }
+            )
+
+            SwitchPreference(
+                title = { Text(stringResource(R.string.pure_black)) },
+                icon = { Icon(Icons.Rounded.Contrast, null) },
+                checked = pureBlack,
+                onCheckedChange = onPureBlackChange
+            )
         }
-    )
-    SwitchPreference(
-        title = { Text(stringResource(R.string.pure_black)) },
-        icon = { Icon(Icons.Rounded.Contrast, null) },
-        checked = pureBlack,
-        onCheckedChange = onPureBlackChange
-    )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            ListPreference(
+                title = { Text(stringResource(R.string.content_language)) },
+                icon = { Icon(Icons.Rounded.Language, null) },
+                selectedValue = contentLanguage,
+                values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
+                valueText = {
+                    LanguageCodeToName.getOrElse(it) {
+                        stringResource(R.string.system_default)
+                    }
+                },
+                onValueSelected = { newValue ->
+                    val locale = Locale.getDefault()
+                    val languageTag = locale.toLanguageTag().replace("-Hant", "")
+
+                    YouTube.locale = YouTube.locale.copy(
+                        hl = newValue.takeIf { it != SYSTEM_DEFAULT }
+                            ?: locale.language.takeIf { it in LanguageCodeToName }
+                            ?: languageTag.takeIf { it in LanguageCodeToName }
+                            ?: "en"
+                    )
+
+                    onContentLanguageChange(newValue)
+                }
+            )
+
+            // Content country/region selector
+            ListPreference(
+                title = { Text(stringResource(R.string.content_country)) },
+                icon = { Icon(Icons.Rounded.LocationOn, null) },
+                selectedValue = contentCountry,
+                values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
+                valueText = {
+                    CountryCodeToName.getOrElse(it) {
+                        stringResource(R.string.system_default)
+                    }
+                },
+                onValueSelected = { newValue ->
+                    val locale = Locale.getDefault()
+
+                    YouTube.locale = YouTube.locale.copy(
+                        gl = newValue.takeIf { it != SYSTEM_DEFAULT }
+                            ?: locale.country.takeIf { it in CountryCodeToName }
+                            ?: "US"
+                    )
+
+                    onContentCountryChange(newValue)
+                }
+            )
+        }
+    }
 }
+
 @Composable
 private fun AccountPage(
     navController: NavController,

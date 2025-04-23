@@ -218,17 +218,11 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="swipe_to_skip_description">Enable swiping horizontally in the player to switch songs</string>
 
     <!-- Setup wizard -->
+    <!-- Welcome page -->
     <string name="oobe_welcome_message">Welcome to OuterTune</string>
     <string name="oobe_use_backup">I have a backup</string>
-    <string name="oobe_ytm_logon_title">Connect Your Account</string>
-    <string name="oobe_ytm_logon_subtitle">Sync with YouTube Music</string>
-    <string name="oobe_local_media_title">Local Media Setup</string>
-    <string name="oobe_local_media_subtitle">Import your music collection</string>
-    <string name="oobe_scan_for_local_music">Scan for Local Music</string>
-    <string name="oobe_complete_title">You\'re All Set!</string>
-    <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
 
-    <!-- Setup Wizard features-->
+    <!-- Welcome page features -->
     <string name="youtube_music_integration">YouTube Music Integration</string>
     <string name="youtube_music_integration_description">Access your favorite tracks seamlessly</string>
     <string name="ad_free_experience">AD-Free Experience</string>
@@ -237,6 +231,26 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="local_music_support_description">Play your downloaded tracks anywhere</string>
     <string name="cross_platform_sync">Cross-Platform Sync</string>
     <string name="cross_platform_sync_description">Keep your music in harmony across devices</string>
+
+    <!-- Interface setup page -->
+    <string name="oobe_interface_subtitle">Customize how OuterTune looks and what content it shows you</string>
+    <string name="pure_black_description">Use true black backgrounds in dark mode for OLED displays</string>
+    <string name="content_language_description">Select the language for music recommendations and interface</string>
+    <string name="content_country_description">Choose your region for localized content and charts</string>
+
+    <!-- Account setup page -->
+    <string name="oobe_ytm_logon_title">Account</string>
+    <string name="oobe_ytm_logon_subtitle">Sync with YouTube Music</string>
+
+    <!-- Local media setup -->
+    <string name="oobe_local_media_title">Local media</string>
+    <string name="oobe_local_media_subtitle">Import your music collection</string>
+    <string name="oobe_scan_for_local_music">Scan for Local Music</string>
+
+    <!-- Setup complete -->
+    <string name="oobe_complete_title">You\'re All Set!</string>
+    <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
+
 
     <!-- Misc -->
     <string name="action_back">Back</string>

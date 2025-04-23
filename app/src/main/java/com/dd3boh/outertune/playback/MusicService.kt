@@ -181,7 +181,7 @@ class MusicService : MediaLibraryService(),
     val waitingForNetworkConnection = MutableStateFlow(false)
     private val isNetworkConnected = MutableStateFlow(false)
 
-    private val audioQuality by enumPreference(this, AudioQualityKey, AudioQuality.AUTO)
+    private val audioQuality by enumPreference(this, AudioQualityKey, AudioQuality.HIGH)
 
     var queueBoard = QueueBoard(this)
     var queueTitle: String? = null
