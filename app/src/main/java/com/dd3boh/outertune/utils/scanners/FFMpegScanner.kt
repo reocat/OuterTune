@@ -17,14 +17,13 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
-import com.dd3boh.outertune.ui.utils.DEBUG_SAVE_OUTPUT
-import com.dd3boh.outertune.ui.utils.EXTRACTOR_DEBUG
+import com.dd3boh.outertune.constants.DEBUG_SAVE_OUTPUT
+import com.dd3boh.outertune.constants.EXTRACTOR_DEBUG
 import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
 import wah.mikooomich.ffMetadataEx.AudioMetadata
 import wah.mikooomich.ffMetadataEx.FFMpegWrapper
 import java.io.File
 import java.lang.Integer.parseInt
-import java.lang.Long.parseLong
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.dd3boh.outertune.R
+import kotlin.collections.forEach
 
 @Immutable
 sealed class Screens(
@@ -36,8 +37,30 @@ sealed class Screens(
     data object Playlists : Screens(R.string.playlists, Icons.AutoMirrored.Rounded.QueueMusic, "playlists")
     data object Library : Screens(R.string.library, Icons.Rounded.LibraryMusic, "library")
 
+    enum class LibraryFilter {
+        ALL, ALBUMS, ARTISTS, PLAYLISTS, SONGS, FOLDERS
+    }
+
     companion object {
-        fun getScreenPairs() = listOf(
+        /*
+        Screens
+         */
+
+        /**
+         * H: Home
+         * S: Songs
+         * F: Folders
+         * A: Artists
+         * B: Albums
+         * L: Playlists
+         * M: Library
+         *
+         * Not/won't implement
+         * P: Player
+         * Q: Queue
+         * E: Search
+         */
+        val screenPairs = listOf(
             Home to 'H',
             Songs to 'S',
             Folders to 'F',
@@ -47,18 +70,56 @@ sealed class Screens(
             Library to 'M'
         )
 
-        fun getAllScreens() = getScreenPairs().map { it.first }
+        fun getAllScreens() = screenPairs.map { it.first }
+
         fun getScreens(screens: String): List<Screens> {
-            val charToScreenMap = getScreenPairs().associate { (screen, char) -> char to screen }
+            val charToScreenMap = screenPairs.associate { (screen, char) -> char to screen }
 
             return screens.toCharArray().map { char -> charToScreenMap[char] ?: Home }
         }
 
         fun encodeScreens(list: List<Screens>): String {
-            val charToScreenMap = getScreenPairs().associate { (screen, char) -> char to screen }
+            val charToScreenMap = screenPairs.associate { (screen, char) -> char to screen }
 
-            return list.joinToString("") { screen ->
+            return list.distinct().joinToString("") { screen ->
                 charToScreenMap.entries.first { it.value == screen }.key.toString()
+            }
+        }
+
+        /*
+        Filters
+         */
+
+        /**
+         * A: Albums
+         * R: Artists
+         * P: Playlists
+         * S: Songs
+         * F: Folders
+         * L: All
+         */
+        val filterPairs = listOf(
+            LibraryFilter.ALBUMS to 'A',
+            LibraryFilter.ARTISTS to 'R',
+            LibraryFilter.PLAYLISTS to 'P',
+            LibraryFilter.SONGS to 'S',
+            LibraryFilter.FOLDERS to 'F',
+            LibraryFilter.ALL to 'L'
+        )
+
+        fun getAllFilters() = filterPairs.map { it.first }
+
+        fun getFilters(filters: String): List<LibraryFilter> {
+            val charToFilterMap = filterPairs.associate { (screen, char) -> char to screen }
+
+            return filters.toCharArray().map { char -> charToFilterMap[char] ?: LibraryFilter.ALL }
+        }
+
+        fun encodeFilters(list: List<LibraryFilter>): String {
+            val charToFilterMap = filterPairs.associate { (screen, char) -> char to screen }
+
+            return list.distinct().joinToString("") { filter ->
+                charToFilterMap.entries.first { it.value == filter }.key.toString()
             }
         }
     }

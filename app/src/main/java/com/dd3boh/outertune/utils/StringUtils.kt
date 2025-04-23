@@ -5,6 +5,11 @@ import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
 import java.math.BigInteger
 import java.security.MessageDigest
+import kotlin.math.absoluteValue
+
+/*
+IMPORTANT: Put any string utils that require composable in outertne/ui/utils/StringUtils.kt
+ */
 
 fun makeTimeString(duration: Long?): String {
     if (duration == null || duration < 0) return ""
@@ -34,8 +39,34 @@ fun joinByBullet(vararg str: String?) =
 
 fun String.urlEncode(): String = Uri.encode(this)
 
+fun formatFileSize(sizeBytes: Long): String {
+    val prefix = if (sizeBytes < 0) "-" else ""
+    var result: Long = sizeBytes.absoluteValue
+    var suffix = "B"
+    if (result > 900) {
+        suffix = "KB"
+        result /= 1024
+    }
+    if (result > 900) {
+        suffix = "MB"
+        result /= 1024
+    }
+    if (result > 900) {
+        suffix = "GB"
+        result /= 1024
+    }
+    if (result > 900) {
+        suffix = "TB"
+        result /= 1024
+    }
+    if (result > 900) {
+        suffix = "PB"
+        result /= 1024
+    }
+    return "$prefix$result $suffix"
+}
 
-/**
+/*
  * Whacko methods
  */
 

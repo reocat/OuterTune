@@ -12,7 +12,7 @@ import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.ui.utils.SCANNER_DEBUG
+import com.dd3boh.outertune.constants.SCANNER_DEBUG
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import timber.log.Timber
 import java.time.ZoneOffset
