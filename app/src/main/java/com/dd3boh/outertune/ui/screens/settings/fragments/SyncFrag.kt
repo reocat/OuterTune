@@ -132,7 +132,7 @@ fun ColumnScope.SyncFrag() {
         }
     )
     val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
-    encodeSyncString(enabledContent.toList() + SyncContent.NULL)
+    encodeSyncString(enabledContent.toList())
     SyncContent.entries.filterNot { it == SyncContent.NULL }.forEach { item ->
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
