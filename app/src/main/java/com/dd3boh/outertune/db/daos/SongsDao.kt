@@ -217,25 +217,25 @@ interface SongsDao {
     fun downloadNoLocalSongs(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY inLibrary")
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY inLibrary")
     fun downloadSongsByCreateDateAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY date")
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY date")
     fun downloadSongsByReleaseDateAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY dateModified")
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY dateModified")
     fun downloadSongsByDateModifiedAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
     fun downloadSongsByNameAsc(): Flow<List<Song>>
 
     @Transaction
     @Query("""
         SELECT * FROM song
-        WHERE isLocal OR dateDownload IS NOT NULL
+        WHERE isLocal = 0 AND dateDownload IS NOT NULL
         ORDER BY (
             SELECT LOWER(GROUP_CONCAT(name, ''))
             FROM artist
@@ -246,7 +246,7 @@ interface SongsDao {
     fun downloadSongsByArtistAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song WHERE isLocal OR dateDownload IS NOT NULL ORDER BY totalPlayTime")
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY totalPlayTime")
     fun downloadSongsByPlayTimeAsc(): Flow<List<Song>>
 
     @RewriteQueriesToDropUnusedColumns
@@ -256,7 +256,7 @@ interface SongsDao {
             FROM playCount 
             WHERE playCount.song = song.id) AS pc 
         FROM song 
-        WHERE isLocal OR dateDownload IS NOT NULL
+        WHERE isLocal = 0 AND dateDownload IS NOT NULL
         ORDER BY pc ASC
     """)
     fun downloadSongsByPlayCountAsc(): Flow<List<Song>>
