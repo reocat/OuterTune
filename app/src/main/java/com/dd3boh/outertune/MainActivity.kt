@@ -440,7 +440,6 @@ class MainActivity : ComponentActivity() {
             val (lastVer, onLastVerChange) = rememberPreference(LastVersionKey, defaultValue = "0.0.0")
 
             LaunchedEffect(Unit) {
-                downloadUtil.resumeDownloadsOnStart()
 
                 CoroutineScope(Dispatchers.IO).launch {
                     val perms = checkSelfPermission(MEDIA_PERMISSION_LEVEL)

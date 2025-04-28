@@ -257,9 +257,31 @@ interface SongsDao {
         }.map { it.reversed(descending) }
     // endregion
 
+    // region downloaded Songs utils
+    @Transaction
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL AND dateDownload IS NOT 0")
+    fun downloadedSongs(): Flow<List<Song>>
+
+    @Transaction
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload = 0")
+    fun downloadQueuedSongs(): Flow<List<Song>>
+
+    @Transaction
+    @Query("UPDATE song SET dateDownload = :dateDownload, localPath = :localPath WHERE id = :mediaId AND isLocal = 0")
+    fun registerDownloadSong(mediaId: String, dateDownload: LocalDateTime, localPath: String)
+
+    @Transaction
+    @Query("UPDATE song SET dateDownload = NULL, localPath = NULL WHERE id = :mediaId AND isLocal = 0")
+    fun removeDownloadSong(mediaId: String)
+
+    @Transaction
+    @Query("UPDATE song SET dateDownload = NULL, localPath = NULL WHERE isLocal = 0")
+    fun removeAllDownloadedSongs()
+    // endregion
+
     // region Downloaded Songs Sort
     @Transaction
-    @Query("SELECT * FROM song WHERE dateDownload IS NOT NULL ORDER BY dateDownload")
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY dateDownload")
     fun downloadNoLocalSongs(): Flow<List<Song>>
 
     @Transaction

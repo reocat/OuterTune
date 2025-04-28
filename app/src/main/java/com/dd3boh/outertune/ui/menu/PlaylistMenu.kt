@@ -40,7 +40,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -52,7 +51,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.DefaultDialog
@@ -107,12 +106,10 @@ fun PlaylistMenu(
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it.id] != null && downloads[it.id] != DownloadUtil.DL_IN_PROGRESS })
                     Download.STATE_COMPLETED
                 else if (songs.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.id]?.state == Download.STATE_COMPLETED
+                        downloads[it.id] == DownloadUtil.DL_IN_PROGRESS
                     })
                     Download.STATE_DOWNLOADING
                 else
@@ -158,12 +155,7 @@ fun PlaylistMenu(
                     onClick = {
                         showRemoveDownloadDialog = false
                         songs.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.song.id,
-                                false
-                            )
+                            downloadUtil.delete(song)
                         }
                     }
                 ) {

@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -39,7 +38,7 @@ import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.MediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.DownloadGridMenu
@@ -86,19 +85,17 @@ fun SelectionMediaMetadataMenu(
         if (selection.isEmpty()) {
             onDismiss()
         } else {
-        downloadUtil.downloads.collect { downloads ->
-            downloadState =
-                if (selection.all { downloads[it.id]?.state == Download.STATE_COMPLETED }) {
-                    Download.STATE_COMPLETED
-                } else if (selection.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.id]?.state == Download.STATE_COMPLETED
-                    }) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            downloadUtil.downloads.collect { downloads ->
+                downloadState =
+                    if (selection.all { downloads[it.id] != null && downloads[it.id] != DownloadUtil.DL_IN_PROGRESS }) {
+                        Download.STATE_COMPLETED
+                    } else if (selection.all {
+                            downloads[it.id] == DownloadUtil.DL_IN_PROGRESS
+                        }) {
+                        Download.STATE_DOWNLOADING
+                    } else {
+                        Download.STATE_STOPPED
+                    }
             }
         }
     }
@@ -170,12 +167,7 @@ fun SelectionMediaMetadataMenu(
                     onClick = {
                         showRemoveDownloadDialog = false
                         selection.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.id,
-                                false
-                            )
+                            downloadUtil.delete(song)
                         }
                     }
                 ) {
@@ -185,7 +177,7 @@ fun SelectionMediaMetadataMenu(
         )
     }
 
-    GridMenu (
+    GridMenu(
         contentPadding = PaddingValues(
             start = 8.dp,
             top = 8.dp,

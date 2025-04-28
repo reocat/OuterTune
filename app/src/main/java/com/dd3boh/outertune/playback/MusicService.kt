@@ -204,6 +204,7 @@ class MusicService : MediaLibraryService(),
     @PlayerCache
     lateinit var playerCache: SimpleCache
 
+    @Deprecated("Do not write to this cache. Please use the new download system, see DownloadDirectoryManagerOt.")
     @Inject
     @DownloadCache
     lateinit var downloadCache: SimpleCache
@@ -839,6 +840,14 @@ class MusicService : MediaLibraryService(),
                 }
 
                 return@Factory dataSpec.withUri(Uri.fromFile(File(songPath)))
+            }
+
+            val isDownloadNew = downloadUtil.localMgr.getFilePathIfExists(mediaId)
+            if (isDownloadNew != null) {
+                Log.d(TAG, "PLAYING: Downloaded remote song")
+                val songPath = isDownloadNew
+
+                return@Factory dataSpec.withUri(songPath)
             }
 
             val isDownload =

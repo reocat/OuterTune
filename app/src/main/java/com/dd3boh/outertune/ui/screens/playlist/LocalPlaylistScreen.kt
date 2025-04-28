@@ -111,7 +111,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
@@ -232,6 +232,7 @@ fun LocalPlaylistScreen(
     }
 
     if (showRemoveDownloadDialog) {
+        val downloadUtil = LocalDownloadUtil.current
         DefaultDialog(
             onDismiss = { showRemoveDownloadDialog = false },
             content = {
@@ -258,12 +259,7 @@ fun LocalPlaylistScreen(
                         }
 
                         songs.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.song.id,
-                                false
-                            )
+                            downloadUtil.delete(song)
                         }
                     }
                 ) {
@@ -640,16 +636,13 @@ fun LocalPlaylistHeader(
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it.song.id]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it.song.id] != null && downloads[it.song.id] != DownloadUtil.DL_IN_PROGRESS }) {
                     Download.STATE_COMPLETED
-                else if (songs.all {
-                        downloads[it.song.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.song.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.song.id]?.state == Download.STATE_COMPLETED
-                    })
+                } else if (songs.all { downloads[it.song.id] == DownloadUtil.DL_IN_PROGRESS }) {
                     Download.STATE_DOWNLOADING
-                else
+                } else {
                     Download.STATE_STOPPED
+                }
         }
     }
 
@@ -796,12 +789,7 @@ fun LocalPlaylistHeader(
                             IconButton(
                                 onClick = {
                                     songs.forEach { song ->
-                                        DownloadService.sendRemoveDownload(
-                                            context,
-                                            ExoDownloadService::class.java,
-                                            song.song.id,
-                                            false
-                                        )
+                                        downloadUtil.delete(song)
                                     }
                                 }
                             ) {
@@ -816,17 +804,7 @@ fun LocalPlaylistHeader(
                             IconButton(
                                 onClick = {
                                     songs.forEach { song ->
-                                        val downloadRequest =
-                                            DownloadRequest.Builder(song.song.id, song.song.id.toUri())
-                                                .setCustomCacheKey(song.song.id)
-                                                .setData(song.song.song.title.toByteArray())
-                                                .build()
-                                        DownloadService.sendAddDownload(
-                                            context,
-                                            ExoDownloadService::class.java,
-                                            downloadRequest,
-                                            false
-                                        )
+                                        downloadUtil.download(song.song.song)
                                     }
                                 }
                             ) {

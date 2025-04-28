@@ -42,7 +42,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -51,7 +50,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.YouTubeAlbumRadio
 import com.dd3boh.outertune.ui.component.DownloadGridMenu
 import com.dd3boh.outertune.ui.component.GridMenu
@@ -99,12 +98,10 @@ fun YouTubeAlbumMenu(
         val songs = album?.songs?.map { it.id } ?: return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             downloadState =
-                if (songs.all { downloads[it]?.state == Download.STATE_COMPLETED })
+                if (songs.all { downloads[it] != null && downloads[it] != DownloadUtil.DL_IN_PROGRESS })
                     Download.STATE_COMPLETED
                 else if (songs.all {
-                        downloads[it]?.state == Download.STATE_QUEUED
-                                || downloads[it]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it]?.state == Download.STATE_COMPLETED
+                        downloads[it] == DownloadUtil.DL_IN_PROGRESS
                     })
                     Download.STATE_DOWNLOADING
                 else
@@ -262,17 +259,12 @@ fun YouTubeAlbumMenu(
         DownloadGridMenu(
             state = downloadState,
             onDownload = {
-                val _songs = album?.songs?.map{ it.toMediaMetadata() } ?: emptyList()
+                val _songs = album?.songs?.map { it.toMediaMetadata() } ?: emptyList()
                 downloadUtil.download(_songs)
             },
             onRemoveDownload = {
                 album?.songs?.forEach { song ->
-                    DownloadService.sendRemoveDownload(
-                        context,
-                        ExoDownloadService::class.java,
-                        song.id,
-                        false
-                    )
+                    downloadUtil.delete(song)
                 }
             }
         )

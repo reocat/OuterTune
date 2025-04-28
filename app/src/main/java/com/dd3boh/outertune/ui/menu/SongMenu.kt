@@ -55,7 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastSumBy
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
@@ -73,7 +72,6 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.DetailsDialog
@@ -235,10 +233,10 @@ fun SongMenu(
         DetailsDialog(
             mediaMetadata = song.toMediaMetadata(),
             currentFormat = currentFormat,
-            currentPlayCount = song.playCount?.fastSumBy { it.count }?: 0,
+            currentPlayCount = song.playCount?.fastSumBy { it.count } ?: 0,
             volume = playerConnection.player.volume,
             clipboard = clipboard,
-            setVisibility = {showDetailsDialog = it }
+            setVisibility = { showDetailsDialog = it }
         )
     }
 
@@ -253,14 +251,17 @@ fun SongMenu(
                 AsyncImageLocal(
                     image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
                     contentDescription = null,
-                    modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))
+                    modifier = Modifier
+                        .size(ListThumbnailSize)
+                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
                 )
-            }
-            else {
+            } else {
                 AsyncImage(
                     model = song.song.thumbnailUrl,
                     contentDescription = null,
-                    modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))
+                    modifier = Modifier
+                        .size(ListThumbnailSize)
+                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
                 )
             }
         },
@@ -353,20 +354,18 @@ fun SongMenu(
             }
         }
 
-        DownloadGridMenu(
-            state = download?.state,
-            onDownload = {
-                downloadUtil.download(song.toMediaMetadata())
-            },
-            onRemoveDownload = {
-                DownloadService.sendRemoveDownload(
-                    context,
-                    ExoDownloadService::class.java,
-                    song.id,
-                    false
-                )
-            }
-        )
+        if (!song.song.isLocal)
+            DownloadGridMenu(
+                state = download?.song?.dateDownload,
+                onDownload = {
+                    downloadUtil.download(song.toMediaMetadata())
+                },
+                onRemoveDownload = {
+                    downloadUtil.delete(song)
+                }
+            )
+
+
         GridMenuItem(
             icon = R.drawable.artist,
             title = R.string.view_artist,

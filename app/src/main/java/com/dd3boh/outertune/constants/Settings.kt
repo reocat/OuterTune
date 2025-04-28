@@ -1,5 +1,7 @@
 package com.dd3boh.outertune.constants
 
+import android.os.Environment
+
 /*
 ---------------------------
 Appearance & interface
@@ -141,6 +143,8 @@ enum class LikedAutodownloadMode {
     OFF, ON, WIFI_ONLY
 }
 
+val allowedPath = "/storage/emulated/0/" + Environment.DIRECTORY_MUSIC
+const val defaultDownloadPath = "/OuterTune Downloads/"
 
 /*
 ---------------------------

@@ -10,7 +10,12 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,9 +23,11 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -32,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -39,22 +47,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
 import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
 import com.dd3boh.outertune.constants.PlaylistFilter
 import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.TopBarInsets
+import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.constants.allowedPath
+import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.extensions.tryOrNull
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
@@ -67,6 +79,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+
 
 @SuppressLint("PrivateResource")
 @OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)
@@ -83,6 +96,8 @@ fun StorageSettings(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, defaultDownloadPath)
+
     var imageCacheSize by remember {
         mutableLongStateOf(imageDiskCache.size)
     }
@@ -91,6 +106,12 @@ fun StorageSettings(
     }
     var downloadCacheSize by remember {
         mutableLongStateOf(tryOrNull { downloadCache.cacheSpace } ?: 0)
+    }
+
+    // download path selector
+    val downloadUtil = LocalDownloadUtil.current
+    var showDlPathDialog: Boolean by remember {
+        mutableStateOf(false)
     }
 
     LaunchedEffect(imageDiskCache) {
@@ -154,17 +175,20 @@ fun StorageSettings(
                     }
                     database.downloadSongs(SongSortType.NAME, true).collect { songs ->
                         songs.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.song.id,
-                                false
-                            )
+                            downloadUtil.delete(song)
                         }
                     }
                 }
             },
         )
+
+        PreferenceEntry(
+            title = { Text("Configure download path") },
+            onClick = {
+                showDlPathDialog = true
+            },
+        )
+
 
         PreferenceGroupTitle(
             title = stringResource(R.string.song_cache)
@@ -186,7 +210,10 @@ fun StorageSettings(
                 )
 
                 Text(
-                    text = stringResource(R.string.size_used, "${formatFileSize(playerCacheSize)} / ${formatFileSize(maxSongCacheSize * 1024 * 1024L)}"),
+                    text = stringResource(
+                        R.string.size_used,
+                        "${formatFileSize(playerCacheSize)} / ${formatFileSize(maxSongCacheSize * 1024 * 1024L)}"
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                 )
@@ -280,4 +307,86 @@ fun StorageSettings(
         windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
+
+
+    if (showDlPathDialog) {
+        var tempFilePath by remember {
+            mutableStateOf(defaultDownloadPath)
+        }
+
+        ActionPromptDialog(
+            titleBar = {
+                Text(
+                    text = "Download path",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
+            onDismiss = {
+                showDlPathDialog = false
+                tempFilePath = ""
+            },
+            onConfirm = {
+                onDownloadPathChange(tempFilePath)
+
+                showDlPathDialog = false
+                tempFilePath = ""
+
+                coroutineScope.launch {
+                    delay(1000)
+                    downloadUtil.cd()
+                }
+            },
+            onReset = {
+                // reset to whitespace so not empty
+                tempFilePath = defaultDownloadPath
+            },
+            onCancel = {
+                showDlPathDialog = false
+                tempFilePath = ""
+            }
+        ) {
+
+            /**
+             * Todo: spawn user in /Music, don't let them leave
+             */
+            val dirPickerLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.OpenDocumentTree()
+            ) { uri ->
+                if (uri?.path != null) {
+                    tempFilePath = uri.path!!.substringAfter("$allowedPath/")
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .border(
+                        2.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        RoundedCornerShape(ThumbnailCornerRadius)
+                    )
+            ) {
+                Text(
+                    text = "$allowedPath/$tempFilePath/",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            // add folder button
+            Column {
+                Button(onClick = { dirPickerLauncher.launch(null) }) {
+                    Text(stringResource(R.string.scan_paths_add_folder))
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    InfoLabel(
+                        text = "Due to Android system restrictions, only folder",
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
+            }
+        }
+    }
 }
