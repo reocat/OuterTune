@@ -65,11 +65,13 @@ import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.MiniPlayerHeight
+import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.utils.imageCache
+import com.dd3boh.outertune.utils.rememberPreference
 
 @Composable
 fun MiniPlayer(
@@ -77,6 +79,7 @@ fun MiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
 ) {
+    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val playbackState by playerConnection.playbackState.collectAsState()
@@ -89,7 +92,7 @@ fun MiniPlayer(
             .fillMaxWidth()
             .height(MiniPlayerHeight)
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant),
     ) {
         LinearProgressIndicator(
             progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
@@ -110,6 +113,7 @@ fun MiniPlayer(
                     MiniMediaInfo(
                         mediaMetadata = it,
                         error = error,
+                        pureBlack = pureBlack,
                         modifier = Modifier.padding(horizontal = 6.dp)
                     )
                 }
@@ -148,6 +152,7 @@ fun MiniPlayer(
 fun MiniMediaInfo(
     mediaMetadata: MediaMetadata,
     error: PlaybackException?,
+    pureBlack: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val playerConnection = LocalPlayerConnection.current
@@ -224,7 +229,7 @@ fun MiniMediaInfo(
                 Box(
                     Modifier
                         .background(
-                            color = Color.Black.copy(alpha = 0.6f),
+                            color = if (pureBlack) Color.Black else Color.Black.copy(alpha = 0.6f),
                             shape = RoundedCornerShape(ThumbnailCornerRadius)
                         )
                 ) {

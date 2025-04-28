@@ -103,6 +103,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.LockQueueKey
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
+import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.togglePlayPause
@@ -140,6 +141,8 @@ fun Queue(
 
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
+
+    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
 
     // player vars
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -949,7 +952,11 @@ fun Queue(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .background(
+                                if (pureBlack) Color.Black
+                                else MaterialTheme.colorScheme
+                                .secondaryContainer
+                            )
                             .fillMaxWidth()
                             .clickable {
                                 state.collapseSoft()

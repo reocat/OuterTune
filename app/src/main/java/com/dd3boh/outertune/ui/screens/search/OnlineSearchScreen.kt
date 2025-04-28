@@ -4,10 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,7 +47,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
@@ -57,7 +61,6 @@ import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.SearchBarIconOffsetX
 import com.dd3boh.outertune.ui.component.SwipeToQueueBox
@@ -80,6 +83,7 @@ fun OnlineSearchScreen(
     navController: NavController,
     onSearch: (String) -> Unit,
     onDismiss: () -> Unit,
+    pureBlack: Boolean,
     viewModel: OnlineSearchSuggestionViewModel = hiltViewModel(),
 ) {
     val menuState = LocalMenuState.current
@@ -112,7 +116,11 @@ fun OnlineSearchScreen(
     }
 
     LazyColumn(
-        state = lazyListState
+        state = lazyListState,
+        contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.background)
     ) {
         items(
             items = viewState.history,
@@ -138,7 +146,8 @@ fun OnlineSearchScreen(
                         )
                     )
                 },
-                modifier = Modifier.animateItem()
+                modifier = Modifier.animateItem(),
+                pureBlack = pureBlack
             )
         }
 
@@ -161,7 +170,8 @@ fun OnlineSearchScreen(
                         )
                     )
                 },
-                modifier = Modifier.animateItem()
+                modifier = Modifier.animateItem(),
+                pureBlack = pureBlack
             )
         }
 
@@ -303,12 +313,14 @@ fun SuggestionItem(
     onClick: () -> Unit,
     onDelete: () -> Unit = {},
     onFillTextField: () -> Unit,
+    pureBlack: Boolean
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
             .height(SuggestionItemHeight)
+            .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .padding(end = SearchBarIconOffsetX)
     ) {
