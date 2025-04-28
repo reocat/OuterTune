@@ -66,8 +66,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.CompositionLocalProvider
@@ -470,6 +472,9 @@ class MainActivity : ComponentActivity() {
                 BoxWithConstraints( // Deprecated. please use the scaffold
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(
+                            if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface
+                        )
                 ) {
                     val focusManager = LocalFocusManager.current
                     val density = LocalDensity.current
@@ -730,8 +735,7 @@ class MainActivity : ComponentActivity() {
 
                     CompositionLocalProvider(
                         LocalDatabase provides database,
-                        LocalContentColor provides contentColorFor(MaterialTheme.colorScheme.surface),
-                        LocalPlayerConnection provides playerConnection,
+                        LocalContentColor provides if (pureBlack) Color.White else contentColorFor(MaterialTheme.colorScheme.surface),                        LocalPlayerConnection provides playerConnection,
                         LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
@@ -834,6 +838,25 @@ class MainActivity : ComponentActivity() {
                                         },
                                         focusRequester = searchBarFocusRequester,
                                         modifier = Modifier.align(Alignment.TopCenter),
+                                        colors = if (pureBlack && active) {
+                                            SearchBarDefaults.colors(
+                                                containerColor = Color.Black,
+                                                dividerColor = Color.DarkGray,
+                                                inputFieldColors = TextFieldDefaults.colors(
+                                                    focusedTextColor = Color.White,
+                                                    unfocusedTextColor = Color.Gray,
+                                                    focusedContainerColor = Color.Transparent,
+                                                    unfocusedContainerColor = Color.Transparent,
+                                                    cursorColor = Color.White,
+                                                    focusedIndicatorColor = Color.Transparent,
+                                                    unfocusedIndicatorColor = Color.Transparent,
+                                                )
+                                            )
+                                        } else {
+                                            SearchBarDefaults.colors(
+                                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                            )
+                                        }
                                     ) {
                                         Crossfade(
                                             targetState = searchSource,
@@ -847,8 +870,9 @@ class MainActivity : ComponentActivity() {
                                                 SearchSource.LOCAL -> LocalSearchScreen(
                                                     query = query.text,
                                                     navController = navController,
-                                                    onDismiss = { onActiveChange(false) }
-                                                )
+                                                    onDismiss = { onActiveChange(false) },
+                                                    pureBlack = pureBlack
+                                                    )
 
                                                 SearchSource.ONLINE -> OnlineSearchScreen(
                                                     query = query.text,
@@ -866,7 +890,8 @@ class MainActivity : ComponentActivity() {
                                                             }
                                                         }
                                                     },
-                                                    onDismiss = { onActiveChange(false) }
+                                                    onDismiss = { onActiveChange(false) },
+                                                    pureBlack = pureBlack
                                                 )
                                             }
                                         }
@@ -941,8 +966,9 @@ class MainActivity : ComponentActivity() {
                                                         y = (slideOffset + hideOffset).roundToPx()
                                                     )
                                                 }
-                                            }
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            },
+                                        containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
+                                        contentColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                     ) {
                                         navigationItems.fastForEach { screen ->
                                             NavigationBarItem(
@@ -991,7 +1017,6 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxSize()
                                 .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
-                                .background(MaterialTheme.colorScheme.surface)
                         ) {
                             NavHost(
                                 navController = navController,
