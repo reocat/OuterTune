@@ -10,7 +10,6 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.annotation.SuppressLint
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -377,15 +376,13 @@ fun StorageSettings(
             // add folder button
             Column {
                 Button(onClick = { dirPickerLauncher.launch(null) }) {
-                    Text(stringResource(R.string.scan_paths_add_folder))
+                    Text("Select folder")
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    InfoLabel(
-                        text = "Due to Android system restrictions, only folder",
-                        modifier = Modifier.padding(vertical = 16.dp)
-                    )
-                }
+                InfoLabel(
+                    text = "Due to Android system restrictions, only Music folder is allowed.",
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
             }
         }
     }
