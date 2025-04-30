@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="song_added_to_queue">\"%s\" aggiunto alla coda</string>
-    <string name="like_all">Mi piace a tutto</string>
+    <string name="like_all">Mi piace tutto</string>
     <string name="library">Libreria</string>
     <string name="delete_lyric_confirm">Vuoi davvero cancellare i testi memorizzati per \"%s\"?</string>
     <string name="recent_activity">Attività recenti</string>
@@ -147,4 +147,14 @@
     <string name="swipe_to_skip_title">Scorri orizzontalmente per cambiare conzone</string>
     <string name="swipe_to_skip_description">Abilitare scorrimento orizzontale nel player per cambiare canzone</string>
     <string name="android_auto">Android Auto</string>
+    <string name="sync_conflict_add_only">Mantieni tutti i contenuti locali, aggiungi nuovi contenuti remoti</string>
+    <string name="missing_media_permission_warning">Le autorizzazioni di archiviazione sono necessarie per i media locali. Fai clic per concedere l\'autorizzazione.</string>
+    <string name="sync_mode_ro">Solo lettura (Visualizza contenuto remoto</string>
+    <string name="more_settings">Altre impostazioni</string>
+    <string name="grp_library_and_content">Libreria e Contenuti</string>
+    <string name="grp_account_sync">Account e Sincronizzazione</string>
+    <string name="sync_conflict_overwrite">Sovrascrivi i contenuti locali con contenuti remoti</string>
+    <string name="sync_conflict_title">Risoluzione dei conflitti</string>
+    <string name="sync_mode">Modalità di sincronizzazione</string>
+    <string name="sync_mode_rw">Lettura e scrittura (consenti anche le modifiche al contenuto remoto)</string>
 </resources>
