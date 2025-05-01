@@ -86,14 +86,12 @@
     <string name="grp_lyrics_parser">Analizator</string>
     <string name="grp_manual_scanner">Skaner ręczny</string>
     <string name="swipe2Queue">Przeciągnij by zakolejkować</string>
-    <string name="oobe_local_playback_description">Odtwarzanie lokalnych utworów</string>
     <string name="action_next">Następne</string>
     <string name="grp_proxy">Proxy</string>
     <string name="slim_navbar_title">Wąski pasek nawigacji</string>
     <string name="info">Informacja</string>
     <string name="min_playback_duration_description">Najmniejsza długość piosenki jaka musi być odtworzona aby uznać ją za \"odtworzoną\"</string>
     <string name="lyrics_multiline_description">Traktuj wszystkie wersy między punktami synchronizacji jako jeden kawałek tekstu</string>
-    <string name="oobe_ytm_sync_description">Synchronizacja konta</string>
     <string name="tab_arrangement_home_required">Karta główna jest niezbędna.</string>
     <string name="lyrics_font_Size">Rozmiar czcionki</string>
     <string name="min_playback_duration">Minimalna długość odtworzenia</string>
@@ -117,7 +115,6 @@
     <string name="keep_alive_description">Użyj trwałej usługi, aby powstrzymać zamknięcie OuterTune w tle.</string>
     <string name="scanner_variant_rescan">Przeskanuj całą bibliotekę ponownie i załaduj ponownie metadane wszystkich utworów</string>
     <string name="scanner_online_artist_linking">Spróbuj nie łączyć artystów z lokalnych plików do tych z YouTube Music</string>
-    <string name="oobe_ad_free_description">Odtwarzanie bez reklam</string>
     <string name="scanner_progress_complete">Skanowanie ukończone</string>
     <string name="persistent_queue_desc_ot">Przywróć otwarte poprzednio kolejki po otwarciu aplikacji</string>
     <string name="lyrics_trim_title">Usuń spacje naokoło tekstów</string>
@@ -149,9 +146,7 @@
     <string name="experimental_settings_title">Eksperymentalne</string>
     <string name="dev_settings_description">Odkrywa dodatkowe ustawienia przeznaczone do użycia podczas programowania</string>
     <string name="swipe_to_skip_description">Włącz zmienianie utworów za pomocą przeciągnięcia poziomo</string>
-    <string name="oobe_local_scan_tooltip">Kliknij tutaj by przeskanować w poszukiwaniu utworów</string>
     <string name="oobe_complete">Konfiguracja zakończona</string>
-    <string name="oobe_ytm_content_description">YouTube Music na wyciągnięcie ręki</string>
     <string name="oobe_use_backup">Mam kopię zapasową</string>
     <string name="more_settings">Więcej ustawień</string>
     <string name="grp_account_sync">Konto i synchronizacja</string>

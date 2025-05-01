@@ -1,5 +1,6 @@
-<!-- These strings are the upstream InnerTune strings. Do not add strings from OuterTune features here.
+<!-- These strings are the upstream InnerTune strings. Do not add strings from OuterTune features here. InnerTune wording is replaced with OuterTune.
 We recycle translations from upstream, they are pulled periodically. -->
+
 <resources>
     <!-- Bottom navigation -->
     <string name="home">Home</string>
@@ -23,7 +24,6 @@ We recycle translations from upstream, they are pulled periodically. -->
     <string name="forgotten_favorites">Forgotten favorites</string>
     <string name="keep_listening">Keep listening</string>
     <string name="your_youtube_playlists">Your YouTube playlists</string>
-    <string name="youtube_mixed">Mixed for you</string>
     <string name="similar_to">Similar to</string>
     <string name="new_release_albums">New release albums</string>
 
@@ -328,4 +328,6 @@ We recycle translations from upstream, they are pulled periodically. -->
     <string name="app_version">App version</string>
 
     <string name="new_version_available">New version available</string>
+    <string name="translation_models">Translation Models</string>
+    <string name="clear_translation_models">Clear translation models</string>
 </resources>

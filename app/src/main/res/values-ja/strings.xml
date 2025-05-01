@@ -275,7 +275,6 @@
     <string name="backup_create_success">バックアップの作成に成功しました</string>
     <string name="backup_create_failed">バックアップを作成できませんでした</string>
     <string name="restore_failed">バックアップの復元に失敗しました</string>
-
     <string name="discord_integration">Discord 統合</string>
     <string name="discord_information">OuterTune は KizzyRPC ライブラリを使い、Discord アカウントのステータスを設定します。これは Discord ゲートウェイ接続を使うので、Discord の利用規約に違反する可能性があります。しかし、この理由でユーザーのアカウントが停止された例は確認されていません。自己責任でご利用ください。\n\nOuterTune はトークンを抽出するだけです。それ以外はすべて端末内にに保存されます。</string>
     <string name="dismiss">非表示</string>
@@ -284,10 +283,11 @@
     <string name="login_failed">ログイン失敗</string>
     <string name="logout">ログアウト</string>
     <string name="enable_discord_rpc">リッチプレゼンスを使用</string>
-
     <string name="about">アプリについて</string>
     <string name="app_version">アプリのバージョン</string>
     <string name="new_version_available">新しいバージョンがあります</string>
+    <string name="translation_models">翻訳モデル</string>
+    <string name="clear_translation_models">翻訳モデルを消去</string>
     <string name="use_login_for_browse_desc">例えば、Premiumのアカウントでログインした時に、Premium限定のアルバムが表示されるようになります</string>
     <string name="use_login_for_browse">表示されるコンテンツをアカウントと結び付ける</string>
 </resources>

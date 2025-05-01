@@ -71,11 +71,11 @@
     <string name="auto_scanner_title">Buscar automaticamente</string>
     <string name="scan_paths_title">Configurar locais de busca…</string>
     <string name="flat_subfolders_title">Achatar subpastas</string>
-    <string name="scan_paths_incl">Caminhos de scan</string>
-    <string name="grp_manual_scanner">Scanner manual</string>
-    <string name="grp_extra_scanner_settings">Configurações do scanner adicionais</string>
+    <string name="scan_paths_incl">Caminhos de busca</string>
+    <string name="grp_manual_scanner">Busca manual</string>
+    <string name="grp_extra_scanner_settings">Configurações de busca adicionais</string>
     <string name="scanner_strict_file_name_title">Nomes de arquivo estritos</string>
-    <string name="scanner_sensitivity_title">Configurar sensibilidade do scanner</string>
+    <string name="scanner_sensitivity_title">Configurar sensibilidade da busca</string>
     <string name="scanner_sensitivity_L1">Combinar título</string>
     <string name="scanner_sensitivity_L2">Combinar título e artistas</string>
     <string name="scanner_type_title">Extrator de metadados</string>
@@ -105,7 +105,7 @@
     <string name="swipe2Queue_description">Deslize em uma música para adicioná-la à fila após a música em reprodução no momento</string>
     <string name="swipe2Queue">Deslizar para enfileirar</string>
     <string name="scanner_manual_btn">Executar sincronização manual</string>
-    <string name="scanner_missing_storage_perm">O scanner requer permissões de armazenamento</string>
+    <string name="scanner_missing_storage_perm">A busca requer permissões de armazenamento</string>
     <string name="scanner_progress_syncing">Sincronizando…</string>
     <string name="scanner_scan_fail">A busca falhou</string>
     <string name="scanner_ytm_link_fail">O processo de vínculo de artistas do YouTube falhou</string>

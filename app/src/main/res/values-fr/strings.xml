@@ -21,7 +21,7 @@
     <string name="quick_picks_empty">Écoutez quelques titres pour générer votre sélection rapide</string>
     <string name="new_release_albums">Nouveautés</string>
     <!-- History -->
-    <string name="today">Aujourd\’hui</string>
+    <string name="today">Aujourd\'hui</string>
     <string name="yesterday">Hier</string>
     <string name="this_week">Cette semaine</string>
     <string name="last_week">La semaine dernière</string>
@@ -129,8 +129,8 @@
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d album</item>
-        <item quantity="other">%d albums</item>
         <item quantity="many">%d albums</item>
+        <item quantity="other">%d albums</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="one">%d playlist</item>
@@ -209,7 +209,7 @@
     <string name="restart_to_take_effect">Redémarrer pour prendre effet</string>
     <string name="player_and_audio">Lecteur et Audio</string>
     <string name="audio_quality">Qualité audio</string>
-    <string name="audio_quality_auto">Auto</string>
+    <string name="audio_quality_auto">Automatique</string>
     <string name="audio_quality_high">Élevée</string>
     <string name="audio_quality_low">Faible</string>
     <string name="persistent_queue">File d’attente persistante</string>
@@ -231,10 +231,10 @@
     <string name="privacy">Confidentialité</string>
     <string name="pause_listen_history">Suspendre l’historique d’écoute</string>
     <string name="clear_listen_history">Effacer l’historique d’écoute</string>
-    <string name="clear_listen_history_confirm">Voulez-vous vraiment effacer tout l’historique d’écoute ?</string>
+    <string name="clear_listen_history_confirm">Voulez-vous vraiment effacer tout l’historique d’écoute ?</string>
     <string name="pause_search_history">Suspendre l\'historique de recherche</string>
     <string name="clear_search_history">Effacer l\'historique de recherche</string>
-    <string name="clear_search_history_confirm">Voulez-vous vraiment effacer tout l’historique des recherches ?</string>
+    <string name="clear_search_history_confirm">Voulez-vous vraiment effacer tout l’historique des recherches ?</string>
     <string name="enable_kugou">Activer le fournisseur de paroles KuGou</string>
     <string name="backup_restore">Sauvegarde et Restauration</string>
     <string name="backup">Sauvegarder</string>
@@ -246,6 +246,8 @@
     <string name="about">À propos</string>
     <string name="app_version">Version de l\'application</string>
     <string name="new_version_available">Nouvelle version disponible</string>
+    <string name="translation_models">Modèles de traduction</string>
+    <string name="clear_translation_models">Effacer les modèles de traduction</string>
     <string name="not_logged_in">Non connecté</string>
     <string name="remove_from_playlist">Supprimer de la playlist</string>
     <string name="duplicates">Doublons</string>
@@ -264,7 +266,7 @@
     <string name="logout">Déconnexion</string>
     <string name="enable_discord_rpc">Activer la présence riche</string>
     <string name="login_failed">Échec de la connexion</string>
-    <string name="delete_playlist_confirm">Souhaitez-vous vraiment supprimer la playlist « %s » ?</string>
+    <string name="delete_playlist_confirm">Souhaitez-vous vraiment supprimer la playlist « %s » ?</string>
     <string name="listen_history">Historique d\'écoute</string>
     <string name="disable_screenshot">Désactiver les captures d\'écran</string>
     <string name="search_history">Historique de recherche</string>
@@ -277,7 +279,7 @@
     <string name="library_artist_empty">Les artistes de la bibliothèque s\'afficheront ici</string>
     <string name="library_playlist_empty">Vos playlists s\'afficheront ici</string>
     <string name="other_versions">Autres versions</string>
-    <string name="remove_download_playlist_confirm">Voulez-vous vraiment supprimer tous les titres de la playlist « %s » du stockage des titres téléchargés ?</string>
+    <string name="remove_download_playlist_confirm">Voulez-vous vraiment supprimer tous les titres de la playlist « %s » du stockage des titres téléchargés ?</string>
     <string name="add_all_to_library">Tout ajouter à la bibliothèque</string>
     <string name="tempo_and_pitch">Tempo et Pitch</string>
     <string name="action_like_all">Tout marquer comme aimé</string>
@@ -301,9 +303,7 @@
     <string name="queue">File d\'attente</string>
     <string name="auto_load_more">Charger automatiquement plus de titres</string>
     <string name="auto_skip_next_on_error">Aller au titre suivant si une erreur apparaît</string>
-    <string name="discord_information">OuterTune utilise la bibliothèque KizzyRPC pour définir le statut de votre compte Discord. Cela implique l\'utilisation de la connexion Discord Gateway, ce qui peut être considéré comme une violation des conditions d\'utilisation de Discord. Cependant, il n\'existe aucun cas connu de comptes d\'utilisateurs suspendus pour cette raison. Utilisez-le à vos propres risques.
-\n
-\nOuterTune extraira uniquement votre jeton, et tout le reste sera stocké localement.</string>
+    <string name="discord_information">OuterTune utilise la bibliothèque KizzyRPC pour définir le statut de votre compte Discord. Cela implique l\'utilisation de la connexion Discord Gateway, ce qui peut être considéré comme une violation des conditions d\'utilisation de Discord. Cependant, il n\'existe aucun cas connu de comptes d\'utilisateurs suspendus pour cette raison. Utilisez-le à vos propres risques. \n \nOuterTune extraira uniquement votre jeton, et tout le reste sera stocké localement.</string>
     <string name="use_login_for_browse">Utiliser le compte connecté pour parcourir le contenu</string>
     <string name="use_login_for_browse_desc">Ceci peut influencer le contenu que vous voyez et affiche par exemple les albums Premium si vous êtes connecté avec un compte Premium</string>
 </resources>

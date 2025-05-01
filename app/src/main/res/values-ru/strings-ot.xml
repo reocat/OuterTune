@@ -72,7 +72,7 @@
     <string name="player_background_default">Следовать теме</string>
     <string name="player_background_gradient">Градиент</string>
     <string name="player_background_style">Стиль фона плеера</string>
-    <string name="show_liked_and_downloaded_playlist">Показывать плейлисты для понравившихся треков и загруженной музыки в библиотеке</string>    
+    <string name="show_liked_and_downloaded_playlist">Показывать плейлисты для понравившихся треков и загруженной музыки в библиотеке</string>
     <string name="slim_navbar_title">Тонкая панель навигации</string>
     <string name="slim_navbar_description">Убрать подписи с панели навигации чтобы уменьшить её высоту</string>
     <string name="slim_hs_tiles">Компактная навигация главного экрана</string>
@@ -200,14 +200,14 @@
     <string name="oobe_complete">OuterTune настроен и готов к использованию. Исследуйте свою музыку, открывайте новые треки и наслаждайтесь!</string>
 
     <!-- Setup Wizard features-->
-    <string name="youtube_music_integration">Интеграция с YouTube Music</string>
-    <string name="youtube_music_integration_description">Доступ к любимым трекам без ограничений</string>
-    <string name="ad_free_experience">Без рекламы</string>
-    <string name="ad_free_experience_description">Наслаждайтесь музыкой без перерывов</string>
-    <string name="local_music_support">Поддержка локальной музыки</string>
-    <string name="local_music_support_description">Слушайте свои загруженные треки где угодно</string>
-    <string name="cross_platform_sync">Кросс-платформенная синхронизация</string>
-    <string name="cross_platform_sync_description">Ваша музыка синхронизирована на всех устройствах</string>
+    <string name="oobe_ytm_integration">Интеграция с YouTube Music</string>
+    <string name="oobe_ytm_integration_description">Доступ к любимым трекам без ограничений</string>
+    <string name="oobe_ad_free_exp">Без рекламы</string>
+    <string name="oobe_ad_free_exp_description">Наслаждайтесь музыкой без перерывов</string>
+    <string name="oobe_local_music_support">Поддержка локальной музыки</string>
+    <string name="oobe_local_music_support_description">Слушайте свои загруженные треки где угодно</string>
+    <string name="oobe_cross_platform_sync">Кросс-платформенная синхронизация</string>
+    <string name="oobe_cross_platform_sync_description">Ваша музыка синхронизирована на всех устройствах</string>
 
     <!-- Misc -->
     <string name="action_back">Назад</string>
@@ -217,7 +217,7 @@
     <string name="off">ВЫКЛ</string>
     <string name="on">ВКЛ</string>
     <string name="pause">Пауза</string>
-    
+
     <!-- Discord Integration -->
     <string name="discord_integration">Интеграция с Discord</string>
     <string name="discord_information">OuterTune использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.\n\nOuterTune будет извлекать только ваш токен, а все остальное хранится локально.</string>
@@ -232,5 +232,5 @@
 
     <!-- Import from Spotify -->
     <string name="spot_import_title">Импорт из Spotify</string>
-    
+
 </resources>

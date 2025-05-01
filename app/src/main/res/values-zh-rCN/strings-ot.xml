@@ -19,9 +19,8 @@
     <string name="err_play_next_on_error">发生错误。播放下一首</string>
     <string name="err_stop_on_error">发生错误。播放暂停</string>
     <string name="err_stop_on_too_many_errors">太多错误。播放暂停</string>
-    <string name="wait_to_reconnect">等待重新连接</string>"&gt;
-
-<string name="sort_by_date_modified">修改日期</string>
+    <string name="wait_to_reconnect">等待重新连接</string>
+    <string name="sort_by_date_modified">修改日期</string>
     <string name="sort_by_date_released">发布日期</string>
     <string name="sort_by_like_date">收藏日期</string>
     <string name="sort_by_play_count">播放次数</string>
@@ -64,7 +63,7 @@
     <string name="keep_alive_description">使用持久性前台服务来防止 OuterTune 在后台关闭。</string>
     <string name="persistent_queue_desc_ot">应用程序启动时恢复以前打开的队列</string>
     <string name="min_playback_duration">最短播放时间</string>
-    <string name="min_playback_duration_description">一首歌曲在被视为‘播放过’之前，必须播放的最小时间。</string>
+    <string name="min_playback_duration_description">一首歌曲在被标记为“播放过”之前，必须播放完</string>
     <string name="swipe2Queue">滑动到队列</string>
     <string name="swipe2Queue_description">在歌曲上滑动，在当前播放歌曲后直接将其添加到下一个队列中</string>
     <string name="lyrics_settings_title">歌词</string>

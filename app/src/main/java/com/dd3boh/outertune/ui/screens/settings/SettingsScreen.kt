@@ -71,7 +71,7 @@ fun SettingsScreen(
             onClick = { navController.navigate("settings/interface") }
         )
         PreferenceEntry(
-            title = { Text(stringResource(R.string.library)) },
+            title = { Text(stringResource(R.string.grp_library_and_content)) },
             icon = { Icon(Icons.AutoMirrored.Rounded.LibraryBooks, null) },
             onClick = { navController.navigate("settings/library") }
         )

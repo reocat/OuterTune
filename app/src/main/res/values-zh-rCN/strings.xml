@@ -8,12 +8,12 @@
     <string name="playlists">播放列表</string>
     <!-- Top bar -->
     <plurals name="n_selected">
-        <item quantity="other">已选择 %d 个项目</item>
+        <item quantity="other">已选择 %d 项</item>
     </plurals>
     <!-- Home -->
     <string name="history">历史</string>
     <string name="stats">统计</string>
-    <string name="mood_and_genres">情绪和流派</string>
+    <string name="mood_and_genres">曲调和流派</string>
     <string name="account">账号</string>
     <string name="quick_picks">歌曲快选</string>
     <string name="quick_picks_empty">听一些歌曲来生成歌曲快选</string>
@@ -21,12 +21,12 @@
     <!-- History -->
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
-    <string name="this_week">这周</string>
+    <string name="this_week">本周</string>
     <string name="last_week">上周</string>
     <!-- Stats -->
-    <string name="most_played_songs">最常播放</string>
-    <string name="most_played_artists">最受欢迎的音乐人</string>
-    <string name="most_played_albums">播放次数最多的专辑</string>
+    <string name="most_played_songs">最常播放的歌曲</string>
+    <string name="most_played_artists">最常播放的音乐人</string>
+    <string name="most_played_albums">最常播放的专辑</string>
     <!-- Search -->
     <string name="search">搜索</string>
     <string name="search_yt_music">搜索 YouTube Music…</string>
@@ -42,8 +42,8 @@
     <string name="filter_playlists">播放列表</string>
     <string name="filter_community_playlists">社区播放列表</string>
     <string name="filter_featured_playlists">精选播放列表</string>
-    <string name="filter_bookmarked">已加书签</string>
-    <string name="no_results_found">找不到结果</string>
+    <string name="filter_bookmarked">收藏</string>
+    <string name="no_results_found">未找到结果</string>
     <!-- Artist screen -->
     <string name="from_your_library">来自您的媒体库</string>
     <!-- Playlist -->
@@ -142,7 +142,7 @@
     <string name="playlist_synced">播放列表已同步</string>
     <string name="undo">撤销</string>
     <!-- Player -->
-    <string name="lyrics_not_found">没有歌词</string>
+    <string name="lyrics_not_found">未找到歌词</string>
     <string name="sleep_timer">睡眠定时器</string>
     <string name="end_of_song">这首歌曲播放完毕</string>
     <plurals name="minute">
@@ -174,8 +174,8 @@
     <string name="dark_theme_off">关</string>
     <string name="dark_theme_follow_system">跟随系统</string>
     <string name="pure_black">纯黑</string>
-    <string name="default_open_tab">默认启动选项卡</string>
-    <string name="customize_navigation_tabs">自定义导航选项卡</string>
+    <string name="default_open_tab">默认启动标签页</string>
+    <string name="customize_navigation_tabs">自定义导航标签页</string>
     <string name="lyrics_text_position">歌词文本位置</string>
     <string name="left">靠左</string>
     <string name="center">居中</string>
@@ -228,6 +228,8 @@
     <string name="about">关于</string>
     <string name="app_version">应用版本</string>
     <string name="new_version_available">有新版本</string>
+    <string name="translation_models">翻译模型</string>
+    <string name="clear_translation_models">清除翻译模型</string>
     <string name="delete_playlist_confirm">是否确定要删除播放列表“%s”？</string>
     <string name="remove_download_playlist_confirm">是否确定要从已下载的歌曲存储中移除所有“%s”播放列表歌曲？</string>
     <string name="your_youtube_playlists">您的 YouTube 播放列表</string>
@@ -283,7 +285,7 @@
     <string name="auto_load_more_desc">如果可能，在播放队列快结束时自动添加更多歌曲</string>
     <string name="auto_skip_next_on_error">发生错误时自动跳到下一首歌曲</string>
     <string name="stop_music_on_task_clear">任务清除时停止音乐</string>
-    <string name="discord_information">OuterTune 使用 KizzyRPC 库来设置您的 Discord 账号的状态。这会用到 Discord 网关连接，可能会违反 Discord 的服务条款。不过，目前还没有因此原因暂停用户账号的情况。使用风险自负。
-\n
-\nOuterTune 只提取您的令牌，其他内容都存储在本地。</string>
+    <string name="discord_information">OuterTune 使用 KizzyRPC 库来设置您的 Discord 账号的状态。这会用到 Discord 网关连接，可能会违反 Discord 的服务条款。不过，目前还没有因此原因暂停用户账号的情况。使用风险自负。 \n \nOuterTune 只提取您的令牌，其他内容都存储在本地。</string>
+    <string name="use_login_for_browse_desc">这可能会影响您看到的内容，例如，如果您使用会员账号登录，则会显示仅会员专辑</string>
+    <string name="use_login_for_browse">登录账号浏览内容</string>
 </resources>

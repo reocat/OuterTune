@@ -67,9 +67,8 @@
     <string name="like_all">Харесай всички</string>
     <string name="delete_lyric_confirm">Наистина ли искате да изтриете запазените текстове за \"%s\"?</string>
     <string name="err_stop_on_too_many_errors">Прекалено много грешки. Възпроизвеждането е спряно</string>
-    <string name="wait_to_reconnect">Изчакай за повторно свързване</string>"&gt;
-
-<string name="sort_by_date_released">Дата на издаване</string>
+    <string name="wait_to_reconnect">Изчакай за повторно свързване</string>
+    <string name="sort_by_date_released">Дата на издаване</string>
     <string name="sort_by_play_count">Брой пускания</string>
     <string name="create_sync_playlist">Синхронизирай плейлиста</string>
     <string name="playlist_add_local_to_synced_note">Забележка: Добавянето на локални песни към синхронизирани/отдалечени плейлисти не се поддържа. Всяка друга комбинация е валидна</string>
