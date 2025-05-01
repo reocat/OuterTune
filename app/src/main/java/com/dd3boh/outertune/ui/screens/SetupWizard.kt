@@ -109,15 +109,11 @@ import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
-import com.dd3boh.outertune.constants.LibraryFilterKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.VisitorDataKey
-import com.dd3boh.outertune.db.entities.ArtistEntity
-import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -127,8 +123,6 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
-import org.intellij.lang.annotations.Language
-import java.time.LocalDateTime
 import java.util.Locale
 
 data class Feature(
@@ -393,23 +387,23 @@ private fun WelcomePage(
 ) {
     val welcomeFeatures = listOf(
         Feature(
-            title = stringResource(R.string.youtube_music_integration),
-            description = stringResource(R.string.youtube_music_integration_description),
+            title = stringResource(R.string.oobe_ytm_integration),
+            description = stringResource(R.string.oobe_ytm_integration_description),
             icon = Icons.Rounded.MusicNote
         ),
         Feature(
-            title = stringResource(R.string.ad_free_experience),
-            description = stringResource(R.string.ad_free_experience_description),
+            title = stringResource(R.string.oobe_ad_free_exp),
+            description = stringResource(R.string.oobe_ad_free_exp_description),
             icon = Icons.Rounded.Block
         ),
         Feature(
-            title = stringResource(R.string.local_music_support),
-            description = stringResource(R.string.local_music_support_description),
+            title = stringResource(R.string.oobe_local_music_support),
+            description = stringResource(R.string.oobe_local_music_support_description),
             icon = Icons.Rounded.SdCard
         ),
         Feature(
-            title = stringResource(R.string.cross_platform_sync),
-            description = stringResource(R.string.cross_platform_sync_description),
+            title = stringResource(R.string.oobe_cross_platform_sync),
+            description = stringResource(R.string.oobe_cross_platform_sync_description),
             icon = Icons.Rounded.Sync
         )
     )

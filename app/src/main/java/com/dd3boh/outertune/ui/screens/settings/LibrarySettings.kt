@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 O‌ute‌rTu‌ne Project
+ * Copyright (C) 2025 OuterTune Project
  *
  * SPDX-License-Identifier: GPL-3.0
  *
@@ -274,7 +274,7 @@ fun LibrarySettings(
     }
 
     TopAppBar(
-        title = { Text(stringResource(R.string.library)) },
+        title = { Text(stringResource(R.string.grp_library_and_content)) },
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,

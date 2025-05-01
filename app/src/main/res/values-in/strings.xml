@@ -30,7 +30,7 @@
     <!-- Search -->
     <string name="search">Mencari</string>
     <string name="search_yt_music">Cari di YouTube Music…</string>
-    <string name="search_library">Cari di perpustakaan…</string>
+    <string name="search_library">Cari di pustaka…</string>
     <string name="filter_library">Pustaka</string>
     <string name="filter_liked">Disukai</string>
     <string name="filter_downloaded">Diunduh</string>
@@ -140,7 +140,7 @@
     <string name="playlist_imported">Daftar putar yang diimpor</string>
     <string name="removed_song_from_playlist">Menghapus \"%s\" dari daftar putar</string>
     <string name="playlist_synced">Daftar putar disinkronkan</string>
-    <string name="undo">Batal</string>
+    <string name="undo">Batalkan</string>
     <!-- Player -->
     <string name="lyrics_not_found">Lirik tidak ditemukan</string>
     <string name="sleep_timer">Pengatur waktu tidur</string>
@@ -228,6 +228,8 @@
     <string name="about">Tentang</string>
     <string name="app_version">Versi aplikasi</string>
     <string name="new_version_available">Versi baru tersedia</string>
+    <string name="translation_models">Model Penerjemahan</string>
+    <string name="clear_translation_models">Hapus model penerjemahan</string>
     <string name="forgotten_favorites">Favorit yang terlupakan</string>
     <string name="keep_listening">Tetap mendengarkan</string>
     <string name="your_youtube_playlists">Daftar putar Youtube Anda</string>

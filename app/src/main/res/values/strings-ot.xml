@@ -12,6 +12,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="liked">Liked</string>
     <string name="offline">Downloaded</string>
     <string name="recent_activity">Recent activity</string>
+    <string name="youtube_mixed">Mixed for you</string>
 
     <!-- History screen-->
     <string name="local_history">Local</string>
@@ -72,7 +73,8 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="grp_general">General</string>
     <string name="grp_interface">Interface</string>
     <string name="grp_layout">Layout</string>
-	<string name="grp_localization">Localization</string>
+    <string name="grp_library_and_content">Library &amp; Content</string>
+    <string name="grp_localization">Localization</string>
     <string name="grp_lyrics_format">Formatting</string>
     <string name="grp_lyrics_parser">Parser</string>
     <string name="grp_lyrics_source">Lyric sources</string>
@@ -165,18 +167,18 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scanner_warning">By default, the scanner will NOT reload any metadata of existing songs unless you specify otherwise above. Depending on the size of your library, it make take a while.</string>
 
     <!-- Scanner progress strings-->
-	<string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
+    <string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
     <string name="scanner_missing_storage_perm">The scanner requires storage permissions</string>
 
     <string name="scanner_btn_idle">Scan</string>
     <string name="scanner_progress_complete">Scan complete</string>
-	<string name="scanner_progress_scanning">Scanning…</string>
+    <string name="scanner_progress_scanning">Scanning…</string>
     <string name="scanner_progress_syncing">Syncing…</string>
-	<string name="scanner_scan_fail">Scanner failed</string>
+    <string name="scanner_scan_fail">Scanner failed</string>
 
-	<string name="scanner_ytm_link_fail">YouTube artist linking job failed</string>
-	<string name="scanner_ytm_link_start">Starting YouTube artist linking…</string>
-	<string name="scanner_ytm_link_success">YouTube artist linking job complete</string>
+    <string name="scanner_ytm_link_fail">YouTube artist linking job failed</string>
+    <string name="scanner_ytm_link_start">Starting YouTube artist linking…</string>
+    <string name="scanner_ytm_link_success">YouTube artist linking job complete</string>
 
     <plurals name="scanner_n_song_processed">
         <item quantity="one">%d song processed</item>
@@ -225,20 +227,20 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="oobe_use_backup">I have a backup</string>
 
     <!-- Welcome page features -->
-    <string name="youtube_music_integration">YouTube Music Integration</string>
-    <string name="youtube_music_integration_description">Access your favorite tracks seamlessly</string>
-    <string name="ad_free_experience">AD-Free Experience</string>
-    <string name="ad_free_experience_description">Enjoy uninterrupted music playback</string>
-    <string name="local_music_support">Local Music Support</string>
-    <string name="local_music_support_description">Play your downloaded tracks anywhere</string>
-    <string name="cross_platform_sync">Cross-Platform Sync</string>
-    <string name="cross_platform_sync_description">Keep your music in harmony across devices</string>
+    <string name="oobe_ytm_integration">YouTube Music Integration</string>
+    <string name="oobe_ytm_integration_description">Access your favorite tracks seamlessly</string>
+    <string name="oobe_ad_free_exp">AD-Free Experience</string>
+    <string name="oobe_ad_free_exp_description">Enjoy uninterrupted music playback</string>
+    <string name="oobe_local_music_support">Local Music Support</string>
+    <string name="oobe_local_music_support_description">Play your downloaded tracks anywhere</string>
+    <string name="oobe_cross_platform_sync">Cross-Platform Sync</string>
+    <string name="oobe_cross_platform_sync_description">Keep your music in harmony across devices</string>
 
     <!-- Interface setup page -->
     <string name="oobe_interface_subtitle">Customize how OuterTune looks and what content it shows you</string>
-    <string name="pure_black_description">Use true black backgrounds in dark mode for OLED displays</string>
-    <string name="content_language_description">Select the language for music recommendations and interface</string>
-    <string name="content_country_description">Choose your region for localized content and charts</string>
+    <string name="oobe_pure_black_description">Use true black backgrounds in dark mode for OLED displays</string>
+    <string name="oobe_content_language_description">Select the language for music recommendations and interface</string>
+    <string name="oobe_content_country_description">Choose your region for localized content and charts</string>
 
     <!-- Account setup page -->
     <string name="oobe_ytm_logon_title">Account</string>
@@ -253,7 +255,6 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="oobe_complete_title">You\'re All Set!</string>
     <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
 
-
     <!-- Misc -->
     <string name="action_back">Back</string>
     <string name="action_next">Next</string>
@@ -262,7 +263,6 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="info">Information</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
-
 
     <!-- Discord Integration -->
     <string name="discord_integration">Discord Integration</string>

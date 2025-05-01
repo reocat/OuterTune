@@ -129,9 +129,8 @@
     <string name="experimental_settings_title">Sperimentale</string>
     <string name="pause_remote_listen_history">Interrompi la condivisione della cronologia degli ascolti con YouTube Music</string>
     <string name="m3u_import_song_failed">Impossibile importare:</string>
-    <string name="wait_to_reconnect">Attendi per riconnetterti</string>"&gt;
-
-<string name="err_play_next_on_error">Si è verificato un errore. Riproduzione successiva</string>
+    <string name="wait_to_reconnect">Attendi per riconnetterti</string>
+    <string name="err_play_next_on_error">Si è verificato un errore. Riproduzione successiva</string>
     <string name="err_stop_on_error">Si è verificato un errore. Riproduzione interrotta</string>
     <string name="err_stop_on_too_many_errors">Troppi errori. Riproduzione interrotta</string>
     <string name="grp_general">Generale</string>

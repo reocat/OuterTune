@@ -109,6 +109,7 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val menuState = LocalMenuState.current
+    val context = LocalContext.current
 
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
