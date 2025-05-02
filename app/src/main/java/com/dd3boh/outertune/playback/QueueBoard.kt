@@ -84,7 +84,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
      * @param index
      */
     private fun bubbleUp(index: Int) {
-        if (index < 0 || index == masterQueues.size - 1) {
+        if (index < 0 || index >= masterQueues.size) {
             Timber.w(TAG, "Bubble up index out of bounds")
             return
         }

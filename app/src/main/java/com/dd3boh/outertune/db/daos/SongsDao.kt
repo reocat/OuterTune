@@ -13,6 +13,7 @@ import com.dd3boh.outertune.db.entities.PlayCountEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.extensions.reversed
+import com.dd3boh.outertune.utils.fixFilePath
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -36,22 +37,22 @@ interface SongsDao {
     @Query("SELECT * FROM song WHERE title LIKE '%' || :query || '%' AND isLocal = 1 LIMIT :previewSize")
     fun searchSongsAllLocal(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
 
-    @Transaction
-    @Query("SELECT * FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL")
-    fun allLocalSongs(): Flow<List<Song>>
+
+    /**
+     * Does not include unavailable songs
+     */
+    fun searchSongsAllLocalInDir(dir: String, query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>> {
+        return _searchSongsAllLocalInDir(fixFilePath(dir), query, previewSize)
+    }
 
     @Transaction
+    @Transaction
     @Query("""
-        SELECT * FROM song
-        WHERE localPath IN (
-            SELECT localPath
-            FROM song
-            GROUP BY localPath
-            HAVING COUNT(*) > 1
-        )
-        ORDER BY localPath
-    """)
-    fun duplicatedLocalSongs(): Flow<List<SongEntity>>
+        SELECT * FROM song 
+        WHERE isLocal = 1 AND inLibrary IS NOT NULL AND localpath LIKE :dir || '%' AND title LIKE '%' || :query || '%'
+        LIMIT :previewSize
+        """)
+    fun _searchSongsAllLocalInDir(dir: String, query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
 
     @Transaction
     @Query("""
@@ -143,6 +144,52 @@ interface SongsDao {
             SongSortType.PLAY_TIME -> songsByPlayTimeAsc()
             SongSortType.PLAY_COUNT -> songsByPlayCountAsc()
         }.map { it.reversed(descending) }
+
+    @Transaction
+    @Query("SELECT * FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL")
+    fun allLocalSongs(): Flow<List<Song>>
+
+    @Transaction
+    @Query("""
+        SELECT * FROM song
+        WHERE isLocal = 1 AND localpath LIKE :filter || '%'
+    """)
+    fun localSongsInDir(filter: String): Flow<List<Song>>
+
+    /**
+     * Does not include unavailable songs
+     */
+    fun localSongsInDirShallow(filter: String): Flow<List<Song>> {
+        return _localSongsInDirShallow(fixFilePath(filter))
+    }
+
+    @Transaction
+    @Query("""
+        SELECT * FROM song
+        WHERE isLocal = 1 AND inLibrary IS NOT NULL AND localpath LIKE :filter || '%' 
+        AND instr(substr(localpath, length(:filter) + 1), '/') = 0
+        UNION
+        SELECT * FROM song
+        WHERE isLocal = 1 AND inLibrary IS NOT NULL AND localpath LIKE :filter || '%'
+        GROUP BY rtrim(localPath, replace(localPath, '/', ''))
+    """)
+    fun _localSongsInDirShallow(filter: String): Flow<List<Song>>
+
+    @Transaction
+    @Query("SELECT count(*) FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL AND localpath LIKE :path || '%'")
+    fun localSongCountInPath(path: String): Flow<Int>
+
+    @Query("""
+        SELECT * FROM song
+        WHERE localPath IN (
+            SELECT localPath
+            FROM song
+            GROUP BY localPath
+            HAVING COUNT(*) > 1
+        )
+        ORDER BY localPath
+    """)
+    fun duplicatedLocalSongs(): Flow<List<SongEntity>>
     // endregion
 
     // region Liked Songs Sort
@@ -326,6 +373,13 @@ interface SongsDao {
     @Query("UPDATE song SET liked = 0, likedDate = null WHERE id = :songId")
     fun removeLike(songId: String)
 
+    @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
+    suspend fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
+
+    @Transaction
+    @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
+    suspend fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
+
     @Transaction
     @Query("UPDATE song SET inLibrary = null WHERE localPath = null")
     fun disableInvalidLocalSongs()
@@ -343,10 +397,6 @@ interface SongsDao {
     @Transaction
     @Query("UPDATE song SET inLibrary = :inLibrary, localPath = :localPath WHERE id = :songId")
     fun _updateLSP(songId: String, inLibrary: LocalDateTime?, localPath: String)
-
-    @Transaction
-    @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
-    suspend fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
     // endregion
 
     // region Deletes

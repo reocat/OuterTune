@@ -11,11 +11,12 @@ package com.dd3boh.outertune.ui.utils
 import android.Manifest
 import android.os.Build
 import com.dd3boh.outertune.constants.MAX_CONCURRENT_JOBS
+import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.utils.LmImageCacheMgr
+import com.dd3boh.outertune.utils.fixFilePath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 
 const val TAG = "LocalMediaUtils"
 
@@ -31,9 +32,8 @@ val MEDIA_PERMISSION_LEVEL =
 const val STORAGE_ROOT = "/storage/"
 const val DEFAULT_SCAN_PATH = "/tree/primary:Music\n"
 val ARTIST_SEPARATORS = Regex("\\s*;\\s*|\\s*ft\\.\\s*|\\s*feat\\.\\s*|\\s*&\\s*|\\s*,\\s*", RegexOption.IGNORE_CASE)
-val uninitializedDirectoryTree = DirectoryTree(STORAGE_ROOT)
-private var cachedDirectoryTree: MutableStateFlow<DirectoryTree?> = MutableStateFlow(uninitializedDirectoryTree)
-
+val uninitializedDirectoryTree = DirectoryTree(STORAGE_ROOT, CulmSongs(0))
+private var cachedDirectoryTree: ArrayList<DirectoryTree> = ArrayList()
 var imageCache: LmImageCacheMgr = LmImageCacheMgr()
 
 /**
@@ -46,13 +46,38 @@ var imageCache: LmImageCacheMgr = LmImageCacheMgr()
 /**
  * Get cached DirectoryTree
  */
-fun getDirectoryTree(): MutableStateFlow<DirectoryTree?> {
-    return cachedDirectoryTree
+fun getDirectoryTree(path: String): DirectoryTree {
+    val yes = cachedDirectoryTree.firstOrNull { fixFilePath(it.getFullPath()) == fixFilePath(path) }
+
+    if (yes != null) {
+        return yes
+    }
+    return uninitializedDirectoryTree
 }
 
 /**
  * Cache a DirectoryTree
  */
-fun cacheDirectoryTree(new: DirectoryTree?) {
-    cachedDirectoryTree.value = new?: uninitializedDirectoryTree
+fun cacheDirectoryTree(new: DirectoryTree) {
+    // initiate with root's subdirs
+    if (cachedDirectoryTree.isEmpty() && fixFilePath(new.getFullPath()) == STORAGE_ROOT) {
+        val dirs = new.getFlattenedSubdirs(true)
+        dirs.forEach { it.isSkeleton = !it.files.isEmpty() }
+        cachedDirectoryTree.addAll(dirs)
+        return
+    }
+
+    // update structure
+    val match = cachedDirectoryTree.firstOrNull { fixFilePath(it.getFullPath()) == fixFilePath(new.getFullPath()) }
+    if (match == null) {
+        cachedDirectoryTree.add(new)
+    } else {
+        match.subdirs = new.subdirs
+        match.files = new.files
+        match.isSkeleton = new.isSkeleton
+    }
+}
+
+fun clearDtCache() {
+    cachedDirectoryTree.clear()
 }
