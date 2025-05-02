@@ -39,6 +39,8 @@ fun joinByBullet(vararg str: String?) =
 
 fun String.urlEncode(): String = Uri.encode(this)
 
+fun fixFilePath(path: String) = "/" + path.split('/').filterNot { it.isEmpty() }.joinToString("/") + "/"
+
 fun formatFileSize(sizeBytes: Long): String {
     val prefix = if (sizeBytes < 0) "-" else ""
     var result: Long = sizeBytes.absoluteValue

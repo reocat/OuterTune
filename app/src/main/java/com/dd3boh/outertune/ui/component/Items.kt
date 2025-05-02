@@ -139,6 +139,7 @@ import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.models.YTItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -171,8 +172,8 @@ inline fun ListItem(
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         color = // selected active
-                        if (isSelected == true) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        else MaterialTheme.colorScheme.secondaryContainer
+                            if (isSelected == true) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            else MaterialTheme.colorScheme.secondaryContainer
                     )
             } else if (isSelected == true) {
                 modifier // inactive selected
@@ -552,38 +553,54 @@ fun SongFolderItem(
     folderTitle: String? = null,
     menuState: MenuState,
     navController: NavController,
-    subtitle: String,
-) = ListItem(title = folderTitle ?: folder.currentDir,
-    subtitle = subtitle,
-    thumbnailContent = {
-    Icon(
-        Icons.Rounded.Folder,
-        contentDescription = null,
-        modifier = modifier.size(48.dp)
-    )
-},
-    trailingContent = {
-        val haptic = LocalHapticFeedback.current
-        IconButton(
-            onClick = {
-                menuState.show {
-                    FolderMenu(
-                        folder = folder,
-                        navController = navController,
-                        onDismiss = menuState::dismiss
-                    )
-                }
-                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+    subtitle: String?,
+) {
+    val database = LocalDatabase.current
+    var subDirSongCount by remember {
+        mutableIntStateOf(0)
+    }
+    LaunchedEffect(Unit) {
+        if (subtitle == null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                database.localSongCountInPath(folder.getFullSquashedDir()).first()
+                subDirSongCount = database.localSongCountInPath(folder.getFullSquashedDir()).first()
             }
-        ) {
-            Icon(
-                Icons.Rounded.MoreVert,
-                contentDescription = null
-            )
         }
-    },
-    modifier = modifier
-)
+    }
+
+    ListItem(
+        title = folderTitle ?: folder.currentDir,
+        subtitle = subtitle ?: pluralStringResource(R.plurals.n_song, subDirSongCount, subDirSongCount),
+        thumbnailContent = {
+            Icon(
+                Icons.Rounded.Folder,
+                contentDescription = null,
+                modifier = modifier.size(48.dp)
+            )
+        },
+        trailingContent = {
+            val haptic = LocalHapticFeedback.current
+            IconButton(
+                onClick = {
+                    menuState.show {
+                        FolderMenu(
+                            folder = folder,
+                            navController = navController,
+                            onDismiss = menuState::dismiss
+                        )
+                    }
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
+            ) {
+                Icon(
+                    Icons.Rounded.MoreVert,
+                    contentDescription = null
+                )
+            }
+        },
+        modifier = modifier
+    )
+}
 
 @Composable
 fun SongGridItem(
