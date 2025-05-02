@@ -299,7 +299,6 @@ fun YouTubePlaylistMenu(
                 icon = Icons.Rounded.PlayArrow,
                 title = R.string.play
             ) {
-                println("Play: ${it.playlistId}, ${it.params}")
                 playerConnection.playQueue(
                     ListQueue(
                         playlistId = playlist.playEndpoint!!.playlistId,
@@ -317,7 +316,6 @@ fun YouTubePlaylistMenu(
                 icon = Icons.Rounded.Shuffle,
                 title = R.string.shuffle
             ) {
-                println("Shuffle: id: ${shuffleEndpoint.playlistId}, params: ${shuffleEndpoint.params}")
                 playerConnection.playQueue(
                     ListQueue(
                         playlistId = playlist.playEndpoint!!.playlistId,
@@ -335,7 +333,6 @@ fun YouTubePlaylistMenu(
                 icon = Icons.Rounded.Radio,
                 title = R.string.start_radio
             ) {
-                println("Radio: ${radioEndpoint.playlistId}, ${radioEndpoint.params}")
                 playerConnection.playQueue(YouTubeQueue(radioEndpoint), isRadio = true)
                 onDismiss()
             }

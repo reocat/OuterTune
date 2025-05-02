@@ -282,7 +282,6 @@ fun OnlinePlaylistScreen(
                                                 if (artist.id != null) {
                                                     withLink(
                                                         LinkAnnotation.Clickable(artist.id!!) {
-                                                            println("artist id: ${artist.id}")
                                                             navController.navigate("artist/${artist.id}")
                                                         }
                                                     ) { append(artist.name) }

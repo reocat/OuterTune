@@ -119,7 +119,6 @@ class TagLibScanner : MetadataScanner {
                                 }
                             } catch (e: Exception) {
                                 if (SCANNER_DEBUG) {
-                                    println("Could not parse date, trying to parse year...")
                                     e.printStackTrace()
                                 }
                                 try {
@@ -128,7 +127,6 @@ class TagLibScanner : MetadataScanner {
                                     }
                                 } catch (e: Exception) {
                                     if (SCANNER_DEBUG) {
-                                        println("Could not parse year")
                                         e.printStackTrace()
                                     }
                                 }

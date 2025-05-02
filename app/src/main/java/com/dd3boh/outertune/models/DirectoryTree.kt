@@ -65,7 +65,6 @@ class DirectoryTree(path: String) {
     }
 
     fun insert(path: String, song: Song) {
-//        println("curr path =" + path)
 
         // add a file
         if (path.indexOf('/') == -1) {
