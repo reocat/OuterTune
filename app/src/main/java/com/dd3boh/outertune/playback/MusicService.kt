@@ -957,11 +957,9 @@ class MusicService : MediaLibraryService(),
             minPlaybackDur = 0.01f // Still want "spam skipping" to not count as plays
         }
 
-//        println("Playback ratio: ${playbackStats.totalPlayTimeMs.toFloat() / ((mediaItem.metadata?.duration?.times(1000)) ?: -1)} Min threshold: $minPlaybackDur")
-        if (playbackStats.totalPlayTimeMs.toFloat() / ((mediaItem.metadata?.duration?.times(1000))
-                ?: -1) >= minPlaybackDur
-            && !dataStore.get(PauseListenHistoryKey, false)
-        ) {
+        val playRatio = playbackStats.totalPlayTimeMs.toFloat() / ((mediaItem.metadata?.duration?.times(1000)) ?: -1)
+        Timber.tag(TAG).d("Playback ratio: $playRatio Min threshold: $minPlaybackDur")
+        if (playRatio >= minPlaybackDur && !dataStore.get(PauseListenHistoryKey, false)) {
             database.query {
                 incrementPlayCount(mediaItem.mediaId)
                 incrementTotalPlayTime(mediaItem.mediaId, playbackStats.totalPlayTimeMs)
