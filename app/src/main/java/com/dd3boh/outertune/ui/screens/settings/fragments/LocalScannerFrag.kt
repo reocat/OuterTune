@@ -71,6 +71,7 @@ import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
+import com.dd3boh.outertune.ui.utils.clearDtCache
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -236,6 +237,7 @@ fun ColumnScope.LocalScannerFrag() {
                             ).show()
                         } finally {
                             destroyScanner()
+                            clearDtCache()
                         }
                     } else {
                         // quick scan
@@ -288,6 +290,7 @@ fun ColumnScope.LocalScannerFrag() {
                             ).show()
                         } finally {
                             destroyScanner()
+                            clearDtCache()
                         }
                     }
 

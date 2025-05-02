@@ -12,6 +12,9 @@
 package com.dd3boh.outertune.viewmodels
 
 import android.content.Context
+import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,11 +54,13 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
+import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.getDirectoryTree
 import com.dd3boh.outertune.ui.utils.uninitializedDirectoryTree
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.dataStore
+import com.dd3boh.outertune.utils.fixFilePath
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.refreshLocal
@@ -70,10 +75,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.apache.commons.lang3.mutable.Mutable
 import java.time.Duration
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -81,63 +89,90 @@ import javax.inject.Inject
 @HiltViewModel
 class LibrarySongsViewModel @Inject constructor(
     @ApplicationContext context: Context,
-    database: MusicDatabase,
+    private val database: MusicDatabase,
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
-
     val allSongs = getSyncedSongs(context, database)
     val isSyncingRemoteLikedSongs = syncUtils.isSyncingRemoteLikedSongs
     val isSyncingRemoteSongs = syncUtils.isSyncingRemoteSongs
 
-    private val scanPaths = context.dataStore[ScanPathsKey]?: DEFAULT_SCAN_PATH
-    private val excludedScanPaths = context.dataStore[ExcludedScanPathsKey]?: ""
-    val localSongDirectoryTree: MutableStateFlow<DirectoryTree?> = getLocalSongs(database)
-
     fun syncLibrarySongs(bypassCd: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteSongs(bypassCd) }
     }
+
     fun syncLikedSongs(bypassCd: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteLikedSongs(bypassCd) }
-    }
-
-    /**
-     * Get local songs asynchronously, as a full directory tree
-     *
-     * @return DirectoryTree
-     */
-    fun getLocalSongs(database: MusicDatabase): MutableStateFlow<DirectoryTree?> {
-        CoroutineScope(Dispatchers.IO).launch {
-            val directoryStructure: DirectoryTree
-            var cachedTree = getDirectoryTree().value
-            if (cachedTree == uninitializedDirectoryTree) {
-                directoryStructure = refreshLocal(database, scanPaths.split('\n'), excludedScanPaths.split('\n'))
-                cacheDirectoryTree(directoryStructure)
-            } else {
-                directoryStructure = cachedTree!!
-            }
-        }
-
-        return getDirectoryTree()
     }
 
     private fun getSyncedSongs(context: Context, database: MusicDatabase): StateFlow<List<Song>?> {
 
         return context.dataStore.data
-                .map {
-                    Triple(
-                            it[SongFilterKey].toEnum(SongFilter.LIKED),
-                            it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE),
-                            (it[SongSortDescendingKey] != false)
-                    )
+            .map {
+                Triple(
+                    it[SongFilterKey].toEnum(SongFilter.LIKED),
+                    it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE),
+                    (it[SongSortDescendingKey] != false)
+                )
+            }
+            .distinctUntilChanged()
+            .flatMapLatest { (filter, sortType, descending) ->
+                when (filter) {
+                    SongFilter.LIBRARY -> database.songs(sortType, descending)
+                    SongFilter.LIKED -> database.likedSongs(sortType, descending)
+                    SongFilter.DOWNLOADED -> database.downloadSongs(sortType, descending)
                 }
-                .distinctUntilChanged()
-                .flatMapLatest { (filter, sortType, descending) ->
-                    when (filter) {
-                        SongFilter.LIBRARY -> database.songs(sortType, descending)
-                        SongFilter.LIKED -> database.likedSongs(sortType, descending)
-                        SongFilter.DOWNLOADED -> database.downloadSongs(sortType, descending)
-                    }
-                }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+            }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    }
+}
+
+@HiltViewModel
+class LibraryFoldersViewModel @Inject constructor(
+    @ApplicationContext context: Context,
+    private val database: MusicDatabase,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+    val TAG = LibraryFoldersViewModel::class.simpleName.toString()
+    val path = savedStateHandle.get<String>("path")?.replace(';', '/') ?: STORAGE_ROOT
+
+    private val scanPaths = context.dataStore[ScanPathsKey] ?: DEFAULT_SCAN_PATH
+    private val excludedScanPaths = context.dataStore[ExcludedScanPathsKey] ?: ""
+    val localSongDirectoryTree: MutableStateFlow<DirectoryTree> = MutableStateFlow(getDirectoryTree(path))
+    val localSongDtSongCount = MutableStateFlow(0)
+    val filteredSongs = mutableStateListOf<Song>()
+
+    var uiInit = false
+    var lastLocalScan = 0L
+
+    /**
+     * Trigger a scan of local directory
+     */
+    suspend fun getLocalSongs(dir: String? = null) {
+        Log.d(TAG, "Loading folders page: ${dir ?: path}")
+        val dt = refreshLocal(database, scanPaths.split('\n'), excludedScanPaths.split('\n'), dir ?: path)
+        dt.isSkeleton = false
+        cacheDirectoryTree(dt)
+        localSongDirectoryTree.value = dt
+    }
+
+    /**
+     * Get total number of songs in directory
+     */
+    suspend fun getSongCount(dir: String? = null) {
+        Log.d(TAG, "Loading folder song count: ${dir ?: path}")
+        localSongDtSongCount.value = database.localSongCountInPath(dir ?: path).first()
+    }
+
+    /**
+     * Update filteredSongs with search query
+     */
+    fun searchInDir(query: String, dir: String = path) {
+        if (query.isNotBlank()) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val dbSongs = database.searchSongsAllLocalInDir(dir, query).first()
+                filteredSongs.clear()
+                filteredSongs.addAll(dbSongs)
+            }
+        }
     }
 }
 
@@ -173,7 +208,10 @@ class LibraryArtistsViewModel @Inject constructor(
                 artists
                     ?.map { it.artist }
                     ?.filter {
-                        it.thumbnailUrl == null || Duration.between(it.lastUpdateTime, LocalDateTime.now()) > Duration.ofDays(10)
+                        it.thumbnailUrl == null || Duration.between(
+                            it.lastUpdateTime,
+                            LocalDateTime.now()
+                        ) > Duration.ofDays(10)
                     }
                     ?.forEach { artist ->
                         YouTube.artist(artist.id).onSuccess { artistPage ->
@@ -218,21 +256,21 @@ class LibraryAlbumsViewModel @Inject constructor(
             allAlbums.collect { albums ->
                 albums
                     ?.filter {
-                    it.album.songCount == 0
-                }?.forEach { album ->
-                    YouTube.album(album.id).onSuccess { albumPage ->
-                        database.query {
-                            update(album.album, albumPage)
-                        }
-                    }.onFailure {
-                        reportException(it)
-                        if (it.message?.contains("NOT_FOUND") == true) {
+                        it.album.songCount == 0
+                    }?.forEach { album ->
+                        YouTube.album(album.id).onSuccess { albumPage ->
                             database.query {
-                                delete(album.album)
+                                update(album.album, albumPage)
+                            }
+                        }.onFailure {
+                            reportException(it)
+                            if (it.message?.contains("NOT_FOUND") == true) {
+                                database.query {
+                                    delete(album.album)
+                                }
                             }
                         }
                     }
-                }
             }
         }
     }
@@ -329,7 +367,8 @@ class ArtistSongsViewModel @Inject constructor(
 
     val songs = context.dataStore.data
         .map {
-            it[ArtistSongSortTypeKey].toEnum(ArtistSongSortType.CREATE_DATE) to (it[ArtistSongSortDescendingKey] ?: true)
+            it[ArtistSongSortTypeKey].toEnum(ArtistSongSortType.CREATE_DATE) to (it[ArtistSongSortDescendingKey]
+                ?: true)
         }
         .distinctUntilChanged()
         .flatMapLatest { (sortType, descending) ->

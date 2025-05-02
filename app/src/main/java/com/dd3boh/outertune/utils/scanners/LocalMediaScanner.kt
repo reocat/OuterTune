@@ -30,7 +30,7 @@ import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
-import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
+import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.ui.utils.scannerSession
 import com.dd3boh.outertune.utils.closestMatch
 import com.dd3boh.outertune.utils.dataStore
@@ -141,7 +141,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         excludedScanPaths: List<String>,
         pathsOnly: Boolean = false,
     ): MutableStateFlow<DirectoryTree> {
-        val newDirectoryStructure = DirectoryTree(STORAGE_ROOT)
+        val newDirectoryStructure = DirectoryTree(STORAGE_ROOT, CulmSongs(0))
         Timber.tag(TAG).i("------------ SCAN: Starting Full Scanner ------------")
         scannerShowLoading.value = true
 
@@ -244,7 +244,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
         scannerShowLoading.value = false
         Timber.tag(TAG).i("------------ SCAN: Finished Full Scanner ------------")
-        cacheDirectoryTree(newDirectoryStructure.androidStorageWorkaround().trimRoot())
         return MutableStateFlow(newDirectoryStructure)
     }
 
@@ -548,7 +547,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             finalize(newSongs, database)
         }
 
-        cacheDirectoryTree(null)
         scannerShowLoading.value = false
         Timber.tag(TAG).i("------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
     }
@@ -646,7 +644,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             }
         }
 
-        cacheDirectoryTree(null)
         scannerShowLoading.value = false
         Timber.tag(TAG)
             .i("------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
@@ -929,17 +926,18 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * the current directory is /storage/emulated/0/ a.k.a, /sdcard.
          * For example, to scan under Music and Documents/songs --> ("Music", Documents/songs)
          */
-        fun refreshLocal(
+        suspend fun refreshLocal(
             database: MusicDatabase,
             scanPaths: List<String>,
             excludedScanPaths: List<String>,
+            filter: String
         ): DirectoryTree {
-            val newDirectoryStructure = DirectoryTree(STORAGE_ROOT)
+            val newDirectoryStructure = DirectoryTree(filter.trimEnd { it == '/' }, CulmSongs(0))
 
             // get songs from db
             var existingSongs: List<Song>
-            runBlocking(Dispatchers.IO) {
-                existingSongs = database.allLocalSongs().first()
+            runBlocking {
+                existingSongs = database.localSongsInDirShallow(filter).first()
             }
 
             Timber.tag(TAG).i("------------ SCAN: Starting Quick Directory Rebuild ------------")
@@ -951,13 +949,14 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 val possibleMatch = existingSongs.fastFirstOrNull { it.song.localPath == path }
 
                 if (possibleMatch != null) {
-                    newDirectoryStructure.insert(path, possibleMatch)
+                    val filterPath = (if (path.startsWith(filter)) path.substringAfter(filter) else path)
+                        .trimStart { it == '/' }
+                    newDirectoryStructure.insert(filterPath, possibleMatch)
                 }
             }
 
             Timber.tag(TAG).i("------------ SCAN: Finished Quick Directory Rebuild ------------")
-            cacheDirectoryTree(newDirectoryStructure.androidStorageWorkaround().trimRoot())
-            return newDirectoryStructure
+            return newDirectoryStructure.androidStorageWorkaround()
         }
 
         /**
