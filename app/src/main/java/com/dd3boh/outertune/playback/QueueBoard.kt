@@ -239,7 +239,6 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                 // rewrite queue
                 saveQueueSongs(anyExts ?: match)
 
-                // don't change index
                 bubbleUp(match) // move queue to end of list so it shows as most recent
                 return match
             } else { // make new extension queue
@@ -274,8 +273,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
 
                 saveQueue(newQueue)
 
-                // don't change index, don't move match queue to end
-                masterIndex = masterQueues.size - 1 // track the newly modified queue
+                bubbleUp(newQueue) // move queue to end of list so it shows as most recent
                 return newQueue
             }
         } else {
@@ -305,7 +303,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
             }
 
             saveQueue(newQueue)
-            masterIndex = masterQueues.size - 1 // track the newly modified queue
+            bubbleUp(newQueue) // move queue to end of list so it shows as most recent
             return newQueue
         }
     }
