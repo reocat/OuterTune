@@ -432,27 +432,31 @@ fun ColumnScope.LocalScannerFrag() {
 
         ActionPromptDialog(
             titleBar = {
-                Text(
-                    text = stringResource(
-                        if (showAddFolderDialog as Boolean) R.string.scan_paths_incl
-                        else R.string.scan_paths_excl
-                    ),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-
-                // switch between include and exclude
                 Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.End
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Switch(
-                        checked = showAddFolderDialog!!,
-                        onCheckedChange = {
-                            showAddFolderDialog = !showAddFolderDialog!!
-                            tempScanPaths =
-                                if (showAddFolderDialog == true) scanPaths else excludedScanPaths
-                        },
+                    Text(
+                        text = stringResource(
+                            if (showAddFolderDialog as Boolean) R.string.scan_paths_incl
+                            else R.string.scan_paths_excl
+                        ),
+                        style = MaterialTheme.typography.titleLarge,
                     )
+
+                    // switch between include and exclude
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Switch(
+                            checked = showAddFolderDialog!!,
+                            onCheckedChange = {
+                                showAddFolderDialog = !showAddFolderDialog!!
+                                tempScanPaths =
+                                    if (showAddFolderDialog == true) scanPaths else excludedScanPaths
+                            },
+                        )
+                    }
                 }
             },
             onDismiss = {
@@ -542,14 +546,15 @@ fun ColumnScope.LocalScannerFrag() {
             }
 
             // add folder button
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Column {
                 Button(onClick = { dirPickerLauncher.launch(null) }) {
                     Text(stringResource(R.string.scan_paths_add_folder))
                 }
 
-                InfoLabel(text = stringResource(R.string.scan_paths_tooltip))
+                InfoLabel(
+                    text = stringResource(R.string.scan_paths_tooltip),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
     }
