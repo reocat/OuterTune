@@ -583,10 +583,11 @@ fun DetailsDialog(
 
 @Composable
 fun InfoLabel(
-    text: String
+    text: String,
+    modifier: Modifier = Modifier
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = Modifier.padding(horizontal = 8.dp)
+    modifier = modifier.padding(horizontal = 8.dp)
 ) {
     Icon(
         Icons.Outlined.Info,
