@@ -75,6 +75,9 @@ val EnableDiscordRPCKey = booleanPreferencesKey("discordRPCEnable")
  * Player & audio
  */
 val AudioQualityKey = stringPreferencesKey("audioQuality")
+
+val JossRedMultimedia = booleanPreferencesKey("JossRedMultimedia")
+
 val AudioOffload = booleanPreferencesKey("enableOffload")
 
 val PersistentQueueKey = booleanPreferencesKey("persistentQueue")

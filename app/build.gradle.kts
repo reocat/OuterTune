@@ -180,6 +180,7 @@ dependencies {
     implementation(projects.kizzy)
 
 
+
     coreLibraryDesugaring(libs.desugaring)
     
     implementation(libs.multidex)
@@ -196,4 +197,6 @@ dependencies {
     implementation(libs.taglib)
 
     debugImplementation(libs.leakcanary)
+
+    implementation(project(":jossredconnect"))
 }

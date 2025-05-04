@@ -69,6 +69,7 @@ import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.AutoLoadMoreKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
+import com.dd3boh.outertune.constants.JossRedMultimedia
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleLike
@@ -114,6 +115,7 @@ import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.enumPreference
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
+import com.metrolist.jossredconnect.JossRedClient
 import com.google.common.util.concurrent.MoreExecutors
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
@@ -861,6 +863,40 @@ class MusicService : MediaLibraryService(),
 
             Timber.tag(TAG).d("PLAYING: remote song (online fetch)")
 
+            // Check whether to use an alternative source
+            val useAlternativeSource = runBlocking {
+                dataStore.data.map { preferences ->
+                    preferences[JossRedMultimedia] ?: false
+                }.first()
+            }
+
+            // Alternative source: JossRed
+            if (useAlternativeSource) {
+                try {
+                    val alternativeUrl = JossRedClient.getStreamingUrl(mediaId)
+                    Timber.i("Usando Joss Red para reproducción")
+                    Timber.i("URL alternativa: $alternativeUrl")
+                    scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
+                    return@Factory dataSpec.withUri(alternativeUrl.toUri())
+                } catch (e: Exception) {
+                    when {
+                        e is JossRedClient.JossRedException && e.statusCode == 403 -> {
+                            Timber.w("Error 403 en JossRed, continuando con YouTube")
+                        }
+                        e is JossRedClient.JossRedException && e.statusCode in 400..499 -> {
+                            Timber.w("Error ${e.statusCode} en JossRed, continuando con YouTube")
+                            // Throw error for 4xx other than 403, similar to source repo
+                            throw PlaybackException("Error en fuente alternativa (${e.statusCode})", e, PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS)
+                        }
+                        else -> {
+                            Timber.e(e, "Error con fuente alternativa, intentando YouTube")
+                            // Fall through to YouTube logic
+                        }
+                    }
+                }
+            }
+
+            // Default source: YouTube
             val playbackData = runBlocking(Dispatchers.IO) {
                 YTPlayerUtils.playerResponseForPlayback(
                     mediaId,

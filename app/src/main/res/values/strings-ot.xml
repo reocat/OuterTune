@@ -131,6 +131,8 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="swipe2Queue_description">Swipe on a song to add it to "enqueue next" directly after currently playing song</string>
     <string name="on_error">On error</string>
     <string name="pause">Pause</string>
+    <string name="playSongJR">Play music from Joss Red</string>
+    <string name="playSongJRDesc">Allows you to play any song without the need to login with high quality</string>
 
     <!--Lyrics settings -->
     <string name="lyrics_settings_title">Lyrics</string>

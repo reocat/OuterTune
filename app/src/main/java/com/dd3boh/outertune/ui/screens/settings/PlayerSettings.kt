@@ -61,6 +61,7 @@ import com.dd3boh.outertune.constants.AudioOffload
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.AutoLoadMoreKey
+import com.dd3boh.outertune.constants.JossRedMultimedia
 import com.dd3boh.outertune.constants.KeepAliveKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.SettingsTopBarHeight
@@ -89,6 +90,11 @@ fun PlayerSettings(
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
         key = AudioQualityKey,
         defaultValue = AudioQuality.HIGH
+    )
+
+    val (useJossRed, onUseJossRedChange) = rememberPreference(
+        key = JossRedMultimedia,
+        defaultValue = true
     )
     val (persistentQueue, onPersistentQueueChange) = rememberPreference(key = PersistentQueueKey, defaultValue = true)
     val (skipSilence, onSkipSilenceChange) = rememberPreference(key = SkipSilenceKey, defaultValue = false)
@@ -171,6 +177,13 @@ fun PlayerSettings(
         )
 
         SettingsClickToReveal(stringResource(R.string.prefs_advanced)) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.playSongJR)) },
+                description = stringResource(R.string.playSongJRDesc),
+                icon = { Icon(painterResource(R.drawable.play), null) },
+                checked = useJossRed,
+                onCheckedChange = onUseJossRedChange
+            )
             SwitchPreference(
                 title = { Text(stringResource(R.string.persistent_queue)) },
                 description = stringResource(R.string.persistent_queue_desc_ot),
