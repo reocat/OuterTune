@@ -73,7 +73,7 @@
     <string name="wifi_only">Wi-Fiのみ</string>
     <string name="keep_alive_title">システムがアプリを終了させるのを防ぐ</string>
     <string name="persistent_queue_desc_ot">アプリ起動時に前回のキューを復元する</string>
-    <string name="show_liked_and_downloaded_playlist">ライブラリでいいねやダウンロードをしたプレイリストを表示する</string>
+    <string name="show_liked_and_downloaded_playlist">ライブラリ内にいいねやダウンロードした曲のプレイリストを表示する</string>
     <string name="ytm_sync">YouTube Music アカウントと同期する</string>
     <string name="token_hidden">タップしてトークンを表示</string>
     <string name="grp_manual_scanner">マニュアルスキャン</string>
@@ -141,4 +141,11 @@
     <string name="swipe_to_skip_title">曲を変えるには横にスワイプしてください</string>
     <string name="swipe_to_skip_description">プレーヤー内で水平にスワイプして曲を切り替える</string>
     <string name="image_cache_tooltip">変更を反映するには、アプリを再起動してください</string>
+    <string name="missing_media_permission_warning">ローカルメディアを利用するにはストレージ権限が必要です。クリックして権限を付与してください。</string>
+    <string name="more_settings">その他の設定</string>
+    <string name="grp_account_sync">アカウントと同期</string>
+    <string name="sync_conflict_overwrite">ローカルコンテンツをリモートコンテンツで上書きする</string>
+    <string name="android_auto">Android Auto</string>
+    <string name="grp_library_and_content">ライブラリとコンテンツ</string>
+    <string name="sync_conflict_add_only">すべてのローカルコンテンツを保持し、新しいリモートコンテンツを追加する</string>
 </resources>
