@@ -508,15 +508,27 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                         // use async scanner
                         scannerJobs.add(
                             async(scannerSession) {
+                                var ret: SongTempData?
                                 if (scannerRequestCancel) {
                                     Timber.tag(TAG).i("WARNING: Canceling advanced scanner job.")
                                     throw ScannerAbortException("")
                                 }
                                 try {
-                                    advancedScan(path)
+                                    ret = advancedScan(path)
+                                    scannerProgressProbe++
+                                    if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
+                                        Log.d(
+                                            TAG,
+                                            "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------"
+                                        )
+                                    }
+                                    if (scannerProgressProbe % 20 == 0) {
+                                        scannerProgressTotal.value = scannerProgressProbe
+                                    }
                                 } catch (e: InvalidAudioFileException) {
-                                    null
+                                    ret = null
                                 }
+                                ret
                             }
                         )
                     } else {
