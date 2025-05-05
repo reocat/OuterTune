@@ -30,6 +30,8 @@ import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
+import com.dd3boh.outertune.constants.SYNC_SCANNER
+import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.ui.utils.scannerSession
 import com.dd3boh.outertune.utils.closestMatch
@@ -792,6 +794,26 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     database.delete(it.first)
                 }
             }
+
+            // remove duplicated local artists
+            val dbArtists: MutableList<Artist> = database.localArtistsByName().first().toMutableList()
+            while (dbArtists.isNotEmpty()) {
+                // gather same artists (precondition: artists are ordered by name
+                val tmp = ArrayList<Artist>()
+                val oldestArtist: Artist = dbArtists.removeAt(0)
+                tmp.add(oldestArtist)
+                while (dbArtists.isNotEmpty() && dbArtists.first().title == tmp.first().title) {
+                    tmp.add(dbArtists.removeAt(0))
+                }
+
+                var newPos = oldestArtist.songCount
+                if (tmp.size > 1) {
+                    // merge all duplicate artists into the oldest one
+                    tmp.removeAt(0)
+                    tmp.sortBy { it.artist.bookmarkedAt }
+                    tmp.forEach { swapArtists(it.artist, oldestArtist.artist, database, newPos++) }
+                }
+            }
         }
     }
 
@@ -1075,7 +1097,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * p.s. This is here instead of DatabaseDao because it won't compile there because
          * "oooga boooga error in generated code"
          */
-        fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase) {
+        fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase, newPos: Int? = null) {
             if (database.artistById(old.id) == null) {
                 throw Exception("Attempting to swap with non-existent old artist in database with id: ${old.id}")
             }
@@ -1085,8 +1107,13 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
             database.transaction {
                 // update participation(s)
-                database.updateSongArtistMap(old.id, new.id)
-                database.updateAlbumArtistMap(old.id, new.id)
+                if (newPos == null) {
+                    database.updateSongArtistMap(old.id, new.id)
+                    database.updateAlbumArtistMap(old.id, new.id)
+                } else {
+                    database.updateSongArtistMap(old.id, new.id, newPos)
+                    database.updateAlbumArtistMap(old.id, new.id, newPos)
+                }
 
                 // nuke old artist
                 database.safeDeleteArtist(old.id)
