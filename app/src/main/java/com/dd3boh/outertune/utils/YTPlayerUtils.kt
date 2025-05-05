@@ -10,8 +10,10 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5_SIMPLY_EMB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
 import com.zionhuang.innertube.models.response.PlayerResponse
 import com.dd3boh.outertune.constants.AudioQuality
+import com.zionhuang.innertube.models.YouTubeClient.Companion.ANDROID_VR_NO_AUTH
 import com.zionhuang.innertube.models.YouTubeClient.Companion.MOBILE
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
+import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_CREATOR
 import okhttp3.OkHttpClient
 
 object YTPlayerUtils {
@@ -32,9 +34,11 @@ object YTPlayerUtils {
      * Clients used for fallback streams in case the streams of the main client do not work.
      */
     private val STREAM_FALLBACK_CLIENTS: Array<YouTubeClient> = arrayOf(
+        ANDROID_VR_NO_AUTH,
         TVHTML5_SIMPLY_EMBEDDED_PLAYER,
         IOS,
         WEB,
+        WEB_CREATOR,
         MOBILE
     )
     data class PlaybackData(
