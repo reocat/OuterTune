@@ -152,4 +152,10 @@
     <string name="grp_account_sync">Konto i synchronizacja</string>
     <string name="sync_mode">Tryb synchronizacji</string>
     <string name="grp_library_and_content">Biblioteka i treści</string>
+    <string name="missing_media_permission_warning">Dostęp do pamięci jest niezbędny dla mediów lokalnych. Kliknij aby dać pozwolenie.</string>
+    <string name="sync_conflict_add_only">Zachowaj całą zawartość lokalną, dodaj nową zawartość zdalną</string>
+    <string name="sync_conflict_overwrite">Nadpisz zawartość lokalną zawartością zdalną</string>
+    <string name="sync_conflict_title">Rozwiązanie konfliktu</string>
+    <string name="sync_mode_ro">Tylko do odczytu (Przeglądaj zawartość zdalną)</string>
+    <string name="sync_mode_rw">Do odczytu i zapisu (Pozwól również na zmiany w zawartości zdalnej)</string>
 </resources>
