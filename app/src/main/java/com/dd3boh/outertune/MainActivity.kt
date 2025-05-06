@@ -33,11 +33,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -47,6 +49,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -64,8 +68,11 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
@@ -74,6 +81,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,6 +98,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -114,6 +123,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.window.core.layout.WindowWidthSizeClass
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.dd3boh.outertune.constants.AppBarHeight
@@ -472,6 +482,14 @@ class MainActivity : ComponentActivity() {
                             if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface
                         )
                 ) {
+                    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
+                    val useRail by remember {
+                        derivedStateOf {
+                            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
+                        }
+                    }
+
                     val focusManager = LocalFocusManager.current
                     val density = LocalDensity.current
                     val windowsInsets = WindowInsets.systemBars
@@ -616,6 +634,10 @@ class MainActivity : ComponentActivity() {
                                 navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } && !active
                     }
 
+                    val shouldShowNavigationRail = remember(navBackStackEntry) {
+                        navBackStackEntry?.destination?.route?.let { it != "setup_wizard" && it != "login" } == true
+                    }
+
                     fun getNavPadding(): Dp {
                         return if (shouldShowNavigationBar) {
                             if (slimNav) 52.dp else 68.dp
@@ -748,6 +770,77 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
                         ) {
+
+                            if (useRail && shouldShowNavigationRail) {
+                                NavigationRail(
+                                    windowInsets = WindowInsets.safeDrawing,
+                                    header = {
+                                        Spacer(Modifier.height(8.dp))
+
+                                        Image(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .padding(start = 8.dp),
+                                            painter = painterResource(R.drawable.small_icon),
+                                            contentDescription = null
+                                        )
+                                    }
+                                ) {
+                                    navigationItems.fastForEach { screen ->
+                                        NavigationRailItem(
+                                            selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
+                                            icon = {
+                                                Icon(
+                                                    screen.icon,
+                                                    contentDescription = null
+                                                )
+                                            },
+                                            label = {
+                                                if (!slimNav) {
+                                                    Text(
+                                                        text = stringResource(screen.titleId),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+                                            },
+                                            onClick = {
+                                                if (playerBottomSheetState.isExpanded) {
+                                                    playerBottomSheetState.collapseSoft()
+                                                }
+
+                                                if (navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true) {
+                                                    navBackStackEntry?.savedStateHandle?.set(
+                                                        "scrollToTop",
+                                                        true
+                                                    )
+
+                                                    coroutineScope.launch {
+                                                        searchBarScrollBehavior.state.resetHeightOffset()
+                                                    }
+                                                } else {
+                                                    navController.navigate(screen.route) {
+                                                        popUpTo(navController.graph.startDestinationId) {
+                                                            saveState = true
+                                                        }
+
+                                                        launchSingleTop = true
+                                                        restoreState = true
+                                                    }
+
+                                                    while (navController.currentDestination?.route.let { it != null && it != screen.route }) {
+                                                        navController.popBackStack()
+                                                    }
+                                                }
+
+                                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+
                             NavHost(
                                 navController = navController,
                                 startDestination = (tabOpenedFromShortcut ?: Screens.getAllScreens()

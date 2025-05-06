@@ -148,6 +148,7 @@ dependencies {
     implementation(libs.compose.reorderable)
     implementation(libs.compose.icons.extended)
 
+    implementation(libs.adaptive)
 
     implementation(libs.viewmodel)
     implementation(libs.viewmodel.compose)
