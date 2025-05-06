@@ -116,7 +116,7 @@ fun LibrarySettings(
     ) {
         Spacer(Modifier.height(SettingsTopBarHeight))
         PreferenceGroupTitle(
-            title = "content"
+            title = stringResource(R.string.content)
         )
         PreferenceEntry(
             title = { Text(stringResource(R.string.grp_account_sync)) },
