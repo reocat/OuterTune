@@ -150,7 +150,7 @@
     <string name="android_auto">Android Auto</string>
     <string name="more_settings">Більше налаштувань</string>
     <string name="sync_mode_rw">Читати, записувати (також дозволити змінювати віддалений вміст)</string>
-    <string name="grp_library_and_content">Бібліотека та вміст</string>
+    <string name="grp_library_and_content">Бібліотека та контент</string>
     <string name="sync_conflict_add_only">Зберігати весь локальний вміст, додавати новий віддалений вміст</string>
     <string name="grp_account_sync">Обліковий запис і синхронізація</string>
     <string name="missing_media_permission_warning">Для локальних носіїв потрібні дозволи на зберігання. Натисніть, щоб надати дозвіл.</string>
@@ -158,4 +158,11 @@
     <string name="sync_conflict_title">Вирішення конфлікту</string>
     <string name="sync_mode">Режим синхронізації</string>
     <string name="sync_mode_ro">Лише читання (перегляд віддаленого вмісту)</string>
+    <string name="grp_sync">Синхронізація</string>
+    <string name="no_updates_available">Немає доступних оновлень</string>
+    <string name="checking_for_update">Перевірка оновлень</string>
+    <string name="check_for_update">Перевірити наявність оновлень</string>
+    <string name="playlist_missing_note">Немає списків відтворення? Натисніть тут, щоб увімкнути режим синхронізації читання та запису в налаштуваннях</string>
+    <string name="grp_behavior">Поведінка</string>
+    <string name="library_empty">Вміст вашої бібліотеки відображатиметься тут</string>
 </resources>
