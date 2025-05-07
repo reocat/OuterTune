@@ -46,7 +46,6 @@ interface SongsDao {
     }
 
     @Transaction
-    @Transaction
     @Query("""
         SELECT * FROM song 
         WHERE isLocal = 1 AND inLibrary IS NOT NULL AND localpath LIKE :dir || '%' AND title LIKE '%' || :query || '%'
@@ -372,9 +371,6 @@ interface SongsDao {
     @Transaction
     @Query("UPDATE song SET liked = 0, likedDate = null WHERE id = :songId")
     fun removeLike(songId: String)
-
-    @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
-    suspend fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
 
     @Transaction
     @Query("UPDATE song SET dateDownload = :dateDownload WHERE id = :songId")
