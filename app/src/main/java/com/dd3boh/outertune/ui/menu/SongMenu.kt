@@ -354,7 +354,6 @@ fun SongMenu(
 
         DownloadGridMenu(
             state = download?.state,
-            enabled = !song.song.isLocal,
             onDownload = {
                 downloadUtil.download(song.toMediaMetadata())
             },
