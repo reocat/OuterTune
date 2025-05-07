@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -105,7 +106,7 @@ fun SearchBar(
     colors: SearchBarColors = SearchBarDefaults.colors(),
     inputFieldColors: TextFieldColors = SearchBarDefaults.inputFieldColors(),
     tonalElevation: Dp = SearchBarDefaults.TonalElevation,
-    windowInsets: WindowInsets = WindowInsets.systemBars,
+    windowInsets: WindowInsets = WindowInsets.safeDrawing,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     focusRequester: FocusRequester = remember { FocusRequester() },
     content: @Composable ColumnScope.() -> Unit,

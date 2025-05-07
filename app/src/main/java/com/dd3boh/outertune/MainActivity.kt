@@ -36,6 +36,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -52,7 +56,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
@@ -494,6 +501,7 @@ class MainActivity : ComponentActivity() {
                     val density = LocalDensity.current
                     val windowsInsets = WindowInsets.systemBars
                     val bottomInset = with(density) { windowsInsets.getBottom(density).toDp() }
+                    val cutoutInsets = WindowInsets.displayCutout
 
                     val navController = rememberNavController()
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -629,17 +637,18 @@ class MainActivity : ComponentActivity() {
                                 navBackStackEntry?.destination?.route?.startsWith("search/") == true)
                                 && inSelectMode?.value != true
                     }
+
                     val shouldShowNavigationBar = remember(navBackStackEntry, active) {
-                        navBackStackEntry?.destination?.route == null ||
-                                navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } && !active
+                        !useRail && (navBackStackEntry?.destination?.route == null ||
+                                navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } && !active)
                     }
 
-                    val shouldShowNavigationRail = remember(navBackStackEntry) {
-                        navBackStackEntry?.destination?.route?.let { it != "setup_wizard" && it != "login" } == true
+                    val shouldShowNavigationRail = remember(navBackStackEntry, active) {
+                        useRail && navBackStackEntry?.destination?.route?.let { it != "setup_wizard" && it != "login" } == true && !active
                     }
 
                     fun getNavPadding(): Dp {
-                        return if (shouldShowNavigationBar) {
+                        return if (shouldShowNavigationBar && !shouldShowNavigationRail) {
                             if (slimNav) 52.dp else 68.dp
                         } else {
                             0.dp
@@ -661,11 +670,19 @@ class MainActivity : ComponentActivity() {
                     val playerAwareWindowInsets =
                         remember(bottomInset, shouldShowNavigationBar, playerBottomSheetState.isDismissed) {
                             var bottom = bottomInset
-                            if (shouldShowNavigationBar) bottom += NavigationBarHeight
+
                             if (!playerBottomSheetState.isDismissed) bottom += MiniPlayerHeight
-                            windowsInsets
-                                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                                .add(WindowInsets(top = AppBarHeight, bottom = bottom))
+                            if (!useRail) {
+                                if (shouldShowNavigationBar) bottom += NavigationBarHeight
+                                windowsInsets
+                                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                                    .add(WindowInsets(top = AppBarHeight, bottom = bottom))
+                            } else {
+                                windowsInsets
+                                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                                    .add(cutoutInsets.only(WindowInsetsSides.Start))
+                                    .add(WindowInsets(left = NavigationBarHeight, top = AppBarHeight, bottom = bottom))
+                            }
                         }
 
                     val scrollBehavior = appBarScrollBehavior(
@@ -770,77 +787,6 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
                         ) {
-
-                            if (useRail && shouldShowNavigationRail) {
-                                NavigationRail(
-                                    windowInsets = WindowInsets.safeDrawing,
-                                    header = {
-                                        Spacer(Modifier.height(8.dp))
-
-                                        Image(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .padding(start = 8.dp),
-                                            painter = painterResource(R.drawable.small_icon),
-                                            contentDescription = null
-                                        )
-                                    }
-                                ) {
-                                    navigationItems.fastForEach { screen ->
-                                        NavigationRailItem(
-                                            selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
-                                            icon = {
-                                                Icon(
-                                                    screen.icon,
-                                                    contentDescription = null
-                                                )
-                                            },
-                                            label = {
-                                                if (!slimNav) {
-                                                    Text(
-                                                        text = stringResource(screen.titleId),
-                                                        maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis
-                                                    )
-                                                }
-                                            },
-                                            onClick = {
-                                                if (playerBottomSheetState.isExpanded) {
-                                                    playerBottomSheetState.collapseSoft()
-                                                }
-
-                                                if (navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true) {
-                                                    navBackStackEntry?.savedStateHandle?.set(
-                                                        "scrollToTop",
-                                                        true
-                                                    )
-
-                                                    coroutineScope.launch {
-                                                        searchBarScrollBehavior.state.resetHeightOffset()
-                                                    }
-                                                } else {
-                                                    navController.navigate(screen.route) {
-                                                        popUpTo(navController.graph.startDestinationId) {
-                                                            saveState = true
-                                                        }
-
-                                                        launchSingleTop = true
-                                                        restoreState = true
-                                                    }
-
-                                                    while (navController.currentDestination?.route.let { it != null && it != screen.route }) {
-                                                        navController.popBackStack()
-                                                    }
-                                                }
-
-                                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-
                             NavHost(
                                 navController = navController,
                                 startDestination = (tabOpenedFromShortcut ?: Screens.getAllScreens()
@@ -1228,7 +1174,16 @@ class MainActivity : ComponentActivity() {
                                         }
                                     },
                                     focusRequester = searchBarFocusRequester,
-                                    modifier = Modifier.align(Alignment.TopCenter),
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .windowInsetsPadding(
+                                            if (shouldShowNavigationRail) {
+                                                WindowInsets(left = NavigationBarHeight)
+                                            } else {
+                                                // please shield your eyes.
+                                                WindowInsets(0.dp)
+                                            }
+                                        )
                                 ) {
                                     Crossfade(
                                         targetState = searchSource,
@@ -1297,6 +1252,90 @@ class MainActivity : ComponentActivity() {
                                         style = MaterialTheme.typography.bodySmall,
                                         color = debugColour
                                     )
+                                }
+                            }
+
+
+                            if (useRail && shouldShowNavigationRail) {
+                                Column(
+                                    verticalArrangement = Arrangement.Bottom,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .fillMaxHeight()
+                                        .verticalScroll(rememberScrollState())
+                                        .windowInsetsPadding(
+                                            playerAwareWindowInsets
+                                                .only(WindowInsetsSides.Bottom)
+                                                .add(windowsInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top))
+                                                .add(cutoutInsets.only(WindowInsetsSides.Start))
+                                        )
+                                ) {
+                                    NavigationRail(
+                                        containerColor = Color.Transparent,
+                                        header = {
+                                            Spacer(Modifier.height(8.dp))
+                                            Image(
+                                                modifier = Modifier
+
+                                                    .size(36.dp)
+                                                    .padding(start = 8.dp),
+                                                painter = painterResource(R.drawable.small_icon),
+                                                contentDescription = null
+                                            )
+                                        }
+                                    ) {
+                                        navigationItems.fastForEach { screen ->
+                                            NavigationRailItem(
+                                                selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
+                                                icon = {
+                                                    Icon(
+                                                        screen.icon,
+                                                        contentDescription = null
+                                                    )
+                                                },
+                                                label = {
+                                                    if (!slimNav) {
+                                                        Text(
+                                                            text = stringResource(screen.titleId),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+                                                },
+                                                onClick = {
+                                                    if (playerBottomSheetState.isExpanded) {
+                                                        playerBottomSheetState.collapseSoft()
+                                                    }
+
+                                                    if (navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true) {
+                                                        navBackStackEntry?.savedStateHandle?.set(
+                                                            "scrollToTop",
+                                                            true
+                                                        )
+
+                                                        coroutineScope.launch {
+                                                            searchBarScrollBehavior.state.resetHeightOffset()
+                                                        }
+                                                    } else {
+                                                        navController.navigate(screen.route) {
+                                                            popUpTo(navController.graph.startDestinationId) {
+                                                                saveState = true
+                                                            }
+
+                                                            launchSingleTop = true
+                                                            restoreState = true
+                                                        }
+
+                                                        while (navController.currentDestination?.route.let { it != null && it != screen.route }) {
+                                                            navController.popBackStack()
+                                                        }
+                                                    }
+
+                                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                }
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
@@ -1453,7 +1492,7 @@ class MainActivity : ComponentActivity() {
 
 val LocalDatabase = staticCompositionLocalOf<MusicDatabase> { error("No database provided") }
 val LocalPlayerConnection = staticCompositionLocalOf<PlayerConnection?> { error("No PlayerConnection provided") }
-val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No WindowInsets provided") }
+val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No player WindowInsets provided") }
 val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No DownloadUtil provided") }
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
 val LocalIsNetworkConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }

@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -91,7 +93,6 @@ fun MiniPlayer(
         modifier = modifier
             .fillMaxWidth()
             .height(MiniPlayerHeight)
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
             .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant),
     ) {
         LinearProgressIndicator(
@@ -105,6 +106,11 @@ fun MiniPlayer(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
+                .windowInsetsPadding(
+                    WindowInsets.systemBars
+                        .only(WindowInsetsSides.Horizontal)
+                        .add(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
+                )
                 .fillMaxSize()
                 .padding(end = 6.dp),
         ) {
