@@ -519,8 +519,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                                     ret = advancedScan(path)
                                     scannerProgressProbe++
                                     if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
-                                        Log.d(
-                                            TAG,
+                                        Timber.tag(TAG).d(
                                             "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------"
                                         )
                                     }
