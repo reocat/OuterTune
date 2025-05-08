@@ -148,4 +148,6 @@
     <string name="android_auto">Android Auto</string>
     <string name="grp_library_and_content">ライブラリとコンテンツ</string>
     <string name="sync_conflict_add_only">すべてのローカルコンテンツを保持し、新しいリモートコンテンツを追加する</string>
+    <string name="sync_mode_ro">読み取りのみ</string>
+    <string name="sync_mode_rw">読み取りと書き込み（リモートコンテンツの変更を許可）</string>
 </resources>
