@@ -32,11 +32,12 @@ OuterTune is a supercharged fork of [InnerTune](https://github.com/z-huang/Inner
 
 ## Screenshots
 
-<img src="./assets/main-interface.webp" width="600" alt="Main player interface" />
-<br/><br/>
-<img src="./assets/player.webp" width="600" alt="Player interface"/>
-<br/><br/>
-<img src="./assets/ytm-sync.webp" width="600" alt="Sync with YouTube Music"/>
+<p>
+    <img src="./assets/screenshot1.png" width="32%" alt="Player interface" />
+    <img src="./assets/screenshot4.png" width="32%" alt="Real-time lyrics" />
+    <img src="./assets/screenshot2.png" width="32%" alt="Material You" />
+    <img src="./assets/screenshot3.png" width="100%" alt="Sync with YouTube Music" />
+</p>
 
 > [!WARNING]
 >
