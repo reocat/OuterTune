@@ -26,6 +26,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.GridThumbnailHeight
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.YouTubeGridItem
@@ -144,6 +145,7 @@ fun BrowseScreen(
                 )
             }
         },
+        windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
 }

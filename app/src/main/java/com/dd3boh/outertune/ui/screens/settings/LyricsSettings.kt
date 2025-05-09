@@ -46,14 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.EnableKugouKey
-import com.dd3boh.outertune.constants.EnableLrcLibKey
-import com.dd3boh.outertune.constants.LyricFontSizeKey
-import com.dd3boh.outertune.constants.LyricSourcePrefKey
-import com.dd3boh.outertune.constants.LyricTrimKey
-import com.dd3boh.outertune.constants.LyricsTextPositionKey
-import com.dd3boh.outertune.constants.MultilineLrcKey
-import com.dd3boh.outertune.ui.component.EnumListPreference
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricFormatFrag
@@ -104,6 +97,7 @@ fun LyricsSettings(
                 )
             }
         },
+        windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
 }

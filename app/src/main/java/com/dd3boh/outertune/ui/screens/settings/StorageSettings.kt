@@ -52,6 +52,7 @@ import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
 import com.dd3boh.outertune.constants.PlaylistFilter
 import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.constants.SongSortType
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.extensions.tryOrNull
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.ui.component.IconButton
@@ -276,6 +277,7 @@ fun StorageSettings(
                 )
             }
         },
+        windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
 }

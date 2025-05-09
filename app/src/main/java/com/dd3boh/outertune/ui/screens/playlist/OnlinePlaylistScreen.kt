@@ -86,6 +86,7 @@ import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AlbumThumbnailSize
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.extensions.toMediaItem
@@ -622,6 +623,19 @@ fun OnlinePlaylistScreen(
                     )
                 }
             },
+            actions = {
+                if (!isSearching) {
+                    IconButton(
+                        onClick = { isSearching = true }
+                    ) {
+                        Icon(
+                            Icons.Rounded.Search,
+                            contentDescription = null
+                        )
+                    }
+                }
+            },
+            windowInsets = TopBarInsets,
             scrollBehavior = scrollBehavior
         )
 

@@ -29,6 +29,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.StatPeriod
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AlbumGridItem
@@ -203,6 +204,7 @@ fun StatsScreen(
                     contentDescription = null
                 )
             }
-        }
+        },
+        windowInsets = TopBarInsets,
     )
 }

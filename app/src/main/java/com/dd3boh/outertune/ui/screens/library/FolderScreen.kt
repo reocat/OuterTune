@@ -82,6 +82,7 @@ import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.SongSortDescendingKey
 import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.SongSortTypeKey
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.toMediaMetadata
@@ -513,8 +514,7 @@ fun FolderScreen(
             }
         )
 
-        TopAppBar(
-            title = {
+        TopAppBar(title = {
                 Column {
                     val title = currDir.currentDir.substringAfterLast('/')
                     val subtitle = currDir.getFullPath().substringBeforeLast('/')
@@ -538,8 +538,7 @@ fun FolderScreen(
                         )
                     }
                 }
-            },
-            navigationIcon = {
+            }, navigationIcon = {
                 IconButton(
                     onClick = {
                         if (isSearching) {
@@ -560,9 +559,7 @@ fun FolderScreen(
                         contentDescription = null
                     )
                 }
-            },
-            scrollBehavior = scrollBehavior
-        )
+            }, windowInsets = TopBarInsets, scrollBehavior = scrollBehavior)
 
         FloatingFooter(inSelectMode) {
             SelectHeader(

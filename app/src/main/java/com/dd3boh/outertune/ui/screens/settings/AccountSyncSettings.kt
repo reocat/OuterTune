@@ -32,18 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.AccountChannelHandleKey
-import com.dd3boh.outertune.constants.AccountEmailKey
-import com.dd3boh.outertune.constants.AccountNameKey
-import com.dd3boh.outertune.constants.DataSyncIdKey
-import com.dd3boh.outertune.constants.InnerTubeCookieKey
-import com.dd3boh.outertune.constants.LikedAutoDownloadKey
-import com.dd3boh.outertune.constants.LikedAutodownloadMode
-import com.dd3boh.outertune.constants.PauseListenHistoryKey
-import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
-import com.dd3boh.outertune.constants.UseLoginForBrowse
-import com.dd3boh.outertune.constants.VisitorDataKey
-import com.dd3boh.outertune.constants.YtmSyncKey
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
@@ -106,6 +95,7 @@ fun AccountSyncSettings(
                 )
             }
         },
+        windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
 }

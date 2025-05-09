@@ -32,18 +32,7 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AutomaticScannerKey
-import com.dd3boh.outertune.constants.ExcludedScanPathsKey
-import com.dd3boh.outertune.constants.LastLocalScanKey
-import com.dd3boh.outertune.constants.LookupYtmArtistsKey
-import com.dd3boh.outertune.constants.ScanPathsKey
-import com.dd3boh.outertune.constants.ScannerImpl
-import com.dd3boh.outertune.constants.ScannerImplKey
-import com.dd3boh.outertune.constants.ScannerMatchCriteria
-import com.dd3boh.outertune.constants.ScannerSensitivityKey
-import com.dd3boh.outertune.constants.ScannerStrictExtKey
-import com.dd3boh.outertune.constants.ThumbnailCornerRadius
-import com.dd3boh.outertune.ui.component.ActionPromptDialog
-import com.dd3boh.outertune.ui.component.EnumListPreference
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
@@ -103,6 +92,7 @@ fun LocalPlayerSettings(
                 )
             }
         },
+        windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
 }
