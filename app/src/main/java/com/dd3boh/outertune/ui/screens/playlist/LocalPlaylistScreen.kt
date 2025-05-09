@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -137,7 +138,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 fun LocalPlaylistScreen(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
-    viewModel: LocalPlaylistViewModel = hiltViewModel(),
+    viewModel: LocalPlaylistViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -680,8 +681,11 @@ fun LocalPlaylistHeader(
                             enabled = isNetworkConnected,
                             onClick = {
                                 scope.launch {
-                                    syncUtils.syncPlaylist(playlist.playlist.browseId, playlist.id)
-                                    snackbarHostState.showSnackbar(context.getString(R.string.playlist_synced))
+                                    syncUtils.syncPlaylist(playlist.playlist.browseId, playlist.id).also { success ->
+                                        snackbarHostState.showSnackbar(if(success) {
+                                            context.getString(R.string.playlist_synced)
+                                        } else "Failed to sync an playlist!")
+                                    }
                                 }
                             },
                         ) {
@@ -765,6 +769,10 @@ fun LocalPlaylistHeader(
             }
         }
 
+        if(playlist.playlist.description.isNotBlank()) {
+            Text(playlist.playlist.description)
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(
                 onClick = {
@@ -808,12 +816,6 @@ fun LocalPlaylistHeader(
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text(stringResource(R.string.shuffle))
             }
-        }
-
-        if(playlist.playlist.description.isNotBlank()) {
-            Text(
-                text = playlist.playlist.description
-            )
         }
     }
 }

@@ -300,20 +300,22 @@ fun OnlinePlaylistScreen(
                                         )
                                     }
 
-                                    Row {
-                                        if (playlist.id != "LM") {
-                                            IconButton(
-                                                onClick = {
-                                                    if (dbPlaylist?.playlist == null) {
-                                                        database.transaction {
-                                                            val playlistEntity = PlaylistEntity(
-                                                                name = playlist.title,
-                                                                browseId = playlist.id,
-                                                                isEditable = playlist.isEditable,
-                                                                playEndpointParams = playlist.playEndpoint?.params,
-                                                                shuffleEndpointParams = playlist.shuffleEndpoint?.params,
-                                                                radioEndpointParams = playlist.radioEndpoint?.params
-                                                            ).toggleLike()
+                                        Row {
+                                            if (playlist.id != "LM") {
+                                                IconButton(
+                                                    onClick = {
+                                                        if (dbPlaylist?.playlist == null) {
+                                                            database.transaction {
+                                                                val playlistEntity = PlaylistEntity(
+                                                                    name = playlist.title,
+                                                                    description = playlist.description,
+                                                                    privacyStatus = playlist.privacyStatus,
+                                                                    browseId = playlist.id,
+                                                                    isEditable = playlist.isEditable,
+                                                                    playEndpointParams = playlist.playEndpoint?.params,
+                                                                    shuffleEndpointParams = playlist.shuffleEndpoint?.params,
+                                                                    radioEndpointParams = playlist.radioEndpoint?.params
+                                                                ).toggleLike()
 
                                                             insert(playlistEntity)
                                                             songs.map(SongItem::toMediaMetadata)
