@@ -108,6 +108,7 @@ import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
+import com.dd3boh.outertune.ui.component.EditPlaylistDialog
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.FontSizeRange
@@ -187,20 +188,9 @@ fun LocalPlaylistScreen(
 
     if (showEditDialog) {
         playlist?.playlist?.let { playlistEntity ->
-            TextFieldDialog(
-                icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
-                title = { Text(text = stringResource(R.string.edit_playlist)) },
-                onDismiss = { showEditDialog = false },
-                initialTextFieldValue = TextFieldValue(playlistEntity.name, TextRange(playlistEntity.name.length)),
-                onDone = { name ->
-                    database.query {
-                        update(playlistEntity.copy(name = name))
-                    }
-
-                    viewModel.viewModelScope.launch(Dispatchers.IO) {
-                        playlistEntity.browseId?.let { YouTube.updatePlaylist(playlistId = it, name = name) }
-                    }
-                }
+            EditPlaylistDialog(
+                playlist = playlistEntity,
+                onDismiss = { showEditDialog = false }
             )
         }
     }
@@ -374,16 +364,8 @@ fun LocalPlaylistScreen(
             modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             playlist?.let { playlist ->
-                if (playlist.songCount == 0) {
-                    item {
-                        EmptyPlaceholder(
-                            icon = Icons.Rounded.MusicNote,
-                            text = stringResource(R.string.playlist_is_empty),
-                            modifier = Modifier.animateItem()
-                        )
-                    }
-                } else {
-                    // playlist header
+                 // playlist header
+                if (!isSearching) {
                     item(
                         key = "playlist header",
                         contentType = CONTENT_TYPE_HEADER
@@ -435,6 +417,16 @@ fun LocalPlaylistScreen(
                                 }
                             }
                         }
+                    }
+                }
+
+                if (playlist.songCount == 0) {
+                    item {
+                        EmptyPlaceholder(
+                            icon = Icons.Rounded.MusicNote,
+                            text = stringResource(R.string.playlist_is_empty),
+                            modifier = Modifier.animateItem()
+                        )
                     }
                 }
             }
@@ -816,6 +808,12 @@ fun LocalPlaylistHeader(
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text(stringResource(R.string.shuffle))
             }
+        }
+
+        if(playlist.playlist.description.isNotBlank()) {
+            Text(
+                text = playlist.playlist.description
+            )
         }
     }
 }
