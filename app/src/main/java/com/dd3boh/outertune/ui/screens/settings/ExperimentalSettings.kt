@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.DeveloperMode
+import androidx.compose.material.icons.rounded.Devices
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Vibration
@@ -64,6 +65,7 @@ import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerImplKey
+import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -92,6 +94,8 @@ fun ExperimentalSettings(
     val coroutineScope = rememberCoroutineScope()
 
     // state variables and such
+    val (tabletUi, onTabletUiChange) = rememberPreference(TabletUiKey, defaultValue = false)
+
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
 
@@ -109,7 +113,20 @@ fun ExperimentalSettings(
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
             .verticalScroll(rememberScrollState())
     ) {
+        PreferenceGroupTitle(
+            title = stringResource(R.string.experimental_settings_title)
+        )
+        SwitchPreference(
+            title = { Text(stringResource(R.string.tablet_ui_title)) },
+            description = stringResource(R.string.tablet_ui_title),
+            icon = { Icon(Icons.Rounded.Devices, null) },
+            checked = tabletUi,
+            onCheckedChange = onTabletUiChange
+        )
 
+        PreferenceGroupTitle(
+            title = stringResource(R.string.settings_debug)
+        )
         // dev settings
         SwitchPreference(
             title = { Text(stringResource(R.string.dev_settings_title)) },
@@ -122,9 +139,6 @@ fun ExperimentalSettings(
 
 
         if (devSettings) {
-            PreferenceGroupTitle(
-                title = stringResource(R.string.settings_debug)
-            )
             PreferenceEntry(
                 title = { Text("DEBUG: Force local to remote artist migration NOW") },
                 icon = { Icon(Icons.Rounded.Backup, null) },

@@ -2,12 +2,14 @@ package com.dd3boh.outertune.extensions
 
 import android.Manifest
 import android.content.Context
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.annotation.RequiresPermission
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
+import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
@@ -31,4 +33,12 @@ fun Context.isInternetConnected(): Boolean {
 
 fun Context.getLikeAutoDownload(): LikedAutodownloadMode {
     return dataStore[LikedAutoDownloadKey].toEnum(LikedAutodownloadMode.OFF)
+}
+
+fun Context.tabMode(): Boolean {
+    val config = resources.configuration
+    val isTablet = config.smallestScreenWidthDp >= 600
+    val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val forceTabMode = dataStore.get(TabletUiKey, isTablet)
+    return (isTablet || forceTabMode) && isLandscape
 }
