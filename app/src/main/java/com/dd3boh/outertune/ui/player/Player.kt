@@ -9,6 +9,7 @@
 
 package com.dd3boh.outertune.ui.player
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.drawable.BitmapDrawable
@@ -124,6 +125,7 @@ import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.extensions.metadata
+import com.dd3boh.outertune.extensions.tabMode
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.extensions.toggleRepeatMode
 import com.dd3boh.outertune.models.MediaMetadata
@@ -148,6 +150,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import me.saket.squiggles.SquigglySlider
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun BottomSheetPlayer(
@@ -235,7 +238,10 @@ fun BottomSheetPlayer(
         )
     }
 
-    val playerBackground by rememberEnumPreference(key = PlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
+    val playerBackground by rememberEnumPreference(
+        key = PlayerBackgroundStyleKey,
+        defaultValue = PlayerBackgroundStyle.DEFAULT
+    )
 
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val isSystemInDarkTheme = isSystemInDarkTheme()
@@ -330,6 +336,8 @@ fun BottomSheetPlayer(
             )
         }
     ) {
+        val tabMode = context.tabMode()
+
         val actionButtons: @Composable RowScope.() -> Unit = {
             Spacer(modifier = Modifier.width(10.dp))
 
@@ -384,8 +392,8 @@ fun BottomSheetPlayer(
             )
 
             // action buttons for landscape (above title)
-            if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                Row (
+            if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
+                Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -456,7 +464,7 @@ fun BottomSheetPlayer(
                     }
 
                     // action buttons for portrait (inline with title)
-                    if (LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                    if (LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
                         actionButtons()
                     }
                 }
@@ -601,7 +609,7 @@ fun BottomSheetPlayer(
                         }
                 ) {
                     Image(
-                        imageVector = if(playbackState == STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        imageVector = if (playbackState == STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
                         modifier = Modifier
@@ -720,128 +728,108 @@ fun BottomSheetPlayer(
             }
         }
 
-        when (LocalConfiguration.current.orientation) {
-            Configuration.ORIENTATION_LANDSCAPE -> {
-                Row(
+        if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
+            Row(
+                modifier = Modifier
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                    .padding(bottom = queueSheetState.collapsedBound)
+                    .fillMaxSize()
+            ) {
+                BoxWithConstraints(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                        .padding(bottom = queueSheetState.collapsedBound)
-                        .fillMaxSize()
+                        .weight(1f)
+                        .nestedScroll(state.preUpPostDownNestedScrollConnection)
                 ) {
-                    BoxWithConstraints(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .weight(1f)
-                            .nestedScroll(state.preUpPostDownNestedScrollConnection)
-                    ) {
-                        val horizontalLazyGridItemWidth = this.maxWidth * horizontalLazyGridItemWidthFactor
+                    val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
 
-                        LazyHorizontalGrid(
-                            state = thumbnailLazyGridState,
-                            rows = GridCells.Fixed(1),
-                            flingBehavior = rememberSnapFlingBehavior(
-                                thumbnailSnapLayoutInfoProvider
-                            ),
-                            userScrollEnabled = state.isExpanded && swipeToSkip
+                    LazyHorizontalGrid(
+                        state = thumbnailLazyGridState,
+                        rows = GridCells.Fixed(1),
+                        flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                        userScrollEnabled = state.isExpanded && swipeToSkip
+                    ) {
+                        items(
+                            items = mediaItems,
+                            key = { it.id }
                         ) {
-                            items(
-                                items = mediaItems,
-                                key = { it.id + "-" + mediaItems.indexOf(it) }
-                            ) { item ->
-                                Box(
-                                    modifier = Modifier
-                                        .width(horizontalLazyGridItemWidth)
-                                        .animateContentSize()
-                                ) {
-                                    Thumbnail(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop,
-                                        sliderPositionProvider = { sliderPosition },
-                                        showLyricsOnClick = true,
-                                        customMediaMetadata = item
-                                    )
-
-                                    if (item == mediaMetadata) {
-                                        Box(
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .padding(8.dp)
-                                                .size(12.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary)
-                                        )
-                                    }
-                                }
-                            }
+                            Thumbnail(
+                                sliderPositionProvider = { sliderPosition },
+                                modifier = Modifier
+                                    .width(horizontalLazyGridItemWidth)
+                                    .animateContentSize(),
+                                contentScale = ContentScale.Crop,
+                                showLyricsOnClick = true,
+                                customMediaMetadata = it
+                            )
                         }
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .weight(if (showLyrics) 0.4f else 1f, false)
-                            .animateContentSize()
-                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-                    ) {
-                        Spacer(Modifier.weight(1f))
-
-                        mediaMetadata?.let {
-                            controlsContent(it)
-                        }
-
-                        Spacer(Modifier.weight(1f))
                     }
                 }
-            }
 
-            else -> {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                        .padding(bottom = queueSheetState.collapsedBound)
+                        .weight(if (showLyrics) 0.4f else 1f, false)
+                        .animateContentSize()
+                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
                 ) {
-                    BoxWithConstraints(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .weight(1f)
-                            .nestedScroll(state.preUpPostDownNestedScrollConnection)
-                    ) {
-                        val horizontalLazyGridItemWidth = this.maxWidth * horizontalLazyGridItemWidthFactor
-
-                        LazyHorizontalGrid(
-                            state = thumbnailLazyGridState,
-                            rows = GridCells.Fixed(1),
-                            flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
-                            userScrollEnabled = swipeToSkip && state.isExpanded
-                        ) {
-                            items(
-                                items = mediaItems,
-                                key = { it.id }
-                            ) {
-                                Thumbnail(
-                                    modifier = Modifier
-                                        .width(horizontalLazyGridItemWidth)
-                                        .animateContentSize(),
-                                    contentScale = ContentScale.Crop,
-                                    sliderPositionProvider = { sliderPosition },
-                                    showLyricsOnClick = true,
-                                    customMediaMetadata = it
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.weight(1f))
 
                     mediaMetadata?.let {
                         controlsContent(it)
                     }
 
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.weight(1f))
                 }
             }
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                    .padding(bottom = queueSheetState.collapsedBound)
+            ) {
+                BoxWithConstraints(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                ) {
+                    val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+
+                    LazyHorizontalGrid(
+                        state = thumbnailLazyGridState,
+                        rows = GridCells.Fixed(1),
+                        flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                        userScrollEnabled = swipeToSkip && state.isExpanded
+                    ) {
+                        items(
+                            items = mediaItems,
+                            key = { it.id }
+                        ) {
+                            Thumbnail(
+                                modifier = Modifier
+                                    .width(horizontalLazyGridItemWidth)
+                                    .animateContentSize(),
+                                contentScale = ContentScale.Crop,
+                                sliderPositionProvider = { sliderPosition },
+                                showLyricsOnClick = true,
+                                customMediaMetadata = it
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                mediaMetadata?.let {
+                    controlsContent(it)
+                }
+
+                Spacer(Modifier.height(24.dp))
+            }
         }
+
 
         Queue(
             state = queueSheetState,
