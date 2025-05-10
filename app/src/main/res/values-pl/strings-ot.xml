@@ -158,4 +158,5 @@
     <string name="sync_conflict_title">Rozwiązanie konfliktu</string>
     <string name="sync_mode_ro">Tylko do odczytu (Przeglądaj zawartość zdalną)</string>
     <string name="sync_mode_rw">Do odczytu i zapisu (Pozwól również na zmiany w zawartości zdalnej)</string>
+    <string name="grp_sync">Synchronizacja</string>
 </resources>
