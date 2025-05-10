@@ -156,4 +156,11 @@
     <string name="grp_library_and_content">Bibliothèque et Contenu</string>
     <string name="sync_conflict_add_only">Conservez tout le contenu local, ajoutez du nouveau contenu distant</string>
     <string name="sync_mode_rw">Lecture / Écriture (permet également de modifier le contenu distant)</string>
+    <string name="grp_sync">Synchroniser</string>
+    <string name="playlist_missing_note">Playlists manquantes ? Cliquez ici pour activer la synchronisation en lecture/écriture dans les paramètres.</string>
+    <string name="checking_for_update">Vérification des mises à jour</string>
+    <string name="no_updates_available">Aucune mise à jour disponible</string>
+    <string name="check_for_update">Vérifier les mises à jour</string>
+    <string name="grp_behavior">Comportement</string>
+    <string name="library_empty">Le contenu de votre bibliothèque s\'affichera ici</string>
 </resources>
