@@ -716,7 +716,7 @@ class MainActivity : ComponentActivity() {
 
                             if (!playerBottomSheetState.isDismissed && !tabMode) bottom += MiniPlayerHeight
                             if (!useRail) {
-                                if (shouldShowNavigationBar) bottom += NavigationBarHeight
+                                if (shouldShowNavigationBar && !tabMode) bottom += NavigationBarHeight
                                 windowsInsets
                                     .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
                                     .add(WindowInsets(top = AppBarHeight, bottom = bottom))
@@ -744,8 +744,8 @@ class MainActivity : ComponentActivity() {
                     val searchBarScrollBehavior = appBarScrollBehavior(
                         state = rememberTopAppBarState(),
                         canScroll = {
-                            navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } &&
-                                    (playerBottomSheetState.isCollapsed || playerBottomSheetState.isDismissed)
+                            navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } && !tabMode
+                                    && (playerBottomSheetState.isCollapsed || playerBottomSheetState.isDismissed)
                         }
                     )
 

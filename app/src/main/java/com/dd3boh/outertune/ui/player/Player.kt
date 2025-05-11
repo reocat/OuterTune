@@ -55,7 +55,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
@@ -831,7 +830,7 @@ fun BottomSheetPlayer(
         }
 
 
-        Queue(
+        QueueSheet(
             state = queueSheetState,
             playerBottomSheetState = state,
             onTerminate = {
