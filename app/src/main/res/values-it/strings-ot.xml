@@ -156,4 +156,5 @@
     <string name="sync_conflict_title">Risoluzione dei conflitti</string>
     <string name="sync_mode">Modalità di sincronizzazione</string>
     <string name="sync_mode_rw">Lettura e scrittura (consenti anche le modifiche al contenuto remoto)</string>
+    <string name="grp_sync">Sincronizzazione</string>
 </resources>
