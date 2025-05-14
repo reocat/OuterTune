@@ -67,7 +67,8 @@ fun MixedPlaylistScreen(
                                 YouTubePlaylistMenu(
                                     playlist = item,
                                     coroutineScope = coroutineScope,
-                                    onDismiss = menuState::dismiss
+                                    onDismiss = menuState::dismiss,
+                                    navController = navController,
                                 )
                             }
                         }
