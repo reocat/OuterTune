@@ -780,7 +780,7 @@ class MainActivity : ComponentActivity() {
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
                         LocalSyncUtils provides syncUtils,
-                        LocalIsNetworkConnected provides isNetworkConnected
+                        LocalNetworkConnected provides isNetworkConnected
                     ) {
                         Box(
                             modifier = Modifier
@@ -1495,4 +1495,4 @@ val LocalPlayerConnection = staticCompositionLocalOf<PlayerConnection?> { error(
 val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No player WindowInsets provided") }
 val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No DownloadUtil provided") }
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
-val LocalIsNetworkConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
+val LocalNetworkConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }

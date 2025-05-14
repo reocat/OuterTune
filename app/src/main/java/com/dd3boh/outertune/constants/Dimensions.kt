@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets

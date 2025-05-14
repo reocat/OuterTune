@@ -72,7 +72,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
-import com.dd3boh.outertune.LocalIsNetworkConnected
+import com.dd3boh.outertune.LocalNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -120,7 +120,7 @@ fun ArtistScreen(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val menuState = LocalMenuState.current
-    val isNetworkConnected = LocalIsNetworkConnected.current
+    val isNetworkConnected = LocalNetworkConnected.current
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()

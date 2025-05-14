@@ -12,9 +12,8 @@ package com.dd3boh.outertune.ui.screens.settings
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,12 +39,6 @@ import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.ui.screens.settings.fragments.AccountFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.SyncFrag
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.utils.rememberEnumPreference
-import com.dd3boh.outertune.utils.rememberPreference
-import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.utils.parseCookieString
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @SuppressLint("PrivateResource")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +52,8 @@ fun AccountSyncSettings(
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
+        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(
+            WindowInsetsSides.Top)))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.account)

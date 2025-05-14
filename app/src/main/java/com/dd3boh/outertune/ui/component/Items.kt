@@ -101,7 +101,7 @@ import coil.compose.AsyncImage
 import com.dd3boh.outertune.BuildConfig
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
-import com.dd3boh.outertune.LocalIsNetworkConnected
+import com.dd3boh.outertune.LocalNetworkConnected
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.GridThumbnailHeight
@@ -390,7 +390,7 @@ fun SongListItem(
 ) {
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
-    val isNetworkConnected = LocalIsNetworkConnected.current
+    val isNetworkConnected = LocalNetworkConnected.current
     val available = song.song.isAvailableOffline() || isNetworkConnected
 
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -1194,7 +1194,7 @@ fun YouTubeListItem(
     isPlaying: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
-    val isNetworkConnected = LocalIsNetworkConnected.current
+    val isNetworkConnected = LocalNetworkConnected.current
     val downloads by LocalDownloadUtil.current.downloads.collectAsState()
 
     var available = true

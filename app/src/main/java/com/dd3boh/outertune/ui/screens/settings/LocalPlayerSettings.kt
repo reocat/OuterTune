@@ -9,11 +9,6 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,10 +34,6 @@ import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.settings.fragments.LocalScannerExtraFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LocalScannerFrag
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
-import com.dd3boh.outertune.ui.utils.imageCache
-import com.dd3boh.outertune.utils.isPackageInstalled
-import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 
 
