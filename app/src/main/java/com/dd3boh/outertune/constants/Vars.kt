@@ -17,3 +17,5 @@ const val EXTRACTOR_DEBUG = false
 
 // enable printing of *ALL* data that extractor reads
 const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
+
+const val ENABLE_UPDATE_CHECKER = false

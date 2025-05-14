@@ -9,6 +9,8 @@
 
 package com.dd3boh.outertune.ui.screens.settings
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -25,23 +27,44 @@ import androidx.compose.material.icons.rounded.Interests
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Restore
+import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.ENABLE_UPDATE_CHECKER
+import com.dd3boh.outertune.constants.LastVersionKey
 import com.dd3boh.outertune.constants.TopBarInsets
+import com.dd3boh.outertune.constants.UpdateAvailableKey
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.utils.Updater
 import com.dd3boh.outertune.ui.utils.backToMain
+import com.dd3boh.outertune.utils.compareVersion
+import com.dd3boh.outertune.utils.rememberPreference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+val SETTINGS_TAG = "Settings"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +72,13 @@ fun SettingsScreen(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
 
+    val lastVer by rememberPreference(LastVersionKey, defaultValue = "0.0.0")
+    val (updateAvailable, onUpdateAvailableChange) = rememberPreference(UpdateAvailableKey, defaultValue = false)
+
+    var newVersion by remember { mutableStateOf("") }
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
@@ -102,6 +131,59 @@ fun SettingsScreen(
             icon = { Icon(Icons.Rounded.Info, null) },
             onClick = { navController.navigate("settings/about") }
         )
+
+        if (ENABLE_UPDATE_CHECKER)
+            PreferenceEntry(
+                title = {
+                    Text(
+                        text = stringResource(if (updateAvailable) R.string.new_version_available else R.string.check_for_update),
+                    )
+                },
+                description = if (updateAvailable) lastVer else stringResource(R.string.no_updates_available),
+                icon = {
+                    BadgedBox(
+                        badge = { if (updateAvailable) Badge() }
+                    ) {
+                        Icon(Icons.Rounded.Update, null)
+                    }
+                },
+                onClick = {
+                    if (updateAvailable) {
+                        uriHandler.openUri("https://github.com/OuterTune/OuterTune/releases/latest")
+                    } else {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            Updater.tryCheckUpdate(context, true)?.let {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.check_for_update),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                if (compareVersion(lastVer, it) < 0) {
+                                    onUpdateAvailableChange(true)
+                                    Log.d(SETTINGS_TAG, "Update available. UpdateAvailable set to true")
+                                    newVersion = it
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.new_version_available),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    Log.d(SETTINGS_TAG, "No new updates available")
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.no_updates_available),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
     }
 
     TopAppBar(

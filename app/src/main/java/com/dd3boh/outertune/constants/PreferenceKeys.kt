@@ -187,6 +187,13 @@ val AccountEmailKey = stringPreferencesKey("accountEmail")
 val AccountChannelHandleKey = stringPreferencesKey("accountChannelHandle")
 
 
+/**
+ * Misc
+ */
+val LastUpdateCheckKey = longPreferencesKey("lastUpdateCheck")
+val LastVersionKey = stringPreferencesKey("lastVersion")
+val UpdateAvailableKey = booleanPreferencesKey("updateAvailable")
+
 val LanguageCodeToName = mapOf(
     "af" to "Afrikaans",
     "az" to "Azərbaycan",
