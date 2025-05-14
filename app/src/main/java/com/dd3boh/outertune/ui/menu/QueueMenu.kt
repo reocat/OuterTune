@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.models.MultiQueueObject
@@ -23,6 +24,7 @@ import com.dd3boh.outertune.ui.component.QueueListItem
 
 @Composable
 fun QueueMenu(
+    navController: NavController,
     mq: MultiQueueObject?,
     onDismiss: () -> Unit,
     refreshUi: () -> Unit,
@@ -45,6 +47,7 @@ fun QueueMenu(
 
     // dialogs
     AddToPlaylistDialog(
+        navController = navController,
         isVisible = showChoosePlaylistDialog,
         onGetSong = { songs.map { it.id } },
         onDismiss = {

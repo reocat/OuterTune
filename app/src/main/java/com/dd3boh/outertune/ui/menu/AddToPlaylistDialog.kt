@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListThumbnailSize
@@ -35,6 +36,7 @@ import com.dd3boh.outertune.constants.YtmSyncModeKey
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
 import com.dd3boh.outertune.ui.component.DefaultDialog
+import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.ListItem
 import com.dd3boh.outertune.ui.component.PlaylistListItem
@@ -45,6 +47,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AddToPlaylistDialog(
+    navController: NavController,
     isVisible: Boolean,
     allowSyncing: Boolean = true,
     initialTextFieldValue: String? = null,
@@ -139,10 +142,27 @@ fun AddToPlaylistDialog(
                 )
             }
 
+            if (syncMode == SyncMode.RO) {
+                item {
+                    TextButton(
+                        onClick = {
+                            navController.navigate("settings/account_sync")
+                            onDismiss()
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.playlist_missing_note),
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = TextUnit(12F, TextUnitType.Sp),
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                    }
+                }
+            }
+
             item {
-                Text(
+                InfoLabel(
                     text = stringResource(R.string.playlist_add_local_to_synced_note),
-                    fontSize = TextUnit(12F, TextUnitType.Sp),
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

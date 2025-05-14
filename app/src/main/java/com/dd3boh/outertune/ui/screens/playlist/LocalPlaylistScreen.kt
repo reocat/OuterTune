@@ -588,6 +588,7 @@ fun LocalPlaylistScreen(
 
         FloatingFooter(inSelectMode) {
             SelectHeader(
+                navController = navController,
                 selectedItems = selection.mapNotNull { id ->
                     songs.find { it.song.id == id }?.song
                 }.map { it.toMediaMetadata() },

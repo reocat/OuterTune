@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
+import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -65,6 +66,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun YouTubePlaylistMenu(
+    navController: NavController,
     playlist: PlaylistItem,
     songs: List<SongItem> = emptyList(),
     coroutineScope: CoroutineScope,
@@ -107,6 +109,7 @@ fun YouTubePlaylistMenu(
     )
 
     AddToPlaylistDialog(
+        navController = navController,
         isVisible = showChoosePlaylistDialog,
         onGetSong = { targetPlaylist ->
             val allSongs = songs

@@ -557,6 +557,7 @@ fun AutoPlaylistScreen(
         )
         FloatingFooter(inSelectMode) {
             SelectHeader(
+                navController = navController,
                 selectedItems = selection.mapNotNull { id ->
                     songs.find { it.song.id == id }
                 }.map { it.toMediaMetadata() },

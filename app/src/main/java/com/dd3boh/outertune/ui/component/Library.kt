@@ -184,6 +184,7 @@ fun LibraryPlaylistListItem(
                     // TODO: investigate why song count is needed. Remove if not needed
                     if (playlist.playlist.isEditable || playlist.playlist.isLocal || playlist.playlist.browseId == null || playlist.songCount != 0) {
                         PlaylistMenu(
+                            navController = navController,
                             playlist = playlist,
                             coroutineScope = coroutineScope,
                             onDismiss = menuState::dismiss
@@ -191,6 +192,7 @@ fun LibraryPlaylistListItem(
                     } else {
                         val browseId = playlist.playlist.browseId
                         YouTubePlaylistMenu(
+                            navController = navController,
                             playlist = PlaylistItem(
                                 id = browseId,
                                 title = playlist.playlist.name,
@@ -262,6 +264,7 @@ fun LibraryPlaylistGridItem(
                 menuState.show {
                     if (playlist.playlist.isEditable || playlist.songCount != 0) {
                         PlaylistMenu(
+                            navController = navController,
                             playlist = playlist,
                             coroutineScope = coroutineScope,
                             onDismiss = menuState::dismiss
@@ -269,6 +272,7 @@ fun LibraryPlaylistGridItem(
                     } else {
                         playlist.playlist.browseId?.let { browseId ->
                             YouTubePlaylistMenu(
+                                navController = navController,
                                 playlist = PlaylistItem(
                                     id = browseId,
                                     title = playlist.playlist.name,

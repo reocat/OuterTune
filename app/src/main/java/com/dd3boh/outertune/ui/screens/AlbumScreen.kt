@@ -527,6 +527,7 @@ fun AlbumScreen(
             val albumWithSongsLocal = albumWithSongs
             if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
                 SelectHeader(
+                    navController = navController,
                     selectedItems = selection.mapNotNull { id ->
                         albumWithSongsLocal.songs.find { it.song.id == id }
                     }.map { it.toMediaMetadata() },

@@ -164,6 +164,7 @@ fun SongMenu(
     }
 
     AddToPlaylistDialog(
+        navController = navController,
         isVisible = showChoosePlaylistDialog,
         onGetSong = { playlist ->
             coroutineScope.launch(Dispatchers.IO) {

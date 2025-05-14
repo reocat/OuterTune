@@ -155,6 +155,7 @@ fun OnlineSearchResult(
                                         )
 
                                         is PlaylistItem -> YouTubePlaylistMenu(
+                                            navController = navController,
                                             playlist = item,
                                             coroutineScope = coroutineScope,
                                             onDismiss = menuState::dismiss

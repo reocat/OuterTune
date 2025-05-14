@@ -460,6 +460,7 @@ fun OnlinePlaylistScreen(
                                                 onClick = {
                                                     menuState.show {
                                                         YouTubePlaylistMenu(
+                                                            navController = navController,
                                                             playlist = playlist,
                                                             songs = songs,
                                                             coroutineScope = coroutineScope,
@@ -723,6 +724,7 @@ fun OnlinePlaylistScreen(
 
         FloatingFooter(inSelectMode) {
             SelectHeader(
+                navController = navController,
                 selectedItems = selection.map {
                     songs[it]
                 }.map { it.toMediaMetadata() },

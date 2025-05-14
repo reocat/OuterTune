@@ -425,6 +425,7 @@ fun HistoryScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
             SelectHeader(
+                navController = navController,
                 selectedItems = eventsMap.flatMap { group ->
                     group.value.filter { it.event.id in selection }
                 }.map { it.song.toMediaMetadata() },

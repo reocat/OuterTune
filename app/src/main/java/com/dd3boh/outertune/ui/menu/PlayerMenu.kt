@@ -174,6 +174,7 @@ fun PlayerMenu(
     }
 
     AddToPlaylistDialog(
+        navController = navController,
         isVisible = showChoosePlaylistDialog,
         onGetSong = { playlist ->
             database.transaction {

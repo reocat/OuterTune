@@ -433,6 +433,7 @@ fun Queue(
                                     onLongClick = {
                                         menuState.show {
                                             QueueMenu(
+                                                navController = navController,
                                                 mq = mq,
                                                 onDismiss = menuState::dismiss,
                                                 refreshUi = { updateQueues() }
@@ -744,6 +745,7 @@ fun Queue(
                 // handle selection mode
                 if (inSelectMode) {
                     SelectHeader(
+                        navController = navController,
                         selectedItems = selectedItems.mapNotNull { uidHash ->
                             mutableQueueWindows.find { it.uid.hashCode() == uidHash }
                         }.mapNotNull { it.mediaItem.metadata },
@@ -945,7 +947,29 @@ fun Queue(
                             .nestedScroll(state.preUpPostDownNestedScrollConnection)
                             .weight(1f, false)
                     ) {
-                        queueList()
+                        if (isSearching) {
+                            searchBar()
+                            if (inSelectMode) {
+                                Row {
+                                    SelectHeader(
+                                        navController = navController,
+                                        selectedItems = selectedItems.mapNotNull { uidHash ->
+                                            mutableQueueWindows.find { it.uid.hashCode() == uidHash }
+                                        }.mapNotNull { it.mediaItem.metadata },
+                                        totalItemCount = queueWindows.size,
+                                        onSelectAll = {
+                                            selectedItems.clear()
+                                            selectedItems.addAll(queueWindows.map { it.uid.hashCode() })
+                                        },
+                                        onDeselectAll = { selectedItems.clear() },
+                                        menuState = menuState,
+                                        onDismiss = { inSelectMode = false }
+                                    )
+                                }
+                            }
+                        } else {
+                            queueList()
+                        }
                     }
 
                     // nav bar
@@ -985,7 +1009,27 @@ fun Queue(
                     )
             ) {
                 // multiqueue list
-                if (multiqueueExpand) {
+                if (isSearching) {
+                    searchBar()
+                    if (inSelectMode) {
+                        Row {
+                            SelectHeader(
+                                navController = navController,
+                                selectedItems = selectedItems.mapNotNull { uidHash ->
+                                    filteredSongs.find { it.uid.hashCode() == uidHash }
+                                }.mapNotNull { it.mediaItem.metadata },
+                                totalItemCount = filteredSongs.size,
+                                onSelectAll = {
+                                    selectedItems.clear()
+                                    selectedItems.addAll(filteredSongs.map { it.uid.hashCode() })
+                                },
+                                onDeselectAll = { selectedItems.clear() },
+                                menuState = menuState,
+                                onDismiss = { inSelectMode = false }
+                            )
+                        }
+                    }
+                } else if (multiqueueExpand) {
                     Column(
                         modifier = Modifier.fillMaxHeight(0.4f)
                     ) {

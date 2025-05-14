@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
+import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -54,6 +55,7 @@ import java.time.LocalDateTime
  */
 @Composable
 fun SelectionMediaMetadataMenu(
+    navController: NavController,
     selection: List<MediaMetadata>,
     onDismiss: () -> Unit,
     clearAction: () -> Unit,
@@ -126,6 +128,7 @@ fun SelectionMediaMetadataMenu(
     }
 
     AddToPlaylistDialog(
+        navController = navController,
         isVisible = showChoosePlaylistDialog,
         onGetSong = {
             selection.map {

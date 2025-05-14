@@ -327,6 +327,7 @@ fun LibrarySongsScreen(
         FloatingFooter(visible = inSelectMode && songs != null) {
             val s: List<Song> = (songs as Iterable<Song>).toList()
             SelectHeader(
+                navController = navController,
                 selectedItems = selection.mapNotNull { songId ->
                     s.find { it.id == songId }
                 }.map { it.toMediaMetadata() },

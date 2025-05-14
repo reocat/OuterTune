@@ -303,6 +303,7 @@ fun ArtistItemsScreen(
                                         )
 
                                         is PlaylistItem -> YouTubePlaylistMenu(
+                                            navController = navController,
                                             playlist = item,
                                             coroutineScope = coroutineScope,
                                             onDismiss = menuState::dismiss
@@ -345,6 +346,7 @@ fun ArtistItemsScreen(
     ) {
         FloatingFooter(inSelectMode) {
             SelectHeader(
+                navController = navController,
                 selectedItems = selection.mapNotNull { songId ->
                     songIndex[songId]
                 }.map { it.toMediaMetadata() },
