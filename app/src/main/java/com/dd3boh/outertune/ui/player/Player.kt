@@ -142,7 +142,6 @@ import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
-import com.materialkolor.ktx.animateColorScheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -699,23 +698,10 @@ fun BottomSheetPlayer(
                 }
             ) { colors ->
                 if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
-                    val customColorScheme = MaterialTheme.colorScheme.copy(
-                        primary = colors[0],
-                        secondary = colors[1]
-                    )
-                    val animatedScheme = animateColorScheme(customColorScheme)
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        animatedScheme.primary,
-                                        animatedScheme.secondary
-                                    )
-                                ),
-                                alpha = 0.6f
-                            )
+                            .background(Brush.verticalGradient(colors), alpha = 0.8f)
                     )
                     Box(
                         modifier = Modifier

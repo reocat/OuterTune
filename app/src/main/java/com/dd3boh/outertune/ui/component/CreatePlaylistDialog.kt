@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 O⁠ute⁠rTu⁠ne Project
+ * Copyright (C) 2025 OuterTune Project
  *
  * SPDX-License-Identifier: GPL-3.0
  *
@@ -8,9 +8,6 @@
 
 package com.dd3boh.outertune.ui.component
 
-import android.R.attr.checked
-import android.R.attr.text
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -49,9 +45,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.dd3boh.outertune.App.Companion.toast
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
@@ -60,10 +54,7 @@ import com.dd3boh.outertune.extensions.isUserLoggedIn
 import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.body.CreatePlaylistBody
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime

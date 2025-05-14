@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -91,10 +92,11 @@ android {
     }
     kotlin {
         jvmToolchain(21)
-    }
-    kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
-        jvmTarget = "21"
+
+        compilerOptions {
+            freeCompilerArgs.addAll(listOf("-Xcontext-parameters", "-Xannotation-default-target=param-property"))
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
 
     tasks.withType<KotlinCompile> {
