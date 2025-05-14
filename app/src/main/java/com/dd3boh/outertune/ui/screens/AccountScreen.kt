@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,6 +38,7 @@ import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.TopBarInsets
+import com.dd3boh.outertune.extensions.isInternetConnected
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
@@ -59,6 +61,7 @@ fun AccountScreen(
     scrollBehavior: TopAppBarScrollBehavior,
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
+    val content = LocalContext.current
     val menuState = LocalMenuState.current
 
     val coroutineScope = rememberCoroutineScope()
@@ -70,10 +73,9 @@ fun AccountScreen(
     val accountName by rememberPreference(AccountNameKey, stringResource(R.string.not_logged_in))
 
     val playlists by viewModel.playlists.collectAsState()
-
     val albums by viewModel.albums.collectAsState()
-
     val artists by viewModel.artists.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
@@ -164,7 +166,7 @@ fun AccountScreen(
             )
         }
 
-        if (playlists == null) {
+        if (isLoggedIn && (playlists == null && isLoading < 3)) {
             items(8) {
                 ShimmerHost {
                     GridItemPlaceHolder(fillMaxWidth = true)
