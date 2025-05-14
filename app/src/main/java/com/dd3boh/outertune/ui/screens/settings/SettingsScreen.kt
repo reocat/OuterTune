@@ -50,11 +50,12 @@ fun SettingsScreen(
 ) {
 
     Column(
-        modifier = Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
+        Modifier
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
+
         PreferenceEntry(
             title = { Text(stringResource(R.string.grp_account_sync)) },
             icon = { Icon(Icons.Rounded.AccountCircle, null) },

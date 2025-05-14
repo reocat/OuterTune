@@ -12,10 +12,12 @@ package com.dd3boh.outertune.ui.screens.settings
 import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +46,9 @@ import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
-import com.dd3boh.outertune.constants.SettingsTopBarHeight
+import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
+import com.dd3boh.outertune.constants.SliderStyle
+import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SlimHomeScreenTilesKey
 import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.ui.component.EnumListPreference
@@ -73,10 +77,11 @@ fun AppearanceSettings(
 
     Column(
         Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(SettingsTopBarHeight))
+        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
+
         PreferenceGroupTitle(
             title = stringResource(R.string.theme)
         )

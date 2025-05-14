@@ -12,9 +12,9 @@ package com.dd3boh.outertune.ui.screens.settings
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +32,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.SettingsTopBarHeight
+import com.dd3boh.outertune.constants.AccountChannelHandleKey
+import com.dd3boh.outertune.constants.AccountEmailKey
+import com.dd3boh.outertune.constants.AccountNameKey
+import com.dd3boh.outertune.constants.DataSyncIdKey
+import com.dd3boh.outertune.constants.InnerTubeCookieKey
+import com.dd3boh.outertune.constants.LikedAutoDownloadKey
+import com.dd3boh.outertune.constants.LikedAutodownloadMode
+import com.dd3boh.outertune.constants.PauseListenHistoryKey
+import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
+import com.dd3boh.outertune.constants.UseLoginForBrowse
+import com.dd3boh.outertune.constants.VisitorDataKey
+import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
@@ -56,10 +67,11 @@ fun AccountSyncSettings(
 ) {
     Column(
         Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(SettingsTopBarHeight))
+        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
+
         PreferenceGroupTitle(
             title = stringResource(R.string.account)
         )

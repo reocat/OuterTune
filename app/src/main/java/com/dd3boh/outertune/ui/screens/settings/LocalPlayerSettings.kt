@@ -10,9 +10,10 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,13 +32,28 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AutomaticScannerKey
-import com.dd3boh.outertune.constants.SettingsTopBarHeight
+import com.dd3boh.outertune.constants.ExcludedScanPathsKey
+import com.dd3boh.outertune.constants.LastLocalScanKey
+import com.dd3boh.outertune.constants.LookupYtmArtistsKey
+import com.dd3boh.outertune.constants.ScanPathsKey
+import com.dd3boh.outertune.constants.ScannerImpl
+import com.dd3boh.outertune.constants.ScannerImplKey
+import com.dd3boh.outertune.constants.ScannerMatchCriteria
+import com.dd3boh.outertune.constants.ScannerSensitivityKey
+import com.dd3boh.outertune.constants.ScannerStrictExtKey
+import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.ui.component.ActionPromptDialog
+import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.settings.fragments.LocalScannerExtraFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LocalScannerFrag
 import com.dd3boh.outertune.ui.utils.backToMain
+import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
+import com.dd3boh.outertune.ui.utils.imageCache
+import com.dd3boh.outertune.utils.isPackageInstalled
+import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 
 
@@ -51,10 +67,9 @@ fun LocalPlayerSettings(
 
     Column(
         Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(SettingsTopBarHeight))
         // automatic scanner
         SwitchPreference(
             title = { Text(stringResource(R.string.auto_scanner_title)) },
