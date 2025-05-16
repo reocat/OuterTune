@@ -55,6 +55,7 @@
     <string name="grp_extra_scanner_settings">Дополнительные настройки сканера</string>
     <string name="grp_interface">Интерфейс</string>
     <string name="grp_layout">Раскладка</string>
+    <string name="grp_library_and_content">Библиотека и контент</string>
     <string name="grp_localization">Локализация</string>
     <string name="grp_lyrics_format">Форматирование</string>
     <string name="grp_lyrics_parser">Парсер</string>
@@ -87,6 +88,12 @@
     <string name="token_adv_login_description">Это ПРОДВИНУТЫЙ способ входа. Вместо использования веб-портала вы можете ввести или обновить токен для входа здесь. Это может быть полезно для быстрого входа на нескольких устройствах. Учтите, что приложение не примет токены с неверным форматом.</string>
     <string name="token_hidden">Нажмите, чтобы показать токен</string>
     <string name="token_shown">Нажмите еще раз, чтобы скопировать или изменить</string>
+    <string name="sync_conflict_overwrite">Заменить локальный контент удалённым контентом</string>
+    <string name="sync_conflict_title">Разрешение конфликтов</string>
+    <string name="sync_conflict_add_only">Сохранить весь локальный контент, добавить новый удалённый контент</string>
+    <string name="token">Токен</string>
+    <string name="edit_token">Редактирование токена</string>
+    <string name="invalid_token">Неверный токен. Убедитесь, что токен включает в себя SAPISID cookie.</string>
     <string name="ytm_sync">Авто-синхронизация с аккаунтом YouTube Music</string>
     <string name="sync_mode">Режим синхронизации</string>
     <string name="sync_mode_ro">Только чтение (просмотр удаленного контента)</string>
