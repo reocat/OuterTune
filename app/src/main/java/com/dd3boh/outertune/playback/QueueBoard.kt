@@ -271,8 +271,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                     shuffle(newQueue, false, bypassSaveToDb = true)
                 }
 
-                saveQueue(newQueue)
-
+                saveQueueSongs(newQueue)
                 bubbleUp(newQueue) // move queue to end of list so it shows as most recent
                 return newQueue
             }
@@ -302,7 +301,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                 newQueue.queuePos = newQueue.queue.indexOf(newQueue.queue.find { it.shuffleIndex == 0 })
             }
 
-            saveQueue(newQueue)
+            saveQueueSongs(newQueue)
             bubbleUp(newQueue) // move queue to end of list so it shows as most recent
             return newQueue
         }
