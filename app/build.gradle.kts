@@ -114,9 +114,7 @@ android {
     }
 
     lint {
-        disable += "MissingTranslation"
-        disable += "MissingQuantity"
-        disable += "ImpliedQuantity"
+        lintConfig = file("app/lint.xml")
     }
 
     androidResources {
