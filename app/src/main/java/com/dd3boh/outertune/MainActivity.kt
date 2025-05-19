@@ -500,7 +500,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (!ENABLE_UPDATE_CHECKER) return@LaunchedEffect
-                if (compareVersion(lastVer, BuildConfig.VERSION_NAME) < 0) {
+                if (compareVersion(lastVer, BuildConfig.VERSION_NAME) <= 0) {
                     onLastVerChange(BuildConfig.VERSION_NAME)
                     onUpdateAvailableChange(false)
                     Timber.tag(MAIN_TAG).d("App version is >= latest. Tracking current version")
