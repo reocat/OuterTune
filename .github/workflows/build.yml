@@ -49,7 +49,7 @@ jobs:
           PULL_REQUEST: 'false'
 
       - name: Sign APKs
-        uses: ilharp/sign-android-release@v1.0.4
+        uses: ilharp/sign-android-release@v2.0.0
         with:
           releaseDir: app/build/outputs/apk/${{ matrix.abi }}/release
           signingKey: ${{ secrets.RELEASE_KEYSTORE }}
