@@ -208,12 +208,22 @@ fun ExperimentalSettings(
                     }
                 )
                 PreferenceEntry(
-                    title = { Text("DEBUG: Nuke db lyrics") },
+                    title = { Text("DEBUG: Nuke local db lyrics") },
                     icon = { Icon(Icons.Rounded.WarningAmber, null) },
                     onClick = {
-                        Toast.makeText(context, "Nuking lyrics from database...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Nuking local lyrics from database...", Toast.LENGTH_SHORT).show()
                         coroutineScope.launch(Dispatchers.IO) {
                             Timber.tag("Settings").d("Nuke database status:  ${database.nukeLocalLyrics()}")
+                        }
+                    }
+                )
+                PreferenceEntry(
+                    title = { Text("DEBUG: Nuke dangling db lyrics") },
+                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                    onClick = {
+                        Toast.makeText(context, "Nuking dangling lyrics from database...", Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch(Dispatchers.IO) {
+                            Log.i(SETTINGS_TAG, "Nuke database status:  ${database.nukeDanglingLyrics()}")
                         }
                     }
                 )

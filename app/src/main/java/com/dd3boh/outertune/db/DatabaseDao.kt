@@ -327,8 +327,12 @@ AND NOT EXISTS (
     fun nukeDanglingFormatEntities()
 
     @Transaction
-    @Query("DELETE FROM lyrics")
+    @Query("DELETE FROM lyrics WHERE lyrics.id IN (SELECT song.id FROM song WHERE song.isLocal)")
     fun nukeLocalLyrics()
+
+    @Transaction
+    @Query("DELETE FROM lyrics WHERE lyrics.id NOT IN (SELECT song.id FROM song)")
+    fun nukeDanglingLyrics()
 
     @Transaction
     @Query("DELETE FROM playlist WHERE isLocal = 0")
