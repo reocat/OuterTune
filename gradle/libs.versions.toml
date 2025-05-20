@@ -14,7 +14,7 @@ ksp = "2.2.0-RC-2.0.1"
 multidex = "2.0.1"
 materialKolor = "3.0.0-beta01"
 newpipe = "dev-SNAPSHOT"
-taglib = "cb5100f"
+taglib = "7833009"
 okhttp = "5.0.0-alpha.14"
 leakcanary = "3.0-alpha-8"
 
