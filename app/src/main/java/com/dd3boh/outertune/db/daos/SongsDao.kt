@@ -267,6 +267,10 @@ interface SongsDao {
     fun downloadQueuedSongs(): Flow<List<Song>>
 
     @Transaction
+    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL")
+    fun downloadedOrQueuedSongs(): Flow<List<Song>>
+
+    @Transaction
     @Query("UPDATE song SET dateDownload = :dateDownload, localPath = :localPath WHERE id = :mediaId AND isLocal = 0")
     fun registerDownloadSong(mediaId: String, dateDownload: LocalDateTime, localPath: String)
 

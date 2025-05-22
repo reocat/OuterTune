@@ -98,6 +98,17 @@ class DownloadUtil @Inject constructor(
         downloadSong(song.id, song.title)
     }
 
+    fun resumeQueuedDownloads() {
+        val queued = downloads.value.filter { it.value == DL_IN_PROGRESS }
+
+        queued.forEach { song ->
+            // please shield your eyes.
+            downloadSong(song.key, runBlocking(Dispatchers.IO) {
+                database.song(song.key).first()?.title ?: ""
+            })
+        }
+    }
+
     private fun downloadSong(id: String, title: String) {
         CoroutineScope(Dispatchers.IO).launch {
             database.updateDownloadStatus(id, DL_IN_PROGRESS)
@@ -306,11 +317,12 @@ class DownloadUtil @Inject constructor(
      */
     fun rescanDownloads() {
         isProcessingDownloads.value = true
-        val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedSongs().first() }
+        val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedOrQueuedSongs().first() }
         val result = mutableMapOf<String, LocalDateTime>()
 
         // remove missing files
-        val missingFiles = localMgr.getMissingFiles(dbDownloads)
+        val missingFiles =
+            localMgr.getMissingFiles(dbDownloads.filterNot { it.song.dateDownload == DL_IN_PROGRESS })
         missingFiles.forEach {
             runBlocking(Dispatchers.IO) { database.removeDownloadSong(it.song.id) }
         }
@@ -347,8 +359,21 @@ class DownloadUtil @Inject constructor(
         downloads.value = result
     }
 
+    fun removeDownloadFromMap(key: String) {
+        val new = downloads.value.toMutableMap()
+        new.remove(key)
+        downloads.value = new
+    }
+
+    fun addDownloadToMap(key: String, localDateTime: LocalDateTime) {
+        val new = downloads.value.toMutableMap()
+        new.put(key, localDateTime)
+        downloads.value = new
+    }
+
     init {
         rescanDownloads()
+        resumeQueuedDownloads()
 
         CoroutineScope(Dispatchers.IO).launch {
             downloadMgr.events.collect { ev ->
@@ -364,11 +389,13 @@ class DownloadUtil @Inject constructor(
                         val updateTime =
                             LocalDateTime.now().atOffset(ZoneOffset.UTC).toLocalDateTime()
                         database.registerDownloadSong(ev.mediaId, updateTime, ev.file.toString())
+                        addDownloadToMap(ev.mediaId, updateTime)
                     }
 
                     is DownloadEvent.Failure -> {
                         // show error ev.error
                         database.removeDownloadSong(ev.mediaId)
+                        removeDownloadFromMap(ev.mediaId)
                         reportException(ev.error)
                     }
                 }
