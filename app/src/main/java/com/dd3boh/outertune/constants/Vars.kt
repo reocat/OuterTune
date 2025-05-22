@@ -6,6 +6,9 @@ const val SCANNER_CRASH_AT_FIRST_ERROR = false
 // true will not use multithreading for scanner
 const val SYNC_SCANNER = false
 
+// maximum parallel download jobs allowed
+const val MAX_CONCURRENT_DOWNLOAD_JOBS = 3 // ytm defaults to 3
+
 // maximum parallel scanner jobs allowed
 const val MAX_CONCURRENT_JOBS = 4
 

@@ -18,6 +18,7 @@ import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
+import com.dd3boh.outertune.constants.MAX_CONCURRENT_DOWNLOAD_JOBS
 import com.dd3boh.outertune.constants.allowedPath
 import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.db.MusicDatabase
@@ -48,6 +49,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -68,6 +71,8 @@ class DownloadUtil @Inject constructor(
     @AppModule.PlayerCache val playerCache: SimpleCache,
 ) {
     val TAG = DownloadUtil::class.simpleName.toString()
+
+    private val semaphore = Semaphore(MAX_CONCURRENT_DOWNLOAD_JOBS)
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val songUrlCache = HashMap<String, Pair<String, Long>>()
@@ -110,54 +115,56 @@ class DownloadUtil @Inject constructor(
     }
 
     private fun downloadSong(id: String, title: String) {
+        // I pray there is no limit to how many concurrent coroutines you can have.
         CoroutineScope(Dispatchers.IO).launch {
             database.updateDownloadStatus(id, DL_IN_PROGRESS)
+            semaphore.withPermit {
+                // copy directly from player cache
+                val playerCacheSong = getAndDeleteFromCache(playerCache, id)
+                if (playerCacheSong != null) {
+                    Log.d(TAG, "Song found in player cache. Copying from player cache.")
+                    downloadMgr.enqueue(id, playerCacheSong, displayName = title)
+                }
 
-            // copy directly from player cache
-            val playerCacheSong = getAndDeleteFromCache(playerCache, id)
-            if (playerCacheSong != null) {
-                Log.d(TAG, "Song found in player cache. Copying from player cache.")
-                downloadMgr.enqueue(id, playerCacheSong, displayName = title)
-            }
+                Log.d(TAG, "Song NOT found in player cache. Fetching.")
+                songUrlCache[id]?.takeIf { it.second > System.currentTimeMillis() }?.let {
+                    downloadMgr.enqueue(id, it.first.toUri().toString())
+                    return@launch
+                }
 
-            Log.d(TAG, "Song NOT found in player cache. Fetching.")
-            songUrlCache[id]?.takeIf { it.second > System.currentTimeMillis() }?.let {
-                downloadMgr.enqueue(id, it.first.toUri().toString())
-                return@launch
-            }
-
-            val playbackData = runBlocking(Dispatchers.IO) {
-                YTPlayerUtils.playerResponseForPlayback(
-                    id,
-                    audioQuality = audioQuality,
-                    connectivityManager = connectivityManager,
-                )
-            }.getOrThrow()
-            val format = playbackData.format
-            database.query {
-                upsert(
-                    FormatEntity(
-                        id = id,
-                        itag = format.itag,
-                        mimeType = format.mimeType.split(";")[0],
-                        codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
-                        bitrate = format.bitrate,
-                        sampleRate = format.audioSampleRate,
-                        contentLength = format.contentLength!!,
-                        loudnessDb = playbackData.audioConfig?.loudnessDb,
-                        playbackTrackingUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                val playbackData = runBlocking(Dispatchers.IO) {
+                    YTPlayerUtils.playerResponseForPlayback(
+                        id,
+                        audioQuality = audioQuality,
+                        connectivityManager = connectivityManager,
                     )
-                )
-            }
-            val streamUrl = playbackData.streamUrl.let {
-                // Specify range to avoid YouTube's throttling
-                "${it}&range=0-${format.contentLength ?: 10000000}"
-            }
+                }.getOrThrow()
+                val format = playbackData.format
+                database.query {
+                    upsert(
+                        FormatEntity(
+                            id = id,
+                            itag = format.itag,
+                            mimeType = format.mimeType.split(";")[0],
+                            codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                            bitrate = format.bitrate,
+                            sampleRate = format.audioSampleRate,
+                            contentLength = format.contentLength!!,
+                            loudnessDb = playbackData.audioConfig?.loudnessDb,
+                            playbackTrackingUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                        )
+                    )
+                }
+                val streamUrl = playbackData.streamUrl.let {
+                    // Specify range to avoid YouTube's throttling
+                    "${it}&range=0-${format.contentLength ?: 10000000}"
+                }
 
-            songUrlCache[id] =
-                streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
+                songUrlCache[id] =
+                    streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
 
-            downloadMgr.enqueue(id, streamUrl, displayName = title)
+                downloadMgr.enqueue(id, streamUrl, displayName = title)
+            }
         }
 
     }
