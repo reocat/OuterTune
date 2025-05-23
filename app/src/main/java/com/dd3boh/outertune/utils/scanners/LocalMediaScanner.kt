@@ -21,18 +21,17 @@ import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
+import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongArtistMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.db.entities.SongGenreMap
+import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
-import com.dd3boh.outertune.constants.SYNC_SCANNER
-import com.dd3boh.outertune.db.entities.Artist
-import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.ui.utils.scannerSession
 import com.dd3boh.outertune.utils.closestMatch
 import com.dd3boh.outertune.utils.dataStore
@@ -65,6 +64,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
     init {
         Timber.tag(TAG).i("Creating scanner instance with scannerImpl: $scannerImpl")
+        testPlayer = MediaPlayer()
     }
 
     /**
@@ -76,10 +76,10 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     ): SongTempData {
         try {
             // test if system can play
-            val testPlayer = MediaPlayer()
-            testPlayer.setDataSource(path)
-            testPlayer.prepare()
-            testPlayer.release()
+            testPlayer!!.setDataSource(path)
+            testPlayer!!.prepare()
+            testPlayer!!.reset()
+
 
             // decide which scanner to use
             val ffmpegData = if (false && advancedScannerImpl !is TagLibScanner) {
@@ -831,7 +831,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         const val TAG = "LocalMediaScanner"
 
         private var localScanner: LocalMediaScanner? = null
-
+        var testPlayer: MediaPlayer? = null
 
         /**
          * TODO: Create a lock for background jobs like youtubeartists and etc
@@ -874,6 +874,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             if (localScanner == null) {
                 localScanner = LocalMediaScanner(context, ScannerImpl.TAGLIB)
 //                localScanner = LocalMediaScanner(context, if (isFFmpegInstalled) scannerImpl else ScannerImpl.TAGLIB)
+                testPlayer = MediaPlayer()
                 scannerProgressTotal.value = 0
                 scannerProgressCurrent.value = -1
                 scannerProgressProbe = 0
@@ -883,6 +884,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         }
 
         fun destroyScanner() {
+            testPlayer?.release()
             localScanner = null
             scannerActive.value = false
             scannerShowLoading.value = false
@@ -907,7 +909,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * Get real path from UI
          * @param path in format "/tree/<media>:<rest of path>"
          */
-        private fun getRealPathFromUri(path: String): String {
+        internal fun getRealPathFromUri(path: String): String {
             val primaryStorageRoot = Environment.getExternalStorageDirectory().absolutePath
             // Google plz don't change ur api kthx
             val storageMedia = path.substringAfter("/tree/").substringBefore(':')
