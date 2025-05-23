@@ -134,7 +134,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.dd3boh.outertune.constants.AppBarHeight
@@ -321,7 +321,7 @@ class MainActivity : ComponentActivity() {
          * While music is playing:
          *      StopMusicOnTaskClearKey true: clearing from recent apps will kill service
          *      StopMusicOnTaskClearKey false: clearing from recent apps will NOT kill service
-         * While music is not playing: 
+         * While music is not playing:
          *      Service will never be automatically killed
          *
          * Regardless of what happens, queues and last position are saves
@@ -532,7 +532,7 @@ class MainActivity : ComponentActivity() {
 
                     val useRail by remember {
                         derivedStateOf {
-                            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
+                            windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
                         }
                     }
 
@@ -1394,7 +1394,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-                            if (firstSetupPassed) {
+                            val hasMediaItem by playerConnection?.service?.currentMediaMetadata?.collectAsState(null) ?: remember { mutableStateOf(false) }
+
+                            if (firstSetupPassed && hasMediaItem != null) {
                                 BottomSheetPlayer(
                                     state = playerBottomSheetState,
                                     navController = navController

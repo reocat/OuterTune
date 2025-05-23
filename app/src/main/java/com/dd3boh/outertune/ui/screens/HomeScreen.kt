@@ -87,6 +87,7 @@ import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeAlbumRadio
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.AlbumGridItem
+import com.dd3boh.outertune.ui.component.AnimatedNavigationChips
 import com.dd3boh.outertune.ui.component.ArtistGridItem
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
@@ -396,22 +397,16 @@ fun HomeScreen(
         ) {
             item {
                 if (slimHomeScreenTiles) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    ChipsRow(
-                        modifier = Modifier
-                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                            .fillMaxWidth()
-                            .animateItem(),
-                        chips = listOfNotNull(
-                            if (isLoggedIn) Pair("account", stringResource(R.string.account)) else null,
-                            Pair("history", stringResource(R.string.history)),
-                            Pair("stats", stringResource(R.string.stats)),
-                            Pair("liked", stringResource(R.string.liked)),
-                            Pair("downloads", stringResource(R.string.offline))
-                        ),
-                        currentValue = "",
-                        onValueUpdate = { value ->
+                    val navigationChips = listOfNotNull(
+                        if (isLoggedIn) Pair("account", stringResource(R.string.account)) else null,
+                        Pair("history", stringResource(R.string.history)),
+                        Pair("stats", stringResource(R.string.stats)),
+                        Pair("liked", stringResource(R.string.liked)),
+                        Pair("downloads", stringResource(R.string.offline))
+                    )
+                    AnimatedNavigationChips(
+                        chips = navigationChips,
+                        onChipClick = { value ->
                             when (value) {
                                 "account" -> navController.navigate("account")
                                 "history" -> navController.navigate("history")
@@ -420,7 +415,13 @@ fun HomeScreen(
                                 "downloads" -> navController.navigate("auto_playlist/downloaded")
                             }
                         },
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                            .padding(vertical = 6.dp)
+                            .fillMaxWidth()
+                            .animateItem()
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                 } else {
                     Row(
                         modifier = Modifier
