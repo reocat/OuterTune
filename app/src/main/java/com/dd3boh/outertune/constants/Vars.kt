@@ -22,3 +22,6 @@ const val EXTRACTOR_DEBUG = false
 const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
 
 const val ENABLE_UPDATE_CHECKER = false
+
+const val SCANNER_OWNER_DL = 32
+const val SCANNER_OWNER_LM = 1

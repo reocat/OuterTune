@@ -58,6 +58,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
+import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
 import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerImplKey
@@ -189,7 +190,7 @@ fun ColumnScope.LocalScannerFrag() {
                     // full rescan
                     if (fullRescan) {
                         try {
-                            val scanner = getScanner(context, scannerImpl)
+                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
                             val directoryStructure =
                                 scanner.scanLocal(
                                     database,
@@ -236,13 +237,13 @@ fun ColumnScope.LocalScannerFrag() {
                                 Toast.LENGTH_LONG
                             ).show()
                         } finally {
-                            destroyScanner()
+                            destroyScanner(SCANNER_OWNER_LM)
                             clearDtCache()
                         }
                     } else {
                         // quick scan
                         try {
-                            val scanner = getScanner(context, scannerImpl)
+                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
                             val directoryStructure = scanner.scanLocal(
                                 database,
                                 scanPaths.split('\n'),
@@ -289,7 +290,7 @@ fun ColumnScope.LocalScannerFrag() {
                                 Toast.LENGTH_LONG
                             ).show()
                         } finally {
-                            destroyScanner()
+                            destroyScanner(SCANNER_OWNER_LM)
                             clearDtCache()
                         }
                     }

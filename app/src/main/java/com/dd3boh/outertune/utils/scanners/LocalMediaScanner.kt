@@ -71,7 +71,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
      * Compiles a song with all it's necessary metadata. Unlike MediaStore,
      * this also supports multiple artists, multiple genres (TBD), and a few extra details (TBD).
      */
-    private fun advancedScan(
+    fun advancedScan(
         path: String,
     ): SongTempData {
         try {
@@ -830,6 +830,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         // do not put any thing that should adhere to the scanner lock in here
         const val TAG = "LocalMediaScanner"
 
+        private var ownerId = -1
         private var localScanner: LocalMediaScanner? = null
         var testPlayer: MediaPlayer? = null
 
@@ -855,7 +856,8 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         /**
          * Trust me bro, it should never be null
          */
-        fun getScanner(context: Context, scannerImpl: ScannerImpl): LocalMediaScanner {
+        fun getScanner(context: Context, scannerImpl: ScannerImpl, owner: Int): LocalMediaScanner {
+
             /*
             if the FFmpeg extractor is suddenly removed and a scan is ran, reset to taglib, disable auto scanner.
             we don't want to run the taglib scanner fallback if the user explicitly selected FFmpeg as differences
@@ -880,10 +882,16 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 scannerProgressProbe = 0
             }
 
+            ownerId = owner
             return localScanner!!
         }
 
-        fun destroyScanner() {
+        fun destroyScanner(owner: Int) {
+            if (owner != ownerId && ownerId != -1) {
+                Log.w(TAG, "Scanner instance can only be destroyed by the owner. Aborting. Check your ownerId.")
+                return
+            }
+            ownerId = -1
             testPlayer?.release()
             localScanner = null
             scannerActive.value = false
@@ -910,6 +918,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * @param path in format "/tree/<media>:<rest of path>"
          */
         internal fun getRealPathFromUri(path: String): String {
+            if(!path.startsWith("/tree/")) return path
             val primaryStorageRoot = Environment.getExternalStorageDirectory().absolutePath
             // Google plz don't change ur api kthx
             val storageMedia = path.substringAfter("/tree/").substringBefore(':')

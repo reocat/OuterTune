@@ -6,23 +6,26 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import com.dd3boh.outertune.db.entities.Song
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getRealPathFromUri
 import java.io.File
 import java.io.InputStream
 
-class DownloadDirectoryManagerOt(private val context: Context, private val dir: File) {
+class DownloadDirectoryManagerOt(private val context: Context, private var dir: File, extraDirs: List<String>) {
+    var allDirs: List<File>
 
     init {
+        dir = File(getRealPathFromUri(dir.absolutePath))
         if (!dir.exists()) {
             dir.mkdirs()  // ensure the directory exists
         }
         require(dir.isDirectory) { "Provided path is not a directory: ${dir.absolutePath}" }
+
+        allDirs = mutableListOf(dir) + extraDirs.map { File(getRealPathFromUri(it)) }
+            .filterNot { it.absolutePath == dir.absolutePath || !dir.isDirectory }
     }
 
     fun deleteFile(mediaId: String): Boolean {
-        val existingFile = dir.walk().filter {
-            it.nameWithoutExtension.endsWith("[$mediaId]")
-        }.firstOrNull()?.name
-
+        val existingFile = isExists(mediaId)?.name
         if (existingFile == null) return false
 
         val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
@@ -62,23 +65,29 @@ class DownloadDirectoryManagerOt(private val context: Context, private val dir: 
         return uri
     }
 
-    fun isExists(mediaId: String): Boolean {
-        return dir.walk().filter { it.name.endsWith("[$mediaId]") }.firstOrNull() != null
+    fun isExists(mediaId: String): File? {
+        allDirs.forEach { d ->
+           val s = d.walk().firstOrNull { it.nameWithoutExtension.endsWith("[$mediaId]") }
+            if (s!= null) {
+                return s
+            }
+        }
+        return null
     }
 
     fun getFilePathIfExists(mediaId: String): Uri? {
-        val existingFile = dir.walk().filter {
-            it.nameWithoutExtension.endsWith("[$mediaId]")
-        }.firstOrNull()
+        var existingFile: File? = isExists(mediaId)
         return if (existingFile != null) Uri.fromFile(existingFile) else null
     }
 
     fun getMissingFiles(mediaId: List<Song>): List<Song> {
         val missingFiles = mediaId.toMutableSet()
         // crawl files, remove files that exist
-        dir.walk().forEach { file ->
-            val mediaId = file.nameWithoutExtension.substringAfterLast('[').substringBeforeLast(']')
-            missingFiles.removeIf { it.id == mediaId }
+        allDirs.forEach { d ->
+            d.walk().forEach { file ->
+                val mediaId = file.nameWithoutExtension.substringAfterLast('[').substringBeforeLast(']')
+                missingFiles.removeIf { it.id == mediaId }
+            }
         }
 
         return missingFiles.toList()
@@ -87,9 +96,11 @@ class DownloadDirectoryManagerOt(private val context: Context, private val dir: 
     fun getAvailableFiles(): Map<String, String> {
         val availableFiles = HashMap<String, String>()
         // crawl files, add files that exist
-        dir.walk().forEach { file ->
-            val mediaId = file.nameWithoutExtension.substringAfterLast('[').substringBeforeLast(']')
-            availableFiles.put(mediaId, file.absolutePath)
+        allDirs.forEach { d ->
+            d.walk().forEach { file ->
+                val mediaId = file.nameWithoutExtension.substringAfterLast('[').substringBeforeLast(']')
+                availableFiles.put(mediaId, file.absolutePath)
+            }
         }
 
         return availableFiles

@@ -16,9 +16,12 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
+import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.constants.MAX_CONCURRENT_DOWNLOAD_JOBS
+import com.dd3boh.outertune.constants.SCANNER_OWNER_DL
+import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.allowedPath
 import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.db.MusicDatabase
@@ -38,6 +41,8 @@ import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.enumPreference
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
+import com.dd3boh.outertune.utils.scanners.InvalidAudioFileException
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -79,7 +84,8 @@ class DownloadUtil @Inject constructor(
 
     var localMgr = DownloadDirectoryManagerOt(
         context,
-        File(allowedPath + "/" + context.dataStore.get(DownloadPathKey, defaultDownloadPath) + "/")
+        File(allowedPath + "/" + context.dataStore.get(DownloadPathKey, defaultDownloadPath) + "/"),
+        context.dataStore.get(DownloadExtraPathKey, "").split("\n")
     )
     val downloadMgr = DownloadManagerOt(localMgr)
     val downloads = MutableStateFlow<Map<String, LocalDateTime>>(emptyMap())
@@ -196,7 +202,8 @@ class DownloadUtil @Inject constructor(
     }
 
     private fun deleteSong(id: String) {
-        localMgr.deleteFile(id)
+        val deleted = localMgr.deleteFile(id)
+        if (!deleted) return
         downloads.update { map ->
             map.toMutableMap().apply {
                 remove(id)
@@ -259,6 +266,7 @@ class DownloadUtil @Inject constructor(
      * Migrated existing downloads from the download cache to the new system in external storage
      */
     fun migrateDownloads() {
+        if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -316,7 +324,8 @@ class DownloadUtil @Inject constructor(
     fun cd() {
         localMgr = DownloadDirectoryManagerOt(
             context,
-            File(allowedPath + "/" + context.dataStore.get(DownloadPathKey, defaultDownloadPath) + "/")
+            File(allowedPath + "/" + context.dataStore.get(DownloadPathKey, defaultDownloadPath) + "/"),
+            context.dataStore.get(DownloadExtraPathKey, "").split("\n")
         )
     }
 
@@ -346,26 +355,47 @@ class DownloadUtil @Inject constructor(
         downloads.value = result
     }
 
+    /**
+     * Scan and import downloaded songs from main and extra directories.
+     *
+     * This is intended for re-importing existing songs (ex. songs get moved, after restoring app backup), thus all
+     * songs will already need to exist in the database.
+     */
     fun scanDownloads() {
+        if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
-        runBlocking(Dispatchers.IO) { database.removeAllDownloadedSongs() }
-        val result = mutableMapOf<String, LocalDateTime>()
-        val timeNow = LocalDateTime.now()
+        CoroutineScope(Dispatchers.IO).launch {
+            val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB, SCANNER_OWNER_DL)
+            runBlocking(Dispatchers.IO) { database.removeAllDownloadedSongs() }
+            val result = mutableMapOf<String, LocalDateTime>()
+            val timeNow = LocalDateTime.now()
 
-        // remove missing files
-        val availableFiles = localMgr.getAvailableFiles()
-        availableFiles.forEach {
-            runBlocking(Dispatchers.IO) { database.registerDownloadSong(it.key, timeNow, it.value) }
+            // remove missing files
+            val availableFiles = localMgr.getAvailableFiles()
+            availableFiles.forEach {
+                runBlocking(Dispatchers.IO) {
+                    try {
+                        val format: FormatEntity? = scanner.advancedScan(it.value).format
+                        if (format != null) {
+                            database.upsert(format)
+                        }
+                        database.registerDownloadSong(it.key, timeNow, it.value)
+                    } catch (e: InvalidAudioFileException) {
+                        reportException(e)
+                    }
+                }
+            }
+            LocalMediaScanner.destroyScanner(SCANNER_OWNER_DL)
+
+            // pull from db again
+            val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedSongs().first() }
+            dbDownloads.forEach { s ->
+                result[s.song.id] = timeNow
+            }
+
+            isProcessingDownloads.value = false
+            downloads.value = result
         }
-
-        // pull from db again
-        val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedSongs().first() }
-        dbDownloads.forEach { s ->
-            result[s.song.id] = timeNow
-        }
-
-        isProcessingDownloads.value = false
-        downloads.value = result
     }
 
     fun removeDownloadFromMap(key: String) {

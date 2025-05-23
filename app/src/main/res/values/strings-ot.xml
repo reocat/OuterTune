@@ -212,8 +212,18 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scanner_variant_rescan">Rescan the entire library and reload all songs\' metadata</string>
     <string name="scanner_online_artist_linking">Try to link local files\' artists with ones on YouTube Music</string>
 
-    <!-- Storage setting -->
-    <string name="image_cache_tooltip">Restart the app for changes to take effect</string>
+<!-- Storage setting -->
+    <string name="dl_extra_path_title" translatable="false">Configure extra download locations…</string>
+    <string name="dl_extra_path_description" translatable="false">Songs from these directories are loaded into the app ONLY IF they have been played in the past, or you have them saved in a playlist</string>
+    <string name="dl_migrate_title" translatable="false">Migrate downloads to external storage…</string>
+    <string name="dl_migrate_description" translatable="false">Move downloads from app internal storage to the device\'s external storage</string>
+    <string name="dl_migrate_confirm" translatable="false">This will migrate ALL internal downloads to \"%s\", and this action cannot be undone. Continue?</string>
+    <string name="dl_main_path_title" translatable="false">Configure download directory…</string>
+    <string name="dl_main_path_tooltip" translatable="false">Due to Android system restrictions, only Music folder is allowed.</string>
+    <string name="dl_rescan_title" translatable="false">Rescan download folders…</string>
+    <string name="dl_rescan_description" translatable="false">Relink old downloads if the files or folder was moved</string>
+	<string name="dl_rescan_confirm" translatable="false">Rescan all download folders now? This can take a few minutes depending on the size of your library.</string>
+    <string name="image_cache_tooltip" translatable="false">Restart the app for changes to take effect</string>
 
     <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Pause sharing listen history with YouTube Music</string>

@@ -15,8 +15,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -60,8 +58,8 @@ import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
 import com.dd3boh.outertune.constants.PlaylistFilter
 import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.constants.SongSortType
-import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.constants.allowedPath
 import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.extensions.tryOrNull
@@ -316,7 +314,7 @@ fun StorageSettings(
         ActionPromptDialog(
             titleBar = {
                 Text(
-                    text = "Download path",
+                    text = stringResource(R.string.dl_main_path_title),
                     style = MaterialTheme.typography.titleLarge,
                 )
             },
@@ -352,7 +350,7 @@ fun StorageSettings(
                 ActivityResultContracts.OpenDocumentTree()
             ) { uri ->
                 if (uri?.path != null) {
-                    tempFilePath = uri.path!!.substringAfter("$allowedPath/")
+                    tempFilePath = uri.path!!.substringAfter("/tree/primary:Music/")
                 }
             }
 
@@ -376,11 +374,11 @@ fun StorageSettings(
             // add folder button
             Column {
                 Button(onClick = { dirPickerLauncher.launch(null) }) {
-                    Text("Select folder")
+                    Text(stringResource(R.string.scan_paths_add_folder))
                 }
 
                 InfoLabel(
-                    text = "Due to Android system restrictions, only Music folder is allowed.",
+                    text = stringResource(R.string.dl_main_path_tooltip),
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             }

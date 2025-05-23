@@ -219,6 +219,12 @@ import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
 import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
 import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
 import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
+import com.dd3boh.outertune.constants.ENABLE_UPDATE_CHECKER
+import com.dd3boh.outertune.constants.LastVersionKey
+import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
+import com.dd3boh.outertune.constants.UpdateAvailableKey
+import com.dd3boh.outertune.ui.screens.library.FolderScreen
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.InterfaceSettings
 import com.dd3boh.outertune.ui.screens.settings.LibrarySettings
@@ -448,8 +454,12 @@ class MainActivity : ComponentActivity() {
                         if (perms == PackageManager.PERMISSION_GRANTED) {
                             // equivalent to (quick scan)
                             try {
-                                playerConnection?.player?.pause()
-                                val scanner = LocalMediaScanner.getScanner(this@MainActivity, scannerImpl)
+                                withContext(Dispatchers.Main) {
+                                    playerConnection?.player?.pause()
+                                }
+                                val scanner = LocalMediaScanner.getScanner(
+                                    this@MainActivity, scannerImpl, SCANNER_OWNER_LM
+                                )
                                 val directoryStructure = scanner.scanLocal(
                                     database,
                                     scanPaths.split('\n'),

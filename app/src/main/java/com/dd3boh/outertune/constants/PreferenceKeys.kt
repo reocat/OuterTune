@@ -106,6 +106,7 @@ val LyricFontSizeKey = intPreferencesKey("lyricFontSize")
 /**
  * Storage
  */
+val DownloadExtraPathKey = stringPreferencesKey("downloadExtraPath")
 val DownloadPathKey = stringPreferencesKey("downloadPath")
 val MaxImageCacheSizeKey = intPreferencesKey("maxImageCacheSize")
 val MaxSongCacheSizeKey = intPreferencesKey("maxSongCacheSize")
