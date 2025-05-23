@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -157,20 +156,21 @@ fun ExperimentalSettings(
         PreferenceGroupTitle(
             title = "Download settings"
         )
-        if (isLoading) {
-            Spacer(Modifier.width(8.dp))
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(32.dp),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            )
-            Spacer(Modifier.width(8.dp))
-        }
 
         PreferenceEntry(
             title = { Text("Migrate download songs") },
-            icon = { Icon(Icons.Rounded.Backup, null) },
+            icon = {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(28.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                } else {
+                    Icon(Icons.Rounded.Backup, null)
+                }
+            },
             onClick = {
                 showMigrationDialog = true
             }

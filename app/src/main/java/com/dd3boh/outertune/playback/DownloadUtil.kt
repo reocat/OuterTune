@@ -260,54 +260,56 @@ class DownloadUtil @Inject constructor(
      */
     fun migrateDownloads() {
         isProcessingDownloads.value = true
-        try {
-            // "skeleton" of old download manager to access old download data
-            val dataSourceFactory = ResolvingDataSource.Factory(
-                CacheDataSource.Factory()
-                    .setCache(playerCache)
-                    .setUpstreamDataSourceFactory(
-                        OkHttpDataSource.Factory(
-                            OkHttpClient.Builder()
-                                .proxy(YouTube.proxy)
-                                .build()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // "skeleton" of old download manager to access old download data
+                val dataSourceFactory = ResolvingDataSource.Factory(
+                    CacheDataSource.Factory()
+                        .setCache(playerCache)
+                        .setUpstreamDataSourceFactory(
+                            OkHttpDataSource.Factory(
+                                OkHttpClient.Builder()
+                                    .proxy(YouTube.proxy)
+                                    .build()
+                            )
                         )
-                    )
-            ) { dataSpec ->
-                return@Factory dataSpec
-            }
-
-            val downloadManager: DownloadManager = DownloadManager(
-                context,
-                databaseProvider,
-                downloadCache,
-                dataSourceFactory,
-                Executor(Runnable::run)
-            ).apply {
-                maxParallelDownloads = 3
-            }
-
-            // actual migration code
-            val downloadedSongs = mutableMapOf<String, Download>()
-            val cursor = downloadManager.downloadIndex.getDownloads()
-            while (cursor.moveToNext()) {
-                downloadedSongs[cursor.download.request.id] = cursor.download
-            }
-
-            // copy all completed downloads
-            val toMigrate = downloadedSongs.filter { it.value.state == Download.STATE_COMPLETED }
-            toMigrate.forEach { s ->
-                val songFromCache = getAndDeleteFromCache(downloadCache, s.key)
-                if (songFromCache != null) {
-                    downloadMgr.enqueue(
-                        mediaId = s.key,
-                        data = songFromCache,
-                        displayName = runBlocking { database.song(s.key).first()?.title ?: "" })
+                ) { dataSpec ->
+                    return@Factory dataSpec
                 }
+
+                val downloadManager: DownloadManager = DownloadManager(
+                    context,
+                    databaseProvider,
+                    downloadCache,
+                    dataSourceFactory,
+                    Executor(Runnable::run)
+                ).apply {
+                    maxParallelDownloads = 3
+                }
+
+                // actual migration code
+                val downloadedSongs = mutableMapOf<String, Download>()
+                val cursor = downloadManager.downloadIndex.getDownloads()
+                while (cursor.moveToNext()) {
+                    downloadedSongs[cursor.download.request.id] = cursor.download
+                }
+
+                // copy all completed downloads
+                val toMigrate = downloadedSongs.filter { it.value.state == Download.STATE_COMPLETED }
+                toMigrate.forEach { s ->
+                    val songFromCache = getAndDeleteFromCache(downloadCache, s.key)
+                    if (songFromCache != null) {
+                        downloadMgr.enqueue(
+                            mediaId = s.key,
+                            data = songFromCache,
+                            displayName = runBlocking { database.song(s.key).first()?.title ?: "" })
+                    }
+                }
+            } catch (e: Exception) {
+                reportException(e)
+            } finally {
+                isProcessingDownloads.value = false
             }
-        } catch (e: Exception) {
-            reportException(e)
-        } finally {
-            isProcessingDownloads.value = false
         }
     }
 
