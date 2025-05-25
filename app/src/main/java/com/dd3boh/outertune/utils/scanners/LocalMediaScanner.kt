@@ -918,7 +918,23 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * @param path in format "/tree/<media>:<rest of path>"
          */
         internal fun getRealPathFromUri(path: String): String {
-            if(!path.startsWith("/tree/")) return path
+            val primaryStorageRoot = Environment.getExternalStorageDirectory().absolutePath
+            // Google plz don't change ur api kthx
+            val storageMedia = path.substringAfter("/tree/").substringBefore(':')
+            return if (storageMedia == "primary") {
+                path.replaceFirst("/tree/primary:", "$primaryStorageRoot/")
+            } else {
+                "/storage/$storageMedia/${path.substringAfter(':')}"
+            }
+        }
+
+        // TODO: Remove this when downloader supports directories anywhere
+        /**
+         * Get real path from UI
+         * @param path in format "/tree/<media>:<rest of path>"
+         */
+        internal fun getRealDlPathFromUri(path: String): String {
+            if (!path.startsWith("/tree/")) return path
             val primaryStorageRoot = Environment.getExternalStorageDirectory().absolutePath
             // Google plz don't change ur api kthx
             val storageMedia = path.substringAfter("/tree/").substringBefore(':')

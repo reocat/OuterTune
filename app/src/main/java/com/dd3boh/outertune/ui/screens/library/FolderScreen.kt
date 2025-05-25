@@ -248,7 +248,7 @@ fun FolderScreen(
         }
 
         mutableSongs.clear()
-        mutableSongs.addAll(tempList)
+        mutableSongs.addAll(tempList.distinctBy { it.id })
     }
 
     Box(
@@ -423,20 +423,20 @@ fun FolderScreen(
                     key = { _, item -> item.currentDir },
                     contentType = { _, _ -> CONTENT_TYPE_FOLDER }
                 ) { index, folder ->
-                    if (flatSubfolders && folder.getFullSquashedDir() == currDir.getFullSquashedDir()) return@itemsIndexed // rm dupe dir hax
-                    SongFolderItem(
-                        folder = folder,
-                        folderTitle = if (folder.files.isEmpty()) folder.getSquashedDir() else null,
-                        subtitle = null,
-                        modifier = Modifier
-                            .combinedClickable {
-                                val route = Screens.Folders.route + "/" + folder.getFullSquashedDir().replace('/', ';')
-                                navController.navigate(route)
-                            }
-                            .animateItem(),
-                        menuState = menuState,
-                        navController = navController
-                    )
+                    if (!flatSubfolders || folder.getFullSquashedDir() != fixFilePath(currDir.getFullPath())) // rm dupe dir hax
+                        SongFolderItem(
+                            folder = folder,
+                            folderTitle = if (folder.files.isEmpty()) folder.getSquashedDir() else null,
+                            subtitle = null,
+                            modifier = Modifier
+                                .combinedClickable {
+                                    val route = Screens.Folders.route + "/" + folder.getFullSquashedDir().replace('/', ';')
+                                    navController.navigate(route)
+                                }
+                                .animateItem(),
+                            menuState = menuState,
+                            navController = navController
+                        )
                 }
 
                 // separator
@@ -464,6 +464,9 @@ fun FolderScreen(
             if (currDir.isSkeleton) return@LazyColumn
 
             // all songs get listed here
+            (if (isSearching) filteredSongs else mutableSongs).forEach {
+                println(it.id)
+            }
             itemsIndexed(
                 items = if (isSearching) filteredSongs else mutableSongs,
                 key = { _, item -> item.id },
@@ -570,7 +573,7 @@ fun FolderScreen(
                 totalItemCount = mutableSongs.size,
                 onSelectAll = {
                     selection.clear()
-                    selection.addAll(mutableSongs.map { it.id })
+                    selection.addAll(mutableSongs.map { it.id }.distinctBy { it })
                 },
                 onDeselectAll = { selection.clear() },
                 menuState = menuState,

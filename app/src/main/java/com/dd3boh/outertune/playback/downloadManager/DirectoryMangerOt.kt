@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getRealPathFromUri
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getRealDlPathFromUri
 import java.io.File
 import java.io.InputStream
 
@@ -14,13 +14,13 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
     var allDirs: List<File>
 
     init {
-        dir = File(getRealPathFromUri(dir.absolutePath))
+        dir = File(getRealDlPathFromUri(dir.absolutePath))
         if (!dir.exists()) {
             dir.mkdirs()  // ensure the directory exists
         }
         require(dir.isDirectory) { "Provided path is not a directory: ${dir.absolutePath}" }
 
-        allDirs = mutableListOf(dir) + extraDirs.map { File(getRealPathFromUri(it)) }
+        allDirs = mutableListOf(dir) + extraDirs.map { File(getRealDlPathFromUri(it)) }
             .filterNot { it.absolutePath == dir.absolutePath || !dir.isDirectory }
     }
 
