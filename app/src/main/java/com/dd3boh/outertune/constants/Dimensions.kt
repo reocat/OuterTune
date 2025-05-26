@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -47,5 +48,35 @@ val TopBarInsets: WindowInsets
     get() = TopAppBarDefaults.windowInsets
         .only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End)
         .add(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Start))
+
+val InsetsSafeS: WindowInsets
+    @Composable
+    get() =
+        WindowInsets.safeDrawing.only(WindowInsetsSides.Start)
+
+val InsetsSafeE: WindowInsets
+    @Composable
+    get() =
+        WindowInsets.safeDrawing.only(WindowInsetsSides.End)
+
+val InsetsSafeSE: WindowInsets
+    @Composable
+    get() =
+        WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.End)
+
+val InsetsSafeSTE: WindowInsets
+    @Composable
+    get() =
+        WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.Top + WindowInsetsSides.End)
+
+val InsetsSafeSTB: WindowInsets
+    @Composable
+    get() =
+        WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.Top + WindowInsetsSides.Bottom)
+
+val InsetsSafeTEB: WindowInsets
+    @Composable
+    get() =
+        WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.End + WindowInsetsSides.Bottom)
 
 val NavigationBarAnimationSpec = spring<Dp>(stiffness = Spring.StiffnessMediumLow)

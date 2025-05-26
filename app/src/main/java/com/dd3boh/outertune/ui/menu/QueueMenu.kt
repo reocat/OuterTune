@@ -27,13 +27,11 @@ fun QueueMenu(
     navController: NavController,
     mq: MultiQueueObject?,
     onDismiss: () -> Unit,
-    refreshUi: () -> Unit,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
 
     if (mq == null) {
         onDismiss()
-        refreshUi()
         return
     }
     val songs = mq.getCurrentQueueShuffled()
@@ -69,7 +67,6 @@ fun QueueMenu(
         onDismiss = {
             showChooseQueueDialog = false
             onDismiss() // here we dismiss since we switch to the queue anyways
-            refreshUi()
         }
     )
 
