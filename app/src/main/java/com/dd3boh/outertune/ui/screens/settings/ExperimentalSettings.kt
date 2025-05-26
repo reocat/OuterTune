@@ -78,6 +78,7 @@ import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
+import com.dd3boh.outertune.constants.LyricsClickKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerImplKey
@@ -125,7 +126,6 @@ fun ExperimentalSettings(
         defaultValue = ScannerImpl.TAGLIB
     )
 
-
     val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, defaultDownloadPath)
     val (dlPathExtra, onDlPathExtraChange) = rememberPreference(DownloadExtraPathKey, "")
     val downloadUtil = LocalDownloadUtil.current
@@ -159,7 +159,6 @@ fun ExperimentalSettings(
             checked = tabletUi,
             onCheckedChange = onTabletUiChange
         )
-
         PreferenceGroupTitle(
             title = stringResource(R.string.settings_debug)
         )

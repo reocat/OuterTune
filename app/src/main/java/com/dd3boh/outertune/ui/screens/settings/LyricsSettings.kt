@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -25,13 +26,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.LyricsClickKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
+import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricFormatFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricParserFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricSourceFrag
 import com.dd3boh.outertune.ui.utils.backToMain
+import com.dd3boh.outertune.utils.rememberPreference
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +43,7 @@ fun LyricsSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
+    val (lyricsClick, onLyricsClickChange) = rememberPreference(LyricsClickKey, defaultValue = true)
 
     Column(
         Modifier
@@ -59,6 +64,15 @@ fun LyricsSettings(
             title = stringResource(R.string.grp_lyrics_format)
         )
         LyricFormatFrag()
+        PreferenceGroupTitle(
+            title = stringResource(R.string.advanced)
+        )
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_click_change)) },
+            icon = { Icon(Icons.Rounded.Lyrics, null) },
+            checked = lyricsClick,
+            onCheckedChange = onLyricsClickChange,
+        )
     }
 
 
