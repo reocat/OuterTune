@@ -82,6 +82,7 @@ class PlayerConnection(
     var queuePlaylistId = MutableStateFlow<String?>(null)
     val currentWindowIndex = MutableStateFlow(-1)
 
+    val shuffleModeEnabled = MutableStateFlow(false)
     val repeatMode = MutableStateFlow(REPEAT_MODE_OFF)
 
     val canSkipPrevious = MutableStateFlow(true)
@@ -100,6 +101,7 @@ class PlayerConnection(
         queueWindows.value = player.getQueueWindows()
         currentWindowIndex.value = player.getCurrentQueueIndex()
         currentMediaItemIndex.value = player.currentMediaItemIndex
+        shuffleModeEnabled.value = player.shuffleModeEnabled
         repeatMode.value = player.repeatMode
     }
 
@@ -169,7 +171,12 @@ class PlayerConnection(
      * Shuffles the queue
      */
     fun triggerShuffle() {
-        service.triggerShuffle()
+        player.shuffleModeEnabled = !player.shuffleModeEnabled
+        updateCanSkipPreviousAndNext()
+    }
+
+    override fun onShuffleModeEnabledChanged(enabled: Boolean) {
+        shuffleModeEnabled.value = enabled
         updateCanSkipPreviousAndNext()
     }
 

@@ -54,6 +54,7 @@ import androidx.media3.exoplayer.audio.DefaultAudioOffloadSupportProvider
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
@@ -252,11 +253,8 @@ class MusicService : MediaLibraryService(),
             .setSeekForwardIncrementMs(5000)
             .build()
             .apply {
+                // listeners
                 addListener(this@MusicService)
-
-                setOffloadEnabled(dataStore.get(AudioOffload, false))
-
-                // handle on error
                 addListener(object : Player.Listener {
                     override fun onPlayerError(error: PlaybackException) {
                         super.onPlayerError(error)
@@ -316,7 +314,7 @@ class MusicService : MediaLibraryService(),
                         // no, when repeat mode is on, player does not "STATE_ENDED"
                         if (player.currentMediaItemIndex == 0 && lastMediaItemIndex == player.mediaItemCount - 1 &&
                             (reason == MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) &&
-                            isShuffleEnabled.value && player.repeatMode == REPEAT_MODE_ALL
+                            player.shuffleModeEnabled && player.repeatMode == REPEAT_MODE_ALL
                         ) {
                             queueBoard.shuffleCurrent(false) // reshuffle queue
                             queueBoard.setCurrQueue()
@@ -331,6 +329,9 @@ class MusicService : MediaLibraryService(),
                 sleepTimer = SleepTimer(scope, this)
                 addListener(sleepTimer)
                 addAnalyticsListener(PlaybackStatsListener(false, this@MusicService))
+
+                // misc
+                setOffloadEnabled(dataStore.get(AudioOffload, false))
             }
 
         mediaLibrarySessionCallback.apply {
@@ -479,7 +480,7 @@ class MusicService : MediaLibraryService(),
         if (dataStore.get(PersistentQueueKey, true)) {
             queueBoard = QueueBoard(this, database.readQueue().toMutableList())
             queueBoard.getCurrentQueue()?.let {
-                isShuffleEnabled.value = it.shuffled
+                player.shuffleModeEnabled = it.shuffled
                 queueBoard.initialized = true
             }
         } else {
@@ -931,10 +932,10 @@ class MusicService : MediaLibraryService(),
     }
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-        if (player.shuffleModeEnabled) {
-            triggerShuffle()
-            player.shuffleModeEnabled = false
+        if (shuffleModeEnabled) {
+            player.setShuffleOrder(ShuffleOrder.UnshuffledShuffleOrder(queueBoard.getCurrentQueue()!!.getSize()))
         }
+        triggerShuffle()
     }
 
     /**

@@ -40,11 +40,6 @@ const val QUEUE_DEBUG = false
 const val MAX_QUEUES = 20
 
 /**
- * This is for UI display purposes only. Do not modify externally.
- */
-var isShuffleEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
-/**
  * Multiple queues manager. Methods will not automatically (re)load queues into the player unless
  * otherwise explicitly stated.
  */
@@ -484,7 +479,6 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                 Timber.tag(TAG).d("Un-shuffling queue ${item.title}")
 
             item.shuffled = false
-            isShuffleEnabled.value = false
         }
         saveQueueSongs(item)
         bubbleUp(item)
@@ -560,7 +554,6 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
         }
 
         item.shuffled = true
-        isShuffleEnabled.value = true
 
         if (!bypassSaveToDb) {
             saveQueueSongs(item)
@@ -812,8 +805,6 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
             Timber.tag(TAG).d("Seamless is not supported. Loading songs in directly")
             player.player.setMediaItems(mediaItems.map { it.toMediaItem() })
         }
-
-        isShuffleEnabled.value = item.shuffled
 
         if (autoSeek && !seamlessSupported) {
             player.player.seekTo(queuePos, C.TIME_UNSET)
