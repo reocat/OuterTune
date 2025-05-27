@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -205,7 +206,10 @@ fun StorageSettings(
                     progress = { (playerCacheSize.toFloat() / (maxSongCacheSize * 1024 * 1024L)).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    color = MaterialTheme.colorScheme.primary, // Explicitly use theme color
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant, // Use appropriate track color
+                    strokeCap = StrokeCap.Round // M3 default style
                 )
 
                 Text(
@@ -225,7 +229,7 @@ fun StorageSettings(
             values = listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192, -1),
             valueText = {
                 when (it) {
-                    0 -> stringResource(androidx.compose.ui.R.string.state_off)
+                    0 -> stringResource(R.string.off)
                     -1 -> stringResource(R.string.unlimited)
                     else -> formatFileSize(it * 1024 * 1024L)
                 }
@@ -254,7 +258,10 @@ fun StorageSettings(
                 progress = { (imageCacheSize.toFloat() / imageDiskCache.maxSize).coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                color = MaterialTheme.colorScheme.primary, // Explicitly use theme color
+                trackColor = MaterialTheme.colorScheme.surfaceVariant, // Use appropriate track color
+                strokeCap = StrokeCap.Round // M3 default style
             )
 
             Text(
@@ -273,7 +280,7 @@ fun StorageSettings(
             values = listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192),
             valueText = {
                 when (it) {
-                    0 -> stringResource(androidx.compose.ui.R.string.state_off)
+                    0 -> stringResource(R.string.off)
                     else -> formatFileSize(it * 1024 * 1024L)
                 }
             },
