@@ -844,7 +844,7 @@ class MusicService : MediaLibraryService(),
 
             val isDownloadNew = downloadUtil.localMgr.getFilePathIfExists(mediaId)
             if (isDownloadNew != null) {
-                Log.d(TAG, "PLAYING: Downloaded remote song")
+                Timber.tag(TAG).d("PLAYING: Downloaded remote song")
                 val songPath = isDownloadNew
 
                 return@Factory dataSpec.withUri(songPath)

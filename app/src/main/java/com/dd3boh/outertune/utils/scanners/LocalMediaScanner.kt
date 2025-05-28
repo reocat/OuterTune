@@ -888,7 +888,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
         fun destroyScanner(owner: Int) {
             if (owner != ownerId && ownerId != -1) {
-                Log.w(TAG, "Scanner instance can only be destroyed by the owner. Aborting. Check your ownerId.")
+                Timber.tag(TAG).w("Scanner instance can only be destroyed by the owner. Aborting. Check your ownerId.")
                 return
             }
             ownerId = -1

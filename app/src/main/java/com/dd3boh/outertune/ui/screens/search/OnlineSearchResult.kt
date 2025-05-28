@@ -36,21 +36,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import com.dd3boh.outertune.LocalDownloadUtil
-import com.dd3boh.outertune.LocalNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.SearchFilterHeight
-import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -84,14 +79,11 @@ fun OnlineSearchResult(
     navController: NavController,
     viewModel: OnlineSearchViewModel = hiltViewModel(),
 ) {
-    val menuState = LocalMenuState.current
     val context = LocalContext.current
+    val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
-    val isNetworkConnected = LocalNetworkConnected.current
-    val downloadUtil = LocalDownloadUtil.current
-    val downloads by downloadUtil.downloads.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -117,11 +109,6 @@ fun OnlineSearchResult(
     }
 
     val ytItemContent: @Composable LazyItemScope.(YTItem, List<YTItem>) -> Unit = { item: YTItem, collection: List<YTItem> ->
-        val available = when (item) {
-            is SongItem -> isNetworkConnected || downloads[item.id]?.state == Download.STATE_COMPLETED
-            else -> isNetworkConnected
-        }
-
         val content: @Composable () -> Unit = {
             YouTubeListItem(
                 item = item,
@@ -132,44 +119,43 @@ fun OnlineSearchResult(
                 },
                 isPlaying = isPlaying,
                 trailingContent = {
-                    if (available) {
-                        IconButton(
-                            onClick = {
-                                menuState.show {
-                                    when (item) {
-                                        is SongItem -> YouTubeSongMenu(
-                                            song = item,
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss
-                                        )
+                    IconButton(
+                        onClick = {
+                            menuState.show {
+                                when (item) {
+                                    is SongItem -> YouTubeSongMenu(
+                                        song = item,
+                                        navController = navController,
+                                        onDismiss = menuState::dismiss
+                                    )
 
-                                        is AlbumItem -> YouTubeAlbumMenu(
-                                            albumItem = item,
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss
-                                        )
+                                    is AlbumItem -> YouTubeAlbumMenu(
+                                        albumItem = item,
+                                        navController = navController,
+                                        onDismiss = menuState::dismiss
+                                    )
 
-                                        is ArtistItem -> YouTubeArtistMenu(
-                                            artist = item,
-                                            onDismiss = menuState::dismiss
-                                        )
+                                    is ArtistItem -> YouTubeArtistMenu(
+                                        artist = item,
+                                        onDismiss = menuState::dismiss
+                                    )
 
-                                        is PlaylistItem -> YouTubePlaylistMenu(
-                                            navController = navController,
-                                            playlist = item,
-                                            coroutineScope = coroutineScope,
-                                            onDismiss = menuState::dismiss
-                                        )
-                                    }
+                                    is PlaylistItem -> YouTubePlaylistMenu(
+                                        navController = navController,
+                                        playlist = item,
+                                        coroutineScope = coroutineScope,
+                                        onDismiss = menuState::dismiss
+                                    )
                                 }
                             }
-                        ) {
-                            Icon(
-                                Icons.Rounded.MoreVert,
-                                contentDescription = null
-                            )
                         }
+                    ) {
+                        Icon(
+                            Icons.Rounded.MoreVert,
+                            contentDescription = null
+                        )
                     }
+
                 },
                 modifier = Modifier
                     .combinedClickable(
@@ -216,7 +202,6 @@ fun OnlineSearchResult(
 
         if (item !is SongItem) content()
         else SwipeToQueueBox(
-            enabled = available,
             item = item.toMediaItem(),
             content = { content() },
             snackbarHostState = snackbarHostState

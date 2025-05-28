@@ -64,8 +64,6 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
-import com.dd3boh.outertune.LocalDownloadUtil
-import com.dd3boh.outertune.LocalNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -73,13 +71,10 @@ import com.dd3boh.outertune.constants.HistorySource
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.EventWithSong
-import com.dd3boh.outertune.extensions.getAvailableSongs
-import com.dd3boh.outertune.extensions.isAvailableOffline
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
@@ -95,7 +90,6 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.DateAgo
 import com.dd3boh.outertune.viewmodels.HistoryViewModel
-import com.zionhuang.innertube.models.WatchEndpoint
 import com.zionhuang.innertube.utils.parseCookieString
 import java.time.format.DateTimeFormatter
 
@@ -109,8 +103,6 @@ fun HistoryScreen(
     val context = LocalContext.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val isNetworkConnected = LocalNetworkConnected.current
-    val downloads by LocalDownloadUtil.current.downloads.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
@@ -134,6 +126,7 @@ fun HistoryScreen(
         }
     }
 
+
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
     val selection = rememberSaveable(
         saver = listSaver<MutableList<Long>, Long>(
@@ -149,7 +142,7 @@ fun HistoryScreen(
         BackHandler(onBack = onExitSelectionMode)
     }
 
-    // no multiselect for remote history (yet)
+    // no multiselect for remote hisory (yet)
     val historyPage by viewModel.historyPage
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
@@ -283,31 +276,27 @@ fun HistoryScreen(
                         items = section.songs,
                         key = { it.id }
                     ) { song ->
-                        val available = downloads[song.id]?.isAvailableOffline() ?: false || isNetworkConnected
-
                         val content: @Composable () -> Unit = {
                             YouTubeListItem(
                                 item = song,
                                 isActive = song.id == mediaMetadata?.id,
                                 isPlaying = isPlaying,
                                 trailingContent = {
-                                    if (available) {
-                                        IconButton(
-                                            onClick = {
-                                                menuState.show {
-                                                    YouTubeSongMenu(
-                                                        song = song,
-                                                        navController = navController,
-                                                        onDismiss = menuState::dismiss
-                                                    )
-                                                }
+                                    IconButton(
+                                        onClick = {
+                                            menuState.show {
+                                                YouTubeSongMenu(
+                                                    song = song,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss
+                                                )
                                             }
-                                        ) {
-                                            Icon(
-                                                Icons.Rounded.MoreVert,
-                                                contentDescription = null
-                                            )
                                         }
+                                    ) {
+                                        Icon(
+                                            Icons.Rounded.MoreVert,
+                                            contentDescription = null
+                                        )
                                     }
                                 },
                                 modifier = Modifier
@@ -326,33 +315,33 @@ fun HistoryScreen(
                                             }
                                         },
                                         onLongClick = {
-                                            if (available) {
-                                                menuState.show {
-                                                    YouTubeSongMenu(
-                                                        song = song,
-                                                        navController = navController,
-                                                        onDismiss = menuState::dismiss
-                                                    )
-                                                }
+
+                                            menuState.show {
+                                                YouTubeSongMenu(
+                                                    song = song,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss
+                                                )
                                             }
+
                                         }
                                     )
+                                    .animateItem()
                             )
                         }
 
-                        if (available) {
-                            SwipeToQueueBox(
-                                item = song.toMediaItem(),
-                                content = { content() },
-                                snackbarHostState = snackbarHostState
-                            )
-                        } else {
-                            content()
-                        }
+
+
+                        SwipeToQueueBox(
+                            item = song.toMediaItem(),
+                            content = { content() },
+                            snackbarHostState = snackbarHostState
+                        )
+
                     }
                 }
             } else {
-                eventsMap.forEach { (dateAgo, eventsGroup) ->
+                filteredEventsMap.forEach { (dateAgo, eventsGroup) ->
                     stickyHeader {
                         NavigationTitle(
                             title = dateAgoToString(dateAgo),
@@ -421,8 +410,7 @@ fun HistoryScreen(
         )
 
         FloatingFooter(
-            visible = inSelectMode,
-            modifier = Modifier.padding(bottom = 16.dp)
+            visible = inSelectMode
         ) {
             SelectHeader(
                 navController = navController,
