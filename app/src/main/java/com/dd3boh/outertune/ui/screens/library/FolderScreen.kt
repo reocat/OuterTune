@@ -506,7 +506,7 @@ fun FolderScreen(
             onClick = {
                 playerConnection.playQueue(
                     ListQueue(
-                        title = currDir.currentDir,
+                        title = currDir.currentDir.substringAfterLast('/'),
                         items = currDir.toSortedList(sortType, sortDescending).map { it.toMediaMetadata() },
                         startShuffled = true
                     )
