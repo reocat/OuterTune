@@ -222,6 +222,8 @@ import com.dd3boh.outertune.ui.screens.settings.AboutScreen
 import com.dd3boh.outertune.ui.screens.settings.AccountSyncSettings
 import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
 import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
+import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
+import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
 import com.dd3boh.outertune.ui.screens.settings.InterfaceSettings
 import com.dd3boh.outertune.ui.screens.settings.LibrarySettings
@@ -230,6 +232,7 @@ import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
+import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.ImportFromSpotifyScreen
 import com.dd3boh.outertune.ui.theme.ColorSaver
 import com.dd3boh.outertune.ui.theme.DefaultThemeColor
 import com.dd3boh.outertune.ui.theme.OuterTuneTheme
@@ -1112,15 +1115,31 @@ class MainActivity : ComponentActivity() {
                                     composable("settings/experimental") {
                                         ExperimentalSettings(navController, scrollBehavior)
                                     }
+                                    composable("settings/discord") {
+                                        DiscordSettings(navController, scrollBehavior)
+                                    }
+                                    composable("settings/discord/login") {
+                                        DiscordLoginScreen(navController)
+                                    }
                                     composable("settings/about") {
                                         AboutScreen(navController, scrollBehavior)
                                     }
                                     composable("login") {
                                         LoginScreen(navController)
                                     }
-
                                     composable("setup_wizard") {
                                         SetupWizard(navController)
+                                    }
+                                    composable("settings/content/import_from_spotify") {
+                                        val isMiniPlayerVisible = rememberSaveable { mutableStateOf(false) }
+                                        LaunchedEffect(playerBottomSheetState.isCollapsed) {
+                                            isMiniPlayerVisible.value = playerBottomSheetState.isCollapsed
+                                        }
+                                        ImportFromSpotifyScreen(
+                                            navController = navController,
+                                            scrollBehavior = scrollBehavior,
+                                            isMiniPlayerVisible = isMiniPlayerVisible
+                                        )
                                     }
                                 }
                             }
