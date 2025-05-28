@@ -464,9 +464,6 @@ fun FolderScreen(
             if (currDir.isSkeleton) return@LazyColumn
 
             // all songs get listed here
-            (if (isSearching) filteredSongs else mutableSongs).forEach {
-                println(it.id)
-            }
             itemsIndexed(
                 items = if (isSearching) filteredSongs else mutableSongs,
                 key = { _, item -> item.id },
