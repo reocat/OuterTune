@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.palette.graphics.Palette
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamicColorScheme
+import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 import com.materialkolor.score.Score
 
@@ -51,6 +51,7 @@ fun OuterTuneTheme(
         rememberDynamicColorScheme(
             seedColor = themeColor, // themeColor is guaranteed non-default here
             isDark = darkTheme,
+            specVersion = ColorSpec.SpecVersion.SPEC_2025,
             style = PaletteStyle.TonalSpot // Keep existing style
         )
     }
@@ -74,7 +75,6 @@ fun OuterTuneTheme(
     )
 }
 
-// Keep helper functions as they are likely still needed
 fun Bitmap.extractThemeColor(): Color {
     val colorsToPopulation = Palette.from(this)
         .maximumColorCount(8)

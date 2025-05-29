@@ -15,7 +15,6 @@ multidex = "2.0.1"
 materialKolor = "3.0.0-beta01"
 newpipe = "dev-SNAPSHOT"
 taglib = "7833009"
-okhttp = "5.0.0-alpha.14"
 leakcanary = "3.0-alpha-8"
 
 [libraries]
@@ -47,7 +46,6 @@ material3 = { group = "androidx.compose.material3", name = "material3", version.
 
 squigglyslider = { group = "me.saket.squigglyslider", name = "squigglyslider", version = "1.0.0" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
-
 
 coil = { group = "io.coil-kt", name = "coil-compose", version = "2.7.0" }
 
