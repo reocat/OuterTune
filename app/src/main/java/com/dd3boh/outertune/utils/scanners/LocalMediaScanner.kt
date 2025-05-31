@@ -363,42 +363,36 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     }
 
                     // update artists
-                    var artistPos = 0
-                    song.song.artists.forEach {
+                    song.song.artists.forEachIndexed { index, it ->
                         val dbQuery =
-                            database.searchArtists(it.name).firstOrNull()?.sortedBy { item -> item.artist.name.length }
+                            database.artistLikeName(it.name).firstOrNull()?.sortedBy { item -> item.name.length }
                         val dbArtist = dbQuery?.let { item -> closestMatch(it.name, item) }
 
                         database.transaction {
                             if (dbArtist == null) {
                                 // artist does not exist in db, add it then link it
                                 insert(it)
-                                insert(SongArtistMap(songToUpdate.id, it.id, artistPos))
+                                insert(SongArtistMap(songToUpdate.id, it.id, index))
                             } else {
                                 // artist does  exist in db, link to it
-                                insert(SongArtistMap(songToUpdate.id, dbArtist.artist.id, artistPos))
+                                insert(SongArtistMap(songToUpdate.id, dbArtist.id, index))
                             }
                         }
-
-                        artistPos++
                     }
 
-                    artistPos = 0 // reuse this var for genres
-                    song.song.genre?.forEach {
+                    song.song.genre?.forEachIndexed { index, it ->
                         val dbGenre = database.genreByAproxName(it.title).firstOrNull()?.firstOrNull()
 
                         database.transaction {
                             if (dbGenre == null) {
                                 // genre does not exist in db, add it then link it
                                 insert(it)
-                                insert(SongGenreMap(songToUpdate.id, it.id, artistPos))
+                                insert(SongGenreMap(songToUpdate.id, it.id, index))
                             } else {
                                 // genre does exist in db, link to it
-                                insert(SongGenreMap(songToUpdate.id, dbGenre.id, artistPos))
+                                insert(SongGenreMap(songToUpdate.id, dbGenre.id, index))
                             }
                         }
-
-                        artistPos++
                     }
                     /*
                     song.song.album?.let {
@@ -811,12 +805,11 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     tmp.add(dbArtists.removeAt(0))
                 }
 
-                var newPos = oldestArtist.songCount
                 if (tmp.size > 1) {
                     // merge all duplicate artists into the oldest one
                     tmp.removeAt(0)
                     tmp.sortBy { it.artist.bookmarkedAt }
-                    tmp.forEach { swapArtists(it.artist, oldestArtist.artist, database, newPos++) }
+                    tmp.forEach { swapArtists(it.artist, oldestArtist.artist, database) }
                 }
             }
         }
@@ -1120,7 +1113,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * p.s. This is here instead of DatabaseDao because it won't compile there because
          * "oooga boooga error in generated code"
          */
-        fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase, newPos: Int? = null) {
+        fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase) {
             if (database.artistById(old.id) == null) {
                 throw Exception("Attempting to swap with non-existent old artist in database with id: ${old.id}")
             }
@@ -1130,13 +1123,8 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
             database.transaction {
                 // update participation(s)
-                if (newPos == null) {
-                    database.updateSongArtistMap(old.id, new.id)
-                    database.updateAlbumArtistMap(old.id, new.id)
-                } else {
-                    database.updateSongArtistMap(old.id, new.id, newPos)
-                    database.updateAlbumArtistMap(old.id, new.id, newPos)
-                }
+                database.updateSongArtistMap(old.id, new.id)
+                database.updateAlbumArtistMap(old.id, new.id)
 
                 // nuke old artist
                 database.safeDeleteArtist(old.id)

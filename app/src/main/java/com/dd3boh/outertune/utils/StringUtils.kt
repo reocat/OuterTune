@@ -3,6 +3,7 @@ package com.dd3boh.outertune.utils
 import android.net.Uri
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
+import com.dd3boh.outertune.db.entities.ArtistEntity
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.math.absoluteValue
@@ -75,18 +76,18 @@ fun formatFileSize(sizeBytes: Long): String {
 /**
  * Find the matching string, if not found the closest super string
  */
-fun closestMatch(query: String, stringList: List<Artist>): Artist? {
+fun closestMatch(query: String, stringList: List<ArtistEntity>): ArtistEntity? {
     // Check for exact match first
 
-    val exactMatch = stringList.find { query.lowercase() == it.artist.name.lowercase() }
+    val exactMatch = stringList.find { query.lowercase() == it.name.lowercase() }
     if (exactMatch != null) {
         return exactMatch
     }
 
     // Check for query as substring in any of the strings
-    val substringMatches = stringList.filter { it.artist.name.contains(query) }
+    val substringMatches = stringList.filter { it.name.contains(query) }
     if (substringMatches.isNotEmpty()) {
-        return substringMatches.minByOrNull { it.artist.name.length }
+        return substringMatches.minByOrNull { it.name.length }
     }
 
     return null
