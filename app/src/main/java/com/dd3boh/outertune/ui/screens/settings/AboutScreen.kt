@@ -58,6 +58,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
+import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.utils.backToMain
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -197,6 +198,21 @@ fun AboutScreen(
             text = stringResource(R.string.attrib_zhuang),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.secondary
+        )
+
+        Spacer(Modifier.height(64.dp))
+
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.attribution_title)) },
+            onClick = {
+                navController.navigate("settings/about/attribution")
+            }
+        )
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.oss_licenses_title)) },
+            onClick = {
+                navController.navigate("settings/about/oss_licenses")
+            }
         )
 
         // debug info
