@@ -76,9 +76,10 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     ): SongTempData {
         try {
             // test if system can play
-            testPlayer!!.setDataSource(path)
-            testPlayer!!.prepare()
-            testPlayer!!.reset()
+            val testPlayer = MediaPlayer()
+            testPlayer.setDataSource(path)
+            testPlayer.prepare()
+            testPlayer.release()
 
 
             // decide which scanner to use
@@ -832,7 +833,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
         private var ownerId = -1
         private var localScanner: LocalMediaScanner? = null
-        var testPlayer: MediaPlayer? = null
 
         /**
          * TODO: Create a lock for background jobs like youtubeartists and etc
@@ -858,25 +858,18 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          */
         fun getScanner(context: Context, scannerImpl: ScannerImpl, owner: Int): LocalMediaScanner {
 
-            /*
-            if the FFmpeg extractor is suddenly removed and a scan is ran, reset to taglib, disable auto scanner.
-            we don't want to run the taglib scanner fallback if the user explicitly selected FFmpeg as differences
-            can muck with the song detection. Throw the error to the ui where it can be handled there
-             */
-            if (scannerImpl != ScannerImpl.TAGLIB) {
-                runBlocking {
-                    context.dataStore.edit { settings ->
-                        settings[ScannerImplKey] = ScannerImpl.TAGLIB.toString()
-                        settings[AutomaticScannerKey] = false
+            if (localScanner == null) {
+                // reset to taglib if ffMetadataEx disappears
+                if (scannerImpl == ScannerImpl.FFMPEG_EXT && !ENABLE_FFMETADATAEX) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        context.dataStore.edit { settings ->
+                            settings[ScannerImplKey] = ScannerImpl.TAGLIB.toString()
+                            settings[AutomaticScannerKey] = false
+                            // TODO: toast user maybe...?
+                        }
                     }
                 }
-                throw ScannerAbortException("FFmpeg extractor was selected, but the package is no longer available. Reset to taglib scanner and disabled automatic scanning")
-            }
-
-            if (localScanner == null) {
-                localScanner = LocalMediaScanner(context, ScannerImpl.TAGLIB)
-//                localScanner = LocalMediaScanner(context, if (isFFmpegInstalled) scannerImpl else ScannerImpl.TAGLIB)
-                testPlayer = MediaPlayer()
+                localScanner = LocalMediaScanner(context, scannerImpl)
                 scannerProgressTotal.value = 0
                 scannerProgressCurrent.value = -1
                 scannerProgressProbe = 0
@@ -892,7 +885,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 return
             }
             ownerId = -1
-            testPlayer?.release()
             localScanner = null
             scannerActive.value = false
             scannerShowLoading.value = false
