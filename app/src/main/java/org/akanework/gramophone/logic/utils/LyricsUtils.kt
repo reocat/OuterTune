@@ -236,12 +236,17 @@ object LrcUtils {
 
     // begin OuterTune
     @OptIn(UnstableApi::class)
-    fun loadAndParseLyricsString(
-        lyrics: String,
-        parserOptions: LrcParserOptions,
-        format: LyricFormat
-    ): List<MediaStoreUtils.Lyric> {
-        return parseLyrics(lyrics, parserOptions, format).convertForLegacy() ?: emptyList<MediaStoreUtils.Lyric>()
+    fun loadLyricsFile(musicFile: File?): String? {
+        return loadTextFile(
+            musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".ttml") },
+            ""
+        )?: loadTextFile(
+            musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".srt") },
+            ""
+        )?: loadTextFile(
+            musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".lrc") },
+            ""
+        )
     }
 
     fun findCurrentLineIndex(lines: List<MediaStoreUtils.Lyric>, position: Long): Int {
