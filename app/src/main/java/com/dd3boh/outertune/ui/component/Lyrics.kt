@@ -10,7 +10,6 @@
 package com.dd3boh.outertune.ui.component
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -107,11 +106,6 @@ import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
-import com.dd3boh.outertune.lyrics.LyricsEntry
-import com.dd3boh.outertune.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
-import org.akanework.gramophone.logic.utils.LyricsUtils
-import org.akanework.gramophone.logic.utils.LyricsUtils.findCurrentLineIndex
-import org.akanework.gramophone.logic.utils.LyricsUtils.loadAndParseLyricsString
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.LyricsMenu
@@ -122,11 +116,13 @@ import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import org.akanework.gramophone.logic.utils.LrcUtils.LrcParserOptions
+import org.akanework.gramophone.logic.utils.LrcUtils.LyricFormat
+import org.akanework.gramophone.logic.utils.LrcUtils.findCurrentLineIndex
+import org.akanework.gramophone.logic.utils.LrcUtils.loadAndParseLyricsString
+import org.akanework.gramophone.logic.utils.MediaStoreUtils.Lyric
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun Lyrics(
@@ -159,11 +155,22 @@ fun Lyrics(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    val lines: List<LyricsEntry> = remember(lyrics) {
-        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
-        else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
-                loadAndParseLyricsString(lyrics, LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
-        else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
+    val lines: List<Lyric> = remember(lyrics) {
+        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
+            emptyList()
+        } else if (lyrics.startsWith("[")) {
+            val result = ArrayList<Lyric>()
+            result.add(Lyric.HEAD_LYRICS_ENTRY)
+            val parserLyrics = loadAndParseLyricsString(
+                lyrics = lyrics,
+                parserOptions = LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"),
+                format = LyricFormat.LRC
+            )
+            result.addAll(parserLyrics)
+            result
+        } else {
+            lyrics.lines().mapIndexed { index, line -> Lyric(index * 100L, line) }
+        }
     }
     val isSynced = remember(lyrics) {
         !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
@@ -342,63 +349,13 @@ fun Lyrics(
                         lineHeight = (lyricsFontSize * 1.3).sp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                else Color.Transparent,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .graphicsLayer {
-                                alpha = if (!isSynced || index == displayedCurrentLineIndex || isSelected) 1f else 0.6f
-                                translationY = if (index == displayedCurrentLineIndex) 0.dp.toPx() else 0f
+                            .clickable(enabled = isSynced && item.timeStamp != null) {
+                                playerConnection.player.seekTo(item.timeStamp ?: 0L)
+                                lastPreviewTime = 0L
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                             }
-                            .combinedClickable(
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        if (isSelected) {
-                                            selectedIndices.remove(index)
-                                            if (selectedIndices.isEmpty()) {
-                                                isSelectionMode = false
-                                            }
-                                        } else {
-                                            if (selectedIndices.size < MAX_SELECTABLE_LYRICS) {
-                                                selectedIndices.add(index)
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    context.getString(R.string.max_selection_limit),
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        }
-                                    } else if (isSynced) {
-                                        playerConnection.player.seekTo(item.timeStamp)
-                                        lastPreviewTime = 0L
-                                        haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!isSelectionMode) {
-                                        isSelectionMode = true
-                                        selectedIndices.add(index)
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    }
-                                }
-                            )
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .drawWithCache {
-                                onDrawBehind {
-                                    if (index == displayedCurrentLineIndex) {
-                                        val strokeWidth = 2.dp.toPx()
-                                        val y = size.height - strokeWidth / 2
-                                        drawLine(
-                                            color = lineColor,
-                                            start = Offset(0f, y),
-                                            end = Offset(size.width, y),
-                                            strokeWidth = strokeWidth
-                                        )
-                                    }
-                                }
-                            }
+                            .padding(horizontal = 24.dp, vertical = 8.dp)
+                            .alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f)
                     )
                 }
             }

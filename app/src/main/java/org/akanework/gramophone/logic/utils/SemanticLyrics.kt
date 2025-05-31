@@ -1,7 +1,5 @@
 package org.akanework.gramophone.logic.utils
 
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.Log
 import android.util.Xml
 import androidx.annotation.OptIn
@@ -9,9 +7,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.text.CuesWithTiming
 import androidx.media3.extractor.text.SubtitleParser
 import androidx.media3.extractor.text.subrip.SubripParser
-import kotlinx.parcelize.Parceler
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
 import org.akanework.gramophone.logic.forEachSupport
 import org.akanework.gramophone.logic.utils.SemanticLyrics.LyricLine
 import org.akanework.gramophone.logic.utils.SemanticLyrics.SyncedLyrics
@@ -49,8 +44,7 @@ private const val TAG = "SemanticLyrics"
  * We completely ignore all ID3 tags from the header as MediaStore is our source of truth.
  */
 
-@Parcelize
-enum class SpeakerEntity(val isWalaoke: Boolean, val isVoice2: Boolean = false, val isGroup: Boolean = false, val isBackground: Boolean = false) : Parcelable {
+enum class SpeakerEntity(val isWalaoke: Boolean, val isVoice2: Boolean = false, val isGroup: Boolean = false, val isBackground: Boolean = false) {
     Male(true), // Walaoke
     Female(true), // Walaoke
     Duet(true), // Walaoke
@@ -465,19 +459,16 @@ fun findBidirectionalBarriers(text: CharSequence): List<Pair<Int, Boolean>> {
  *  - [offset:] tag in header (ref Wikipedia)
  * We completely ignore all ID3 tags from the header as MediaStore is our source of truth.
  */
-sealed class SemanticLyrics : Parcelable {
+sealed class SemanticLyrics {
     abstract val unsyncedText: List<Pair<String, SpeakerEntity?>>
 
-    @Parcelize
     data class UnsyncedLyrics(override val unsyncedText: List<Pair<String, SpeakerEntity?>>) : SemanticLyrics()
 
-    @Parcelize
     data class SyncedLyrics(val text: List<LyricLine>) : SemanticLyrics() {
         override val unsyncedText
             get() = text.map { it.text to it.speaker }
     }
 
-    @Parcelize
     data class LyricLine(
         val text: String,
         val start: ULong,
@@ -485,38 +476,18 @@ sealed class SemanticLyrics : Parcelable {
         val words: MutableList<Word>?,
         var speaker: SpeakerEntity?,
         var isTranslated: Boolean
-    ) : Parcelable {
+    ) {
         val isClickable: Boolean
             get() = text.isNotBlank()
         val timeRange: ULongRange
             get() = start..end
     }
 
-    @Parcelize
     data class Word(
-        var timeRange: @WriteWith<ULongRangeParceler>() ULongRange,
-        var charRange: @WriteWith<IntRangeParceler>() IntRange,
+        var timeRange: ULongRange,
+        var charRange: IntRange,
         var isRtl: Boolean
-    ) : Parcelable
-
-    object ULongRangeParceler : Parceler<ULongRange> {
-        override fun create(parcel: Parcel) =
-            parcel.readLong().toULong()..parcel.readLong().toULong()
-
-        override fun ULongRange.write(parcel: Parcel, flags: Int) {
-            parcel.writeLong(first.toLong())
-            parcel.writeLong(last.toLong())
-        }
-    }
-
-    object IntRangeParceler : Parceler<IntRange> {
-        override fun create(parcel: Parcel) = parcel.readInt()..parcel.readInt()
-
-        override fun IntRange.write(parcel: Parcel, flags: Int) {
-            parcel.writeInt(first)
-            parcel.writeInt(last)
-        }
-    }
+    )
 }
 
 fun parseLrc(lyricText: String, trimEnabled: Boolean, multiLineEnabled: Boolean): SemanticLyrics? {

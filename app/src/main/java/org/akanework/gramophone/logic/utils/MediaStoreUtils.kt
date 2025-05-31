@@ -17,16 +17,19 @@
 
 package org.akanework.gramophone.logic.utils
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
 object MediaStoreUtils {
 
-    @Parcelize
     data class Lyric(
         val timeStamp: Long? = null,
         val content: String = "",
         var isTranslation: Boolean = false
-    ) : Parcelable
+    ) : Comparable<Lyric> {
+        override fun compareTo(other: Lyric): Int = ((timeStamp ?: 0L) - (other.timeStamp ?: 0L)).toInt()
+
+        companion object {
+            val HEAD_LYRICS_ENTRY = Lyric(0L, "")
+        }
+    }
 
 }

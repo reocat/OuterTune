@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.metadata.id3.BinaryFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
+import com.dd3boh.outertune.ui.component.animateScrollDuration
 import java.io.File
 import java.nio.charset.Charset
 
@@ -232,6 +233,28 @@ object LrcUtils {
 
         return minutes * 60000 + seconds * 1000 + milliseconds
     }
+
+    // begin OuterTune
+    @OptIn(UnstableApi::class)
+    fun loadAndParseLyricsString(
+        lyrics: String,
+        parserOptions: LrcParserOptions,
+        format: LyricFormat
+    ): List<MediaStoreUtils.Lyric> {
+        return parseLyrics(lyrics, parserOptions, format).convertForLegacy() ?: emptyList<MediaStoreUtils.Lyric>()
+    }
+
+    fun findCurrentLineIndex(lines: List<MediaStoreUtils.Lyric>, position: Long): Int {
+        for (index in lines.indices) {
+            lines[index].timeStamp?.let {
+                if (it >= position + animateScrollDuration) {
+                    return index - 1
+                }
+            }
+        }
+        return lines.lastIndex
+    }
+    // end OuterTune
 }
 
 // Class heavily based on MIT-licensed https://github.com/yoheimuta/ExoPlayerMusic/blob/77cfb989b59f6906b1170c9b2d565f9b8447db41/app/src/main/java/com/github/yoheimuta/amplayer/playback/UsltFrameDecoder.kt
