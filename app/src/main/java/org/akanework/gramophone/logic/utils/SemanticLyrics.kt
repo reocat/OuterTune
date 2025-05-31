@@ -1,10 +1,11 @@
-package com.dd3boh.outertune.lyrics
+package org.akanework.gramophone.logic.utils
 
-import com.dd3boh.outertune.lyrics.SemanticLyrics.LyricLine
-import com.dd3boh.outertune.lyrics.SemanticLyrics.LyricLineHolder
-import com.dd3boh.outertune.lyrics.SemanticLyrics.SyncedLyrics
-import com.dd3boh.outertune.lyrics.SemanticLyrics.UnsyncedLyrics
-import com.dd3boh.outertune.lyrics.SemanticLyrics.Word
+import com.dd3boh.outertune.lyrics.LyricsEntry
+import org.akanework.gramophone.logic.utils.SemanticLyrics.LyricLine
+import org.akanework.gramophone.logic.utils.SemanticLyrics.LyricLineHolder
+import org.akanework.gramophone.logic.utils.SemanticLyrics.SyncedLyrics
+import org.akanework.gramophone.logic.utils.SemanticLyrics.UnsyncedLyrics
+import org.akanework.gramophone.logic.utils.SemanticLyrics.Word
 import java.util.concurrent.atomic.AtomicReference
 
 /**

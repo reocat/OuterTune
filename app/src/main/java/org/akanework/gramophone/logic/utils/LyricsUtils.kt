@@ -1,4 +1,4 @@
-package com.dd3boh.outertune.lyrics
+package org.akanework.gramophone.logic.utils
 
 import android.util.Log
 import androidx.annotation.OptIn
@@ -9,11 +9,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.metadata.id3.BinaryFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
-import com.dd3boh.outertune.lyrics.SemanticLyrics.Word
+import com.dd3boh.outertune.lyrics.LyricsEntry
+import org.akanework.gramophone.logic.utils.SemanticLyrics.Word
 import com.dd3boh.outertune.ui.component.animateScrollDuration
 import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
+import kotlin.collections.plus
 import kotlin.math.min
 
 /**

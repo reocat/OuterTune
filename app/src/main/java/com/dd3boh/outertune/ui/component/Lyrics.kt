@@ -109,10 +109,9 @@ import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.dd3boh.outertune.lyrics.LyricsEntry
 import com.dd3boh.outertune.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
-import com.dd3boh.outertune.lyrics.LyricsUtils
-import com.dd3boh.outertune.lyrics.LyricsUtils.findCurrentLineIndex
-import com.dd3boh.outertune.lyrics.LyricsUtils.loadAndParseLyricsString
-import com.dd3boh.outertune.models.MediaMetadata
+import org.akanework.gramophone.logic.utils.LyricsUtils
+import org.akanework.gramophone.logic.utils.LyricsUtils.findCurrentLineIndex
+import org.akanework.gramophone.logic.utils.LyricsUtils.loadAndParseLyricsString
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.LyricsMenu
