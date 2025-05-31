@@ -9,48 +9,46 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.metadata.id3.BinaryFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
-import com.dd3boh.outertune.lyrics.LyricsEntry
-import org.akanework.gramophone.logic.utils.SemanticLyrics.Word
-import com.dd3boh.outertune.ui.component.animateScrollDuration
-import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
-import kotlin.collections.plus
-import kotlin.math.min
 
-/**
- * Unless otherwise stated, this file is From Gramophone as of 9ca721e21a16bbfafdc15b8707b910edc5080c0c
- * This has been adapted for OuterTune
- * https://github.com/AkaneTan/Gramophone/blob/beta/app/src/main/kotlin/org/akanework/gramophone/logic/utils/LrcUtils.kt
- */
-object LyricsUtils {
+object LrcUtils {
 
     private const val TAG = "LrcUtils"
 
-    data class LrcParserOptions(val trim: Boolean, val multiLine: Boolean, val errorText: String)
+    enum class LyricFormat {
+        LRC,
+        TTML,
+        SRT
+    }
+    data class LrcParserOptions(val trim: Boolean, val multiLine: Boolean, val errorText: String?)
 
     @VisibleForTesting
-    fun parseLyrics(lyrics: String, parserOptions: LrcParserOptions): SemanticLyrics? {
-        return (try {
-            parseTtml(lyrics, parserOptions.trim)
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(Log.getStackTraceString(e))
-            SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText))
-        } ?: try {
-            parseSrt(lyrics, parserOptions.trim)
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(Log.getStackTraceString(e))
-            SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText))
-        } ?: try {
-            parseLrc(lyrics, parserOptions.trim, parserOptions.multiLine)
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(Log.getStackTraceString(e))
-            SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText))
-        })?.let {
-            if (it is SemanticLyrics.SyncedLyrics)
-                splitBidirectionalWords(it)
-            else it
+    fun parseLyrics(lyrics: String, parserOptions: LrcParserOptions, format: LyricFormat?): SemanticLyrics? {
+        for (i in listOf({
+            if (format == null || format == LyricFormat.TTML)
+                parseTtml(lyrics)
+            else null
+        }, {
+            if (format == null || format == LyricFormat.SRT)
+                parseSrt(lyrics, parserOptions.trim)
+            else null
+        }, {
+            if (format == null || format == LyricFormat.LRC)
+                parseLrc(lyrics, parserOptions.trim, parserOptions.multiLine)
+            else null
+        })) {
+            return try {
+                i() ?: continue
+            } catch (e: Exception) {
+                if (parserOptions.errorText == null)
+                    throw e
+                Log.e(TAG, Log.getStackTraceString(e))
+                Log.e(TAG, "The lyrics are:\n$lyrics")
+                SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText to null))
+            }
         }
+        return null
     }
 
     @OptIn(UnstableApi::class)
@@ -73,26 +71,25 @@ object LyricsUtils {
                 else if (meta is TextInformationFrame && (meta.id == "USLT" || meta.id == "SYLT")) // m4a
                     meta.values.joinToString("\n")
                 else null
-            return plainTextData?.let { parseLyrics(it, parserOptions) } ?: continue
+            return plainTextData?.let { parseLyrics(it, parserOptions, null) } ?: continue
         }
         return null
     }
 
-    // OuterTune helper
-    @OptIn(UnstableApi::class)
-    fun loadAndParseLyricsString(lyrics: String, parserOptions: LrcParserOptions): List<LyricsEntry> {
-        return emptyList<LyricsEntry>() + parseLyrics(lyrics, parserOptions).convertForLegacy()
-    }
-
     @OptIn(UnstableApi::class)
     fun loadAndParseLyricsFile(musicFile: File?, parserOptions: LrcParserOptions): SemanticLyrics? {
-        val lrcFile = musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".lrc") }
-        return loadTextFile(lrcFile, parserOptions.errorText)?.let {
-            parseLyrics(
-                it,
-                parserOptions
-            )
-        }
+        return loadTextFile(
+            musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".ttml") },
+            parserOptions.errorText
+        )?.let { parseLyrics(it, parserOptions, LyricFormat.TTML) }
+            ?: loadTextFile(
+                musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".srt") },
+                parserOptions.errorText
+            )?.let { parseLyrics(it, parserOptions, LyricFormat.SRT) }
+            ?: loadTextFile(
+                musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".lrc") },
+                parserOptions.errorText
+            )?.let { parseLyrics(it, parserOptions, LyricFormat.LRC) }
     }
 
     private fun loadTextFile(lrcFile: File?, errorText: String?): String? {
@@ -106,90 +103,11 @@ object LyricsUtils {
         }
     }
 
-    private fun splitBidirectionalWords(syncedLyrics: SemanticLyrics.SyncedLyrics): SemanticLyrics.SyncedLyrics {
-        return SemanticLyrics.SyncedLyrics(syncedLyrics.text.map { line ->
-            if (line.lyric.words.isNullOrEmpty()) return@map line
-            val bidirectionalBarriers = findBidirectionalBarriers(line.lyric.text)
-            val wordsWithBarriers = line.lyric.words.toMutableList()
-            var lastWasRtl = false
-            bidirectionalBarriers.forEach { barrier ->
-                val evilWordIndex =
-                    if (barrier.first == -1) -1 else wordsWithBarriers.indexOfFirst {
-                        it.charRange.contains(barrier.first) && it.charRange.start != barrier.first
-                    }
-                if (evilWordIndex == -1) {
-                    // Propagate the new direction (if there is a barrier after that, direction will
-                    // be corrected after it).
-                    val wordIndex = if (barrier.first == -1) 0 else
-                        wordsWithBarriers.indexOfFirst { it.charRange.start == barrier.first }
-                    wordsWithBarriers.replaceAllSupport(skipFirst = wordIndex) {
-                        if (it.isRtl != barrier.second) it.copy(isRtl = barrier.second) else it
-                    }
-                    lastWasRtl = barrier.second
-                    return@forEach
-                }
-                val evilWord = wordsWithBarriers[evilWordIndex]
-                // Estimate how long this word will take based on character to time ratio. To avoid
-                // this estimation, add a word sync point to bidirectional barriers :)
-                val barrierTime = min(evilWord.timeRange.first + ((line.lyric.words.map {
-                    it.timeRange.count() / it.charRange.count().toFloat()
-                }.average().let { if (it.isNaN()) 100.0 else it } * (barrier.first -
-                        evilWord.charRange.first))).toULong(), evilWord.timeRange.last - 1uL)
-                val firstPart = Word(
-                    charRange = evilWord.charRange.first..<barrier.first,
-                    timeRange = evilWord.timeRange.first..<barrierTime, isRtl = lastWasRtl
-                )
-                val secondPart = Word(
-                    charRange = barrier.first..evilWord.charRange.last,
-                    timeRange = barrierTime..evilWord.timeRange.last, isRtl = barrier.second
-                )
-                wordsWithBarriers[evilWordIndex] = firstPart
-                wordsWithBarriers.add(evilWordIndex + 1, secondPart)
-                lastWasRtl = barrier.second
-            }
-            line.copy(line.lyric.copy(words = wordsWithBarriers))
-        })
-    }
-
-    private val ltr =
-        arrayOf(
-            Character.DIRECTIONALITY_LEFT_TO_RIGHT,
-            Character.DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING,
-            Character.DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE
-        )
-    private val rtl =
-        arrayOf(
-            Character.DIRECTIONALITY_RIGHT_TO_LEFT,
-            Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC,
-            Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING,
-            Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE
-        )
-
-    private fun findBidirectionalBarriers(text: String): List<Pair<Int, Boolean>> {
-        val barriers = mutableListOf<Pair<Int, Boolean>>()
-        if (text.isEmpty()) return barriers
-        var previousDirection = text.find {
-            val dir = Character.getDirectionality(it)
-            dir in ltr || dir in rtl
-        }?.let { Character.getDirectionality(it) in rtl } == true
-        barriers.add(Pair(-1, previousDirection))
-        for (i in 0 until text.length) {
-            val currentDirection = Character.getDirectionality(text[i])
-            val isRtl = currentDirection in rtl
-            if (currentDirection !in ltr && !isRtl)
-                continue
-            if (previousDirection != isRtl)
-                barriers.add(Pair(i, isRtl))
-            previousDirection = isRtl
-        }
-        return barriers
-    }
-
     @OptIn(UnstableApi::class)
     fun extractAndParseLyricsLegacy(
         metadata: Metadata,
         parserOptions: LrcParserOptions
-    ): MutableList<LyricsEntry>? {
+    ): MutableList<MediaStoreUtils.Lyric>? {
         for (i in 0..<metadata.length()) {
             val meta = metadata.get(i)
             val data =
@@ -204,8 +122,8 @@ object LyricsUtils {
                 try {
                     parseLrcStringLegacy(it, parserOptions)
                 } catch (e: Exception) {
-                    Timber.tag(TAG).e(Log.getStackTraceString(e))
-                    mutableListOf(LyricsEntry(timeStamp = 0L, content = parserOptions.errorText))
+                    Log.e(TAG, Log.getStackTraceString(e))
+                    mutableListOf(MediaStoreUtils.Lyric(content = parserOptions.errorText ?: "null"))
                 }
             }
             return lyrics ?: continue
@@ -217,7 +135,7 @@ object LyricsUtils {
     fun loadAndParseLyricsFileLegacy(
         musicFile: File?,
         parserOptions: LrcParserOptions
-    ): MutableList<LyricsEntry>? {
+    ): MutableList<MediaStoreUtils.Lyric>? {
         val lrcFile = musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".lrc") }
         return loadTextFile(lrcFile, parserOptions.errorText)?.let {
             try {
@@ -232,11 +150,11 @@ object LyricsUtils {
     private fun parseLrcStringLegacy(
         lrcContent: String,
         parserOptions: LrcParserOptions
-    ): MutableList<LyricsEntry>? {
+    ): MutableList<MediaStoreUtils.Lyric>? {
         if (lrcContent.isBlank()) return null
 
         val timeMarksRegex = "\\[(\\d{2}:\\d{2})([.:]\\d+)?]".toRegex()
-        val lyricsList = mutableListOf<LyricsEntry>()
+        val lyricsList = mutableListOf<MediaStoreUtils.Lyric>()
         var foundNonNull = false
         var lyricsText: StringBuilder? = StringBuilder()
 
@@ -267,7 +185,7 @@ object LyricsUtils {
                 }
 
                 lyricsText?.append("$lyricLine\n")
-                lyricsList.add(LyricsEntry(timestamp, lyricLine))
+                lyricsList.add(MediaStoreUtils.Lyric(timestamp, lyricLine))
             }
         }
 
@@ -277,10 +195,10 @@ object LyricsUtils {
             .forEach { _ -> lyricsList.removeAt(0) }
 
         if (lyricsList.isEmpty() && lrcContent.isNotEmpty()) {
-            lyricsList.add(LyricsEntry(-1, lrcContent, false))
+            lyricsList.add(MediaStoreUtils.Lyric(null, lrcContent, false))
         } else if (!foundNonNull) {
             lyricsList.clear()
-            lyricsList.add(LyricsEntry(-1, lyricsText.toString(), false))
+            lyricsList.add(MediaStoreUtils.Lyric(null, lyricsText.toString(), false))
         }
 
         return lyricsList
@@ -295,7 +213,7 @@ object LyricsUtils {
         return nextSyncMatch?.range?.first?.minus(1) ?: lrcContent.length
     }
 
-    private fun markTranslations(lyricsList: MutableList<LyricsEntry>) {
+    private fun markTranslations(lyricsList: MutableList<MediaStoreUtils.Lyric>) {
         lyricsList.sortBy { it.timeStamp }
         var previousTimestamp: Long? = null
         lyricsList.forEach {
@@ -314,36 +232,7 @@ object LyricsUtils {
 
         return minutes * 60000 + seconds * 1000 + milliseconds
     }
-
-    // this was from OuterTune
-    fun findCurrentLineIndex(lines: List<LyricsEntry>, position: Long): Int {
-        for (index in lines.indices) {
-            if (lines[index].timeStamp >= position + animateScrollDuration) {
-                return index - 1
-            }
-        }
-        return lines.lastIndex
-    }
 }
-
-
-/**
- * From Gramophone as of 0d46996db54a3360e832ed06bf18170bce85534f
- * This has been adapted for OuterTune
- * https://github.com/AkaneTan/Gramophone/blob/beta/app/src/main/kotlin/org/akanework/gramophone/logic/GramophoneExtensions.kt
- */
-inline fun <reified T> MutableList<T>.replaceAllSupport(skipFirst: Int = 0, operator: (T) -> T) {
-    val li = listIterator()
-    var skip = skipFirst
-    while (skip-- > 0) {
-        li.next()
-    }
-    while (li.hasNext()) {
-        li.set(operator(li.next()))
-    }
-}
-
-
 
 // Class heavily based on MIT-licensed https://github.com/yoheimuta/ExoPlayerMusic/blob/77cfb989b59f6906b1170c9b2d565f9b8447db41/app/src/main/java/com/github/yoheimuta/amplayer/playback/UsltFrameDecoder.kt
 // See http://id3.org/id3v2.4.0-frames
