@@ -9,7 +9,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.metadata.id3.BinaryFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
-import com.dd3boh.outertune.ui.component.animateScrollDuration
 import java.io.File
 import java.nio.charset.Charset
 
@@ -247,17 +246,6 @@ object LrcUtils {
             musicFile?.let { File(it.parentFile, it.nameWithoutExtension + ".lrc") },
             ""
         )
-    }
-
-    fun findCurrentLineIndex(lines: List<MediaStoreUtils.Lyric>, position: Long): Int {
-        for (index in lines.indices) {
-            lines[index].timeStamp?.let {
-                if (it >= position + animateScrollDuration) {
-                    return index - 1
-                }
-            }
-        }
-        return lines.lastIndex
     }
     // end OuterTune
 }

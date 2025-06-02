@@ -21,6 +21,8 @@ import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Timeline
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.LyricsEntity
+import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
+import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.uninitializedLyric
 import com.dd3boh.outertune.extensions.currentMetadata
 import com.dd3boh.outertune.extensions.getCurrentQueueIndex
 import com.dd3boh.outertune.extensions.getQueueWindows
@@ -61,11 +63,11 @@ class PlayerConnection(
     val currentSong = mediaMetadata.flatMapLatest {
         database.song(it?.id)
     }
-    val currentLyrics: Flow<SemanticLyrics?> = mediaMetadata.flatMapLatest { mediaMetadata ->
+    val currentLyrics: Flow<SemanticLyrics> = mediaMetadata.flatMapLatest { mediaMetadata ->
         if (mediaMetadata != null) {
-            return@flatMapLatest flowOf(service.lyricsHelper.getLyrics(mediaMetadata))
+            return@flatMapLatest flowOf(service.lyricsHelper.getLyrics(mediaMetadata)?: uninitializedLyric)
         } else {
-            return@flatMapLatest flowOf(null)
+            return@flatMapLatest flowOf()
         }
     }
     val currentFormat = mediaMetadata.flatMapLatest { mediaMetadata ->
