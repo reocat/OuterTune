@@ -153,4 +153,10 @@
     <string name="dev_settings_description">개발자용 고급 설정을 표시합니다</string>
     <string name="scanner_sensitivity_L3">제목, 아티스트, 앨범 일치</string>
     <string name="scanner_sensitivity_L2">제목, 아티스트 일치</string>
+    <string name="checking_for_update">업데이트 확인 중</string>
+    <string name="no_updates_available">업데이트 없음</string>
+    <string name="check_for_update">업데이트 확인</string>
+    <string name="grp_behavior">행동</string>
+    <string name="playlist_missing_note">재생목록이 없나요? 이곳을 눌러 설정에서 읽기-쓰기 모드 동기화를 활성화하세요</string>
+    <string name="library_empty">라이브러리</string>
 </resources>
