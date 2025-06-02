@@ -158,4 +158,10 @@
     <string name="sync_mode">Modalità di sincronizzazione</string>
     <string name="sync_mode_rw">Lettura e scrittura (consenti anche le modifiche al contenuto remoto)</string>
     <string name="grp_sync">Sincronizzazione</string>
+    <string name="check_for_update">Controlla gli aggiornamenti</string>
+    <string name="grp_behavior">Comportamento</string>
+    <string name="checking_for_update">Verificare gli aggiornamenti</string>
+    <string name="library_empty">I contenuti della tua libreria verranno mostrati qui</string>
+    <string name="playlist_missing_note">Playlist mancanti? Fai clic qui per abilitare la modalità sync sead-write in impostazioni</string>
+    <string name="no_updates_available">Nessun aggiornamento disponibile</string>
 </resources>
