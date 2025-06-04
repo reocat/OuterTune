@@ -15,7 +15,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -137,8 +136,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.window.core.layout.WindowSizeClass
-import coil.imageLoader
-import coil.request.ImageRequest
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
@@ -247,6 +244,7 @@ import com.dd3boh.outertune.ui.utils.clearDtCache
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.ui.utils.resetHeightOffset
 import com.dd3boh.outertune.utils.ActivityLauncherHelper
+import com.dd3boh.outertune.utils.CoilBitmapLoader
 import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.compareVersion
@@ -373,6 +371,8 @@ class MainActivity : ComponentActivity() {
 
         lifecycle.addObserver(connectivityObserver)
 
+        val bitmapLoader = CoilBitmapLoader(this, CoroutineScope(Dispatchers.IO))
+
         setContent {
             val haptic = LocalHapticFeedback.current
 
@@ -406,14 +406,9 @@ class MainActivity : ComponentActivity() {
                 playerConnection.service.currentMediaMetadata.collectLatest { song ->
                     themeColor = if (song != null) {
                         withContext(Dispatchers.IO) {
-                            val result = imageLoader.execute(
-                                ImageRequest.Builder(this@MainActivity)
-                                    .data(song.thumbnailUrl)
-                                    .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
-                                    .build()
-                            )
-                            (result.drawable as? BitmapDrawable)?.bitmap?.extractThemeColor()
-                                ?: DefaultThemeColor
+                            val uri = (if (song.isLocal) song.localPath else song.thumbnailUrl)?.toUri()
+                            if (uri == null) return@withContext DefaultThemeColor
+                            bitmapLoader.loadBitmapOrNull(uri).get()?.extractThemeColor() ?: DefaultThemeColor
                         }
                     } else DefaultThemeColor
                 }

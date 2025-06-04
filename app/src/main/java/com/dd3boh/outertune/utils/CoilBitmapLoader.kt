@@ -71,7 +71,7 @@ class CoilBitmapLoader(
             val result = context.imageLoader.execute(
                 ImageRequest.Builder(context)
                     .data(uri)
-                    .allowHardware(false)
+                    .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
                     .build()
             )
             if (result is ErrorResult) {
@@ -83,6 +83,30 @@ class CoilBitmapLoader(
             } catch (e: Exception) {
                 reportException(ExecutionException(e))
                 return@future placeholderImage
+            }
+        }
+
+    fun loadBitmapOrNull(uri: Uri): ListenableFuture<Bitmap?> =
+        scope.future(Dispatchers.IO) {
+            // local images
+            if (uri.toString().startsWith("/storage/")) {
+                return@future imageCache.getLocalThumbnail(uri.toString(), false) ?: placeholderImage
+            }
+            val result = context.imageLoader.execute(
+                ImageRequest.Builder(context)
+                    .data(uri)
+                    .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
+                    .build()
+            )
+            if (result is ErrorResult) {
+                reportException(ExecutionException(result.throwable))
+                return@future null
+            }
+            try {
+                (result.drawable as BitmapDrawable).bitmap
+            } catch (e: Exception) {
+                reportException(ExecutionException(e))
+                return@future null
             }
         }
 }
