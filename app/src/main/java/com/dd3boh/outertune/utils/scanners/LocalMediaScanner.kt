@@ -29,6 +29,7 @@ import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.db.entities.SongGenreMap
 import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.models.DirectoryTree
+import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
@@ -37,6 +38,9 @@ import com.dd3boh.outertune.utils.closestMatch
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
+import com.zionhuang.innertube.models.ArtistItem
+import com.zionhuang.innertube.models.SongItem
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,6 +56,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.Locale
+import kotlin.collections.firstOrNull
 
 
 class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
@@ -1077,6 +1082,52 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
         /**
          * Search for an artist on YouTube Music.
+         */
+        fun youtubeSongLookup(query: String, songUrl: String?): List<MediaMetadata> {
+            var ytmResult = ArrayList<MediaMetadata>()
+
+            runBlocking(Dispatchers.IO) {
+                var exactSong: SongItem? = null
+                if (songUrl != null) {
+                    runBlocking(Dispatchers.IO) {
+                        runCatching {
+                            YouTube.queue(listOf(songUrl.substringAfter("/watch?v=").substringBefore("&")))
+                        }.onSuccess {
+                            exactSong = it.getOrNull()?.firstOrNull()
+                        }.onFailure {
+                            reportException(it)
+                        }
+                    }
+                }
+
+                // prefer song from url
+                if (exactSong != null) {
+                    ytmResult.add(exactSong.toMediaMetadata())
+                    if (SCANNER_DEBUG)
+                        Log.v(TAG, "Found exact song: ${exactSong.title} [${exactSong.id}]")
+                    return@runBlocking
+                }
+                YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).onSuccess { result ->
+
+                    val foundSong = result.items.filter {
+                        // TODO: might want to implement proper matching to remove outlandish results
+                        it is SongItem
+                    }
+                    ytmResult.addAll(foundSong.map { (it as SongItem).toMediaMetadata() })
+
+                    if (SCANNER_DEBUG)
+                        Log.v(TAG, "Remote song: ${foundSong.firstOrNull()?.title} [${foundSong.firstOrNull()?.id}]")
+                }.onFailure {
+                    throw Exception("Failed to search on YouTube Music: ${it.message}")
+                }
+
+            }
+
+            return ytmResult
+        }
+
+        /**
+         * Search for an artist on YouTube Music.
          *
          * If no artist is found, create one locally
          */
@@ -1087,17 +1138,19 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             runBlocking(Dispatchers.IO) {
                 YouTube.search(query, YouTube.SearchFilter.FILTER_ARTIST).onSuccess { result ->
 
-                    val foundArtist = result.items.firstOrNull {
+                    val foundArtist = result.items.filter { it is ArtistItem }.firstOrNull {
+                        // TODO: might want to implement smarter matching
                         it.title.lowercase(Locale.getDefault()) == query.lowercase(Locale.getDefault())
-                    } ?: throw Exception("Failed to search: Artist not found on YouTube Music")
+                    } as ArtistItem? ?: throw Exception("Failed to search: Artist not found on YouTube Music")
                     ytmResult = ArtistEntity(
                         foundArtist.id,
                         foundArtist.title,
-                        foundArtist.thumbnail
+                        foundArtist.thumbnail,
+                        foundArtist.channelId
                     )
 
                     if (SCANNER_DEBUG)
-                        Timber.tag(TAG).v("Found remote artist:  ${result.items.first().title}")
+                        Timber.tag(TAG).v("Found remote artist:  ${foundArtist.title} [${foundArtist.id}]")
                 }.onFailure {
                     throw Exception("Failed to search on YouTube Music")
                 }

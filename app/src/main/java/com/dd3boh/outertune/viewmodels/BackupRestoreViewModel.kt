@@ -18,8 +18,10 @@ import com.dd3boh.outertune.extensions.zipInputStream
 import com.dd3boh.outertune.extensions.zipOutputStream
 import com.dd3boh.outertune.playback.MusicService
 import com.dd3boh.outertune.utils.reportException
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.compareSong
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -32,10 +34,11 @@ import javax.inject.Inject
 import kotlin.system.exitProcess
 
 @HiltViewModel
-class BackupRestoreViewModel @Inject constructor(
+class BackupRestoreViewModel @Inject constructor( // TODO: make these calls non-blocking
+    @ApplicationContext val context: Context,
     val database: MusicDatabase,
 ) : ViewModel() {
-    fun backup(context: Context, uri: Uri) {
+    fun backup(uri: Uri) {
         runCatching {
             context.applicationContext.contentResolver.openOutputStream(uri)?.use {
                 it.buffered().zipOutputStream().use { outputStream ->
@@ -61,7 +64,7 @@ class BackupRestoreViewModel @Inject constructor(
         }
     }
 
-    fun restore(context: Context, uri: Uri) {
+    fun restore(uri: Uri) {
         runCatching {
             context.applicationContext.contentResolver.openInputStream(uri)?.use {
                 it.zipInputStream().use { inputStream ->
@@ -69,9 +72,10 @@ class BackupRestoreViewModel @Inject constructor(
                     while (entry != null) {
                         when (entry.name) {
                             SETTINGS_FILENAME -> {
-                                (context.filesDir / "datastore" / SETTINGS_FILENAME).outputStream().use { outputStream ->
-                                    inputStream.copyTo(outputStream)
-                                }
+                                (context.filesDir / "datastore" / SETTINGS_FILENAME).outputStream()
+                                    .use { outputStream ->
+                                        inputStream.copyTo(outputStream)
+                                    }
                             }
 
                             InternalDatabase.DB_NAME -> {
@@ -88,6 +92,7 @@ class BackupRestoreViewModel @Inject constructor(
                     }
                 }
             }
+            // TODO: This argument is a new instance so stopService will not remove anything
             context.stopService(Intent(context, MusicService::class.java))
             context.startActivity(Intent(context, MainActivity::class.java))
             exitProcess(0)
@@ -99,11 +104,15 @@ class BackupRestoreViewModel @Inject constructor(
 
     /**
      * Parse m3u file and scans the database for matching songs
+     *
+     * @param uri Uri for m3u file
+     * @param matchStrength How lax should the scanner be
+     * @param searchOnline Whether to enable fallback for trying to find the song on YTM
      */
     fun loadM3u(
-        context: Context,
         uri: Uri,
-        matchStrength: ScannerMatchCriteria = ScannerMatchCriteria.LEVEL_2
+        matchStrength: ScannerMatchCriteria = ScannerMatchCriteria.LEVEL_2,
+        searchOnline: Boolean = false
     ): Triple<ArrayList<Song>, ArrayList<String>, String> {
         val songs = ArrayList<Song>()
         val rejectedSongs = ArrayList<String>()
@@ -111,6 +120,7 @@ class BackupRestoreViewModel @Inject constructor(
         runCatching {
             context.applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
                 val lines = stream.readLines()
+                if (lines.isEmpty()) return@runCatching
                 if (lines.first().startsWith("#EXTM3U")) {
                     lines.forEachIndexed { index, rawLine ->
                         if (rawLine.startsWith("#EXTINF:")) {
@@ -118,25 +128,47 @@ class BackupRestoreViewModel @Inject constructor(
                             val artists =
                                 rawLine.substringAfter("#EXTINF:").substringAfter(',').substringBefore(" - ").split(';')
                             val title = rawLine.substringAfter("#EXTINF:").substringAfter(',').substringAfter(" - ")
+                            val source = if (index + 1 < lines.size) lines[index + 1] else null
 
                             val mockSong = Song(
                                 song = SongEntity(
                                     id = "",
                                     title = title,
                                     isLocal = true,
-                                    localPath = if (index + 1 < lines.size) lines[index + 1] else ""
+                                    localPath = if (source?.startsWith("http") == false) source else null
                                 ),
                                 artists = artists.map { ArtistEntity("", it) },
                             )
 
                             // now find the best match
-                            val matches = database.searchSongs(title)
+                            // first, search for songs in the database. Supplement with remote songs if no results are found
+                            val matches = runBlocking(Dispatchers.IO) {
+                                database.searchSongs(title).first().toMutableList()
+                            }
+                            if (searchOnline && matches.isEmpty()) {
+                                val onlineResult = runBlocking(Dispatchers.IO) {
+                                    LocalMediaScanner.youtubeSongLookup("$title ${artists.joinToString(" ")}", source)
+                                }
+                                onlineResult.forEach {
+                                    val result = Song(
+                                        song = it.toSongEntity(),
+                                        artists = it.artists.map {
+                                            ArtistEntity(
+                                                id = it.id ?: ArtistEntity.generateArtistId(),
+                                                name = it.name
+                                            )
+                                        }
+                                    )
+                                    matches.add(result)
+                                }
+                            }
                             val oldSize = songs.size
-                            runBlocking {
-                                matches.first().forEach {
-                                    if (compareSong(mockSong, it, matchStrength = matchStrength)) {
-                                        songs.add(it)
-                                    }
+                            var foundOne = false // TODO: Eventually the user can pick from matches... eventually...
+                            for (s in matches) {
+                                if (compareSong(mockSong, s, matchStrength = matchStrength)) {
+                                    songs.add(s)
+                                    foundOne = true
+                                    break
                                 }
                             }
 

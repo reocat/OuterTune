@@ -82,12 +82,12 @@ fun BackupAndRestore(
     val context = LocalContext.current
     val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri != null) {
-            viewModel.backup(context, uri)
+            viewModel.backup(uri)
         }
     }
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            viewModel.restore(context, uri)
+            viewModel.restore(uri)
         }
     }
 
@@ -100,7 +100,7 @@ fun BackupAndRestore(
     val rejectedSongs = remember { mutableStateListOf<String>() }
     val importM3uLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            val result = viewModel.loadM3u(context, uri, matchStrength = scannerSensitivity)
+            val result = viewModel.loadM3u(uri, matchStrength = scannerSensitivity, true)
             importedSongs.clear()
             importedSongs.addAll(result.first)
             rejectedSongs.clear()
@@ -149,6 +149,7 @@ fun BackupAndRestore(
             isVisible = showChoosePlaylistDialog,
             allowSyncing = false,
             initialTextFieldValue = importedTitle,
+            songs = importedSongs,
             onGetSong = { importedSongs.map { it.id } },
             onDismiss = { showChoosePlaylistDialog = false }
         )
