@@ -1,6 +1,9 @@
 package com.dd3boh.outertune.ui.menu
 
 import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -11,6 +14,7 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Output
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material.icons.rounded.Radio
@@ -61,11 +65,13 @@ import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
 import com.dd3boh.outertune.ui.component.PlaylistListItem
 import com.dd3boh.outertune.ui.component.TextFieldDialog
+import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @Composable
 fun PlaylistMenu(
@@ -84,10 +90,26 @@ fun PlaylistMenu(
         mutableStateOf(emptyList<Song>())
     }
 
-    val songsAvailable = {
-        songs.filter { it.song.isAvailableOffline() || isNetworkConnected }
-            .map { it.toMediaMetadata() }
-            .toList()
+    val m3uLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("audio/x-mpegurl")
+    ) { uri: Uri? ->
+        uri?.let {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    var result = "#EXTM3U\n"
+                    songs.forEach { s ->
+                        val se = s.song
+                        result += "#EXTINF:${se.duration},${s.artists.joinToString(";") { it.name }} - ${s.title}\n"
+                        result += if (se.isLocal) se.localPath else "https://music.youtube.com/watch?v=${se.id}\n"
+                    }
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(result.toByteArray(Charsets.UTF_8))
+                    }
+                } catch (e: IOException) {
+                    reportException(e)
+                }
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -386,6 +408,12 @@ fun PlaylistMenu(
                 context.startActivity(Intent.createChooser(intent, null))
                 onDismiss()
             }
+        }
+        GridMenuItem(
+            icon = Icons.Rounded.Output,
+            title = R.string.playlist_m3u_export
+        ) {
+            m3uLauncher.launch("playlist.m3u")
         }
     }
 }
