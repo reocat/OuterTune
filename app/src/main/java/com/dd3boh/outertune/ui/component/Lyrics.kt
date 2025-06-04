@@ -475,10 +475,16 @@ fun HorizontalReveal(
     rtl: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 100, easing = LinearEasing)
+    )
+
     Box(modifier = modifier) {
         Box(modifier = Modifier.alpha(backgroundAlpha)) {
             content()
         }
+
         Box(
             modifier = Modifier
                 .graphicsLayer {
@@ -486,8 +492,10 @@ fun HorizontalReveal(
                     shape = RectangleShape
                 }
                 .drawWithContent {
-                    val clipWidth = size.width * progress.coerceIn(if (!rtl) 0f else 1f, if (!rtl) 1f else 0f)
-                    clipRect(0f, 0f, clipWidth, size.height) {
+                    val clipWidth = size.width * animatedProgress
+                    val left = if (!rtl) 0f else size.width - clipWidth
+                    val right = if (!rtl) clipWidth else size.width
+                    clipRect(left, 0f, right, size.height) {
                         this@drawWithContent.drawContent()
                     }
                 }
