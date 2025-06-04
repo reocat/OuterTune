@@ -37,9 +37,9 @@ import androidx.compose.material.icons.rounded.Devices
 import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.FolderCopy
-import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.Vibration
+import androidx.compose.material.icons.rounded.TextRotationAngledown
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -78,10 +78,11 @@ import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.FirstSetupPassed
-import com.dd3boh.outertune.constants.LyricsClickKey
+import com.dd3boh.outertune.constants.LyricKaraokeEnable
+import com.dd3boh.outertune.constants.LyricUpdateSpeed
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScannerImpl
-import com.dd3boh.outertune.constants.ScannerImplKey
+import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.constants.TopBarInsets
@@ -91,6 +92,7 @@ import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
+import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
@@ -121,10 +123,9 @@ fun ExperimentalSettings(
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
     val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
 
-    val (scannerImpl) = rememberEnumPreference(
-        key = ScannerImplKey,
-        defaultValue = ScannerImpl.TAGLIB
-    )
+    val (lyricUpdateSpeed, onLyricsUpdateSpeedChange) = rememberEnumPreference(LyricUpdateSpeed, Speed.MEDIUM)
+    val (lyricsFancy, onLyricsFancyChange) = rememberPreference(LyricKaraokeEnable, false)
+
 
     val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, defaultDownloadPath)
     val (dlPathExtra, onDlPathExtraChange) = rememberPreference(DownloadExtraPathKey, "")
@@ -159,6 +160,32 @@ fun ExperimentalSettings(
             checked = tabletUi,
             onCheckedChange = onTabletUiChange
         )
+
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
+            description = stringResource(R.string.lyrics_karaoke_description),
+            icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
+            checked = lyricsFancy,
+            onCheckedChange = onLyricsFancyChange
+        )
+
+        ListPreference(
+            title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
+            icon = { Icon(Icons.Rounded.Speed, null) },
+            selectedValue = lyricUpdateSpeed,
+            onValueSelected = onLyricsUpdateSpeedChange,
+            values = Speed.entries,
+            valueText = {
+                when (it) {
+                    Speed.SLOW -> stringResource(R.string.speed_slow)
+                    Speed.MEDIUM -> stringResource(R.string.speed_medium)
+                    Speed.FAST -> stringResource(R.string.speed_fast)
+                }
+            },
+            isEnabled = lyricsFancy
+        )
+
+
         PreferenceGroupTitle(
             title = stringResource(R.string.settings_debug)
         )

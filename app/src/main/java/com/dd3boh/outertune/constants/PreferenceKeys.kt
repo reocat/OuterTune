@@ -102,6 +102,8 @@ val MultilineLrcKey = booleanPreferencesKey("multilineLrc")
 val LyricTrimKey = booleanPreferencesKey("lyricTrim")
 val LyricSourcePrefKey = booleanPreferencesKey("preferLocalLyrics")
 val LyricFontSizeKey = intPreferencesKey("lyricFontSize")
+val LyricKaraokeEnable = booleanPreferencesKey("lyricKaraokeEnable")
+val LyricUpdateSpeed = stringPreferencesKey("lyricUpdateSpeed")
 
 
 /**

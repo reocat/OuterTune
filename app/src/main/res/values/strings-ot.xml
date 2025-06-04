@@ -144,14 +144,16 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="pause">Pause</string>
 
     <!--Lyrics settings -->
-    <string name="lyrics_settings_title">Lyrics</string>
+    <string name="lyrics_font_Size">Font size</string>
+    <string name="lyrics_karaoke_title">Karaoke style lyrics.</string>
+    <string name="lyrics_karaoke_description">Enables word by word lyric syncing. Requires lyrics format support.</string>
+    <string name="lyrics_karaoke_hz_title">Adjust karaoke lyrics update speed</string>
     <string name="lyrics_multiline_title">Read multiline lyrics</string>
     <string name="lyrics_multiline_description">Treat all the lines between sync points as one lyric text</string>
-    <string name="lyrics_trim_title">Remove spaces around lyrics</string>
     <string name="lyrics_prefer_local">Prefer local lyric files</string>
     <string name="lyrics_prefer_local_description">Prioritize resolving local lyric files before using all cloud providers. Turn ths off to prioritize cloud providers</string>
-    <string name="lyrics_font_Size">Font size</string>
-
+    <string name="lyrics_settings_title">Lyrics</string>
+    <string name="lyrics_trim_title">Remove spaces around lyrics</string>
 
     <!-- Local player settings -->
     <string name="local_library_enable_title">Enable local media</string>
@@ -290,6 +292,11 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="action_skip">Skip</string>
     <string name="action_cancel">Cancel</string>
     <string name="info">Information</string>
+    <string name="speed_very_slow">Very slow</string>
+    <string name="speed_slow">Slow</string>
+    <string name="speed_medium">Medium</string>
+    <string name="speed_fast">Fast</string>
+    <string name="speed_very_fast">Very fast</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
 

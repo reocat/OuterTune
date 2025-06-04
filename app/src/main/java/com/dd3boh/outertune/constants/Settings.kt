@@ -199,3 +199,14 @@ enum class PlaylistFilter {
 enum class SearchSource {
     LOCAL, ONLINE
 }
+
+enum class Speed {
+    SLOW, MEDIUM, FAST;
+
+    fun toLrcRefreshMillis(): Long =
+        when (this) {
+            SLOW -> 125
+            MEDIUM -> 33
+            FAST -> 16
+        }
+}

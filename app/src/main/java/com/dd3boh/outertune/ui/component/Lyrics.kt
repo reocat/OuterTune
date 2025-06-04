@@ -11,6 +11,9 @@ package com.dd3boh.outertune.ui.component
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -74,11 +77,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastAny
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
+import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricFontSizeKey
+import com.dd3boh.outertune.constants.LyricUpdateSpeed
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
@@ -87,6 +93,7 @@ import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.LyricsMenu
 import com.dd3boh.outertune.constants.LyricsPosition
+import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.uninitializedLyric
 import com.dd3boh.outertune.extensions.isPowerSaver
@@ -105,8 +112,6 @@ import org.akanework.gramophone.logic.utils.convertForLegacy
 import java.io.File
 import kotlin.time.Duration.Companion.seconds
 
-val REFRESH_INTERVAL = 33L // ~30 fps TODO: preference key
-
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun Lyrics(
@@ -123,6 +128,10 @@ fun Lyrics(
 
     val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
     val lyricsFontSize by rememberPreference(LyricFontSizeKey, 20)
+
+    val lyricsFancy by rememberPreference(LyricKaraokeEnable, false)
+    val lyricsUpdateSpeed by rememberEnumPreference(LyricUpdateSpeed, Speed.MEDIUM)
+    var lyricRefreshRate = lyricsUpdateSpeed.toLrcRefreshMillis()
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val lyricsModel by playerConnection.currentLyrics.collectAsState(initial = null)
@@ -150,10 +159,17 @@ fun Lyrics(
             if (isSynced) {
                 val lyrics = lyricsModel as SemanticLyrics.SyncedLyrics
                 lines.addAll(lyrics.text)
+
+                if (lyricsFancy && lyrics.text.fastAny { it.words != null }) {
+                    lyricRefreshRate = lyricsUpdateSpeed.toLrcRefreshMillis()
+                } else {
+                    lyricRefreshRate = Speed.SLOW.toLrcRefreshMillis()
+                }
             } else {
                 model.convertForLegacy()?.first()?.content?.let {
                     lines.add(LyricLine(it, 0L.toULong(), 0L.toULong(), null, null, false))
                 }
+                lyricRefreshRate = Speed.SLOW.toLrcRefreshMillis()
             }
         }
     }
@@ -190,7 +206,8 @@ fun Lyrics(
             return@LaunchedEffect
         }
         while (isActive) {
-            delay(REFRESH_INTERVAL)
+            // TODO: likely can improve power usage by disabling lyric refresh
+            delay(lyricRefreshRate)
             if (!playerConnection.isPlaying.value) continue
             val sliderPosition = sliderPositionProvider()
             isSeeking = sliderPosition != null
@@ -318,7 +335,9 @@ fun Lyrics(
                                 haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                             }
                     ) {
-                        if (index == displayedCurrentLineIndex && item.words != null && !context.isPowerSaver()) { // regular
+                        if (index == displayedCurrentLineIndex && lyricsFancy && item.words != null
+                            && !context.isPowerSaver()
+                        ) { // word by word
                             // now do eye bleach to make lyric line babies
                             val style = LocalTextStyle.current.copy(
                                 fontSize = lyricsFontSize.sp,
