@@ -1,5 +1,7 @@
 package com.dd3boh.outertune.constants
 
+import com.dd3boh.outertune.BuildConfig
+
 // crash at first extractor scanner error. Currently not implemented
 const val SCANNER_CRASH_AT_FIRST_ERROR = false
 
@@ -13,13 +15,13 @@ const val MAX_CONCURRENT_DOWNLOAD_JOBS = 3 // ytm defaults to 3
 const val MAX_CONCURRENT_JOBS = 4
 
 // enable verbose debugging details for scanner
-const val SCANNER_DEBUG = false
+var SCANNER_DEBUG = BuildConfig.DEBUG
 
 // enable verbose debugging details for extractor
-const val EXTRACTOR_DEBUG = false
+var EXTRACTOR_DEBUG = BuildConfig.DEBUG
 
 // enable printing of *ALL* data that extractor reads
-const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
+var DEBUG_SAVE_OUTPUT = BuildConfig.DEBUG // ignored (will be false) when EXTRACTOR_DEBUG IS false
 
 const val ENABLE_UPDATE_CHECKER = false
 

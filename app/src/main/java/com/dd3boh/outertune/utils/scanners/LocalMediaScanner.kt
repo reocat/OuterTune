@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 O‌ute‌rTu‌ne Project
+ * Copyright (C) 2025 OuterTune Project
  *
  * SPDX-License-Identifier: GPL-3.0
  *
@@ -48,7 +48,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.Locale
@@ -82,7 +81,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
 
             // decide which scanner to use
-            val ffmpegData = if (false && advancedScannerImpl !is TagLibScanner) {
+            val ffmpegData = if (advancedScannerImpl !is TagLibScanner) {
                 advancedScannerImpl.getAllMetadataFromPath(path)
             } else if (advancedScannerImpl is TagLibScanner) {
                 advancedScannerImpl.getAllMetadataFromFile(File(path))
@@ -127,7 +126,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
     }
 
-
     /**
      * Scan MediaStore for songs given a list of paths to scan for.
      * This will replace all data in the database for a given song.
@@ -146,22 +144,26 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         val newDirectoryStructure = DirectoryTree(STORAGE_ROOT, CulmSongs(0))
         Timber.tag(TAG).i("------------ SCAN: Starting Full Scanner ------------")
         scannerShowLoading.value = true
+        scannerProgressProbe = 0
 
         val scannerJobs = ArrayList<Deferred<SongTempData?>>()
+        val paths = getScanPaths(scanPaths, excludedScanPaths)
+        if (paths.isEmpty()) {
+            Timber.tag(TAG).w("No files found to scan in provided paths.")
+            scannerShowLoading.value = false
+            return MutableStateFlow(newDirectoryStructure)
+        }
+
         runBlocking {
-            getScanPaths(scanPaths, excludedScanPaths).forEach { path ->
-                // we can expect lrc is not a song
+            paths.forEach { path ->
                 if (path.substringAfterLast('.') == "lrc") {
+                    Timber.tag(TAG).v("Skipping lyric file: $path")
                     return@forEach
                 }
-                if (SCANNER_DEBUG)
-                    Timber.tag(TAG).v("PATH: $path")
+                if (SCANNER_DEBUG) {
+                    Timber.tag(TAG).v("Processing path: $path")
+                }
 
-                /**
-                 * TODO: do not link album (and whatever song id) with youtube yet, figure that out later
-                 */
-
-                // just get the paths
                 if (pathsOnly) {
                     newDirectoryStructure.insert(
                         path.substringAfter(STORAGE_ROOT),
@@ -170,82 +172,75 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     return@forEach
                 }
 
-                // extract metadata now
                 if (!SYNC_SCANNER) {
-                    // use async scanner
                     scannerJobs.add(
                         async(scannerSession) {
-                            var ret: SongTempData?
                             if (scannerRequestCancel) {
-                                Timber.tag(TAG).i("WARNING: Canceling advanced scanner job.")
-                                throw ScannerAbortException("")
+                                Timber.tag(TAG).i("Canceling advanced scanner job for $path")
+                                throw ScannerAbortException("Scanner canceled")
                             }
                             try {
-                                ret = advancedScan(path)
+                                val result = advancedScan(path)
                                 scannerProgressProbe++
                                 if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
-                                    Timber.tag(TAG)
-                                        .d("------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
+                                    Timber.tag(TAG).d("Scanned $scannerProgressProbe files")
                                 }
                                 if (scannerProgressProbe % 20 == 0) {
                                     scannerProgressTotal.value = scannerProgressProbe
                                 }
+                                result
                             } catch (e: InvalidAudioFileException) {
-                                ret = null
+                                Timber.tag(TAG).w("Invalid audio file: $path, error: ${e.message}")
+                                null
                             }
-                            ret
                         }
                     )
                 } else {
                     if (scannerRequestCancel) {
-                        if (SCANNER_DEBUG)
-                            Timber.tag(TAG).i("WARNING: Requested to cancel Full Scanner. Aborting.")
+                        Timber.tag(TAG).i("Canceling synchronous scanner")
                         scannerRequestCancel = false
-                        throw ScannerAbortException("Scanner canceled during Full Scanner (synchronous)")
+                        throw ScannerAbortException("Scanner canceled")
                     }
-
-                    // force synchronous scanning of songs. Do not catch errors
-                    val toInsert = advancedScan(path)
-                    toInsert.song.song.localPath?.let { s ->
-                        newDirectoryStructure.insert(
-                            s.substringAfter(STORAGE_ROOT), toInsert.song
-                        )
-                        scannerProgressProbe++
-                        if (SCANNER_DEBUG) {
-                            Timber.tag(TAG).d("------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------")
+                    try {
+                        val toInsert = advancedScan(path)
+                        toInsert.song.song.localPath?.let { s ->
+                            newDirectoryStructure.insert(
+                                s.substringAfter(STORAGE_ROOT), toInsert.song
+                            )
+                            scannerProgressProbe++
+                            if (SCANNER_DEBUG) {
+                                Timber.tag(TAG).d("Scanned $scannerProgressProbe files")
+                            }
+                            if (scannerProgressProbe % 5 == 0) {
+                                scannerProgressTotal.value = scannerProgressProbe
+                            }
                         }
-                        if (scannerProgressProbe % 5 == 0) {
-                            scannerProgressTotal.value = scannerProgressProbe
-                        }
+                    } catch (e: InvalidAudioFileException) {
+                        Timber.tag(TAG).w("Invalid audio file: $path, error: ${e.message}")
                     }
                 }
             }
-
 
             if (!SYNC_SCANNER) {
-                // use async scanner
                 scannerJobs.awaitAll()
                 if (scannerRequestCancel) {
-                    Timber.tag(TAG).i("WARNING: Requested to cancel Full Scanner. Aborting.")
+                    Timber.tag(TAG).i("Canceling asynchronous scanner")
                     scannerRequestCancel = false
-                    throw ScannerAbortException("Scanner canceled during Full Scanner (asynchronous)")
+                    throw ScannerAbortException("Scanner canceled")
+                }
+            }
+
+            scannerJobs.forEach {
+                val song = it.getCompleted()
+                song?.song?.song?.localPath?.let { s ->
+                    newDirectoryStructure.insert(
+                        s.substringAfter(STORAGE_ROOT), song.song
+                    )
                 }
             }
         }
-
-        // build the tree
-        scannerJobs.forEach {
-            val song = it.getCompleted()
-
-            song?.song?.song?.localPath?.let { s ->
-                newDirectoryStructure.insert(
-                    s.substringAfter(STORAGE_ROOT), song.song
-                )
-            }
-        }
-
         scannerShowLoading.value = false
-        Timber.tag(TAG).i("------------ SCAN: Finished Full Scanner ------------")
+        Timber.tag(TAG).i("------------ SCAN: Finished Full Scanner, total files processed: $scannerProgressProbe ------------")
         return MutableStateFlow(newDirectoryStructure)
     }
 
@@ -918,15 +913,19 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * @param path in format "/tree/<media>:<rest of path>"
          */
         internal fun getRealPathFromUri(path: String): String {
-            if(!path.startsWith("/tree/")) return path
+            Timber.tag(TAG).d("getRealPathFromUri: Input path=$path")
+            if (!path.startsWith("/tree/")) {
+                return path
+            }
             val primaryStorageRoot = Environment.getExternalStorageDirectory().absolutePath
-            // Google plz don't change ur api kthx
-            val storageMedia = path.substringAfter("/tree/").substringBefore(':')
-            return if (storageMedia == "primary") {
+            val storageMedia = path.substringAfter("/tree/", "").substringBefore(':')
+            val result = if (storageMedia == "primary") {
                 path.replaceFirst("/tree/primary:", "$primaryStorageRoot/")
             } else {
                 "/storage/$storageMedia/${path.substringAfter(':')}"
             }
+            Timber.tag(TAG).d("getRealPathFromUri: Resolved path=$result")
+            return result
         }
 
         /**
@@ -935,28 +934,71 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          */
         fun getScanPaths(scanPaths: List<String>, excludedScanPaths: List<String>): ArrayList<String> {
             val allSongs = ArrayList<String>()
+            Timber.tag(TAG).i("getScanPaths: Starting scan with scanPaths=$scanPaths, excludedScanPaths=$excludedScanPaths")
 
-            val resultingPaths =
-                scanPaths.filterNot { incl ->
-                    excludedScanPaths.any { excl ->
-                        if (excl.isBlank()) false else incl.startsWith(excl)
-                    }
+            // Filter out empty exclusion paths and convert to real paths
+            val exclusions = excludedScanPaths
+                .filter { it.isNotBlank() }  // Remove empty/blank exclusion paths
+                .map { getRealPathFromUri(it) }
+            Timber.tag(TAG).i("getScanPaths: Filtered exclusion paths=$exclusions")
+
+            val resultingPaths = scanPaths.filterNot { incl ->
+                exclusions.any { excl ->
+                    incl.startsWith(excl)
                 }
-
-            val exclusions = excludedScanPaths.map { getRealPathFromUri(it) }
+            }
+            Timber.tag(TAG).i("getScanPaths: Filtered paths to scan=$resultingPaths")
 
             resultingPaths.forEach { path ->
                 try {
-                    val songsHere =
-                        File(getRealPathFromUri(path)).walk().filter { it.isFile }.toList().map { it.absolutePath }
-                    allSongs.addAll(songsHere.filterNot { include -> exclusions.any { include.startsWith(it) } })
-                } catch (e: FileNotFoundException) {
-                    e.printStackTrace()
-                    throw Exception("oh well idk man this should never happen")
+                    val realPath = getRealPathFromUri(path)
+                    Timber.tag(TAG).i("getScanPaths: Scanning directory=$realPath")
+
+                    // Log directory contents
+                    val dir = File(realPath)
+                    if (dir.exists() && dir.isDirectory) {
+                        val contents = dir.listFiles()?.map { it.name } ?: emptyList()
+                        Timber.tag(TAG).i("getScanPaths: Directory contents of $realPath: $contents")
+                    } else {
+                        Timber.tag(TAG).w("getScanPaths: $realPath is not a valid directory or does not exist")
+                    }
+
+                    val songsHere = dir.walk()
+                        .filter { it.isFile && isAudioFile(it.extension) }
+                        .toList()
+                    Timber.tag(TAG).i("getScanPaths: Found ${songsHere.size} potential audio files in $realPath")
+
+                    // Log details of each file found
+                    songsHere.forEach { file ->
+                        Timber.tag(TAG).d("getScanPaths: File detected: path=${file.absolutePath}, extension=${file.extension}, isAudio=${isAudioFile(file.extension)}")
+                    }
+
+                    val songPaths = songsHere.map { it.absolutePath }
+                    Timber.tag(TAG).i("getScanPaths: File paths extracted: $songPaths")
+
+                    val filesToAdd = songPaths.filterNot { include ->
+                        val condition = exclusions.any { exclude -> include.startsWith(exclude) }
+                        Timber.tag(TAG).d("Filtering file: $include, condition: $condition")
+                        condition
+                    }
+                    Timber.tag(TAG).i("getScanPaths: Files after filtering exclusions, adding ${filesToAdd.size} files: $filesToAdd")
+                    allSongs.addAll(filesToAdd)
+                    Timber.tag(TAG).i("getScanPaths: After adding, allSongs.size=${allSongs.size}")
+                } catch (e: Exception) {
+                    Timber.tag(TAG).e(e, "getScanPaths: Failed to scan path=$path")
                 }
             }
 
+            Timber.tag(TAG).i("getScanPaths: Scan complete, total files found=${allSongs.size}")
             return allSongs
+        }
+
+        /**
+         * Check if the file extension indicates an audio file.
+         */
+        private fun isAudioFile(extension: String): Boolean {
+            val audioExtensions = listOf("mp3", "m4a", "aac", "flac", "wav", "ogg", "opus", "mka")
+            return extension.lowercase() in audioExtensions
         }
 
         /**
@@ -970,7 +1012,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * the current directory is /storage/emulated/0/ a.k.a, /sdcard.
          * For example, to scan under Music and Documents/songs --> ("Music", Documents/songs)
          */
-        suspend fun refreshLocal(
+        fun refreshLocal(
             database: MusicDatabase,
             scanPaths: List<String>,
             excludedScanPaths: List<String>,
