@@ -236,7 +236,7 @@ fun StorageSettings(
             },
             onValueSelected = onMaxSongCacheSizeChange
         )
-        InfoLabel(stringResource(R.string.image_cache_tooltip))
+        InfoLabel(stringResource(R.string.restart_to_apply_changes))
 
         PreferenceEntry(
             title = { Text(stringResource(R.string.clear_song_cache)) },

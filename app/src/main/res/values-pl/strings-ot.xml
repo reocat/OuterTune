@@ -77,7 +77,7 @@
     <string name="action_back">Powrót</string>
     <string name="sort_by_play_count">Ilość odtworzeń</string>
     <string name="grp_interface">Interfejs</string>
-    <string name="image_cache_tooltip">Włącz aplikację ponownie aby wprowadzić zmiany</string>
+    <string name="restart_to_apply_changes">Włącz aplikację ponownie aby wprowadzić zmiany</string>
     <string name="settings_debug">Debuguj</string>
     <string name="swipe_to_skip_title">Przeciągnij poziomo aby zmienić utwór</string>
     <string name="grp_audio">Dźwięk</string>

@@ -145,7 +145,7 @@
     <string name="pause_remote_listen_history">Призупиніть надсилання історії прослуховування в YouTube Music</string>
     <string name="swipe_to_skip_title">Проведіть горизонтально, щоб змінити пісню</string>
     <string name="swipe_to_skip_description">Увімкніть горизонтальне гортання в плеєрі для перемикання пісень</string>
-    <string name="image_cache_tooltip">Перезапустіть застосунок, щоби зміни набули чинності</string>
+    <string name="restart_to_apply_changes">Перезапустіть застосунок, щоби зміни набули чинності</string>
     <string name="filter_arrangement">Упорядкувати фільтри</string>
     <string name="android_auto">Android Auto</string>
     <string name="more_settings">Більше налаштувань</string>

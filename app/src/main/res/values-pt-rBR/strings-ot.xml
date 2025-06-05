@@ -144,7 +144,7 @@
     <string name="swipe_to_skip_description">Deslize horizontalmente no reprodutor para mudar de música</string>
     <string name="swipe_to_skip_title">Deslizar horizontalmente para mudar de música</string>
     <string name="filter_arrangement">Organizar filtros</string>
-    <string name="image_cache_tooltip">Reinicie o app para que as alterações tomem efeito</string>
+    <string name="restart_to_apply_changes">Reinicie o app para que as alterações tomem efeito</string>
     <string name="android_auto">Android Auto</string>
     <string name="sync_conflict_overwrite">Sobrescrever conteúdo local com o conteúdo remoto</string>
     <string name="sync_mode">Modo de sincronização</string>

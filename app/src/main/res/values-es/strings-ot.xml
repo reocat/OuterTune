@@ -145,7 +145,7 @@
     <string name="swipe_to_skip_title">Desliza horizontalmente para cambiar de canción</string>
     <string name="android_auto">Android Auto</string>
     <string name="swipe_to_skip_description">Habilitar deslizar horizontalmente en el reproductor para cambiar de canción</string>
-    <string name="image_cache_tooltip">Reinicia la aplicación para que los cambios tengan efecto</string>
+    <string name="restart_to_apply_changes">Reinicia la aplicación para que los cambios tengan efecto</string>
     <string name="more_settings">Más ajustes</string>
     <string name="grp_account_sync">Cuenta y sincronización</string>
     <string name="grp_library_and_content">Librería y contenido</string>
