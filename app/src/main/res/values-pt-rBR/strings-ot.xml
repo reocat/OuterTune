@@ -15,7 +15,7 @@
     <string name="flat_subfolders_description">Desative isto para preservar como a estrutura de arquivos é no armazenamento</string>
     <string name="auto_scanner_description">Buscar músicas automaticamente ao abrir o app. Isso não recarrega os metadados de músicas existentes.</string>
     <string name="scanner_variant_rescan">Buscar a biblioteca inteira novamente e recarregar os metadados de todas as músicas</string>
-    <string name="m3u_import_song_failed">Não foi possível importar:</string>
+    <string name="import_failed_songs">Não foi possível importar:</string>
     <string name="scanner_sensitivity_L3">Combinar título, artistas, e álbuns</string>
     <string name="scanner_type_taglib">Usar o extrator de metadados TagLib integrado</string>
     <string name="oobe_welcome_message">Boas vindas ao OuterTune</string>
@@ -65,7 +65,7 @@
     <string name="local_library_enable_title">Ativar mídia local</string>
     <string name="local_player_settings_title">Mídia local</string>
     <string name="import_innertune_tooltip">Restaurar backups do InnerTune é suportado, mas há uma possibilidade de anomalias devido à limitações técnicas</string>
-    <string name="import_m3u">Importar uma lista (m3u)</string>
+    <string name="m3u_import_playlist">Importar uma lista (m3u)</string>
     <string name="m3u_import_playlist_failed">Falha ao importar a lista</string>
     <string name="scanner_local_title">Busca local</string>
     <string name="auto_scanner_title">Buscar automaticamente</string>

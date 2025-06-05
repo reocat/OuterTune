@@ -67,7 +67,7 @@
     <string name="flat_subfolders_title">Aplanar subcarpetas</string>
     <string name="flat_subfolders_description">Deshabilitar para preservar la estructura del archivo como en el disco</string>
     <string name="import_innertune_tooltip">Se admite la restauración de copias de seguridad de InnerTune, aunque existe la posibilidad de anomalías debido a limitaciones técnicas</string>
-    <string name="import_m3u">Importar una playlist (m3u)</string>
+    <string name="m3u_import_playlist">Importar una playlist (m3u)</string>
     <string name="m3u_import_playlist_failed">No se pudo importar la playlist</string>
     <string name="auto_scanner_description">Busque canciones automáticamente al abrir la aplicación. Esto no recarga los metadatos de las canciones existentes.</string>
     <string name="scan_paths_title">Configurar localizaciones de escaneo…</string>
@@ -96,7 +96,7 @@
     <string name="scanner_type_taglib">Usar extractor de metadatos TagLib integrado</string>
     <string name="scanner_variant_rescan">Reescanear la librería entera y recargar todos los metadatos de las canciones</string>
     <string name="pause_remote_listen_history">Compartir historial de escucha con YouTube Music</string>
-    <string name="m3u_import_song_failed">No se pudo importar:</string>
+    <string name="import_failed_songs">No se pudo importar:</string>
     <string name="dev_settings_title">Habilitar ajustes de desarrolador</string>
     <string name="oobe_welcome_message">Bienvenido a OuterTune</string>
     <string name="oobe_use_backup">Tengo una copia de seguridad</string>

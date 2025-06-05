@@ -82,7 +82,7 @@
     <string name="swipe_to_skip_title">Przeciągnij poziomo aby zmienić utwór</string>
     <string name="grp_audio">Dźwięk</string>
     <string name="grp_lyrics_format">Formatowanie</string>
-    <string name="import_m3u">Importuj playlistę (m3u)</string>
+    <string name="m3u_import_playlist">Importuj playlistę (m3u)</string>
     <string name="grp_lyrics_parser">Analizator</string>
     <string name="grp_manual_scanner">Skaner ręczny</string>
     <string name="swipe2Queue">Przeciągnij by zakolejkować</string>
@@ -110,7 +110,7 @@
     <string name="action_cancel">Anuluj</string>
     <string name="scanner_local_title">Skaner lokalny</string>
     <string name="scanner_ytm_link_start">Rozpoczynanie linkowania artysty YouTube…</string>
-    <string name="m3u_import_song_failed">Nie udało się zaimportować:</string>
+    <string name="import_failed_songs">Nie udało się zaimportować:</string>
     <string name="scanner_ytm_link_success">Ukończono próbę linkowania artysty YouTube</string>
     <string name="keep_alive_description">Użyj trwałej usługi, aby powstrzymać zamknięcie OuterTune w tle.</string>
     <string name="scanner_variant_rescan">Przeskanuj całą bibliotekę ponownie i załaduj ponownie metadane wszystkich utworów</string>

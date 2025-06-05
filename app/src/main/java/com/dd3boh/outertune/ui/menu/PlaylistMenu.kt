@@ -411,7 +411,7 @@ fun PlaylistMenu(
         }
         GridMenuItem(
             icon = Icons.Rounded.Output,
-            title = R.string.playlist_m3u_export
+            title = R.string.m3u_export
         ) {
             m3uLauncher.launch("playlist.m3u")
         }

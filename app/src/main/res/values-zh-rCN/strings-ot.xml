@@ -77,7 +77,7 @@
     <string name="flat_subfolders_title">合并子文件夹</string>
     <string name="flat_subfolders_description">禁用以保留磁盘上的文件结构</string>
     <string name="import_innertune_tooltip">支持恢复 InnerTune 备份，但由于技术限制可能会出现异常</string>
-    <string name="import_m3u">导入播放列表 （m3u）</string>
+    <string name="m3u_import_playlist">导入播放列表 （m3u）</string>
     <string name="m3u_import_playlist_failed">导入播放列表失败</string>
     <string name="auto_scanner_title">自动扫描</string>
     <string name="scan_paths_title">配置扫描位置…</string>
@@ -109,7 +109,7 @@
     <string name="scanner_type_ffmpeg_ext">使用 FFMpeg 元数据提取器。需要安装外部软件包</string>
     <string name="scanner_variant_rescan">重新扫描整个音乐库并重新加载所有歌曲的元数据</string>
     <string name="scanner_online_artist_linking">尝试将本地文件的音乐人与 YouTube Music 上的音乐人相关联</string>
-    <string name="m3u_import_song_failed">无法导入：</string>
+    <string name="import_failed_songs">无法导入：</string>
     <string name="dev_settings_title">启用开发人员设置</string>
     <string name="dev_settings_description">显示用于开发的其他高级设置</string>
     <string name="oobe_welcome_message">欢迎来到 OuterTune</string>

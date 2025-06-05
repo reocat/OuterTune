@@ -89,6 +89,7 @@ import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.IconButton
+import com.dd3boh.outertune.ui.component.IconTextButton
 import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SelectHeader
@@ -339,16 +340,8 @@ fun FolderScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 ) {
-                                    Icon(
-                                        Icons.Rounded.SdCard,
-                                        contentDescription = null
-                                    )
-                                    TextButton(
-                                        onClick = {
-                                            navController.navigate("settings/local")
-                                        }
-                                    ) {
-                                        Text(text = stringResource(R.string.scanner_local_title))
+                                    IconTextButton(R.string.scanner_local_title, Icons.Rounded.SdCard) {
+                                        navController.navigate("settings/local")
                                     }
                                 }
                             }

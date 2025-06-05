@@ -37,7 +37,7 @@
     <string name="lyrics_trim_title">歌詞の周りのスペースを削除する</string>
     <string name="lyrics_font_Size">フォントサイズ</string>
     <string name="local_player_settings_title">ローカルメディア</string>
-    <string name="import_m3u">プレイリストをインポートする (m3u)</string>
+    <string name="m3u_import_playlist">プレイリストをインポートする (m3u)</string>
     <string name="auto_scanner_title">自動的にスキャンする</string>
     <string name="scan_paths_title">スキャンする範囲を設定します…</string>
     <string name="scan_paths_tooltip">すべてのサブディレクトリも影響を受ける</string>
@@ -112,7 +112,7 @@
     <string name="scanner_type_taglib">統合されたTagLibメタデータ抽出ツールを使用する</string>
     <string name="scanner_sensitivity_L1">タイトルが一致</string>
     <string name="scanner_online_artist_linking">ローカルファイルのアーティストをYouTube Music のアーティストとリンクする</string>
-    <string name="m3u_import_song_failed">インポートできませんでした:</string>
+    <string name="import_failed_songs">インポートできませんでした:</string>
     <string name="dev_settings_title">開発者向け設定を有効にする</string>
     <string name="dev_settings_description">開発用途向けの追加の詳細設定を表示します</string>
     <string name="oobe_welcome_message">ようこそ、OuterTuneへ</string>

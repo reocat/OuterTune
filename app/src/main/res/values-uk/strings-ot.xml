@@ -56,7 +56,7 @@
     <string name="local_player_settings_title">Локальні медіафайли</string>
     <string name="flat_subfolders_title">Зрівняти підтеки</string>
     <string name="flat_subfolders_description">Вимкніть, щоб зберегти структуру файлів як на диску</string>
-    <string name="import_m3u">Імпортувати плейлист (m3u)</string>
+    <string name="m3u_import_playlist">Імпортувати плейлист (m3u)</string>
     <string name="m3u_import_playlist_failed">Не вдалося імпортувати плейлист</string>
     <string name="scan_paths_title">Налаштовуємо місця сканування…</string>
     <string name="scan_paths_tooltip">Всі підкаталоги також будуть змінені</string>
@@ -72,7 +72,7 @@
     <string name="scanner_type_title">Витягувач метаданих</string>
     <string name="scanner_type_taglib">Використовути вбудований витягувач метаданих TagLib</string>
     <string name="scanner_variant_rescan">Пересканувати всю бібліотеку та перезавантажити метадані всіх пісень</string>
-    <string name="m3u_import_song_failed">Не вдалось імпортувати:</string>
+    <string name="import_failed_songs">Не вдалось імпортувати:</string>
     <string name="oobe_use_backup">У мене є резервна копія</string>
     <string name="sort_by_play_count">Кількість відтворень</string>
     <string name="auto_playlist">Автоматичний плейлист</string>

@@ -52,7 +52,7 @@
     <string name="scanner_type_title">Extracteur de métadonnées</string>
     <string name="scanner_variant_rescan">Réanalyser l\'intégralité de la bibliothèque et recharger les métadonnées de tous les titres</string>
     <string name="scanner_online_artist_linking">Essayer de lier les artistes des fichiers locaux avec ceux de YouTube Music</string>
-    <string name="m3u_import_song_failed">Impossible d\'importer :</string>
+    <string name="import_failed_songs">Impossible d\'importer :</string>
     <string name="experimental_settings_title">Expérimental</string>
     <string name="dev_settings_title">Activer les paramètres du développeur</string>
     <string name="oobe_welcome_message">Bienvenue sur OuterTune</string>
@@ -80,7 +80,7 @@
     <string name="lyrics_prefer_local_description">Donnez la priorité à la résolution des fichiers de paroles locaux avant d\'utiliser tous les fournisseurs de cloud. Désactivez cette option pour donner la priorité aux fournisseurs de cloud</string>
     <string name="persistent_queue_desc_ot">Restaurer les précédentes files d\'attente ouvertes au démarrage de l\'application</string>
     <string name="lyrics_multiline_title">Lire les paroles sur plusieurs lignes</string>
-    <string name="import_m3u">Importer une playlist (m3u)</string>
+    <string name="m3u_import_playlist">Importer une playlist (m3u)</string>
     <string name="keep_alive_description">Utilisez un service de premier plan persistant pour empêcher la fermeture d’OuterTune en arrière-plan.</string>
     <string name="lyrics_multiline_description">Traitez toutes les lignes entre les points de synchronisation comme un seul texte lyrique</string>
     <string name="lyrics_trim_title">Supprimer les espaces autour des paroles</string>

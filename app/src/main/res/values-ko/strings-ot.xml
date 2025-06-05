@@ -69,7 +69,7 @@
     <string name="scanner_type_taglib">내장된 TagLib 메타데이터 추출기 사용</string>
     <string name="scanner_type_ffmpeg_ext">FFMpeg 메타데이터 추출기 사용 (외부 패키지 설치 필요)</string>
     <string name="scanner_online_artist_linking">로컬 미디어 아티스트를 유튜브 뮤직 연결</string>
-    <string name="m3u_import_song_failed">불러오지 못했습니다:</string>
+    <string name="import_failed_songs">불러오지 못했습니다:</string>
     <string name="experimental_settings_title">실험적 기능</string>
     <string name="swipe_to_skip_title">가로로 스와이프하여 곡 변경</string>
     <string name="swipe_to_skip_description">가로로 스와이프하여 곡을 변경합니다</string>
@@ -125,7 +125,7 @@
     <string name="slim_navbar_description">네비게이션 바 높이를 줄이기 위해 텍스트 라벨을 지웁니다</string>
     <string name="sync_mode">동기화 모드</string>
     <string name="token_shown">다시 탭하여 복사하거나 수정하기</string>
-    <string name="import_m3u">재생목록(m3u) 가져오기</string>
+    <string name="m3u_import_playlist">재생목록(m3u) 가져오기</string>
     <string name="sync_mode_ro">읽기 전용 (온라인 콘텐츠 보기)</string>
     <string name="grp_account_sync">계정 및 동기화</string>
     <string name="like_autodownload">좋아요를 표시한 곡을 자동으로 다운로드</string>

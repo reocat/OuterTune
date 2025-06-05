@@ -32,7 +32,7 @@
     <string name="grp_interface">Interfaccia</string>
     <string name="show_liked_and_downloaded_playlist">Visualizza le playlist dei brani che piaciuti e scaricati nella libreria</string>
     <string name="slim_navbar_title">Barra di navigazione sottile</string>
-    <string name="import_m3u">Importa una playlist (m3u)</string>
+    <string name="m3u_import_playlist">Importa una playlist (m3u)</string>
     <string name="sync_progress_active">Sincronizzando con l\'account di YouYube…</string>
     <string name="sync_progress_success">Sincronizzazione completata</string>
     <string name="grp_audio">Audio</string>
@@ -128,7 +128,8 @@
     <string name="action_skip">Salta</string>
     <string name="experimental_settings_title">Sperimentale</string>
     <string name="pause_remote_listen_history">Interrompi la condivisione della cronologia degli ascolti con YouTube Music</string>
-    <string name="m3u_import_song_failed">Impossibile importare:</string>
+    <string name="oobe_local_scan_tooltip">Clicca qui per cercare i brani</string>
+    <string name="import_failed_songs">Impossibile importare:</string>
     <string name="wait_to_reconnect">Attendi per riconnetterti</string>
     <string name="err_play_next_on_error">Si è verificato un errore. Riproduzione successiva</string>
     <string name="err_stop_on_error">Si è verificato un errore. Riproduzione interrotta</string>

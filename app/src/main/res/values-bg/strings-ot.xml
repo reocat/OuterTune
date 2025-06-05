@@ -42,7 +42,7 @@
     <string name="persistent_queue_desc_ot">Възстановяване на предишни отворени опашки при стартиране на приложението</string>
     <string name="min_playback_duration">Минимална продължителност на възпроизвеждане</string>
     <string name="flat_subfolders_description">Деактивирайте, за да запазите файловата структура като на диска</string>
-    <string name="import_m3u">Импортиране на плейлист (m3u)</string>
+    <string name="m3u_import_playlist">Импортиране на плейлист (m3u)</string>
     <string name="min_playback_duration_description">Минималната продължителност на песен, която трябва да бъде възпроизведена, преди да се счита за \"изсвирена\"</string>
     <string name="auto_scanner_description">Автоматично сканиране за песни при отваряне на приложението. Това не презарежда метаданни на съществуващи песни.</string>
     <string name="local_library_enable_description">Деактивирането ще скрие локалната библиотека от приложението</string>
@@ -50,7 +50,7 @@
     <string name="scanner_warning">По подразбиране скенерът НЯМА да презареди никакви метаданни на съществуващи песни, освен ако не посочите друго по-горе. В зависимост от размера на вашата библиотека това ще отнеме известно време.</string>
     <string name="scanner_ytm_link_start">Стартира се свързването на изпълнител в YouTube…</string>
     <string name="scanner_ytm_link_success">Работата по свързване на изпълнител в YouTube приключи</string>
-    <string name="m3u_import_song_failed">Не можа да се импортира:</string>
+    <string name="import_failed_songs">Не можа да се импортира:</string>
     <string name="song_added_to_queue_end">\"%s\" добавено на края на опашката</string>
     <string name="ytm_sync">Автоматично синхронизиране с вашия акаунт в YouTube Music</string>
     <string name="tab_arrangement_home_required">Разделът Начало е задължителен.</string>

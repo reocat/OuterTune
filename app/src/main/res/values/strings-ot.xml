@@ -58,7 +58,6 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="create_sync_playlist_description">Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.</string>
     <string name="play_count">Play count</string>
     <string name="playlist_add_local_to_synced_note">Note: Adding local songs to synced/remote playlists is unsupported. Any other combination is valid</string>
-    <string name="playlist_m3u_export">Export as M3U file</string>
     <string name="playlist_missing_note">Playlists missing? Click here to enable sync read-write mode in settings</string>
 
     <!-- Sync-->
@@ -276,6 +275,14 @@ while also allowing users to translate our app as well. New, specific strings to
     <!-- Setup complete -->
     <string name="oobe_complete_title">You\'re All Set!</string>
     <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
+
+    <!-- M3U -->
+    <string name="import_failed_songs">Could not import</string>
+    <string name="import_success_songs">Successfully imported</string>
+    <string name="m3u_export">Export as M3U file</string>
+    <string name="m3u_import_playlist">Import a playlist (m3u)</string>
+    <string name="m3u_import_playlist_failed">Failed to import</string>
+    <string name="m3u_ytm_lookup">Search on YouTube Music for songs not found in the app database</string>
 
     <!-- Misc -->
     <string name="action_back">Back</string>

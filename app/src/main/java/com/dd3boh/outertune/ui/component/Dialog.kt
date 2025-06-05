@@ -90,6 +90,7 @@ fun DefaultDialog(
     icon: (@Composable () -> Unit)? = null,
     title: (@Composable () -> Unit)? = null,
     buttons: (@Composable RowScope.() -> Unit)? = null,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Dialog(
@@ -103,7 +104,7 @@ fun DefaultDialog(
             tonalElevation = AlertDialogDefaults.TonalElevation
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = horizontalAlignment,
                 modifier = modifier
                     .padding(24.dp)
             ) {
