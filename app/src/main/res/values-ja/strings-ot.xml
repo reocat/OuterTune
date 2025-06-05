@@ -150,4 +150,9 @@
     <string name="sync_conflict_add_only">すべてのローカルコンテンツを保持し、新しいリモートコンテンツを追加する</string>
     <string name="sync_mode_ro">読み取りのみ</string>
     <string name="sync_mode_rw">読み取りと書き込み（リモートコンテンツの変更を許可）</string>
+    <string name="grp_sync">同期</string>
+    <string name="no_updates_available">利用可能なアップデートはありません</string>
+    <string name="checking_for_update">アップデートを確認中</string>
+    <string name="check_for_update">アップデートを確認してください</string>
+    <string name="sync_mode">同期のモード</string>
 </resources>
