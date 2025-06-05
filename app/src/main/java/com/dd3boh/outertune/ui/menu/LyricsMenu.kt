@@ -394,7 +394,8 @@ fun LyricsMenu(
     ) {
         GridMenuItem(
             icon = Icons.Rounded.Edit,
-            title = R.string.edit
+            title = R.string.edit,
+            enabled = !mediaMetadataProvider().isLocal
         ) {
             showEditDialog = true
         }
