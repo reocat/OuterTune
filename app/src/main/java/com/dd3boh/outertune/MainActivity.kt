@@ -639,11 +639,11 @@ class MainActivity : ComponentActivity() {
                     val (query, onQueryChange) = rememberSaveable(stateSaver = TextFieldValue.Saver) {
                         mutableStateOf(TextFieldValue())
                     }
-                    var active by rememberSaveable {
+                    var searchActive by rememberSaveable {
                         mutableStateOf(false)
                     }
-                    val onActiveChange: (Boolean) -> Unit = { newActive ->
-                        active = newActive
+                    val onSearchActiveChange: (Boolean) -> Unit = { newActive ->
+                        searchActive = newActive
                         if (!newActive) {
                             focusManager.clearFocus()
                             if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
@@ -657,7 +657,7 @@ class MainActivity : ComponentActivity() {
 
                     val onSearch: (String) -> Unit = {
                         if (it.isNotEmpty()) {
-                            onActiveChange(false)
+                            onSearchActiveChange(false)
                             if (youtubeNavigator(it.toUri())) {
                                 // don't do anything
                             } else {
@@ -675,19 +675,24 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(intent?.action == ACTION_SEARCH)
                     }
 
-                    val shouldShowSearchBar = remember(active, navBackStackEntry, inSelectMode?.value) {
-                        (active || navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } ||
+                    val shouldHideNavAndPlayer = remember(navBackStackEntry) {
+                        navBackStackEntry?.destination?.route?.let {
+                            (it.startsWith("settings") || it == "setup_wizard" || it == "login")
+                        } == true
+                    }
+
+                    val shouldShowSearchBar = remember(searchActive, navBackStackEntry, inSelectMode?.value) {
+                        (searchActive || navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } ||
                                 navBackStackEntry?.destination?.route?.startsWith("search/") == true)
                                 && inSelectMode?.value != true
                     }
 
-                    val shouldShowNavigationBar = remember(navBackStackEntry, active) {
-                        (!useRail || tabMode) && (navBackStackEntry?.destination?.route == null ||
-                                navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route } && !active)
+                    val shouldShowNavigationBar = remember(navBackStackEntry, searchActive, shouldHideNavAndPlayer) {
+                        (!useRail || tabMode) && !searchActive && !shouldHideNavAndPlayer
                     }
 
-                    val shouldShowNavigationRail = remember(navBackStackEntry, active) {
-                        useRail && navBackStackEntry?.destination?.route?.let { it != "setup_wizard" && it != "login" } == true && !active
+                    val shouldShowNavigationRail = remember(navBackStackEntry, searchActive, shouldHideNavAndPlayer) {
+                        useRail && !searchActive && !shouldHideNavAndPlayer
                     }
 
                     fun getNavPadding(): Dp {
@@ -706,7 +711,7 @@ class MainActivity : ComponentActivity() {
 
                     val playerBottomSheetState = rememberBottomSheetState(
                         dismissedBound = 0.dp,
-                        collapsedBound = bottomInset + (if (!tabMode) getNavPadding() else 0.dp) + MiniPlayerHeight,
+                        collapsedBound = if (!shouldHideNavAndPlayer) bottomInset + (if (!tabMode) getNavPadding() else 0.dp) + MiniPlayerHeight else 0.dp,
                         expandedBound = maxHeight,
                     )
 
@@ -1157,13 +1162,13 @@ class MainActivity : ComponentActivity() {
                                         query = query,
                                         onQueryChange = onQueryChange,
                                         onSearch = onSearch,
-                                        active = active,
-                                        onActiveChange = onActiveChange,
+                                        active = searchActive,
+                                        onActiveChange = onSearchActiveChange,
                                         scrollBehavior = searchBarScrollBehavior,
                                         placeholder = {
                                             Text(
                                                 text = stringResource(
-                                                    if (!active) R.string.search
+                                                    if (!searchActive) R.string.search
                                                     else when (searchSource) {
                                                         SearchSource.LOCAL -> R.string.search_library
                                                         SearchSource.ONLINE -> R.string.search_yt_music
@@ -1175,21 +1180,21 @@ class MainActivity : ComponentActivity() {
                                             IconButton(
                                                 onClick = {
                                                     when {
-                                                        active -> onActiveChange(false)
+                                                        searchActive -> onSearchActiveChange(false)
 
-                                                        !active && navBackStackEntry?.destination?.route?.startsWith(
+                                                        !searchActive && navBackStackEntry?.destination?.route?.startsWith(
                                                             "search"
                                                         ) == true -> {
                                                             navController.navigateUp()
                                                         }
 
-                                                        else -> onActiveChange(true)
+                                                        else -> onSearchActiveChange(true)
                                                     }
                                                 },
                                             ) {
                                                 Icon(
                                                     imageVector =
-                                                        if (active || navBackStackEntry?.destination?.route?.startsWith(
+                                                        if (searchActive || navBackStackEntry?.destination?.route?.startsWith(
                                                                 "search"
                                                             ) == true
                                                         ) {
@@ -1202,7 +1207,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         },
                                         trailingIcon = {
-                                            if (active) {
+                                            if (searchActive) {
                                                 if (query.text.isNotEmpty()) {
                                                     IconButton(
                                                         onClick = { onQueryChange(TextFieldValue("")) }
@@ -1278,7 +1283,7 @@ class MainActivity : ComponentActivity() {
                                                 SearchSource.LOCAL -> LocalSearchScreen(
                                                     query = query.text,
                                                     navController = navController,
-                                                    onDismiss = { onActiveChange(false) },
+                                                    onDismiss = { onSearchActiveChange(false) },
                                                     pureBlack = pureBlack
                                                 )
 
@@ -1298,7 +1303,7 @@ class MainActivity : ComponentActivity() {
                                                             }
                                                         }
                                                     },
-                                                    onDismiss = { onActiveChange(false) }
+                                                    onDismiss = { onSearchActiveChange(false) }
                                                 )
                                             }
                                         }
@@ -1337,6 +1342,10 @@ class MainActivity : ComponentActivity() {
                                             }
                                         ) {
                                             navigationItems.fastForEach { screen ->
+                                                // TODO: display selection when based on root page user entered
+//                                                val isSelected = navBackStackEntry?.destination?.hierarchy?.any {
+//                                                    it.route?.substringBefore("?")?.substringBefore("/") == screen.route
+//                                                } == true
                                                 NavigationRailItem(
                                                     selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
                                                     icon = {
@@ -1425,6 +1434,10 @@ class MainActivity : ComponentActivity() {
                                         .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
                                 ) {
                                     navigationItems.fastForEach { screen ->
+                                        // TODO: display selection when based on root page user entered
+//                                        val isSelected = navBackStackEntry?.destination?.hierarchy?.any {
+//                                            it.route?.substringBefore("?")?.substringBefore("/") == screen.route
+//                                        } == true
                                         NavigationBarItem(
                                             selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
                                             icon = {
@@ -1575,7 +1588,7 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(shouldShowSearchBar, openSearchImmediately) {
                         if (shouldShowSearchBar && openSearchImmediately) {
-                            onActiveChange(true)
+                            onSearchActiveChange(true)
                             searchBarFocusRequester.requestFocus()
                             openSearchImmediately = false
                         }
