@@ -155,4 +155,5 @@
     <string name="checking_for_update">アップデートを確認中</string>
     <string name="check_for_update">アップデートを確認してください</string>
     <string name="sync_mode">同期のモード</string>
+    <string name="sync_conflict_title">競合の解決</string>
 </resources>
