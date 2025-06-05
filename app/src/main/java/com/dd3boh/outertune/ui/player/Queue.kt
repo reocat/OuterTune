@@ -742,9 +742,10 @@ fun BoxScope.QueueContent(
                                             onCheckedChange(window.hashCode() !in selectedItems)
                                         } else {
                                             coroutineScope.launch(Dispatchers.Main) {
-                                                if (index == currentWindowIndex) {
+                                                if (index == currentWindowIndex && !detachedHead) {
                                                     playerConnection.player.togglePlayPause()
                                                 } else {
+                                                    val index = index // race condition...?
                                                     if (detachedHead) {
                                                         qb.setCurrQueue(detachedQueue, false)
                                                     }
