@@ -12,7 +12,5 @@ fun LibraryFoldersScreen(
     scrollBehavior: TopAppBarScrollBehavior,
     filterContent: @Composable (() -> Unit)? = null
 ) {
-    FolderScreen(navController, scrollBehavior) {
-        filterContent
-    }
+    FolderScreen(navController, scrollBehavior, libraryFilterContent = filterContent)
 }

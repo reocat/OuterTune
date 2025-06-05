@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
@@ -149,45 +150,49 @@ fun LibraryPlaylistsScreen(
         var showStoragePerm by remember {
             mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)
         }
-        if (localLibEnable && showStoragePerm
-        ) {
-            TextButton(
-                onClick = {
-                    showStoragePerm = false // allow user to hide error when clicked. This also makes the code a lot nicer too...
-                    (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.error)
-            ) {
-                Text(
-                    text = stringResource(R.string.missing_media_permission_warning),
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge
+        Column {
+            if (localLibEnable && showStoragePerm) {
+                TextButton(
+                    onClick = {
+                        showStoragePerm =
+                            false // allow user to hide error when clicked. This also makes the code a lot nicer too...
+                        (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.error)
+                ) {
+                    Text(
+                        text = stringResource(R.string.missing_media_permission_warning),
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+
+            Row {
+                ChipsRow(
+                    chips = listOf(
+                        PlaylistFilter.LIBRARY to stringResource(R.string.filter_library),
+                        PlaylistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
+                    ),
+                    currentValue = filter,
+                    onValueUpdate = {
+                        filter = it
+                        if (it == PlaylistFilter.LIBRARY) viewModel.syncPlaylists()
+                    },
+                    isLoading = { filter ->
+                        filter == PlaylistFilter.LIBRARY && isSyncingRemotePlaylists
+                    }
                 )
             }
         }
-
-        ChipsRow(
-            chips = listOf(
-                PlaylistFilter.LIBRARY to stringResource(R.string.filter_library),
-                PlaylistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
-            ),
-            currentValue = filter,
-            onValueUpdate = {
-                filter = it
-                if (it == PlaylistFilter.LIBRARY) viewModel.syncPlaylists()
-            },
-            isLoading = { filter ->
-                filter == PlaylistFilter.LIBRARY && isSyncingRemotePlaylists
-            }
-        )
     }
 
     val headerContent = @Composable {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             SortHeader(
                 sortType = sortType,
@@ -211,26 +216,6 @@ fun LibraryPlaylistsScreen(
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
-            }
-
-            if (libraryFilterContent == null) {
-                IconButton(
-                    onClick = {
-                        playlistViewType = playlistViewType.toggle()
-                    },
-                    modifier = Modifier.padding(start = 6.dp, end = 6.dp)
-                ) {
-                    Icon(
-                        imageVector =
-                        when (playlistViewType) {
-                            LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                            LibraryViewType.GRID -> Icons.Rounded.GridView
-                        },
-                        contentDescription = null
-                    )
-                }
-            } else {
-                Spacer(Modifier.size(16.dp))
             }
         }
     }

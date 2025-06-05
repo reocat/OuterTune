@@ -225,7 +225,7 @@ fun LibrarySongsScreen(
             modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
         ) {
             item(
-                key = "header",
+                key = "filter",
                 contentType = CONTENT_TYPE_HEADER
             ) {
                 Column(
@@ -234,11 +234,11 @@ fun LibrarySongsScreen(
                     var showStoragePerm by remember {
                         mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)
                     }
-                    if (localLibEnable && showStoragePerm
-                    ) {
+                    if (localLibEnable && showStoragePerm) {
                         TextButton(
                             onClick = {
-                                showStoragePerm = false // allow user to hide error when clicked. This also makes the code a lot nicer too...
+                                showStoragePerm =
+                                    false // allow user to hide error when clicked. This also makes the code a lot nicer too...
                                 (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                             },
                             modifier = Modifier
@@ -253,8 +253,14 @@ fun LibrarySongsScreen(
                         }
                     }
                     libraryFilterContent?.let { it() } ?: filterContent()
-                    headerContent()
                 }
+            }
+
+            item(
+                key = "header",
+                contentType = CONTENT_TYPE_HEADER
+            ) {
+                headerContent()
             }
 
             songs?.let { songs ->
@@ -296,7 +302,9 @@ fun LibrarySongsScreen(
                         isSelected = selection.contains(song.id),
                         navController = navController,
                         snackbarHostState = snackbarHostState,
-                        modifier = Modifier.fillMaxWidth().animateItem()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem()
                     )
                 }
             }
@@ -310,7 +318,7 @@ fun LibrarySongsScreen(
                 playerConnection.playQueue(
                     ListQueue(
                         title = context.getString(R.string.queue_all_songs),
-                        items =  songs?.map { it.toMediaMetadata() } ?: emptyList(),
+                        items = songs?.map { it.toMediaMetadata() } ?: emptyList(),
                         startShuffled = true,
                     )
                 )

@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
@@ -125,12 +126,12 @@ fun LibraryArtistsScreen(
         var showStoragePerm by remember {
             mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)
         }
-        Row {
-            if (localLibEnable && showStoragePerm
-            ) {
+        Column {
+            if (localLibEnable && showStoragePerm) {
                 TextButton(
                     onClick = {
-                        showStoragePerm = false // allow user to hide error when clicked. This also makes the code a lot nicer too...
+                        showStoragePerm =
+                            false // allow user to hide error when clicked. This also makes the code a lot nicer too...
                         (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                     },
                     modifier = Modifier
@@ -145,39 +146,42 @@ fun LibraryArtistsScreen(
                 }
             }
 
-            ChipsRow(
-                chips = listOf(
-                    ArtistFilter.LIKED to stringResource(R.string.filter_liked),
-                    ArtistFilter.LIBRARY to stringResource(R.string.filter_library),
-                    ArtistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
-                ),
-                currentValue = filter,
-                onValueUpdate = {
-                    filter = it
-                    if ((it == ArtistFilter.LIBRARY || it == ArtistFilter.LIKED)
-                        && !isSyncingRemoteArtists) viewModel.syncArtists()
-                },
-                modifier = Modifier.weight(1f),
-                isLoading = {
-                    (it == ArtistFilter.LIBRARY || it == ArtistFilter.LIKED)
-                            && isSyncingRemoteArtists
-                }
-            )
-
-            IconButton(
-                onClick = {
-                    artistViewType = artistViewType.toggle()
-                },
-                modifier = Modifier.padding(end = 6.dp)
-            ) {
-                Icon(
-                    imageVector =
-                    when (artistViewType) {
-                        LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                        LibraryViewType.GRID -> Icons.Rounded.GridView
+            Row {
+                ChipsRow(
+                    chips = listOf(
+                        ArtistFilter.LIKED to stringResource(R.string.filter_liked),
+                        ArtistFilter.LIBRARY to stringResource(R.string.filter_library),
+                        ArtistFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
+                    ),
+                    currentValue = filter,
+                    onValueUpdate = {
+                        filter = it
+                        if ((it == ArtistFilter.LIBRARY || it == ArtistFilter.LIKED)
+                            && !isSyncingRemoteArtists
+                        ) viewModel.syncArtists()
                     },
-                    contentDescription = null
+                    modifier = Modifier.weight(1f),
+                    isLoading = {
+                        (it == ArtistFilter.LIBRARY || it == ArtistFilter.LIKED)
+                                && isSyncingRemoteArtists
+                    }
                 )
+
+                IconButton(
+                    onClick = {
+                        artistViewType = artistViewType.toggle()
+                    },
+                    modifier = Modifier.padding(end = 6.dp)
+                ) {
+                    Icon(
+                        imageVector =
+                            when (artistViewType) {
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                            },
+                        contentDescription = null
+                    )
+                }
             }
         }
     }

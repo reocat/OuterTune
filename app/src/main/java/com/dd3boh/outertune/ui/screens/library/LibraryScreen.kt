@@ -156,7 +156,7 @@ fun LibraryScreen(
     }
 
     val defaultFilter: Collection<Pair<LibraryFilter, String>> = Screens.getFilters(enabledFilters).map {
-        when(it) {
+        when (it) {
             LibraryFilter.ALBUMS -> LibraryFilter.ALBUMS to stringResource(R.string.albums)
             LibraryFilter.ARTISTS -> LibraryFilter.ARTISTS to stringResource(R.string.artists)
             LibraryFilter.PLAYLISTS -> LibraryFilter.PLAYLISTS to stringResource(R.string.playlists)
@@ -200,12 +200,13 @@ fun LibraryScreen(
             mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)
         }
 
-        Row {
+        Column {
             if (localLibEnable && showStoragePerm
             ) {
                 TextButton(
                     onClick = {
-                        showStoragePerm = false // allow user to hide error when clicked. This also makes the code a lot nicer too...
+                        showStoragePerm =
+                            false // allow user to hide error when clicked. This also makes the code a lot nicer too...
                         (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                     },
                     modifier = Modifier
@@ -219,40 +220,42 @@ fun LibraryScreen(
                     )
                 }
             }
-            ChipsLazyRow(
-                chips = chips,
-                currentValue = filter,
-                onValueUpdate = {
-                    filter = if (filter == LibraryFilter.ALL)
-                        it
-                    else
-                        LibraryFilter.ALL
-                },
-                modifier = Modifier.weight(1f),
-                selected = { it == filterSelected },
-                isLoading = { filter ->
-                    (filter == LibraryFilter.PLAYLISTS && isSyncingRemotePlaylists)
-                            || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
-                            || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
-                            || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
-                }
-            )
-
-            if (filter != LibraryFilter.SONGS) {
-                IconButton(
-                    onClick = {
-                        viewType = viewType.toggle()
+            Row {
+                ChipsLazyRow(
+                    chips = chips,
+                    currentValue = filter,
+                    onValueUpdate = {
+                        filter = if (filter == LibraryFilter.ALL)
+                            it
+                        else
+                            LibraryFilter.ALL
                     },
-                    modifier = Modifier.padding(end = 6.dp)
-                ) {
-                    Icon(
-                        imageVector =
-                            when (viewType) {
-                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                                LibraryViewType.GRID -> Icons.Rounded.GridView
-                            },
-                        contentDescription = null
-                    )
+                    modifier = Modifier.weight(1f),
+                    selected = { it == filterSelected },
+                    isLoading = { filter ->
+                        (filter == LibraryFilter.PLAYLISTS && isSyncingRemotePlaylists)
+                                || (filter == LibraryFilter.ALBUMS && isSyncingRemoteAlbums)
+                                || (filter == LibraryFilter.ARTISTS && isSyncingRemoteArtists)
+                                || (filter == LibraryFilter.SONGS && (isSyncingRemoteSongs || isSyncingRemoteLikedSongs))
+                    }
+                )
+
+                if (filter != LibraryFilter.SONGS && filter != LibraryFilter.FOLDERS) {
+                    IconButton(
+                        onClick = {
+                            viewType = viewType.toggle()
+                        },
+                        modifier = Modifier.padding(end = 6.dp)
+                    ) {
+                        Icon(
+                            imageVector =
+                                when (viewType) {
+                                    LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                    LibraryViewType.GRID -> Icons.Rounded.GridView
+                                },
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
@@ -131,13 +132,12 @@ fun LibraryAlbumsScreen(
         var showStoragePerm by remember {
             mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)
         }
-
-        Row {
-            if (localLibEnable && showStoragePerm
-            ) {
+        Column {
+            if (localLibEnable && showStoragePerm) {
                 TextButton(
                     onClick = {
-                        showStoragePerm = false // allow user to hide error when clicked. This also makes the code a lot nicer too...
+                        showStoragePerm =
+                            false // allow user to hide error when clicked. This also makes the code a lot nicer too...
                         (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                     },
                     modifier = Modifier
@@ -151,35 +151,37 @@ fun LibraryAlbumsScreen(
                     )
                 }
             }
-            ChipsRow(
-                chips = listOf(
-                    AlbumFilter.LIKED to stringResource(R.string.filter_liked),
-                    AlbumFilter.LIBRARY to stringResource(R.string.filter_library),
-                    AlbumFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
-                ),
-                currentValue = filter,
-                onValueUpdate = {
-                    filter = it
-                    if (it == AlbumFilter.LIBRARY) viewModel.syncAlbums()
-                },
-                modifier = Modifier.weight(1f),
-                isLoading = { filter -> filter == AlbumFilter.LIBRARY && isSyncingLibraryAlbums }
-            )
-
-            IconButton(
-                onClick = {
-                    albumViewType = albumViewType.toggle()
-                },
-                modifier = Modifier.padding(end = 6.dp)
-            ) {
-                Icon(
-                    imageVector =
-                    when (albumViewType) {
-                        LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                        LibraryViewType.GRID -> Icons.Rounded.GridView
+            Row {
+                ChipsRow(
+                    chips = listOf(
+                        AlbumFilter.LIKED to stringResource(R.string.filter_liked),
+                        AlbumFilter.LIBRARY to stringResource(R.string.filter_library),
+                        AlbumFilter.DOWNLOADED to stringResource(R.string.filter_downloaded)
+                    ),
+                    currentValue = filter,
+                    onValueUpdate = {
+                        filter = it
+                        if (it == AlbumFilter.LIBRARY) viewModel.syncAlbums()
                     },
-                    contentDescription = null
+                    modifier = Modifier.weight(1f),
+                    isLoading = { filter -> filter == AlbumFilter.LIBRARY && isSyncingLibraryAlbums }
                 )
+
+                IconButton(
+                    onClick = {
+                        albumViewType = albumViewType.toggle()
+                    },
+                    modifier = Modifier.padding(end = 6.dp)
+                ) {
+                    Icon(
+                        imageVector =
+                            when (albumViewType) {
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
+                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                            },
+                        contentDescription = null
+                    )
+                }
             }
         }
     }
