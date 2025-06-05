@@ -156,4 +156,5 @@
     <string name="check_for_update">アップデートを確認してください</string>
     <string name="sync_mode">同期のモード</string>
     <string name="sync_conflict_title">競合の解決</string>
+    <string name="playlist_missing_note">プレイリストが見つかりませんか？設定で同期の読み書きモードを有効にするには、ここをクリックしてください</string>
 </resources>
