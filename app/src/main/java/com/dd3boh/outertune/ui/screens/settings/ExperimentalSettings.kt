@@ -69,6 +69,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -86,8 +87,6 @@ import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.constants.TopBarInsets
-import com.dd3boh.outertune.constants.allowedPath
-import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.IconButton
@@ -100,6 +99,7 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
+import com.dd3boh.outertune.utils.scanners.fileFromUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -127,7 +127,7 @@ fun ExperimentalSettings(
     val (lyricsFancy, onLyricsFancyChange) = rememberPreference(LyricKaraokeEnable, false)
 
 
-    val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, defaultDownloadPath)
+    val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
     val (dlPathExtra, onDlPathExtraChange) = rememberPreference(DownloadExtraPathKey, "")
     val downloadUtil = LocalDownloadUtil.current
     val isLoading by downloadUtil.isProcessingDownloads.collectAsState()
@@ -227,7 +227,10 @@ fun ExperimentalSettings(
                 onDismiss = { showMigrationDialog = false },
                 content = {
                     Text(
-                        text = stringResource(R.string.dl_migrate_confirm, "$allowedPath/${downloadPath}"),
+                        text = stringResource(
+                            R.string.dl_migrate_confirm,
+                            fileFromUri(context, downloadPath.toUri())?.absolutePath ?: ""
+                        ),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(horizontal = 18.dp)
                     )

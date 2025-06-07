@@ -825,22 +825,27 @@ class MusicService : MediaLibraryService(),
             val mediaId = dataSpec.key ?: error("No media id")
             Timber.d("PLAYING: song id = $mediaId")
 
-            // find a better way to detect local files later...
-            val song = queueBoard.getCurrentQueue()?.findSong(mediaId)
+            val song = queueBoard.getCurrentQueue()?.findSong(dataSpec.key ?: "")
             if (song?.isLocal == true) {
-                Timber.tag(TAG).d("PLAYING: local song")
-                val songPath = runBlocking(Dispatchers.IO) {
-                    database.song(mediaId).firstOrNull()?.song?.localPath
-                }
-                if (songPath == null) {
+                Log.d(TAG, "PLAYING: local song")
+                if (song.localPath == null) {
                     throw PlaybackException(
-                        getString(R.string.file_size),
+                        "Invalid local song. Please run scanner with full rescan enabled",
+                        Throwable(),
+                        PlaybackException.ERROR_CODE_BAD_VALUE
+                    )
+                }
+
+                val file = File(song.localPath)
+                if (!file.exists()) {
+                    throw PlaybackException(
+                        "File not found",
                         Throwable(),
                         PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
                     )
                 }
 
-                return@Factory dataSpec.withUri(Uri.fromFile(File(songPath)))
+                return@Factory dataSpec.withUri(Uri.fromFile(file))
             }
 
             val isDownloadNew = downloadUtil.localMgr.getFilePathIfExists(mediaId)

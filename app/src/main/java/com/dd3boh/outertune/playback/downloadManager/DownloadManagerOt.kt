@@ -1,6 +1,7 @@
 package com.dd3boh.outertune.playback.downloadManager
 
 import android.net.Uri
+import com.dd3boh.outertune.utils.reportException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -80,6 +81,7 @@ class DownloadManagerOt(
                     }
                 }
             } catch (e: Throwable) {
+                reportException(e)
                 _events.tryEmit(DownloadEvent.Failure(mediaId, e))
             }
         }

@@ -53,21 +53,18 @@ import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.models.DirectoryTree
-import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.getDirectoryTree
-import com.dd3boh.outertune.ui.utils.uninitializedDirectoryTree
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.dataStore
-import com.dd3boh.outertune.utils.fixFilePath
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.refreshLocal
+import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.zionhuang.innertube.YouTube
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,11 +74,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.mutable.Mutable
 import java.time.Duration
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -127,14 +122,14 @@ class LibrarySongsViewModel @Inject constructor(
 
 @HiltViewModel
 class LibraryFoldersViewModel @Inject constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext val context: Context,
     private val database: MusicDatabase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val TAG = LibraryFoldersViewModel::class.simpleName.toString()
     val path = savedStateHandle.get<String>("path")?.replace(';', '/') ?: STORAGE_ROOT
 
-    private val scanPaths = context.dataStore[ScanPathsKey] ?: DEFAULT_SCAN_PATH
+    private val scanPaths = context.dataStore[ScanPathsKey] ?: ""
     private val excludedScanPaths = context.dataStore[ExcludedScanPathsKey] ?: ""
     val localSongDirectoryTree: MutableStateFlow<DirectoryTree> = MutableStateFlow(getDirectoryTree(path))
     val localSongDtSongCount = MutableStateFlow(0)
@@ -148,7 +143,7 @@ class LibraryFoldersViewModel @Inject constructor(
      */
     suspend fun getLocalSongs(dir: String? = null) {
         Log.d(TAG, "Loading folders page: ${dir ?: path}")
-        val dt = refreshLocal(database, scanPaths.split('\n'), excludedScanPaths.split('\n'), dir ?: path)
+        val dt = refreshLocal(context, database, uriListFromString(scanPaths), uriListFromString(excludedScanPaths), dir ?: path)
         dt.isSkeleton = false
         cacheDirectoryTree(dt)
         localSongDirectoryTree.value = dt

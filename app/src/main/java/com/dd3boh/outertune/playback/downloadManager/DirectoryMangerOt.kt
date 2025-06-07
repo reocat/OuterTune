@@ -1,109 +1,105 @@
 package com.dd3boh.outertune.playback.downloadManager
 
-import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getRealDlPathFromUri
-import java.io.File
+import com.dd3boh.outertune.utils.reportException
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scanDfRecursive
+import com.dd3boh.outertune.utils.scanners.documentFileFromUri
+import java.io.IOException
 import java.io.InputStream
 
-class DownloadDirectoryManagerOt(private val context: Context, private var dir: File, extraDirs: List<String>) {
-    var allDirs: List<File>
+class DownloadDirectoryManagerOt(private val context: Context, private var dir: Uri, extraDirs: List<Uri>) {
+    val TAG = DownloadDirectoryManagerOt::class.simpleName.toString()
+    var mainDir: DocumentFile? = null
+    var allDirs: List<DocumentFile> = mutableListOf()
 
     init {
-        dir = File(getRealDlPathFromUri(dir.absolutePath))
-        if (!dir.exists()) {
-            dir.mkdirs()  // ensure the directory exists
-        }
-        require(dir.isDirectory) { "Provided path is not a directory: ${dir.absolutePath}" }
+        Log.i(TAG, "Initializing download manager...")
+        try {
+            mainDir = documentFileFromUri(context, dir)
+            if (mainDir == null || !mainDir!!.isDirectory) {
+                throw IOException("Invalid directory")
+            }
 
-        allDirs = mutableListOf(dir) + extraDirs.map { File(getRealDlPathFromUri(it)) }
-            .filterNot { it.absolutePath == dir.absolutePath || !dir.isDirectory }
+            val newAllDirs = mutableListOf<DocumentFile>()
+            newAllDirs.add(mainDir!!)
+            if (extraDirs.isNotEmpty()) {
+                newAllDirs.addAll(
+                    documentFileFromUri(context, extraDirs.filterNot { it == dir }).filter { it.isDirectory }
+                )
+            }
+            allDirs = newAllDirs.toList()
+            Log.i(TAG, "Download manager initialized successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initiate download manager: " + e.message)
+            mainDir = null
+            allDirs = mutableListOf()
+            reportException(e)
+            Toast.makeText(context, "Failed to initiate download manager: " + e.message, Toast.LENGTH_LONG).show()
+        }
     }
 
     fun deleteFile(mediaId: String): Boolean {
-        val existingFile = isExists(mediaId)?.name
-        if (existingFile == null) return false
-
-        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val where = "${MediaStore.MediaColumns.DISPLAY_NAME}=? AND ${MediaStore.MediaColumns.RELATIVE_PATH}=?"
-        // the / at the end is mandatory
-        val args =
-            arrayOf(existingFile, "${Environment.DIRECTORY_MUSIC}/${dir.absolutePath.substringAfter("/Music/")}/")
-        val deleted = context.contentResolver.delete(uri, where, args)
-        return deleted > 0
+        val file = isExists(mediaId)
+        return file?.delete() == true
     }
 
     fun saveFile(mediaId: String, input: InputStream, displayName: String?): Uri? {
-        val fileString = "$displayName [$mediaId].mka"
-        val values = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, fileString)
-            put(MediaStore.MediaColumns.MIME_TYPE, "audio/mka")
-            put(
-                MediaStore.MediaColumns.RELATIVE_PATH,
-                Environment.DIRECTORY_MUSIC + "/" + dir.absolutePath.substringAfter("/Music/")
-            )
-            put(MediaStore.MediaColumns.IS_PENDING, 1)
-        }
-
         val resolver = context.contentResolver
-        val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        val uri = resolver.insert(collection, values) ?: return null
+        val directory = DocumentFile.fromTreeUri(context, dir)
 
-        resolver.openOutputStream(uri)?.use { out ->
-            input.use { inp -> inp.copyTo(out) }
+        if (directory == null || !directory.isDirectory) {
+            throw IOException("Invalid directory")
         }
 
+        val fileName = "$displayName [$mediaId].mka"
+        val newFile = directory.createFile("audio/mka", fileName)
 
-        values.clear()
-        values.put(MediaStore.MediaColumns.IS_PENDING, 0)
-        resolver.update(uri, values, null, null)
-
-        return uri
-    }
-
-    fun isExists(mediaId: String): File? {
-        allDirs.forEach { d ->
-           val s = d.walk().firstOrNull { it.nameWithoutExtension.endsWith("[$mediaId]") }
-            if (s!= null) {
-                return s
+        newFile?.uri?.let { uri ->
+            resolver.openOutputStream(uri)?.use { out ->
+                input.copyTo(out)
             }
+            return uri
         }
+
         return null
     }
 
+    fun isExists(mediaId: String): DocumentFile? {
+        val result = ArrayList<DocumentFile>()
+        for (dir in allDirs) {
+            scanDfRecursive(dir, result) { it.substringAfterLast('[').substringBeforeLast(']') == mediaId }
+        }
+        return result.firstOrNull()
+    }
+
     fun getFilePathIfExists(mediaId: String): Uri? {
-        var existingFile: File? = isExists(mediaId)
-        return if (existingFile != null) Uri.fromFile(existingFile) else null
+        var existingFile: DocumentFile? = isExists(mediaId)
+        return existingFile?.uri
     }
 
     fun getMissingFiles(mediaId: List<Song>): List<Song> {
         val missingFiles = mediaId.toMutableSet()
-        // crawl files, remove files that exist
-        allDirs.forEach { d ->
-            d.walk().forEach { file ->
-                val mediaId = file.nameWithoutExtension.substringAfterLast('[').substringBeforeLast(']')
-                missingFiles.removeIf { it.id == mediaId }
-            }
-        }
-
+        val result = getAvailableFiles()
+        missingFiles.removeIf { f -> result.any { it.key == f.id } }
         return missingFiles.toList()
     }
 
-    fun getAvailableFiles(): Map<String, String> {
-        val availableFiles = HashMap<String, String>()
-        // crawl files, add files that exist
-        allDirs.forEach { d ->
-            d.walk().forEach { file ->
-                val mediaId = file.nameWithoutExtension.substringAfterLast('[').substringBeforeLast(']')
-                availableFiles.put(mediaId, file.absolutePath)
-            }
+    fun getAvailableFiles(): Map<String, Uri> {
+        val availableFiles = HashMap<String, Uri>()
+        val result = ArrayList<DocumentFile>()
+        for (dir in allDirs) {
+            scanDfRecursive(dir, result)
         }
 
+        for (file in result) {
+            val path = file.name ?: continue
+            availableFiles.put(path.substringAfterLast('[').substringBeforeLast(']'), file.uri)
+        }
         return availableFiles
     }
 }
-

@@ -9,7 +9,9 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,8 +40,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.core.net.toUri
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -70,7 +75,6 @@ import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.PreferenceEntry
-import com.dd3boh.outertune.ui.utils.DEFAULT_SCAN_PATH
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.clearDtCache
 import com.dd3boh.outertune.ui.utils.imageCache
@@ -85,6 +89,7 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerPr
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRequestCancel
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerShowLoading
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
+import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -128,14 +133,12 @@ fun ColumnScope.LocalScannerFrag() {
         defaultValue = ScannerImpl.TAGLIB
     )
     val strictExtensions by rememberPreference(ScannerStrictExtKey, defaultValue = false)
-    val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = DEFAULT_SCAN_PATH)
+    val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
     val (excludedScanPaths, onExcludedScanPathsChange) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
 
     var fullRescan by remember { mutableStateOf(false) }
-    val (lookupYtmArtists, onlookupYtmArtistsChange) = rememberPreference(LookupYtmArtistsKey, defaultValue = true)
+    val (lookupYtmArtists, onLookupYtmArtistsChange) = rememberPreference(LookupYtmArtistsKey, defaultValue = true)
 
-    // other vars
-    var tempScanPaths by remember { mutableStateOf("") }
     val (lastLocalScan, onLastLocalScanChange) = rememberPreference(
         LastLocalScanKey,
         LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond()
@@ -190,18 +193,9 @@ fun ColumnScope.LocalScannerFrag() {
                     // full rescan
                     if (fullRescan) {
                         try {
-                            val scanner = getScanner(context, SCANNER_OWNER_LM)
-                            val directoryStructure =
-                                scanner.scanLocal(
-                                    database,
-                                    scanPaths.split('\n'),
-                                    excludedScanPaths.split('\n')
-                                ).value
-
-                            scanner.fullSync(
-                                database, directoryStructure.toList(), scannerSensitivity,
-                                strictExtensions
-                            )
+                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
+                            scanner.fullSync(database, uris, scannerSensitivity, strictExtensions)
 
                             // start artist linking job
                             if (lookupYtmArtists && !isScannerActive) {
@@ -243,17 +237,9 @@ fun ColumnScope.LocalScannerFrag() {
                     } else {
                         // quick scan
                         try {
-                            val scanner = getScanner(context, SCANNER_OWNER_LM)
-                            val directoryStructure = scanner.scanLocal(
-                                database,
-                                scanPaths.split('\n'),
-                                excludedScanPaths.split('\n'),
-                                pathsOnly = true
-                            ).value
-                            scanner.quickSync(
-                                database, directoryStructure.toList(), scannerSensitivity,
-                                strictExtensions
-                            )
+                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
+                            scanner.quickSync(database, uris, scannerSensitivity, strictExtensions)
 
                             // start artist linking job
                             if (lookupYtmArtists && !isScannerActive) {
@@ -386,7 +372,7 @@ fun ColumnScope.LocalScannerFrag() {
         ) {
             Checkbox(
                 checked = lookupYtmArtists,
-                onCheckedChange = onlookupYtmArtistsChange,
+                onCheckedChange = onLookupYtmArtistsChange,
             )
             Text(
                 stringResource(R.string.scanner_online_artist_linking), color = MaterialTheme.colorScheme.secondary,
@@ -430,8 +416,10 @@ fun ColumnScope.LocalScannerFrag() {
 
 
     if (showAddFolderDialog != null) {
-        if (tempScanPaths.isEmpty()) {
-            tempScanPaths = if (showAddFolderDialog == true) scanPaths else excludedScanPaths
+        var tempScanPaths = remember { mutableStateListOf<Uri>() }
+        LaunchedEffect(showAddFolderDialog) {
+            tempScanPaths.addAll(
+                (if (showAddFolderDialog == true) scanPaths else excludedScanPaths).split("\n").map { it.toUri() })
         }
 
         ActionPromptDialog(
@@ -456,8 +444,6 @@ fun ColumnScope.LocalScannerFrag() {
                             checked = showAddFolderDialog!!,
                             onCheckedChange = {
                                 showAddFolderDialog = !showAddFolderDialog!!
-                                tempScanPaths =
-                                    if (showAddFolderDialog == true) scanPaths else excludedScanPaths
                             },
                         )
                     }
@@ -465,37 +451,35 @@ fun ColumnScope.LocalScannerFrag() {
             },
             onDismiss = {
                 showAddFolderDialog = null
-                tempScanPaths = ""
+                tempScanPaths.clear()
             },
             onConfirm = {
                 if (showAddFolderDialog as Boolean) {
-                    onScanPathsChange(tempScanPaths)
+                    onScanPathsChange(stringFromUriList(tempScanPaths.toList()))
                 } else {
-                    onExcludedScanPathsChange(tempScanPaths)
+                    onExcludedScanPathsChange(stringFromUriList(tempScanPaths.toList()))
                 }
 
                 showAddFolderDialog = null
-                tempScanPaths = ""
+                tempScanPaths.clear()
             },
             onReset = {
-                // reset to whitespace so not empty
-                tempScanPaths = if (showAddFolderDialog as Boolean) DEFAULT_SCAN_PATH else " "
+                // clear all, let user select a new path on their own will
+                tempScanPaths.clear()
             },
             onCancel = {
                 showAddFolderDialog = null
-                tempScanPaths = ""
+                tempScanPaths.clear()
             }
         ) {
             val dirPickerLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.OpenDocumentTree()
             ) { uri ->
-                if (uri?.path != null && !("$tempScanPaths\u200B").contains(uri.path!! + "\u200B")) {
-                    if (tempScanPaths.isBlank()) {
-                        tempScanPaths = "${uri.path}\n"
-                    } else {
-                        tempScanPaths += "${uri.path}\n"
-                    }
-                }
+                if (uri == null) return@rememberLauncherForActivityResult
+                val contentResolver = context.contentResolver
+                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                contentResolver.takePersistableUriPermission(uri, takeFlags)
+                tempScanPaths.add(uri)
             }
 
             // folders list
@@ -508,44 +492,30 @@ fun ColumnScope.LocalScannerFrag() {
                         RoundedCornerShape(ThumbnailCornerRadius)
                     )
             ) {
-                tempScanPaths.split('\n').forEach {
-                    if (it.isNotBlank())
-                        Row(
+                tempScanPaths.forEach {
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .clickable { }) {
+                        Text(
+                            text = it.toString(),
+                            style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .clickable { }) {
-                            Text(
-                                // I hate this but I'll do it properly... eventually
-                                text = if (it.substringAfter("tree/")
-                                        .substringBefore(':') == "primary"
-                                ) {
-                                    "Internal Storage/${it.substringAfter(':')}"
-                                } else {
-                                    "External (${
-                                        it.substringAfter("tree/").substringBefore(':')
-                                    })/${it.substringAfter(':')}"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .align(Alignment.CenterVertically)
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                        )
+                        IconButton(
+                            onClick = {
+                                tempScanPaths.remove(it)
+                            },
+                            onLongClick = {}
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = null,
                             )
-                            IconButton(
-                                onClick = {
-                                    tempScanPaths = if (tempScanPaths.substringAfter("\n").contains("\n")) {
-                                        tempScanPaths.replace("$it\n", "")
-                                    } else {
-                                        " " // cursed bug
-                                    }
-                                },
-                                onLongClick = {}
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = null,
-                                )
-                            }
                         }
+                    }
                 }
             }
 

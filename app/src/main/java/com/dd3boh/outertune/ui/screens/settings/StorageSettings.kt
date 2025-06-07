@@ -10,6 +10,8 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -63,8 +65,6 @@ import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.constants.TopBarInsets
-import com.dd3boh.outertune.constants.allowedPath
-import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.extensions.tryOrNull
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.IconButton
@@ -96,7 +96,7 @@ fun StorageSettings(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, defaultDownloadPath)
+    val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
 
     var imageCacheSize by remember {
         mutableLongStateOf(imageDiskCache.size)
@@ -317,7 +317,7 @@ fun StorageSettings(
 
     if (showDlPathDialog) {
         var tempFilePath by remember {
-            mutableStateOf(defaultDownloadPath)
+            mutableStateOf("")
         }
 
         ActionPromptDialog(
@@ -343,8 +343,7 @@ fun StorageSettings(
                 }
             },
             onReset = {
-                // reset to whitespace so not empty
-                tempFilePath = defaultDownloadPath
+                tempFilePath = ""
             },
             onCancel = {
                 showDlPathDialog = false
@@ -352,14 +351,16 @@ fun StorageSettings(
             }
         ) {
 
-            /**
-             * Todo: spawn user in /Music, don't let them leave
-             */
             val dirPickerLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.OpenDocumentTree()
             ) { uri ->
                 if (uri?.path != null) {
-                    tempFilePath = uri.path!!.substringAfter("/tree/primary:Music/")
+                    // Take persistable URI permission
+                    val contentResolver = context.contentResolver
+                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    contentResolver.takePersistableUriPermission(uri, takeFlags)
+
+                    tempFilePath = uri.toString()
                 }
             }
 
@@ -374,7 +375,7 @@ fun StorageSettings(
                     )
             ) {
                 Text(
-                    text = "$allowedPath/$tempFilePath/",
+                    text = tempFilePath,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(8.dp)
                 )

@@ -36,13 +36,6 @@ class TagLibScanner : MetadataScanner {
     /**
      * Given a path to a file, extract necessary metadata.
      *
-     * @param path Full file path
-     */
-    override fun getAllMetadataFromPath(path: String) = getAllMetadataFromFile(File(path))
-
-    /**
-     * Given a path to a file, extract necessary metadata.
-     *
      * @param file Full file path
      */
     override fun getAllMetadataFromFile(file: File): SongTempData {

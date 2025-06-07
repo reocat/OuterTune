@@ -30,7 +30,6 @@ val MEDIA_PERMISSION_LEVEL =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO
     else Manifest.permission.READ_EXTERNAL_STORAGE
 const val STORAGE_ROOT = "/storage/"
-const val DEFAULT_SCAN_PATH = "/tree/primary:Music\n"
 val ARTIST_SEPARATORS = Regex("\\s*;\\s*|\\s*ft\\.\\s*|\\s*feat\\.\\s*|\\s*&\\s*|\\s*,\\s*", RegexOption.IGNORE_CASE)
 val uninitializedDirectoryTree = DirectoryTree(STORAGE_ROOT, CulmSongs(0))
 private var cachedDirectoryTree: ArrayList<DirectoryTree> = ArrayList()

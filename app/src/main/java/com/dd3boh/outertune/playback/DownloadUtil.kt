@@ -20,10 +20,6 @@ import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.constants.MAX_CONCURRENT_DOWNLOAD_JOBS
-import com.dd3boh.outertune.constants.SCANNER_OWNER_DL
-import com.dd3boh.outertune.constants.ScannerImpl
-import com.dd3boh.outertune.constants.allowedPath
-import com.dd3boh.outertune.constants.defaultDownloadPath
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.db.entities.PlaylistSong
@@ -42,7 +38,8 @@ import com.dd3boh.outertune.utils.enumPreference
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.InvalidAudioFileException
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
+import com.dd3boh.outertune.utils.scanners.fileFromUri
+import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -84,8 +81,8 @@ class DownloadUtil @Inject constructor(
 
     var localMgr = DownloadDirectoryManagerOt(
         context,
-        File(allowedPath + "/" + context.dataStore.get(DownloadPathKey, defaultDownloadPath) + "/"),
-        context.dataStore.get(DownloadExtraPathKey, "").split("\n")
+        context.dataStore.get(DownloadPathKey, "").toUri(),
+        uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
     )
     val downloadMgr = DownloadManagerOt(localMgr)
     val downloads = MutableStateFlow<Map<String, LocalDateTime>>(emptyMap())
@@ -324,8 +321,8 @@ class DownloadUtil @Inject constructor(
     fun cd() {
         localMgr = DownloadDirectoryManagerOt(
             context,
-            File(allowedPath + "/" + context.dataStore.get(DownloadPathKey, defaultDownloadPath) + "/"),
-            context.dataStore.get(DownloadExtraPathKey, "").split("\n")
+            context.dataStore.get(DownloadPathKey, "").toUri(),
+            uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
         )
     }
 
@@ -365,27 +362,31 @@ class DownloadUtil @Inject constructor(
         if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
         CoroutineScope(Dispatchers.IO).launch {
-            val scanner = LocalMediaScanner.getScanner(context, SCANNER_OWNER_DL)
+//            val scanner = LocalMediaScanner.getScanner(context, SCANNER_OWNER_DL)
             runBlocking(Dispatchers.IO) { database.removeAllDownloadedSongs() }
             val result = mutableMapOf<String, LocalDateTime>()
             val timeNow = LocalDateTime.now()
 
             // remove missing files
             val availableFiles = localMgr.getAvailableFiles()
-            availableFiles.forEach {
+            availableFiles.forEach { f ->
                 runBlocking(Dispatchers.IO) {
                     try {
-                        val format: FormatEntity? = scanner.advancedScan(it.value).format
-                        if (format != null) {
-                            database.upsert(format)
-                        }
-                        database.registerDownloadSong(it.key, timeNow, it.value)
+                        val file = fileFromUri(context, f.value)
+                        if (file == null) throw (InvalidAudioFileException("Hello darkness my old friend"))
+                        // TODO: validate files in download folder
+//                        val format: FormatEntity? = scanner.advancedScan(f.value).format
+//                        if (format != null) {
+//                            database.upsert(format)
+//                        }
+                        database.registerDownloadSong(f.key, timeNow, file.absolutePath)
+
                     } catch (e: InvalidAudioFileException) {
                         reportException(e)
                     }
                 }
             }
-            LocalMediaScanner.destroyScanner(SCANNER_OWNER_DL)
+//            LocalMediaScanner.destroyScanner(SCANNER_OWNER_DL)
 
             // pull from db again
             val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedSongs().first() }
@@ -418,9 +419,8 @@ class DownloadUtil @Inject constructor(
             downloadMgr.events.collect { ev ->
                 when (ev) {
                     is DownloadEvent.Progress -> {
-                        val pct = ev.bytesRead * 100 / (if (ev.contentLength > 0) ev.contentLength else 1)
-                        // update UI
-                        Log.v(TAG, "DL progress: $pct")
+//                        val pct = ev.bytesRead * 100 / (if (ev.contentLength > 0) ev.contentLength else 1)
+//                        Log.d(TAG, "DL progress: $pct")
                     }
 
                     is DownloadEvent.Success -> {
