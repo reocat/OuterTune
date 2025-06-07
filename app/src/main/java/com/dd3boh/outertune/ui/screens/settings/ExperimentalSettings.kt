@@ -8,6 +8,9 @@
 
 package com.dd3boh.outertune.ui.screens.settings
 
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -53,8 +56,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,6 +87,7 @@ import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricUpdateSpeed
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
+import com.dd3boh.outertune.constants.ScanPathsKey
 import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.constants.TabletUiKey
@@ -100,6 +106,8 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.fileFromUri
+import com.dd3boh.outertune.utils.scanners.stringFromUriList
+import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -129,6 +137,7 @@ fun ExperimentalSettings(
 
     val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
     val (dlPathExtra, onDlPathExtraChange) = rememberPreference(DownloadExtraPathKey, "")
+    val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
     val downloadUtil = LocalDownloadUtil.current
     val isLoading by downloadUtil.isProcessingDownloads.collectAsState()
     var showMigrationDialog by rememberSaveable {
@@ -317,7 +326,11 @@ fun ExperimentalSettings(
             isEnabled = !isLoading
         )
         if (showPathsDialog) {
-            var tempScanPaths by remember { mutableStateOf(dlPathExtra) }
+            var tempScanPaths = remember { mutableStateListOf<Uri>() }
+            LaunchedEffect(dlPathExtra) {
+                tempScanPaths.addAll(uriListFromString(dlPathExtra))
+            }
+
             ActionPromptDialog(
                 titleBar = {
                     Row(
@@ -331,10 +344,10 @@ fun ExperimentalSettings(
                 },
                 onDismiss = {
                     showPathsDialog = false
-                    tempScanPaths = ""
+                    tempScanPaths.clear()
                 },
                 onConfirm = {
-                    onDlPathExtraChange(tempScanPaths)
+                    onDlPathExtraChange(stringFromUriList(tempScanPaths.toList()))
                     coroutineScope.launch {
                         delay(1000)
                         downloadUtil.cd()
@@ -342,27 +355,29 @@ fun ExperimentalSettings(
                     }
 
                     showPathsDialog = false
-                    tempScanPaths = ""
+                    tempScanPaths.clear()
                 },
                 onReset = {
                     // reset to whitespace so not empty
-                    tempScanPaths = " "
+                    tempScanPaths.clear()
                 },
                 onCancel = {
                     showPathsDialog = false
-                    tempScanPaths = ""
+                    tempScanPaths.clear()
+                },
+                isInputValid = uriListFromString(scanPaths).toList().none { scanPath ->
+                    // scan path cannot be contain any dl extras path
+                    tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
                 }
             ) {
                 val dirPickerLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.OpenDocumentTree()
                 ) { uri ->
-                    if (uri?.path != null && !("$tempScanPaths\u200B").contains(uri.path!! + "\u200B")) {
-                        if (tempScanPaths.isBlank()) {
-                            tempScanPaths = "${uri.path}\n"
-                        } else {
-                            tempScanPaths += "${uri.path}\n"
-                        }
-                    }
+                    if (uri == null) return@rememberLauncherForActivityResult
+                    val contentResolver = context.contentResolver
+                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    contentResolver.takePersistableUriPermission(uri, takeFlags)
+                    tempScanPaths.add(uri)
                 }
 
                 // folders list
@@ -375,44 +390,34 @@ fun ExperimentalSettings(
                             RoundedCornerShape(ThumbnailCornerRadius)
                         )
                 ) {
-                    tempScanPaths.split('\n').forEach {
-                        if (it.isNotBlank())
-                            Row(
+                    tempScanPaths.forEach { tmpPath ->
+                        val valid = uriListFromString(scanPaths).toList().none {
+                            tmpPath.toString().contains(it.toString())
+                        }
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
+                                .clickable { }) {
+                            Text(
+                                text = tmpPath.toString(),
+                                style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .clickable { }) {
-                                Text(
-                                    // I hate this but I'll do it properly... eventually
-                                    text = if (it.substringAfter("tree/")
-                                            .substringBefore(':') == "primary"
-                                    ) {
-                                        "Internal Storage/${it.substringAfter(':')}"
-                                    } else {
-                                        "External (${
-                                            it.substringAfter("tree/").substringBefore(':')
-                                        })/${it.substringAfter(':')}"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .align(Alignment.CenterVertically)
+                                    .weight(1f)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            IconButton(
+                                onClick = {
+                                    tempScanPaths.remove(tmpPath)
+                                },
+                                onLongClick = {}
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = null,
                                 )
-                                IconButton(
-                                    onClick = {
-                                        tempScanPaths = if (tempScanPaths.substringAfter("\n").contains("\n")) {
-                                            tempScanPaths.replace("$it\n", "")
-                                        } else {
-                                            " " // cursed bug
-                                        }
-                                    },
-                                    onLongClick = {}
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Close,
-                                        contentDescription = null,
-                                    )
-                                }
                             }
+                        }
                     }
                 }
 
@@ -426,6 +431,17 @@ fun ExperimentalSettings(
                         text = stringResource(R.string.scan_paths_tooltip),
                         modifier = Modifier.padding(top = 8.dp)
                     )
+
+                    if (uriListFromString(scanPaths).toList().any { scanPath ->
+                            // scan path cannot be contain any dl extras path
+                            tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
+                        }) {
+                        InfoLabel(
+                            text = stringResource(R.string.scanner_rejected_dir),
+                            isError = true,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
                 }
             }
         }
