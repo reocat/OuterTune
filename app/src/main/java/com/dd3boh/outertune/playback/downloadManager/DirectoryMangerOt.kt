@@ -18,11 +18,15 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
     var allDirs: List<DocumentFile> = mutableListOf()
 
     init {
-        Log.i(TAG, "Initializing download manager...")
+        Log.i(TAG, "Initializing download manager: $dir")
         try {
             mainDir = documentFileFromUri(context, dir)
             if (mainDir == null || !mainDir!!.isDirectory) {
                 throw IOException("Invalid directory")
+            }
+
+            if (!mainDir!!.listFiles().any { it.name == ".nomedia" }) {
+                documentFileFromUri(context, dir)?.createFile("audio/mka", ".nomedia")
             }
 
             val newAllDirs = mutableListOf<DocumentFile>()
@@ -33,7 +37,7 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
                 )
             }
             allDirs = newAllDirs.toList()
-            Log.i(TAG, "Download manager initialized successfully")
+            Log.i(TAG, "Download manager initialized successfully. ${allDirs.size}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initiate download manager: " + e.message)
             mainDir = null
@@ -72,7 +76,7 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
     fun isExists(mediaId: String): DocumentFile? {
         val result = ArrayList<DocumentFile>()
         for (dir in allDirs) {
-            scanDfRecursive(dir, result) { it.substringAfterLast('[').substringBeforeLast(']') == mediaId }
+            scanDfRecursive(dir, result, true) { it.substringAfterLast('[').substringBeforeLast(']') == mediaId }
         }
         return result.firstOrNull()
     }
@@ -93,7 +97,7 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
         val availableFiles = HashMap<String, Uri>()
         val result = ArrayList<DocumentFile>()
         for (dir in allDirs) {
-            scanDfRecursive(dir, result)
+            scanDfRecursive(dir, result, true)
         }
 
         for (file in result) {

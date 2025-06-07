@@ -11,7 +11,6 @@ package com.dd3boh.outertune.utils.scanners
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
@@ -879,14 +878,15 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         fun scanDfRecursive(
             dir: DocumentFile,
             result: ArrayList<DocumentFile>,
+            scanHidden: Boolean = false,
             validator: ((String) -> Boolean)? = null
         ): DocumentFile? {
             val files = dir.listFiles()
             for (file in files) {
-                if (file.name?.startsWith(".") == true) continue
-                if (file.isDirectory) {
+                if (!scanHidden && file.name?.startsWith(".") == true) continue
+                if (file.isDirectory && (scanHidden || !file.listFiles().any { it.name == ".nomedia" })) {
                     // look into subdirs
-                    scanDfRecursive(file, result, validator)
+                    scanDfRecursive(file, result, scanHidden, validator)
                 } else {
                     val name = file.name ?: continue
                     // add if file matches

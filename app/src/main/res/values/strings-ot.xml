@@ -177,6 +177,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scan_paths_excl">Excluded scan paths</string>
     <string name="scanner_local_title">Local scanner</string>
     <string name="scanner_manual_btn">Trigger manual sync</string>
+    <string name="scanner_rejected_dir">Invalid selection. A scan folder cannot be a subdirectory of the download folder, or the download folder itself</string>
     <string name="scanner_warning">By default, the scanner will NOT reload any metadata of existing songs unless you specify otherwise above. Depending on the size of your library, it make take a while.</string>
 
     <!-- Scanner progress strings-->
@@ -224,7 +225,6 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="dl_migrate_description" translatable="false">Move downloads from app internal storage to the device\'s external storage</string>
     <string name="dl_migrate_confirm" translatable="false">This will migrate ALL internal downloads to \"%s\", and this action cannot be undone. Continue?</string>
     <string name="dl_main_path_title" translatable="false">Configure download directory…</string>
-    <string name="dl_main_path_tooltip" translatable="false">Due to Android system restrictions, only Music folder is allowed.</string>
     <string name="dl_rescan_title" translatable="false">Rescan download folders…</string>
     <string name="dl_rescan_description" translatable="false">Relink old downloads if the files or folder was moved</string>
 	<string name="dl_rescan_confirm" translatable="false">Rescan all download folders now? This can take a few minutes depending on the size of your library.</string>

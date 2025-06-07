@@ -16,6 +16,7 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -60,6 +62,7 @@ import androidx.core.net.toUri
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
@@ -90,6 +93,7 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRe
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerShowLoading
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
+import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -133,6 +137,7 @@ fun ColumnScope.LocalScannerFrag() {
         defaultValue = ScannerImpl.TAGLIB
     )
     val strictExtensions by rememberPreference(ScannerStrictExtKey, defaultValue = false)
+    val downloadPath by rememberPreference(DownloadPathKey, "")
     val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
     val (excludedScanPaths, onExcludedScanPathsChange) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
 
@@ -417,9 +422,10 @@ fun ColumnScope.LocalScannerFrag() {
 
     if (showAddFolderDialog != null) {
         var tempScanPaths = remember { mutableStateListOf<Uri>() }
-        LaunchedEffect(showAddFolderDialog) {
+        LaunchedEffect(showAddFolderDialog, scanPaths, excludedScanPaths) {
             tempScanPaths.addAll(
-                (if (showAddFolderDialog == true) scanPaths else excludedScanPaths).split("\n").map { it.toUri() })
+                uriListFromString(if (showAddFolderDialog == true) scanPaths else excludedScanPaths)
+            )
         }
 
         ActionPromptDialog(
@@ -470,6 +476,12 @@ fun ColumnScope.LocalScannerFrag() {
             onCancel = {
                 showAddFolderDialog = null
                 tempScanPaths.clear()
+            },
+            isInputValid = tempScanPaths.toList().any {
+                val dlUri = uriListFromString(downloadPath).firstOrNull()
+                if ((dlUri) == null) return@any true
+                // scan path cannot be the download directory or subdir of download directory
+                !it.toString().contains(dlUri.toString())
             }
         ) {
             val dirPickerLauncher = rememberLauncherForActivityResult(
@@ -493,9 +505,11 @@ fun ColumnScope.LocalScannerFrag() {
                     )
             ) {
                 tempScanPaths.forEach {
+                    val valid = it.toString() != uriListFromString(downloadPath).firstOrNull().toString()
                     Row(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
+                            .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
                             .clickable { }) {
                         Text(
                             text = it.toString(),
@@ -529,6 +543,16 @@ fun ColumnScope.LocalScannerFrag() {
                     text = stringResource(R.string.scan_paths_tooltip),
                     modifier = Modifier.padding(top = 8.dp)
                 )
+
+                if (tempScanPaths.toList().any {
+                        it.toString() == uriListFromString(downloadPath).firstOrNull().toString()
+                    }) {
+                    InfoLabel(
+                        text = stringResource(R.string.scanner_rejected_dir),
+                        isError = true,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         }
     }
