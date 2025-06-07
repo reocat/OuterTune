@@ -829,7 +829,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
 
         /**
          * ==========================
-         * Scanner helpers
+         * Scanner extra scan utils
          * ==========================
          */
 
@@ -910,7 +910,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
          * For example, to scan under Music and Documents/songs --> ("Music", Documents/songs)
          * @param filter Raw file path
          */
-        // TODO: move
         suspend fun refreshLocal(
             context: Context,
             database: MusicDatabase,
@@ -947,6 +946,14 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             Log.i(TAG, "------------ SCAN: Finished Quick Directory Rebuild ------------")
             return newDirectoryStructure.androidStorageWorkaround()
         }
+
+
+        /**
+         * ==========================
+         * Scanner helpers
+         * ==========================
+         */
+
 
         /**
          * Check if artists are the same
