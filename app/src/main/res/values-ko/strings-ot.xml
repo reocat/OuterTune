@@ -139,7 +139,7 @@
     <string name="swipe2Queue_description">곡을 스와이프하여 현재 재생 중인 곡 다음에 추가합니다</string>
     <string name="lyrics_prefer_local_description">로컬 가사 파일이 온라인 자막보다 우선됩니다. 이를 끄면 온라인 자막을 우선적으로 표시합니다</string>
     <string name="playlist_add_local_to_synced_note">참고: 기기 미디어를 동기화된/온라인 재생목록에 추가할 수 없습니다. 다른 조합은 가능합니다</string>
-    <string name="m3u_import_playlist_failed">재생목록을 가져오지 못했습니다</string>
+    <string name="m3u_import_playlist_failed">가져오기를 실패했습니다</string>
     <string name="auto_scanner_description">앱을 실행할 때 자동으로 곡을 스캔합니다. 이미 존재하는 곡은 메타 데이터를 재로딩하지는 않습니다.</string>
     <string name="flat_subfolders_description">비활성화시 파일 구조 유지</string>
     <string name="scan_paths_add_folder">새 폴더 추가</string>
@@ -159,4 +159,19 @@
     <string name="grp_behavior">행동</string>
     <string name="playlist_missing_note">재생목록이 없나요? 이곳을 눌러 설정에서 읽기-쓰기 모드 동기화를 활성화하세요</string>
     <string name="library_empty">라이브러리</string>
+    <string name="m3u_ytm_lookup">앱 데이터베이스에서 찾을 수 없는 노래를 YouTube Music에서 검색하세요</string>
+    <string name="lyrics_karaoke_title">노래방 스타일 자막.</string>
+    <string name="attribution_title">기여</string>
+    <string name="speed_very_fast">매우 빠름</string>
+    <string name="tablet_ui_title">강제 테블릿 UI</string>
+    <string name="tablet_ui_title_description">현재 화면 크기에 관계없이 더 큰 화면에 최적화된 가로형 인터페이스를 활성화합니다</string>
+    <string name="oss_licenses_title">오픈 소스 라이센스</string>
+    <string name="lyrics_karaoke_description">단어별 가사 동기화를 지원합니다. 가사 형식 지원이 필요합니다.</string>
+    <string name="lyrics_karaoke_hz_title">노래방 자막 속도 조정</string>
+    <string name="import_success_songs">성공적으로 가져왔습니다</string>
+    <string name="m3u_export">MSU 파일로 내보내기</string>
+    <string name="speed_very_slow">매우 느림</string>
+    <string name="speed_slow">느림</string>
+    <string name="speed_medium">중간</string>
+    <string name="speed_fast">빠름</string>
 </resources>
