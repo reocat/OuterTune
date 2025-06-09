@@ -76,7 +76,6 @@ import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.formatFileSize
 import com.dd3boh.outertune.utils.rememberPreference
-import com.dd3boh.outertune.utils.scanners.fileFromUri
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.Dispatchers
@@ -189,7 +188,7 @@ fun StorageSettings(
         )
 
         PreferenceEntry(
-            title = { Text("Configure download path") },
+            title = { Text(stringResource(R.string.dl_main_path_title)) },
             onClick = {
                 showDlPathDialog = true
             },
