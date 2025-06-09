@@ -457,7 +457,7 @@ class MainActivity : ComponentActivity() {
                                     playerConnection?.player?.pause()
                                 }
                                 val scanner = LocalMediaScanner.getScanner(
-                                    this@MainActivity, scannerImpl, SCANNER_OWNER_LM
+                                    this@MainActivity, SCANNER_OWNER_LM
                                 )
                                 val directoryStructure = scanner.scanLocal(
                                     database,

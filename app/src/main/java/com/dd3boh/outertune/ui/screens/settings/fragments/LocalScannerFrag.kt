@@ -190,7 +190,7 @@ fun ColumnScope.LocalScannerFrag() {
                     // full rescan
                     if (fullRescan) {
                         try {
-                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            val scanner = getScanner(context, SCANNER_OWNER_LM)
                             val directoryStructure =
                                 scanner.scanLocal(
                                     database,
@@ -243,7 +243,7 @@ fun ColumnScope.LocalScannerFrag() {
                     } else {
                         // quick scan
                         try {
-                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            val scanner = getScanner(context, SCANNER_OWNER_LM)
                             val directoryStructure = scanner.scanLocal(
                                 database,
                                 scanPaths.split('\n'),

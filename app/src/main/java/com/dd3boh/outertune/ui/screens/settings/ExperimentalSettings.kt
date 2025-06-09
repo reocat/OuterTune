@@ -408,7 +408,7 @@ fun ExperimentalSettings(
                     Toast.makeText(context, context.getString(R.string.scanner_ytm_link_start), Toast.LENGTH_SHORT)
                         .show()
                     coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB, SCANNER_OWNER_LM)
+                        val scanner = LocalMediaScanner.getScanner(context,  SCANNER_OWNER_LM)
                         Timber.tag("Settings").d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
                         scanner.localToRemoteArtist(database)
                         Toast.makeText(

@@ -2,7 +2,6 @@ package com.dd3boh.outertune.ui.screens.library
 
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -45,14 +44,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -102,22 +98,29 @@ import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.ui.utils.canNavigateUp
 import com.dd3boh.outertune.utils.fixFilePath
 import com.dd3boh.outertune.utils.numberToAlpha
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.viewmodels.LibraryFoldersViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+data class FolderScreenState(
+    val allSongs: List<Song> = emptyList(),
+    val displayedSongs: List<Song> = emptyList(),
+    val filteredSongs: List<Song> = emptyList(),
+    val isLoading: Boolean = true,
+    val isSearching: Boolean = false,
+    val searchQuery: String = "",
+    val inSelectMode: Boolean = false,
+    val selectedSongIds: Set<String> = emptySet(),
+    val error: String? = null
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderScreen(
     navController: NavController,
@@ -129,6 +132,7 @@ fun FolderScreen(
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val (flatSubfolders, onFlatSubfoldersChange) = rememberPreference(FlatSubfoldersKey, defaultValue = true)
     val lastLocalScan by rememberPreference(
@@ -136,19 +140,122 @@ fun FolderScreen(
         LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond()
     )
     val localLibEnable by rememberPreference(LocalLibraryEnableKey, defaultValue = true)
-
     val (sortType, onSortTypeChange) = rememberEnumPreference(SongSortTypeKey, SongSortType.CREATE_DATE)
     val (sortDescending, onSortDescendingChange) = rememberPreference(SongSortDescendingKey, true)
 
+    var screenState by remember { mutableStateOf(FolderScreenState()) }
     val lazyListState = rememberLazyListState()
+    val focusRequester = remember { FocusRequester() }
+    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
+
+    val currentDir by viewModel.localSongDirectoryTree.collectAsState()
+    val filteredSongs = remember { viewModel.filteredSongs }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
 
-    val currDir: DirectoryTree by viewModel.localSongDirectoryTree.collectAsState()
-    val subDirSongCount by viewModel.localSongDtSongCount.collectAsState()
+    fun getAllSongsFromDirectory(directory: DirectoryTree, flat: Boolean): List<Song> {
+        return if (flat) {
+            val allSongs = mutableListOf<Song>()
+            val queue = ArrayDeque<DirectoryTree>()
+            queue.add(directory)
+
+            while (queue.isNotEmpty()) {
+                val current = queue.removeFirst()
+                allSongs.addAll(current.files)
+                queue.addAll(current.subdirs)
+            }
+            allSongs.distinctBy { it.id }
+        } else {
+            directory.files.distinctBy { it.id }
+        }
+    }
+
+    fun sortSongs(songs: List<Song>, sortType: SongSortType, descending: Boolean): List<Song> {
+        val sorted = songs.sortedBy { song ->
+            when (sortType) {
+                SongSortType.CREATE_DATE -> numberToAlpha(song.song.inLibrary?.toEpochSecond(ZoneOffset.UTC) ?: -1L)
+                SongSortType.MODIFIED_DATE -> numberToAlpha(song.song.dateModified?.atZone(ZoneOffset.UTC)?.toInstant()?.toEpochMilli() ?: -1L)
+                SongSortType.RELEASE_DATE -> numberToAlpha(song.song.year?.toLong() ?: -1L)
+                SongSortType.NAME -> song.song.title.lowercase()
+                SongSortType.ARTIST -> song.artists.joinToString { it.name }.lowercase()
+                SongSortType.PLAY_TIME -> numberToAlpha(song.song.totalPlayTime)
+                SongSortType.PLAY_COUNT -> numberToAlpha((song.playCount?.fastSumBy { it.count })?.toLong() ?: 0L)
+            }
+        }
+        return if (descending) sorted.reversed() else sorted
+    }
+
+    fun updateScreenState() {
+        if (currentDir.isSkeleton) {
+            screenState = screenState.copy(isLoading = true)
+            return
+        }
+
+        val allSongs = getAllSongsFromDirectory(currentDir, flatSubfolders)
+        val sortedSongs = sortSongs(allSongs, sortType, sortDescending)
+
+        screenState = screenState.copy(
+            allSongs = allSongs,
+            displayedSongs = sortedSongs,
+            filteredSongs = filteredSongs,
+            isLoading = false
+        )
+    }
+
+    fun performSearch(searchText: String) {
+        scope.launch {
+            delay(300)
+            if (query.text == searchText) {
+                viewModel.searchInDir(searchText)
+            }
+        }
+    }
+
+    fun toggleSelectMode(enable: Boolean) {
+        screenState = screenState.copy(
+            inSelectMode = enable,
+            selectedSongIds = if (!enable) emptySet() else screenState.selectedSongIds
+        )
+    }
+
+    fun toggleSongSelection(songId: String) {
+        val newSelection = if (screenState.selectedSongIds.contains(songId)) {
+            screenState.selectedSongIds - songId
+        } else {
+            screenState.selectedSongIds + songId
+        }
+
+        screenState = screenState.copy(
+            inSelectMode = true,
+            selectedSongIds = newSelection
+        )
+    }
+
+    fun selectAllSongs() {
+        screenState = screenState.copy(
+            selectedSongIds = screenState.displayedSongs.map { it.id }.toSet()
+        )
+    }
+
+    fun clearSelection() {
+        screenState = screenState.copy(selectedSongIds = emptySet())
+    }
+
+    fun startSearchMode() {
+        screenState = screenState.copy(isSearching = true)
+    }
+
+    fun exitSearchMode() {
+        screenState = screenState.copy(
+            isSearching = false,
+            searchQuery = ""
+        )
+        query = TextFieldValue()
+    }
 
     LaunchedEffect(lastLocalScan) {
-        if (viewModel.uiInit && !currDir.isSkeleton && viewModel.lastLocalScan != lastLocalScan) {
+        if (viewModel.uiInit && !currentDir.isSkeleton && viewModel.lastLocalScan != lastLocalScan) {
             viewModel.lastLocalScan = lastLocalScan
             navController.backToMain()
             viewModel.getLocalSongs()
@@ -159,12 +266,9 @@ fun FolderScreen(
         if (viewModel.lastLocalScan == 0L) {
             viewModel.lastLocalScan = lastLocalScan
         }
-        if (!currDir.isSkeleton) {
-            viewModel.uiInit = true
-        }
 
         if (!viewModel.uiInit) {
-            CoroutineScope(Dispatchers.IO).launch {
+            scope.launch {
                 viewModel.getLocalSongs()
                 viewModel.getSongCount()
                 viewModel.uiInit = true
@@ -172,50 +276,21 @@ fun FolderScreen(
         }
     }
 
-    val mutableSongs = remember {
-        mutableStateListOf<Song>()
+    LaunchedEffect(currentDir, flatSubfolders, sortType, sortDescending, filteredSongs) {
+        updateScreenState()
     }
 
-    // search
-    var isSearching by rememberSaveable { mutableStateOf(false) }
-    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue())
-    }
-    val filteredSongs = remember { viewModel.filteredSongs }
-    val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(isSearching) {
-        if (isSearching) {
+    LaunchedEffect(screenState.isSearching) {
+        if (screenState.isSearching) {
             focusRequester.requestFocus()
         }
     }
 
-    LaunchedEffect(query) {
-        snapshotFlow { query }.debounce { 300L }.collectLatest {
-            viewModel.searchInDir(query.text)
+    LaunchedEffect(query.text) {
+        if (screenState.isSearching && query.text != screenState.searchQuery) {
+            screenState = screenState.copy(searchQuery = query.text)
+            performSearch(query.text)
         }
-    }
-
-    // multiselect
-    var inSelectMode by rememberSaveable { mutableStateOf(false) }
-    val selection = rememberSaveable(
-        saver = listSaver<MutableList<String>, String>(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf() }
-    val onExitSelectionMode = {
-        inSelectMode = false
-        selection.clear()
-    }
-
-    if (inSelectMode) {
-        BackHandler(onBack = onExitSelectionMode)
-    } else if (isSearching) {
-        BackHandler(onBack = { isSearching = false })
-    }
-
-    LaunchedEffect(inSelectMode) {
-        backStackEntry?.savedStateHandle?.set("inSelectMode", inSelectMode)
     }
 
     LaunchedEffect(scrollToTop?.value) {
@@ -225,47 +300,27 @@ fun FolderScreen(
         }
     }
 
-    LaunchedEffect(sortType, sortDescending, currDir) {
-        val tempList = currDir.files.map { it }.toMutableList()
-        // sort songs
-        tempList.sortBy { it ->
-            when (sortType) {
-                SongSortType.CREATE_DATE -> numberToAlpha(it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC) ?: -1L)
-                SongSortType.MODIFIED_DATE -> numberToAlpha(it.song.getDateModifiedLong() ?: -1L)
-                SongSortType.RELEASE_DATE -> numberToAlpha(it.song.getDateLong() ?: -1L)
-                SongSortType.NAME -> it.song.title.lowercase()
-                SongSortType.ARTIST -> it.artists.joinToString { artist -> artist.name }.lowercase()
-                SongSortType.PLAY_TIME -> numberToAlpha(it.song.totalPlayTime)
-                SongSortType.PLAY_COUNT -> numberToAlpha((it.playCount?.fastSumBy { it.count })?.toLong() ?: 0L)
-            }
-        }
-        // sort folders
-        currDir.subdirs.sortBy { it.currentDir.lowercase() } // only sort by name
-
-        if (sortDescending) {
-            currDir.subdirs.reverse()
-            tempList.reverse()
-        }
-
-        mutableSongs.clear()
-        mutableSongs.addAll(tempList.distinctBy { it.id })
+    LaunchedEffect(screenState.inSelectMode) {
+        backStackEntry?.savedStateHandle?.set("inSelectMode", screenState.inSelectMode)
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    if (screenState.inSelectMode) {
+        BackHandler { toggleSelectMode(false) }
+    } else if (screenState.isSearching) {
+        BackHandler { exitSearchMode() }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = lazyListState,
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
+            modifier = Modifier.padding(bottom = if (screenState.inSelectMode) 64.dp else 0.dp)
         ) {
             item(
                 key = "header",
                 contentType = CONTENT_TYPE_HEADER
             ) {
-                Column(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                ) {
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -273,18 +328,7 @@ fun FolderScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
-                        // search
-                        IconButton(
-                            onClick = {
-                                isSearching = true
-                            }
-                        ) {
-                            Icon(
-                                Icons.Rounded.Search,
-                                contentDescription = null
-                            )
-                        }
-                        if (isSearching) {
+                        if (screenState.isSearching) {
                             TextField(
                                 value = query,
                                 onValueChange = { query = it },
@@ -309,45 +353,38 @@ fun FolderScreen(
                                     .focusRequester(focusRequester)
                             )
                         } else {
-                            // scanner icon
+                            IconButton(onClick = { startSearchMode() }) {
+                                Icon(Icons.Rounded.Search, contentDescription = null)
+                            }
+
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             ) {
-                                Icon(
-                                    Icons.Rounded.SdCard,
-                                    contentDescription = null
-                                )
-                                TextButton(
-                                    onClick = {
-                                        navController.navigate("settings/local")
-                                    }
-                                ) {
+                                Icon(Icons.Rounded.SdCard, contentDescription = null)
+                                TextButton(onClick = { navController.navigate("settings/local") }) {
                                     Text(text = stringResource(R.string.scanner_local_title))
                                 }
                             }
-                        }
 
-                        if (!isSearching) {
-                            // tree/list view
                             ResizableIconButton(
                                 icon = if (flatSubfolders) Icons.AutoMirrored.Rounded.List else Icons.Rounded.AccountTree,
-                                onClick = {
-                                    onFlatSubfoldersChange(!flatSubfolders)
-                                }
+                                onClick = { onFlatSubfoldersChange(!flatSubfolders) }
                             )
                         }
                     }
 
-                    filterContent?.let {
+                    filterContent?.let { content ->
                         var showStoragePerm by remember {
-                            mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)
+                            mutableStateOf(
+                                context.checkSelfPermission(MEDIA_PERMISSION_LEVEL)
+                                        != PackageManager.PERMISSION_GRANTED
+                            )
                         }
-                        if (localLibEnable && showStoragePerm
-                        ) {
+
+                        if (localLibEnable && showStoragePerm) {
                             TextButton(
                                 onClick = {
-                                    // allow user to hide error when clicked. This also makes the code a lot nicer too.
                                     showStoragePerm = false
                                     (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                                 },
@@ -362,7 +399,7 @@ fun FolderScreen(
                                 )
                             }
                         }
-                        it()
+                        content()
                     }
 
                     Row(
@@ -389,8 +426,14 @@ fun FolderScreen(
 
                         Spacer(Modifier.weight(1f))
 
+                        val songCount = if (screenState.isSearching) {
+                            screenState.filteredSongs.size
+                        } else {
+                            screenState.displayedSongs.size
+                        }
+
                         Text(
-                            text = pluralStringResource(R.plurals.n_song, subDirSongCount, subDirSongCount),
+                            text = pluralStringResource(R.plurals.n_song, songCount, songCount),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.padding(end = 8.dp)
@@ -398,8 +441,20 @@ fun FolderScreen(
                     }
                 }
             }
-            if (!isSearching) {
-                if (fixFilePath(currDir.getFullPath()) != STORAGE_ROOT)
+
+            if (screenState.isLoading) {
+                item {
+                    ShimmerHost {
+                        repeat(8) {
+                            ListItemPlaceHolder()
+                        }
+                    }
+                }
+                return@LazyColumn
+            }
+
+            if (!screenState.isSearching && !flatSubfolders) {
+                if (fixFilePath(currentDir.getFullPath()) != STORAGE_ROOT) {
                     item(
                         key = "previous",
                         contentType = CONTENT_TYPE_FOLDER
@@ -407,43 +462,38 @@ fun FolderScreen(
                         SongFolderItem(
                             folderTitle = "..",
                             subtitle = "Previous folder",
-                            modifier = Modifier
-                                .clickable {
-                                    if (currDir.culmSongs.value > 0) {
-                                        navController.navigateUp()
-                                    }
+                            modifier = Modifier.clickable {
+                                if (currentDir.culmSongs.value > 0) {
+                                    navController.navigateUp()
                                 }
+                            }
                         )
                     }
-
-
-                // all subdirectories listed here
-                itemsIndexed(
-                    items = if (flatSubfolders) currDir.getFlattenedSubdirs() else currDir.subdirs,
-                    key = { _, item -> item.currentDir },
-                    contentType = { _, _ -> CONTENT_TYPE_FOLDER }
-                ) { index, folder ->
-                    if (!flatSubfolders || folder.getFullSquashedDir() != fixFilePath(currDir.getFullPath())) // rm dupe dir hax
-                        SongFolderItem(
-                            folder = folder,
-                            folderTitle = if (folder.files.isEmpty()) folder.getSquashedDir() else null,
-                            subtitle = null,
-                            modifier = Modifier
-                                .combinedClickable {
-                                    val route = Screens.Folders.route + "/" + folder.getFullSquashedDir().replace('/', ';')
-                                    navController.navigate(route)
-                                }
-                                .animateItem(),
-                            menuState = menuState,
-                            navController = navController
-                        )
                 }
 
-                // separator
-                if (currDir.subdirs.isNotEmpty() && mutableSongs.isNotEmpty()) {
-                    item(
-                        key = "folder_songs_divider",
-                    ) {
+                itemsIndexed(
+                    items = currentDir.subdirs,
+                    key = { _, item -> item.currentDir },
+                    contentType = { _, _ -> CONTENT_TYPE_FOLDER }
+                ) { _, folder ->
+                    SongFolderItem(
+                        folder = folder,
+                        folderTitle = if (folder.files.isEmpty()) folder.getSquashedDir() else null,
+                        subtitle = null,
+                        modifier = Modifier
+                            .combinedClickable {
+                                val route = Screens.Folders.route + "/" +
+                                        folder.getFullSquashedDir().replace('/', ';')
+                                navController.navigate(route)
+                            }
+                            .animateItem(),
+                        menuState = menuState,
+                        navController = navController
+                    )
+                }
+
+                if (currentDir.subdirs.isNotEmpty() && screenState.displayedSongs.isNotEmpty()) {
+                    item(key = "folder_songs_divider") {
                         HorizontalDivider(
                             thickness = DividerDefaults.Thickness,
                             modifier = Modifier.padding(20.dp)
@@ -452,44 +502,31 @@ fun FolderScreen(
                 }
             }
 
-            if (currDir.isSkeleton) {
-                item {
-                    ShimmerHost {
-                        repeat(8) {
-                            ListItemPlaceHolder()
-                        }
-                    }
-                }
+            val songsToShow = if (screenState.isSearching) {
+                screenState.filteredSongs
+            } else {
+                screenState.displayedSongs
             }
-            if (currDir.isSkeleton) return@LazyColumn
 
-            // all songs get listed here
             itemsIndexed(
-                items = if (isSearching) filteredSongs else mutableSongs,
+                items = songsToShow,
                 key = { _, item -> item.id },
                 contentType = { _, _ -> CONTENT_TYPE_SONG }
-            ) { index, song ->
+            ) { _, song ->
                 SongListItem(
                     song = song,
                     onPlay = {
                         playerConnection.playQueue(
                             ListQueue(
-                                title = currDir.currentDir.substringAfterLast('/'),
-                                items = mutableSongs.map { it.toMediaMetadata() },
-                                startIndex = mutableSongs.indexOf(song)
+                                title = currentDir.currentDir.substringAfterLast('/'),
+                                items = screenState.displayedSongs.map { it.toMediaMetadata() },
+                                startIndex = screenState.displayedSongs.indexOf(song)
                             )
                         )
                     },
-                    onSelectedChange = {
-                        inSelectMode = true
-                        if (it) {
-                            selection.add(song.id)
-                        } else {
-                            selection.remove(song.id)
-                        }
-                    },
-                    inSelectMode = inSelectMode,
-                    isSelected = selection.contains(song.id),
+                    onSelectedChange = { toggleSongSelection(song.id) },
+                    inSelectMode = screenState.inSelectMode,
+                    isSelected = screenState.selectedSongIds.contains(song.id),
                     navController = navController,
                     snackbarHostState = snackbarHostState,
                     modifier = Modifier
@@ -500,26 +537,28 @@ fun FolderScreen(
         }
 
         HideOnScrollFAB(
-            visible = currDir.toList().isNotEmpty(),
+            visible = screenState.displayedSongs.isNotEmpty(),
             lazyListState = lazyListState,
             icon = Icons.Rounded.Shuffle,
             onClick = {
                 playerConnection.playQueue(
                     ListQueue(
-                        title = currDir.currentDir.substringAfterLast('/'),
-                        items = currDir.toSortedList(sortType, sortDescending).map { it.toMediaMetadata() },
+                        title = currentDir.currentDir.substringAfterLast('/'),
+                        items = screenState.displayedSongs.map { it.toMediaMetadata() },
                         startShuffled = true
                     )
                 )
             }
         )
 
-        TopAppBar(title = {
+        TopAppBar(
+            title = {
                 Column {
-                    val title = currDir.currentDir.substringAfterLast('/')
-                    val subtitle = currDir.getFullPath().substringBeforeLast('/')
+                    val title = currentDir.currentDir.substringAfterLast('/')
+                    val subtitle = currentDir.getFullPath().substringBeforeLast('/')
+
                     Text(
-                        text = if (currDir.currentDir == "storage") {
+                        text = if (currentDir.currentDir == "storage") {
                             stringResource(R.string.local_player_settings_title)
                         } else {
                             title
@@ -528,7 +567,7 @@ fun FolderScreen(
                         maxLines = 1
                     )
 
-                    if (!subtitle.isBlank()) {
+                    if (subtitle.isNotBlank()) {
                         Text(
                             text = subtitle,
                             color = MaterialTheme.colorScheme.secondary,
@@ -538,43 +577,40 @@ fun FolderScreen(
                         )
                     }
                 }
-            }, navigationIcon = {
+            },
+            navigationIcon = {
                 IconButton(
                     onClick = {
-                        if (isSearching) {
-                            isSearching = false
-                            query = TextFieldValue()
+                        if (screenState.isSearching) {
+                            exitSearchMode()
                         } else {
                             navController.navigateUp()
                         }
                     },
                     onLongClick = {
-                        if (!isSearching) {
+                        if (!screenState.isSearching) {
                             navController.backToMain()
                         }
-                    },
+                    }
                 ) {
-                    Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = null
-                    )
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = null)
                 }
-            }, windowInsets = TopBarInsets, scrollBehavior = scrollBehavior)
+            },
+            windowInsets = TopBarInsets,
+            scrollBehavior = scrollBehavior
+        )
 
-        FloatingFooter(inSelectMode) {
+        FloatingFooter(screenState.inSelectMode) {
             SelectHeader(
                 navController = navController,
-                selectedItems = selection.mapNotNull { songId ->
-                    mutableSongs.find { it.id == songId }
+                selectedItems = screenState.selectedSongIds.mapNotNull { songId ->
+                    screenState.displayedSongs.find { it.id == songId }
                 }.map { it.toMediaMetadata() },
-                totalItemCount = mutableSongs.size,
-                onSelectAll = {
-                    selection.clear()
-                    selection.addAll(mutableSongs.map { it.id }.distinctBy { it })
-                },
-                onDeselectAll = { selection.clear() },
+                totalItemCount = screenState.displayedSongs.size,
+                onSelectAll = { selectAllSongs() },
+                onDeselectAll = { clearSelection() },
                 menuState = menuState,
-                onDismiss = onExitSelectionMode
+                onDismiss = { toggleSelectMode(false) }
             )
         }
         SnackbarHost(

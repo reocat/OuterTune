@@ -365,7 +365,7 @@ class DownloadUtil @Inject constructor(
         if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
         CoroutineScope(Dispatchers.IO).launch {
-            val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB, SCANNER_OWNER_DL)
+            val scanner = LocalMediaScanner.getScanner(context, SCANNER_OWNER_DL)
             runBlocking(Dispatchers.IO) { database.removeAllDownloadedSongs() }
             val result = mutableMapOf<String, LocalDateTime>()
             val timeNow = LocalDateTime.now()

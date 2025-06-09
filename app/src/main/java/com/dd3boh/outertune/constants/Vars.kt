@@ -1,11 +1,5 @@
 package com.dd3boh.outertune.constants
 
-// crash at first extractor scanner error. Currently not implemented
-const val SCANNER_CRASH_AT_FIRST_ERROR = false
-
-// true will not use multithreading for scanner
-const val SYNC_SCANNER = false
-
 // maximum parallel download jobs allowed
 const val MAX_CONCURRENT_DOWNLOAD_JOBS = 3 // ytm defaults to 3
 
@@ -40,6 +34,3 @@ const val EXTRACTOR_DEBUG = false
 const val DEBUG_SAVE_OUTPUT = false // ignored (will be false) when EXTRACTOR_DEBUG IS false
 
 const val ENABLE_UPDATE_CHECKER = false
-
-const val SCANNER_OWNER_DL = 32
-const val SCANNER_OWNER_LM = 1
