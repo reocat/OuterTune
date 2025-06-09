@@ -168,6 +168,7 @@ dependencies {
     implementation(libs.media3.workmanager)
 
     implementation(libs.room.runtime)
+    implementation(libs.kuromoji.ipadic)
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
 
@@ -180,8 +181,6 @@ dependencies {
     implementation(projects.kugou)
     implementation(projects.lrclib)
     implementation(projects.kizzy)
-
-
 
     coreLibraryDesugaring(libs.desugaring)
     

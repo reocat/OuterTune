@@ -3,7 +3,8 @@ package com.dd3boh.outertune.lyrics
 data class LyricsEntry(
     val timeStamp: Long,
     val content: String,
-    var isTranslation: Boolean = false
+    var isTranslation: Boolean = false,
+    val romanizedText: String? = null
 ) : Comparable<LyricsEntry> {
     override fun compareTo(other: LyricsEntry): Int = (timeStamp - other.timeStamp).toInt()
 
