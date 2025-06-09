@@ -157,4 +157,11 @@
     <string name="sync_mode">同期のモード</string>
     <string name="sync_conflict_title">競合の解決</string>
     <string name="playlist_missing_note">プレイリストが見つかりませんか？設定で同期の読み書きモードを有効にするには、ここをクリックしてください</string>
+    <string name="speed_slow">遅い</string>
+    <string name="lyrics_karaoke_title">カラオケ風の歌詞。</string>
+    <string name="m3u_export">M3Uファイルで保存する</string>
+    <string name="speed_very_slow">とても遅い</string>
+    <string name="speed_medium">普通</string>
+    <string name="speed_fast">速い</string>
+    <string name="speed_very_fast">とても速い</string>
 </resources>
