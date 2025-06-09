@@ -69,6 +69,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
@@ -111,7 +112,9 @@ import com.dd3boh.outertune.lyrics.LyricsEntry
 import com.dd3boh.outertune.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
 import com.dd3boh.outertune.lyrics.LyricsUtils
 import com.dd3boh.outertune.lyrics.LyricsUtils.findCurrentLineIndex
+import com.dd3boh.outertune.lyrics.LyricsUtils.isJapanese
 import com.dd3boh.outertune.lyrics.LyricsUtils.loadAndParseLyricsString
+import com.dd3boh.outertune.lyrics.LyricsUtils.romanizeJapanese
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
@@ -161,10 +164,30 @@ fun Lyrics(
     }
 
     val lines: List<LyricsEntry> = remember(lyrics) {
-        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) emptyList()
-        else if (lyrics.startsWith("[")) listOf(HEAD_LYRICS_ENTRY) +
-                loadAndParseLyricsString(lyrics, LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
-        else lyrics.lines().mapIndexed { index, line -> LyricsEntry(index * 100L, line) }
+        if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
+            emptyList()
+        }
+        else if (lyrics.startsWith("[")) {
+            val parsedLines = loadAndParseLyricsString(lyrics, LyricsUtils.LrcParserOptions(lyricTrim.value, multilineLrc.value, "Unable to parse lyrics"))
+            parsedLines.map { entry ->
+                val romanized: String? = when {
+                    isJapanese(entry.content) -> romanizeJapanese(entry.content) // Implemente isJapanese
+                    else -> null
+                }
+                LyricsEntry(entry.timeStamp, entry.content, romanizedText = romanized)
+            }.let {
+                listOf(HEAD_LYRICS_ENTRY) + it
+            }
+        }
+        else {
+            lyrics.lines().mapIndexed { index, line ->
+                val romanized: String? = when {
+                    isJapanese(line) -> romanizeJapanese(line)
+                    else -> null
+                }
+                LyricsEntry(index * 100L, line, romanizedText = romanized)
+            }
+        }
     }
     val isSynced = remember(lyrics) {
         !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
@@ -248,11 +271,15 @@ fun Lyrics(
         fun countNewLine(str: String) = str.count { it == '\n' }
 
         fun calculateOffset() = with(density) {
-            if (landscapeOffset) {
-                24.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
-            } else {
-                32.dp.toPx().toInt() * countNewLine(lines[currentLineIndex].content)
+            if (currentLineIndex < 0 || currentLineIndex >= lines.size) return@with 0
+            val currentItem = lines[currentLineIndex]
+            var totalNewLines = currentItem.content.count { it == '\n' }
+            currentItem.romanizedText?.let {
+                totalNewLines += it.count { c -> c == '\n' }
             }
+
+            val dpValue = if (landscapeOffset) 16.dp else 20.dp
+            dpValue.toPx().toInt() * totalNewLines
         }
 
         if (!isSynced) return@LaunchedEffect
@@ -330,77 +357,102 @@ fun Lyrics(
                     val isSelected = selectedIndices.contains(index)
                     val lineColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
 
-                    Text(
-                        text = item.content,
-                        fontSize = lyricsFontSize.sp,
-                        color = textColor.copy(alpha = if (index == displayedCurrentLineIndex) 1f else 0.6f),
-                        textAlign = when (lyricsTextPosition) {
-                            LyricsPosition.LEFT -> TextAlign.Left
-                            LyricsPosition.CENTER -> TextAlign.Center
-                            LyricsPosition.RIGHT -> TextAlign.Right
-                        },
-                        fontWeight = if (index == displayedCurrentLineIndex) FontWeight.ExtraBold else FontWeight.Medium,
-                        lineHeight = (lyricsFontSize * 1.3).sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                else Color.Transparent,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .graphicsLayer {
-                                alpha = if (!isSynced || index == displayedCurrentLineIndex || isSelected) 1f else 0.6f
-                                translationY = if (index == displayedCurrentLineIndex) 0.dp.toPx() else 0f
-                            }
-                            .combinedClickable(
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        if (isSelected) {
-                                            selectedIndices.remove(index)
-                                            if (selectedIndices.isEmpty()) {
-                                                isSelectionMode = false
-                                            }
-                                        } else {
-                                            if (selectedIndices.size < MAX_SELECTABLE_LYRICS) {
-                                                selectedIndices.add(index)
+                    Column(
+                        modifier = Modifier,
+                        horizontalAlignment = when (lyricsTextPosition) {
+                            LyricsPosition.LEFT -> Alignment.Start
+                            LyricsPosition.CENTER -> Alignment.CenterHorizontally
+                            LyricsPosition.RIGHT -> Alignment.End
+                        }
+                    ) {
+                        Text(
+                            text = item.content,
+                            fontSize = lyricsFontSize.sp,
+                            color = textColor.copy(alpha = if (index == displayedCurrentLineIndex) 1f else 0.6f),
+                            textAlign = when (lyricsTextPosition) {
+                                LyricsPosition.LEFT -> TextAlign.Left
+                                LyricsPosition.CENTER -> TextAlign.Center
+                                LyricsPosition.RIGHT -> TextAlign.Right
+                            },
+                            fontWeight = if (index == displayedCurrentLineIndex) FontWeight.ExtraBold else FontWeight.Medium,
+                            lineHeight = (lyricsFontSize * 1.3).sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                    else Color.Transparent,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .graphicsLayer {
+                                    alpha =
+                                        if (!isSynced || index == displayedCurrentLineIndex || isSelected) 1f else 0.6f
+                                    translationY =
+                                        if (index == displayedCurrentLineIndex) 0.dp.toPx() else 0f
+                                }
+                                .combinedClickable(
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            if (isSelected) {
+                                                selectedIndices.remove(index)
+                                                if (selectedIndices.isEmpty()) {
+                                                    isSelectionMode = false
+                                                }
                                             } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    context.getString(R.string.max_selection_limit),
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                                if (selectedIndices.size < MAX_SELECTABLE_LYRICS) {
+                                                    selectedIndices.add(index)
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        context.getString(R.string.max_selection_limit),
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                             }
+                                        } else if (isSynced) {
+                                            playerConnection.player.seekTo(item.timeStamp)
+                                            lastPreviewTime = 0L
+                                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                                         }
-                                    } else if (isSynced) {
-                                        playerConnection.player.seekTo(item.timeStamp)
-                                        lastPreviewTime = 0L
-                                        haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                                    },
+                                    onLongClick = {
+                                        if (!isSelectionMode) {
+                                            isSelectionMode = true
+                                            selectedIndices.add(index)
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        }
                                     }
+                                )
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .drawWithCache {
+                                    onDrawBehind {
+                                        if (index == displayedCurrentLineIndex) {
+                                            val strokeWidth = 2.dp.toPx()
+                                            val y = size.height - strokeWidth / 2
+                                            drawLine(
+                                                color = lineColor,
+                                                start = Offset(0f, y),
+                                                end = Offset(size.width, y),
+                                                strokeWidth = strokeWidth
+                                            )
+                                        }
+                                    }
+                                }
+                        )
+                        item.romanizedText?.let { romanized ->
+                            Text(
+                                text = romanized,
+                                fontSize = 16.sp, // Tamanho menor para a romanização
+                                color = textColor.copy(alpha = 0.8f), // Cor ligeiramente diferente
+                                textAlign = when (lyricsTextPosition) {
+                                    LyricsPosition.LEFT -> TextAlign.Left
+                                    LyricsPosition.CENTER -> TextAlign.Center
+                                    LyricsPosition.RIGHT -> TextAlign.Right
                                 },
-                                onLongClick = {
-                                    if (!isSelectionMode) {
-                                        isSelectionMode = true
-                                        selectedIndices.add(index)
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    }
-                                }
+                                fontWeight = FontWeight.Normal, // Peso normal
+                                modifier = Modifier.padding(top = 2.dp) // Pequeno espaçamento
                             )
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .drawWithCache {
-                                onDrawBehind {
-                                    if (index == displayedCurrentLineIndex) {
-                                        val strokeWidth = 2.dp.toPx()
-                                        val y = size.height - strokeWidth / 2
-                                        drawLine(
-                                            color = lineColor,
-                                            start = Offset(0f, y),
-                                            end = Offset(size.width, y),
-                                            strokeWidth = strokeWidth
-                                        )
-                                    }
-                                }
-                            }
-                    )
+                        }
+                    }
                 }
             }
         }

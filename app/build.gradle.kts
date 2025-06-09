@@ -122,6 +122,14 @@ android {
         @Suppress("UnstableApiUsage")
         generateLocaleConfig = true
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/CONTRIBUTORS.md"
+            excludes += "META-INF/LICENSE.md"
+        }
+    }
 }
 
 ksp {
@@ -168,6 +176,7 @@ dependencies {
     implementation(libs.media3.workmanager)
 
     implementation(libs.room.runtime)
+    implementation(libs.kuromoji.ipadic)
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
 
@@ -180,8 +189,6 @@ dependencies {
     implementation(projects.kugou)
     implementation(projects.lrclib)
     implementation(projects.kizzy)
-
-
 
     coreLibraryDesugaring(libs.desugaring)
     
