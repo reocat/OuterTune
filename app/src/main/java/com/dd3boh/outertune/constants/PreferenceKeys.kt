@@ -109,8 +109,8 @@ val LyricUpdateSpeed = stringPreferencesKey("lyricUpdateSpeed")
 /**
  * Storage
  */
-val DownloadExtraPathKey = stringPreferencesKey("downloadExtraPath")
-val DownloadPathKey = stringPreferencesKey("downloadPath")
+val DownloadExtraPathKey = stringPreferencesKey("dlExtraPath") // previously "downloadExtraPath"
+val DownloadPathKey = stringPreferencesKey("dlPath") // previously "downloadPath"
 val MaxImageCacheSizeKey = intPreferencesKey("maxImageCacheSize")
 val MaxSongCacheSizeKey = intPreferencesKey("maxSongCacheSize")
 
@@ -140,15 +140,15 @@ val ScannerImplKey = stringPreferencesKey("scannerImpl")
 val ScannerStrictExtKey = booleanPreferencesKey("scannerStrictExt")
 val LookupYtmArtistsKey = booleanPreferencesKey("lookupYtmArtists")
 
-val ScanPathsKey = stringPreferencesKey("scanPaths")
-val ExcludedScanPathsKey = stringPreferencesKey("excludedScanPaths")
+val ScanPathsKey = stringPreferencesKey("inclScanPaths") // previously "scanPaths"
+val ExcludedScanPathsKey = stringPreferencesKey("exclScanPaths") // previously "excludedScanPaths"
 val LastLocalScanKey = longPreferencesKey("lastLocalScan")
 
 /**
  * Experimental settings
  */
 val DevSettingsKey = booleanPreferencesKey("devSettings")
-val FirstSetupPassed = booleanPreferencesKey("firstSetupPassed")
+val OobeStatusKey = intPreferencesKey("oobeStatus")
 val SwipeToSkip = booleanPreferencesKey("swipeToSkip")
 
 

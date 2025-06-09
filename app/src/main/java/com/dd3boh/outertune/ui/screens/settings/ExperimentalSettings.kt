@@ -83,9 +83,9 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
-import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricUpdateSpeed
+import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
 import com.dd3boh.outertune.constants.ScannerImpl
@@ -129,7 +129,7 @@ fun ExperimentalSettings(
     val (tabletUi, onTabletUiChange) = rememberPreference(TabletUiKey, defaultValue = false)
 
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
-    val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
+    val (oobeStatus, onOobeStatusChange) = rememberPreference(OobeStatusKey, defaultValue = 0)
 
     val (lyricUpdateSpeed, onLyricsUpdateSpeedChange) = rememberEnumPreference(LyricUpdateSpeed, Speed.MEDIUM)
     val (lyricsFancy, onLyricsFancyChange) = rememberPreference(LyricKaraokeEnable, false)
@@ -470,7 +470,7 @@ fun ExperimentalSettings(
                 title = { Text("Enter configurator") },
                 icon = { Icon(Icons.Rounded.ConfirmationNumber, null) },
                 onClick = {
-                    onFirstSetupPassedChange(false)
+                    onOobeStatusChange(0)
                     runBlocking { // hax. page loads before pref updates
                         delay(500)
                     }
