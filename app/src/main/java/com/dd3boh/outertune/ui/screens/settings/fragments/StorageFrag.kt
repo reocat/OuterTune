@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.tryOrNull
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
+import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -129,6 +131,9 @@ fun ColumnScope.DownloadsFrag() {
     var showDlPathDialog: Boolean by remember {
         mutableStateOf(false)
     }
+    var showClearConfirmDialog by remember {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(downloadCache) {
         while (isActive) {
@@ -137,7 +142,13 @@ fun ColumnScope.DownloadsFrag() {
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    PreferenceEntry(
+        title = { Text(stringResource(R.string.dl_main_path_title)) },
+        onClick = {
+            showDlPathDialog = true
+        },
+    )
+
     Text(
         text = "WIP", // stringResource(R.string.size_used, formatFileSize(downloadCacheSize)), TODO: dl size
         style = MaterialTheme.typography.bodyMedium,
@@ -147,28 +158,16 @@ fun ColumnScope.DownloadsFrag() {
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_all_downloads)) },
         onClick = {
-            // need to keep so users can clear legacy downloads
-            coroutineScope.launch(Dispatchers.IO) {
-                downloadCache.keys.forEach { key ->
-                    downloadCache.removeResource(key)
-                }
-                database.downloadSongs(SongSortType.NAME, true).collect { songs ->
-                    songs.forEach { song ->
-                        downloadUtil.delete(song)
-                    }
-                }
-            }
-        },
-    )
-
-    PreferenceEntry(
-        title = { Text(stringResource(R.string.dl_main_path_title)) },
-        onClick = {
-            showDlPathDialog = true
+            showClearConfirmDialog = true
         },
     )
 
 
+    /**
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
+     */
     if (showDlPathDialog) {
         var tempFilePath by remember {
             mutableStateOf<Uri?>(null)
@@ -283,6 +282,45 @@ fun ColumnScope.DownloadsFrag() {
             }
         }
     }
+
+    if (showClearConfirmDialog) {
+        DefaultDialog(
+            onDismiss = { showClearConfirmDialog = false },
+            content = {
+                Text(
+                    text = stringResource(R.string.clear_downloads_confirm),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 18.dp)
+                )
+            },
+            buttons = {
+                TextButton(
+                    onClick = { showClearConfirmDialog = false }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+
+                TextButton(
+                    onClick = {
+                        showClearConfirmDialog = false
+                        // need to keep so users can clear legacy downloads
+                        coroutineScope.launch(Dispatchers.IO) {
+                            downloadCache.keys.forEach { key ->
+                                downloadCache.removeResource(key)
+                            }
+                            database.downloadSongs(SongSortType.NAME, true).collect { songs ->
+                                songs.forEach { song ->
+                                    downloadUtil.delete(song)
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -303,6 +341,11 @@ fun ColumnScope.SongCacheFrag() {
         }
     }
 
+    var showClearConfirmDialog by remember {
+        mutableStateOf(false)
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
     if (maxSongCacheSize != 0) {
         if (maxSongCacheSize == -1) {
             Text(
@@ -347,13 +390,48 @@ fun ColumnScope.SongCacheFrag() {
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_song_cache)) },
         onClick = {
-            coroutineScope.launch(Dispatchers.IO) {
-                playerCache.keys.forEach { key ->
-                    playerCache.removeResource(key)
-                }
-            }
+            showClearConfirmDialog = true
         },
     )
+
+
+    /**
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
+     */
+    if (showClearConfirmDialog) {
+        DefaultDialog(
+            onDismiss = { showClearConfirmDialog = false },
+            content = {
+                Text(
+                    text = stringResource(R.string.clear_song_cache_confirm),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 18.dp)
+                )
+            },
+            buttons = {
+                TextButton(
+                    onClick = { showClearConfirmDialog = false }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+
+                TextButton(
+                    onClick = {
+                        showClearConfirmDialog = false
+                        coroutineScope.launch(Dispatchers.IO) {
+                            playerCache.keys.forEach { key ->
+                                playerCache.removeResource(key)
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalCoilApi::class)
@@ -386,6 +464,10 @@ fun ColumnScope.ImageCacheFrag() {
                 imageDiskCache.clear()
             }
         }
+    }
+
+    var showClearConfirmDialog by remember {
+        mutableStateOf(false)
     }
 
     if (maxImageCacheSize > 0) {
@@ -424,9 +506,44 @@ fun ColumnScope.ImageCacheFrag() {
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_image_cache)) },
         onClick = {
-            coroutineScope.launch(Dispatchers.IO) {
-                imageDiskCache.clear()
-            }
+            showClearConfirmDialog = true
         },
     )
+
+
+    /**
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
+     */
+    if (showClearConfirmDialog) {
+        DefaultDialog(
+            onDismiss = { showClearConfirmDialog = false },
+            content = {
+                Text(
+                    text = stringResource(R.string.clear_image_cache_confirm),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 18.dp)
+                )
+            },
+            buttons = {
+                TextButton(
+                    onClick = { showClearConfirmDialog = false }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+
+                TextButton(
+                    onClick = {
+                        showClearConfirmDialog = false
+                        coroutineScope.launch(Dispatchers.IO) {
+                            imageDiskCache.clear()
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
 }

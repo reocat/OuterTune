@@ -222,6 +222,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scanner_online_artist_linking">Try to link local files\' artists with ones on YouTube Music</string>
 
 <!-- Storage setting -->
+    <string name="clear_downloads_confirm">Are you sure you want to remove all downloads? Only downloads in the main download folder will be removed.</string>
+    <string name="clear_image_cache_confirm">Are you sure you want to clear image cache? All exiting album thumbnails will be removed.</string>
+    <string name="clear_song_cache_confirm">Are you sure you want to clear song cache?</string>
     <string name="dl_extra_path_title">Configure extra download locations…</string>
     <string name="dl_extra_path_description">Songs from these folders will only appear in the app if you\'ve played them before or added them to a playlist</string>
     <string name="dl_migrate_title">Migrate downloads to external storage…</string>
