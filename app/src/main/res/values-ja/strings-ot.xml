@@ -164,4 +164,7 @@
     <string name="speed_medium">普通</string>
     <string name="speed_fast">速い</string>
     <string name="speed_very_fast">とても速い</string>
+    <string name="tablet_ui_title">タブレットのUIを強制する</string>
+    <string name="library_empty">ライブラリの内容がここに表示されます</string>
+    <string name="oss_licenses_title">オープンソースライセンス</string>
 </resources>
