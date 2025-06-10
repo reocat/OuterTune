@@ -117,11 +117,6 @@ fun LibrarySettings(
             title = stringResource(R.string.content)
         )
         PreferenceEntry(
-            title = { Text(stringResource(R.string.grp_account_sync)) },
-            icon = { Icon(Icons.Rounded.AccountCircle, null) },
-            onClick = { navController.navigate("settings/account_sync") }
-        )
-        PreferenceEntry(
             title = { Text(stringResource(R.string.local_player_settings_title)) },
             icon = { Icon(Icons.Rounded.SdCard, null) },
             onClick = { navController.navigate("settings/local") }

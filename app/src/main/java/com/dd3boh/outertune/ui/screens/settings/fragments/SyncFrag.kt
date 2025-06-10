@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncLock
 import androidx.compose.material.icons.rounded.SyncProblem
@@ -42,6 +43,7 @@ import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
+import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
 import com.dd3boh.outertune.constants.SyncConflictResolution
 import com.dd3boh.outertune.constants.SyncMode
 import com.dd3boh.outertune.constants.YtmSyncConflictKey
@@ -64,7 +66,24 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColumnScope.SyncFrag() {
+fun ColumnScope.SyncAutoFrag() {
+    val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
+    val isLoggedIn = remember(innerTubeCookie) {
+        "SAPISID" in parseCookieString(innerTubeCookie)
+    }
+    val (ytmSync, onYtmSyncChange) = rememberPreference(YtmSyncKey, defaultValue = true)
+
+    SwitchPreference(
+        title = { Text(stringResource(R.string.ytm_sync)) },
+        icon = { Icon(Icons.Rounded.Sync, null) },
+        checked = ytmSync,
+        onCheckedChange = onYtmSyncChange,
+        isEnabled = isLoggedIn
+    )
+}
+
+@Composable
+fun ColumnScope.SyncManualFrag() {
     val context = LocalContext.current
     val isNetworkConnected = LocalNetworkConnected.current
     val syncUtils = LocalSyncUtils.current
@@ -75,18 +94,9 @@ fun ColumnScope.SyncFrag() {
     val isLoggedIn = remember(innerTubeCookie) {
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
-    val (ytmSync, onYtmSyncChange) = rememberPreference(YtmSyncKey, defaultValue = true)
     val (syncContent, onSyncContentChange) = rememberPreference(
         YtmSyncContentKey,
         defaultValue = SyncUtils.DEFAULT_SYNC_CONTENT
-    )
-    val (syncConflict, onSyncConflictChange) = rememberEnumPreference(key = YtmSyncConflictKey, defaultValue = SyncConflictResolution.ADD_ONLY)
-    val (syncMode, onSyncModeChange) = rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RO)
-    val pauseListenHistory by rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
-
-    val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(
-        LikedAutoDownloadKey,
-        LikedAutodownloadMode.OFF
     )
 
     val isSyncingRemotePlaylists by syncUtils.isSyncingRemotePlaylists.collectAsState()
@@ -95,16 +105,6 @@ fun ColumnScope.SyncFrag() {
     val isSyncingRemoteSongs by syncUtils.isSyncingRemoteSongs.collectAsState()
     val isSyncingRemoteLikedSongs by syncUtils.isSyncingRemoteLikedSongs.collectAsState()
     val isSyncingRecentActivity by syncUtils.isSyncingRecentActivity.collectAsState()
-    // TODO: move to home screen as button?
-    // TODO: rename scanner_manual_btn to sync_manual_btn
-
-    SwitchPreference(
-        title = { Text(stringResource(R.string.ytm_sync)) },
-        icon = { Icon(Icons.Rounded.Sync, null) },
-        checked = ytmSync,
-        onCheckedChange = onYtmSyncChange,
-        isEnabled = isLoggedIn
-    )
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.scanner_manual_btn)) },
@@ -119,18 +119,6 @@ fun ColumnScope.SyncFrag() {
         isEnabled = isLoggedIn && isNetworkConnected
     )
 
-    EnumListPreference(
-        title = { Text(stringResource(R.string.sync_mode)) },
-        icon = { Icon(Icons.Rounded.SyncLock, null) },
-        selectedValue = syncMode,
-        onValueSelected = onSyncModeChange,
-        valueText = {
-            when (it) {
-                SyncMode.RO -> stringResource(R.string.sync_mode_ro)
-                SyncMode.RW -> stringResource(R.string.sync_mode_rw)
-            }
-        }
-    )
     val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
     encodeSyncString(enabledContent.toList())
     SyncContent.entries.filterNot { it == SyncContent.NULL }.forEach { item ->
@@ -185,7 +173,28 @@ fun ColumnScope.SyncFrag() {
             )
         }
     }
+}
 
+@Composable
+fun ColumnScope.SyncParamsFrag() {
+    val (syncConflict, onSyncConflictChange) = rememberEnumPreference(
+        key = YtmSyncConflictKey,
+        defaultValue = SyncConflictResolution.ADD_ONLY
+    )
+    val (syncMode, onSyncModeChange) = rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RO)
+
+    EnumListPreference(
+        title = { Text(stringResource(R.string.sync_mode)) },
+        icon = { Icon(Icons.Rounded.SyncLock, null) },
+        selectedValue = syncMode,
+        onValueSelected = onSyncModeChange,
+        valueText = {
+            when (it) {
+                SyncMode.RO -> stringResource(R.string.sync_mode_ro)
+                SyncMode.RW -> stringResource(R.string.sync_mode_rw)
+            }
+        }
+    )
     EnumListPreference(
         title = { Text(stringResource(R.string.sync_conflict_title)) },
         icon = { Icon(Icons.Rounded.SyncProblem, null) },
@@ -198,6 +207,32 @@ fun ColumnScope.SyncFrag() {
             }
         },
     )
+}
+
+@Composable
+fun ColumnScope.SyncExtrasFrag() {
+    val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
+    val isLoggedIn = remember(innerTubeCookie) {
+        "SAPISID" in parseCookieString(innerTubeCookie)
+    }
+
+    val pauseListenHistory by rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
+    val (pauseRemoteListenHistory, onPauseRemoteListenHistoryChange) = rememberPreference(
+        key = PauseRemoteListenHistoryKey,
+        defaultValue = false
+    )
+    val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(
+        LikedAutoDownloadKey,
+        LikedAutodownloadMode.OFF
+    )
+
+    SwitchPreference(
+        title = { Text(stringResource(R.string.pause_remote_listen_history)) },
+        icon = { Icon(Icons.Rounded.History, null) },
+        checked = pauseRemoteListenHistory,
+        onCheckedChange = onPauseRemoteListenHistoryChange,
+        isEnabled = !pauseListenHistory && isLoggedIn
+    )
     ListPreference(
         title = { Text(stringResource(R.string.like_autodownload)) },
         icon = { Icon(Icons.Rounded.Favorite, null) },
@@ -205,8 +240,8 @@ fun ColumnScope.SyncFrag() {
         selectedValue = likedAutoDownload,
         valueText = {
             when (it) {
-                LikedAutodownloadMode.OFF -> stringResource(R.string.off)
-                LikedAutodownloadMode.ON -> stringResource(R.string.on)
+                LikedAutodownloadMode.OFF -> stringResource(androidx.compose.ui.R.string.state_off)
+                LikedAutodownloadMode.ON -> stringResource(androidx.compose.ui.R.string.state_on)
                 LikedAutodownloadMode.WIFI_ONLY -> stringResource(R.string.wifi_only)
             }
         },
