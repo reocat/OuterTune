@@ -48,6 +48,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -170,29 +171,34 @@ fun ExperimentalSettings(
             onCheckedChange = onTabletUiChange
         )
 
-        SwitchPreference(
-            title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
-            description = stringResource(R.string.lyrics_karaoke_description),
-            icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
-            checked = lyricsFancy,
-            onCheckedChange = onLyricsFancyChange
-        )
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
+                description = stringResource(R.string.lyrics_karaoke_description),
+                icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
+                checked = lyricsFancy,
+                onCheckedChange = onLyricsFancyChange
+            )
 
-        ListPreference(
-            title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
-            icon = { Icon(Icons.Rounded.Speed, null) },
-            selectedValue = lyricUpdateSpeed,
-            onValueSelected = onLyricsUpdateSpeedChange,
-            values = Speed.entries,
-            valueText = {
-                when (it) {
-                    Speed.SLOW -> stringResource(R.string.speed_slow)
-                    Speed.MEDIUM -> stringResource(R.string.speed_medium)
-                    Speed.FAST -> stringResource(R.string.speed_fast)
-                }
-            },
-            isEnabled = lyricsFancy
-        )
+            ListPreference(
+                title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
+                icon = { Icon(Icons.Rounded.Speed, null) },
+                selectedValue = lyricUpdateSpeed,
+                onValueSelected = onLyricsUpdateSpeedChange,
+                values = Speed.entries,
+                valueText = {
+                    when (it) {
+                        Speed.SLOW -> stringResource(R.string.speed_slow)
+                        Speed.MEDIUM -> stringResource(R.string.speed_medium)
+                        Speed.FAST -> stringResource(R.string.speed_fast)
+                    }
+                },
+                isEnabled = lyricsFancy
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
 
 
         PreferenceGroupTitle(

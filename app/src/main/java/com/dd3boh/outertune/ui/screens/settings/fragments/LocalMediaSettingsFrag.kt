@@ -30,6 +30,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -62,6 +65,7 @@ import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DownloadPathKey
+import com.dd3boh.outertune.constants.ENABLE_FFMETADATAEX
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
@@ -74,9 +78,11 @@ import com.dd3boh.outertune.constants.ScannerSensitivityKey
 import com.dd3boh.outertune.constants.ScannerStrictExtKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
+import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.clearDtCache
 import com.dd3boh.outertune.ui.utils.imageCache
@@ -100,7 +106,6 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColumnScope.LocalScannerFrag() {
     val context = LocalContext.current
@@ -567,3 +572,59 @@ fun ColumnScope.LocalScannerFrag() {
         }
     }
 }
+
+@Composable
+fun ColumnScope.LocalScannerExtraFrag() {
+    val context = LocalContext.current
+
+    val (scannerSensitivity, onScannerSensitivityChange) = rememberEnumPreference(
+        key = ScannerSensitivityKey,
+        defaultValue = ScannerMatchCriteria.LEVEL_2
+    )
+    val (scannerImpl, onScannerImplChange) = rememberEnumPreference(
+        key = ScannerImplKey,
+        defaultValue = ScannerImpl.TAGLIB
+    )
+    val (strictExtensions, onStrictExtensionsChange) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
+
+
+    // scanner sensitivity
+    EnumListPreference(
+        title = { Text(stringResource(R.string.scanner_sensitivity_title)) },
+        icon = { Icon(Icons.Rounded.GraphicEq, null) },
+        selectedValue = scannerSensitivity,
+        onValueSelected = onScannerSensitivityChange,
+        valueText = {
+            when (it) {
+                ScannerMatchCriteria.LEVEL_1 -> stringResource(R.string.scanner_sensitivity_L1)
+                ScannerMatchCriteria.LEVEL_2 -> stringResource(R.string.scanner_sensitivity_L2)
+                ScannerMatchCriteria.LEVEL_3 -> stringResource(R.string.scanner_sensitivity_L3)
+            }
+        }
+    )
+    // strict file ext
+    SwitchPreference(
+        title = { Text(stringResource(R.string.scanner_strict_file_name_title)) },
+        description = stringResource(R.string.scanner_strict_file_name_description),
+        icon = { Icon(Icons.Rounded.TextFields, null) },
+        checked = strictExtensions,
+        onCheckedChange = onStrictExtensionsChange
+    )
+    // scanner type
+    if (ENABLE_FFMETADATAEX) {
+        EnumListPreference(
+            title = { Text(stringResource(R.string.scanner_type_title)) },
+            icon = { Icon(Icons.Rounded.Speed, null) },
+            selectedValue = scannerImpl,
+            onValueSelected = onScannerImplChange,
+            valueText = {
+                when (it) {
+                    ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
+                    ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
+                }
+            },
+            values = ScannerImpl.entries,
+        )
+    }
+}
+

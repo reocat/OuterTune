@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
@@ -70,7 +71,7 @@ import java.util.Locale
 import kotlin.collections.contains
 
 @Composable
-fun TabArrangementFrag() {
+fun ColumnScope.TabArrangementFrag() {
     val (enabledTabs, onEnabledTabsChange) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     val (enabledFilters, onEnabledFiltersChange) = rememberPreference(
         EnabledFiltersKey,
@@ -373,7 +374,7 @@ fun TabArrangementFrag() {
 }
 
 @Composable
-fun TabExtrasFrag() {
+fun ColumnScope.TabExtrasFrag() {
     val enabledTabs by rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     val (defaultOpenTab, onDefaultOpenTabChange) = rememberPreference(DefaultOpenTabKey, defaultValue = "home")
 
@@ -390,7 +391,7 @@ fun TabExtrasFrag() {
 }
 
 @Composable
-fun SwipeGesturesFrag() {
+fun ColumnScope.SwipeGesturesFrag() {
     val (swipeToSkip, onSwipeToSkipChange) = rememberPreference(SwipeToSkip, defaultValue = true)
     val (swipe2Queue, onSwipe2QueueChange) = rememberPreference(SwipeToQueueKey, defaultValue = true)
 
@@ -411,7 +412,7 @@ fun SwipeGesturesFrag() {
 }
 
 @Composable
-fun LocalizationFrag() {
+fun ColumnScope.LocalizationFrag() {
     val (contentLanguage, onContentLanguageChange) = rememberPreference(
         key = ContentLanguageKey,
         defaultValue = "system"

@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
@@ -31,7 +32,7 @@ import com.zionhuang.innertube.utils.parseCookieString
 import kotlin.collections.contains
 
 @Composable
-fun ListenHistoryFrag() {
+fun ColumnScope.ListenHistoryFrag() {
     val database = LocalDatabase.current
 
     val (pauseListenHistory, onPauseListenHistoryChange) = rememberPreference(
@@ -109,7 +110,7 @@ fun ListenHistoryFrag() {
 }
 
 @Composable
-fun SearchHistoryFrag() {
+fun ColumnScope.SearchHistoryFrag() {
     val database = LocalDatabase.current
 
     val (pauseSearchHistory, onPauseSearchHistoryChange) = rememberPreference(
