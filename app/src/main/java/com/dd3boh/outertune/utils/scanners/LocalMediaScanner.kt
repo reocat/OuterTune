@@ -81,19 +81,17 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     fun advancedScan(
         uri: Uri,
     ): SongTempData {
-        val file = File(uri.toString())
+        val file = fileFromUri(context, uri)?: throw IOException("Could not access file")
         try {
             // test if system can play
             val testPlayer = MediaPlayer()
-            testPlayer.setDataSource(fileFromUri(context, uri)?.absolutePath)
+            testPlayer.setDataSource(file.absolutePath)
             testPlayer.prepare()
             testPlayer.release()
 
             // decide which scanner to use
             val ffmpegData =
                 if (advancedScannerImpl is TagLibScanner || (ENABLE_FFMETADATAEX && advancedScannerImpl is FFMpegScanner)) {
-                    val file = fileFromUri(context, uri)
-                    if (file == null) throw IOException("Could not access file")
                     advancedScannerImpl.getAllMetadataFromFile(file)
                 } else {
                     throw RuntimeException("Unsupported extractor")
