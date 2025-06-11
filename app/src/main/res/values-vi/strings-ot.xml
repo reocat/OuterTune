@@ -74,7 +74,7 @@
     <string name="more_settings">Cài đặt khác</string>
     <string name="playlist_missing_note">Danh sánh phát bị thiếu? Nhấn vào đây để bật đồng bộ chế độ đọc-ghi trong cài đặt</string>
     <string name="grp_account_sync">Tài khoản và đồng bộ</string>
-    <string name="no_updates_available">nâng cấp không khả dụng</string>
+    <string name="no_updates_available">Nâng cấp không khả dụng</string>
     <string name="tablet_ui_title">Bắt buộc hiển thị kiểu máy tính bảng</string>
     <string name="attribution_title">Ghi công</string>
     <string name="oss_licenses_title">Giấy phép mã nguồn mở</string>
@@ -86,4 +86,5 @@
     <string name="sync_mode_rw">Đọc và ghi (Cũng cho phép thay đổi nội dung từ xa)</string>
     <string name="token_adv_login_description">Đây là một phương thức đăng nhập NÂNG CAO. Thay vì sử dụng cổng web, bạn có thể nhập hoặc cập nhật mã đăng nhập (token) trực tiếp tại đây. Cách này giúp tăng tốc quá trình đăng nhập trên nhiều thiết bị. Lưu ý: mọi mã token không hợp lệ hoặc không thể phân tích sẽ không được chấp nhận</string>
     <string name="ytm_sync">Tự động đồng bộ với tài khoản YouTube Music của bạn</string>
+    <string name="android_auto">Android Auto</string>
 </resources>
