@@ -180,4 +180,7 @@
     <string name="speed_medium">Середній</string>
     <string name="speed_fast">Швидкий</string>
     <string name="speed_very_fast">Дуже швидко</string>
+    <string name="scanner_progress_processing">Обробка…</string>
+    <string name="scanner_rejected_dir">Недійсний вибір. Папка сканування не може бути підкаталогом папки завантажень або самою папкою завантажень</string>
+    <string name="scanner_progress_discovering">Відкриття…</string>
 </resources>
