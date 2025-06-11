@@ -1,5 +1,5 @@
 [versions]
-aboutLibraries = "12.2.0"
+aboutLibraries = "12.2.2"
 adaptive = "1.2.0-alpha06"
 androidGradlePlugin = "8.12.0-alpha04"
 json = "20250517"
