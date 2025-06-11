@@ -343,7 +343,7 @@ fun ColumnScope.LocalScannerFrag() {
                 fontSize = 12.sp
             )
             Text(
-                text = "${if (scannerProgressCurrent > 0) "$scannerProgressCurrent" else "—"}/${
+                text = "${if (scannerProgressCurrent >= 0) "$scannerProgressCurrent" else "—"}/${
                     if (scannerProgressTotal >= 0) {
                         if (scannerState == 1) {
                             pluralStringResource(

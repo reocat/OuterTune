@@ -611,7 +611,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             Log.i(TAG, "------------ SYNC: Scanner in use. Aborting youtubeArtistLookup job ------------")
             return
         }
-        var runs = 0
+
         Log.i(TAG, "------------ SYNC: Starting youtubeArtistLookup job ------------")
         val prevScannerState = scannerState.value
         scannerState.value = 5
@@ -622,11 +622,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             scannerProgressProbe = 0
 
             allLocal.forEach { element ->
-                runs++
-                if (runs % 20 == 0) {
-                    Log.v(TAG, "------------ SYNC: youtubeArtistLookup job: $runs artists processed ------------")
-                }
-
                 val artistVal = element.name.trim()
 
                 // check if this artist exists in DB already
@@ -669,6 +664,17 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     } catch (e: Exception) {
                         reportException(e)
                     }
+                }
+
+                scannerProgressProbe++
+                if (scannerProgressProbe % 20 == 0) {
+                    scannerProgressCurrent.value = scannerProgressProbe
+                }
+                if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
+                    Log.v(
+                        TAG,
+                        "------------ SYNC: youtubeArtistLookup job: $ scannerProgressCurrent.value/${scannerProgressTotal.value} artists processed ------------"
+                    )
                 }
             }
 
@@ -956,8 +962,6 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         suspend fun refreshLocal(
             context: Context,
             database: MusicDatabase,
-            scanPaths: List<Uri>,
-            excludedScanPaths: List<Uri>,
             filter: String
         ): DirectoryTree {
             val newDirectoryStructure = DirectoryTree(filter.trimEnd { it == '/' }, CulmSongs(0))
@@ -969,21 +973,13 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             }
 
             Log.i(TAG, "------------ SCAN: Starting Quick Directory Rebuild ------------")
-            getScanFiles(scanPaths, excludedScanPaths, context).fastForEach { path ->
-                if (SCANNER_DEBUG)
-                    Log.v(TAG, "Quick scanner: PATH: $path")
 
-                // Build directory tree with existing files
-                val possibleMatch =
-                    existingSongs.fastFirstOrNull { it.song.localPath == fileFromUri(context, path)?.absolutePath }
-
-                if (possibleMatch != null) {
-                    val file = fileFromUri(context, path)?.absolutePath
-                    if (file == null) return@fastForEach
-                    val filterPath = (if (file.startsWith(filter)) file.substringAfter(filter) else file)
-                        .trimStart { it == '/' }
-                    newDirectoryStructure.insert(filterPath, possibleMatch)
-                }
+            // Build directory tree with existing files
+            existingSongs.forEach { s ->
+                val path = s.song.localPath ?: return@forEach
+                val filterPath =
+                    (if (path.startsWith(filter)) path.substringAfter(filter) else path).trimStart { it == '/' }
+                newDirectoryStructure.insert(filterPath, s)
             }
 
             Log.i(TAG, "------------ SCAN: Finished Quick Directory Rebuild ------------")

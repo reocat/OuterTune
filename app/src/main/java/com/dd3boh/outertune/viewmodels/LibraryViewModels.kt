@@ -143,7 +143,7 @@ class LibraryFoldersViewModel @Inject constructor(
      */
     suspend fun getLocalSongs(dir: String? = null) {
         Log.d(TAG, "Loading folders page: ${dir ?: path}")
-        val dt = refreshLocal(context, database, uriListFromString(scanPaths), uriListFromString(excludedScanPaths), dir ?: path)
+        val dt = refreshLocal(context, database, dir ?: path)
         dt.isSkeleton = false
         cacheDirectoryTree(dt)
         localSongDirectoryTree.value = dt
