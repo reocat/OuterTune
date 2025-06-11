@@ -111,6 +111,7 @@ import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
@@ -132,7 +133,6 @@ import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
-import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
 import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState

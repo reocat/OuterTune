@@ -25,6 +25,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -36,7 +37,6 @@ import com.dd3boh.outertune.ui.component.AlbumGridItem
 import com.dd3boh.outertune.ui.component.ArtistGridItem
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTitle
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.menu.AlbumMenu

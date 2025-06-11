@@ -86,6 +86,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -183,7 +184,7 @@ import com.dd3boh.outertune.playback.MusicService
 import com.dd3boh.outertune.playback.MusicService.MusicBinder
 import com.dd3boh.outertune.playback.PlayerConnection
 import com.dd3boh.outertune.ui.component.BottomSheetMenu
-import com.dd3boh.outertune.ui.component.LocalMenuState
+import com.dd3boh.outertune.ui.component.MenuState
 import com.dd3boh.outertune.ui.component.SearchBar
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerTheme
@@ -849,7 +850,9 @@ class MainActivity : ComponentActivity() {
 
                     CompositionLocalProvider(
                         LocalDatabase provides database,
-                        LocalContentColor provides if (pureBlack) Color.White else contentColorFor(MaterialTheme.colorScheme.surface),                        LocalPlayerConnection provides playerConnection,
+                        LocalContentColor provides if (pureBlack) Color.White else contentColorFor(MaterialTheme.colorScheme.surface),
+                        LocalMenuState provides MenuState(rememberModalBottomSheetState()),
+                        LocalPlayerConnection provides playerConnection,
                         LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
@@ -1637,6 +1640,7 @@ class MainActivity : ComponentActivity() {
 }
 
 val LocalDatabase = staticCompositionLocalOf<MusicDatabase> { error("No database provided") }
+val LocalMenuState = staticCompositionLocalOf<MenuState> { error("No menu state provided") }
 val LocalPlayerConnection = staticCompositionLocalOf<PlayerConnection?> { error("No PlayerConnection provided") }
 val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No player WindowInsets provided") }
 val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No DownloadUtil provided") }

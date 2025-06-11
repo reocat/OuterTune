@@ -41,6 +41,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSnackbarHostState
@@ -51,7 +52,6 @@ import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LibraryAlbumGridItem
-import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.viewmodels.ArtistAlbumsViewModel
 

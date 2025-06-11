@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.constants.TopBarInsets
@@ -28,7 +29,6 @@ import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTitle
 import com.dd3boh.outertune.ui.component.YouTubeListItem
 import com.dd3boh.outertune.ui.component.shimmer.ListItemPlaceHolder

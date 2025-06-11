@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSnackbarHostState
@@ -49,7 +50,6 @@ import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
-import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTitle
 import com.dd3boh.outertune.ui.component.SwipeToQueueBox
 import com.dd3boh.outertune.ui.component.YouTubeListItem
