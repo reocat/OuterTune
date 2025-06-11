@@ -178,4 +178,16 @@
     <string name="speed_very_fast">Muito rápido</string>
     <string name="lyrics_karaoke_title">Letra em estilo karaoke.</string>
     <string name="attribution_title">Atribuições</string>
+    <string name="scanner_rejected_dir">Seleção inválida. A pasta de busca não pode ser uma subpasta da pasta de downloads, ou ser a própria pasta de downloads</string>
+    <string name="scanner_progress_discovering">Descobrindo…</string>
+    <string name="scanner_progress_processing">Processando…</string>
+    <string name="dl_rescan_confirm">Buscar todas as pastas de downloads agora? Isso pode demorar alguns minutos dependendo do tamanho da sua biblioteca.</string>
+    <string name="dl_extra_path_description">Músicas nestas pastas só aparecerão no app se você tocou elas antes ou adicionou elas em uma lista</string>
+    <string name="dl_migrate_title">Migrar downloads para armazenamento externo…</string>
+    <string name="dl_rescan_title">Buscar pastas de downloads…</string>
+    <string name="dl_main_path_title">Configurar pasta de downloads…</string>
+    <string name="dl_extra_path_title">Configurar locais de download extras…</string>
+    <string name="dl_migrate_confirm">Isto migrará TODOS os downloads internos para \"%s\", e essa ação não poderá ser desfeita. Continuar?</string>
+    <string name="dl_rescan_description">Atualizar o banco de dados e recarregar o registro de downloads caso qualquer arquivo ou pasta mudou</string>
+    <string name="dl_migrate_description">Mover downloads do armazenamento interno do app para o armazenamento externo do dispositivo</string>
 </resources>
