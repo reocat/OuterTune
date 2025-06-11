@@ -9,114 +9,75 @@
 
 package com.dd3boh.outertune.ui.component
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.ui.utils.top
 
-val LocalMenuState = compositionLocalOf { MenuState() }
 
 @Stable
-class MenuState(
+class MenuState @OptIn(ExperimentalMaterial3Api::class) constructor(
+    val sheetState: SheetState,
     isVisible: Boolean = false,
     content: @Composable ColumnScope.() -> Unit = {},
 ) {
     var isVisible by mutableStateOf(isVisible)
     var content by mutableStateOf(content)
 
+    @OptIn(ExperimentalMaterial3Api::class)
     fun show(content: @Composable ColumnScope.() -> Unit) {
         isVisible = true
         this.content = content
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     fun dismiss() {
         isVisible = false
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetMenu(
     modifier: Modifier = Modifier,
     state: MenuState,
-    background: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation),
+    background: Color = Color.Transparent,
 ) {
     val focusManager = LocalFocusManager.current
 
-    AnimatedVisibility(
-        visible = state.isVisible,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        BackHandler {
-            state.dismiss()
-        }
-
-        Spacer(
-            modifier = Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures {
-                        state.dismiss()
-                    }
-                }
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
-                .fillMaxSize()
-        )
-    }
-
-    AnimatedVisibility(
-        visible = state.isVisible,
-        enter = slideInVertically { it },
-        exit = slideOutVertically { it },
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                .padding(top = 48.dp)
-                .clip(ShapeDefaults.Large.top())
-                .background(background)
+    if (state.isVisible) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                focusManager.clearFocus()
+                state.isVisible = false
+            },
+            sheetState = state.sheetState,
+            dragHandle = null,
+            modifier = modifier.fillMaxHeight()
         ) {
-            state.content(this)
-        }
-    }
-
-    LaunchedEffect(state.isVisible) {
-        if (state.isVisible) {
-            focusManager.clearFocus()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(ShapeDefaults.Large.top())
+                    .background(background)
+            ) {
+                state.content(this)
+            }
         }
     }
 }

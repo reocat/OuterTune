@@ -72,6 +72,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -101,7 +102,6 @@ import com.dd3boh.outertune.ui.component.AnimatedNavigationChips
 import com.dd3boh.outertune.ui.component.ArtistGridItem
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
-import com.dd3boh.outertune.ui.component.LocalMenuState
 import com.dd3boh.outertune.ui.component.NavigationTile
 import com.dd3boh.outertune.ui.component.NavigationTitle
 import com.dd3boh.outertune.ui.component.SongGridItem
