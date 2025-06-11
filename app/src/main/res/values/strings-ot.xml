@@ -186,7 +186,9 @@ while also allowing users to translate our app as well. New, specific strings to
 
     <string name="scanner_btn_idle">Scan</string>
     <string name="scanner_progress_complete">Scan complete</string>
-    <string name="scanner_progress_scanning">Scanning…</string>
+    <string name="scanner_progress_discovering">Discovering…</string>
+    <string name="scanner_progress_processing">Processing…</string>
+	<string name="scanner_progress_scanning">Scanning…</string>
     <string name="scanner_progress_syncing">Syncing…</string>
     <string name="scanner_scan_fail">Scanner failed</string>
 

@@ -256,7 +256,7 @@ import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerActive
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerState
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.urlEncode
 import com.valentinilk.shimmer.LocalShimmerTheme
@@ -445,7 +445,7 @@ class MainActivity : ComponentActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val perms = checkSelfPermission(MEDIA_PERMISSION_LEVEL)
                     // Check if the permissions for local media access
-                    if (!scannerActive.value && autoScan && oobeStatus >= OOBE_VERSION && localLibEnable) {
+                    if (scannerState.value <= 0 && autoScan && oobeStatus >= OOBE_VERSION && localLibEnable) {
                         if (perms == PackageManager.PERMISSION_GRANTED) {
                             // equivalent to (quick scan)
                             try {
@@ -459,7 +459,7 @@ class MainActivity : ComponentActivity() {
                                 scanner.quickSync(database, uris, scannerSensitivity, strictExtensions)
 
                                 // start artist linking job
-                                if (lookupYtmArtists && !scannerActive.value) {
+                                if (lookupYtmArtists && scannerState.value <= 0) {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         try {
                                             scanner.localToRemoteArtist(database)

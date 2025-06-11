@@ -152,6 +152,10 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     ): List<Uri> {
         val songs = ArrayList<Uri>()
         Log.i(TAG, "------------ SCAN: Starting Full Scanner ------------")
+        scannerState.value = 1
+        scannerProgressProbe = 0
+        scannerProgressTotal.value = 0
+        scannerProgressCurrent.value = -1
 
         val scanPaths = uriListFromString(scanPaths)
         val excludedScanPaths = uriListFromString(excludedScanPaths)
@@ -163,6 +167,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             songs.add(uri)
         }
 
+        scannerState.value = 0
         Log.i(TAG, "------------ SCAN: Finished Full Scanner ------------")
         return songs.toList()
     }
@@ -189,13 +194,13 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         refreshExisting: Boolean = false,
         noDisable: Boolean = false
     ) {
-        if (scannerActive.value) {
+        if (scannerState.value > 0) {
             Log.i(TAG, "------------ SYNC: Scanner in use. Aborting Local Library Sync ------------")
             return
         }
         Log.i(TAG, "------------ SYNC: Starting Local Library Sync ------------")
-        scannerActive.value = true
-        scannerShowLoading.value = true
+        scannerState.value = 3
+//        scannerProgressProbe = 0 // using separate variable instead
         // deduplicate
         val finalSongs = ArrayList<SongTempData>()
         newSongs.forEach { song ->
@@ -206,6 +211,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         Log.d(TAG, "Entries to process: ${newSongs.size}. After dedup: ${finalSongs.size}")
         scannerProgressTotal.value = finalSongs.size
         scannerProgressCurrent.value = 0
+        scannerProgressProbe = 0
 
         // sync
         var runs = 0
@@ -355,8 +361,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             finalize(database)
             disableSongs(finalSongs.map { it.song }, database)
         }
-        scannerShowLoading.value = false
-        scannerActive.value = false
+        scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Local Library Sync ------------")
     }
 
@@ -382,7 +387,10 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     ) {
         Log.i(TAG, "------------ SYNC: Starting Quick (additive delta) Library Sync ------------")
         Log.d(TAG, "Entries to process: ${newSongs.size}")
-        scannerShowLoading.value = true
+        scannerState.value = 2
+        scannerProgressTotal.value = newSongs.size
+        scannerProgressCurrent.value = 0
+        scannerProgressProbe = 0
 
         runBlocking(Dispatchers.IO) {
             // get list of all songs in db, then get songs unknown to the database
@@ -435,7 +443,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                                         )
                                     }
                                     if (scannerProgressProbe % 20 == 0) {
-                                        scannerProgressTotal.value = scannerProgressProbe
+                                        scannerProgressCurrent.value = scannerProgressProbe
                                     }
                                 } catch (e: InvalidAudioFileException) {
                                     ret = null
@@ -446,6 +454,16 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     } else {
                         // force synchronous scanning of songs. Do not catch errors
                         finalSongs.add(advancedScan(s))
+                        scannerProgressProbe++
+                        if (SCANNER_DEBUG && scannerProgressProbe % 5 == 0) {
+                            Log.d(
+                                TAG,
+                                "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------"
+                            )
+                        }
+                        if (scannerProgressProbe % 5 == 0) {
+                            scannerProgressCurrent.value = scannerProgressProbe
+                        }
                     }
                 }
             }
@@ -462,7 +480,9 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             }
 
             if (finalSongs.isNotEmpty()) {
+                scannerState.value = 0
                 syncDB(database, finalSongs, matchCriteria, strictFileNames, noDisable = true)
+                scannerState.value = 2
             } else {
                 Log.i(TAG, "Not syncing, no valid songs found!")
             }
@@ -472,7 +492,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             disableSongsByUri(newSongs, database)
         }
 
-        scannerShowLoading.value = false
+        scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
     }
 
@@ -498,7 +518,10 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
     ) {
         Log.i(TAG, "------------ SYNC: Starting FULL Library Sync ------------")
         Log.d(TAG, "Entries to process: ${newSongs.size}")
-        scannerShowLoading.value = true
+        scannerState.value = 2
+        scannerProgressTotal.value = newSongs.size
+        scannerProgressCurrent.value = 0
+        scannerProgressProbe = 0
 
         runBlocking(Dispatchers.IO) {
             val finalSongs = ArrayList<SongTempData>()
@@ -528,7 +551,18 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                                     throw ScannerAbortException("")
                                 }
                                 try {
-                                    advancedScan(uri)
+                                    val ret = advancedScan(uri)
+                                    scannerProgressProbe++
+                                    if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
+                                        Log.d(
+                                            TAG,
+                                            "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------"
+                                        )
+                                    }
+                                    if (scannerProgressProbe % 20 == 0) {
+                                        scannerProgressCurrent.value = scannerProgressProbe
+                                    }
+                                    ret
                                 } catch (e: InvalidAudioFileException) {
                                     null
                                 }
@@ -556,13 +590,15 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                 /**
                  * TODO: Delete all local format entity before scan
                  */
+                scannerState.value = 0
                 syncDB(database, finalSongs, matchCriteria, strictFileNames, refreshExisting = true)
+                scannerState.value = 2
             } else {
                 Log.i(TAG, "Not syncing, no valid songs found!")
             }
         }
 
-        scannerShowLoading.value = false
+        scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
     }
 
@@ -571,16 +607,19 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
      * Converts all local artists to remote artists if possible
      */
     fun localToRemoteArtist(database: MusicDatabase) {
-        if (scannerActive.value) {
+        if (scannerState.value > 0) {
             Log.i(TAG, "------------ SYNC: Scanner in use. Aborting youtubeArtistLookup job ------------")
             return
         }
         var runs = 0
         Log.i(TAG, "------------ SYNC: Starting youtubeArtistLookup job ------------")
-        scannerActive.value = true
-        scannerShowLoading.value = true
+        val prevScannerState = scannerState.value
+        scannerState.value = 5
         runBlocking(Dispatchers.IO) {
             val allLocal = database.allLocalArtists().first()
+            scannerProgressTotal.value = allLocal.size
+            scannerProgressCurrent.value = 0
+            scannerProgressProbe = 0
 
             allLocal.forEach { element ->
                 runs++
@@ -639,8 +678,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             }
         }
 
-        scannerShowLoading.value = false
-        scannerActive.value = false
+        scannerState.value = prevScannerState
         Log.i(TAG, "------------ SYNC: youtubeArtistLookup job ended------------")
     }
 
@@ -762,14 +800,19 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
         private var ownerId = -1
         private var localScanner: LocalMediaScanner? = null
 
-        /**
-         * TODO: Create a lock for background jobs like youtubeartists and etc
-         */
-        var scannerActive = MutableStateFlow(false) // TODO: make this an enum. scan -> sync -> ytmartist
-        var scannerShowLoading = MutableStateFlow(false)
-        var scannerFinished = MutableStateFlow(false)
+
         var scannerRequestCancel = false
 
+        /**
+         * -1: Inactive
+         * 0: Idle
+         * 1: Discovering (Crawling files)
+         * 2: Scanning (Extract metadata and checking playability
+         * 3: Syncing (Update database)
+         * 4: Scan finished
+         * 5: Ytm artist linking
+         */
+        var scannerState = MutableStateFlow(-1)
         var scannerProgressTotal = MutableStateFlow(-1)
         var scannerProgressCurrent = MutableStateFlow(-1)
         var scannerProgressProbe = -1
@@ -814,9 +857,7 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
             }
             ownerId = -1
             localScanner = null
-            scannerActive.value = false
-            scannerShowLoading.value = false
-            scannerFinished.value = false
+            scannerState.value = -1
             scannerRequestCancel = false
             scannerProgressTotal.value = -1
             scannerProgressCurrent.value = -1
@@ -851,13 +892,11 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     val file = documentFileFromUri(context, path)
                     if (file != null) {
                         val songsHere = ArrayList<DocumentFile>()
-                        scanDfRecursive(file, songsHere)
-
-                        // we can expect lrc is not a song
-                        // TODO: allowlist file ext, allow user to force scan for all files
-                        songsHere.removeAll {
-                            val ext = it.name?.substringAfterLast('.')
-                            ext == "lrc" || ext == "ttml"
+                        scanDfRecursive(file, songsHere) {
+                            // we can expect lrc is not a song
+                            // TODO: allowlist file ext, allow user to force scan for all files
+                            val ext = it.substringAfterLast('.')
+                            !(ext == "lrc" || ext == "ttml")
                         }
 
                         allSongs.addAll(songsHere.filterNot { incl ->
@@ -892,6 +931,10 @@ class LocalMediaScanner(val context: Context, val scannerImpl: ScannerImpl) {
                     // add if file matches
                     if (validator == null || validator(name)) {
                         result.add(file)
+                        scannerProgressProbe++
+                        if (scannerProgressProbe % 20 == 0) {
+                            scannerProgressTotal.value = scannerProgressProbe
+                        }
                     }
                 }
             }

@@ -12,7 +12,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -85,17 +84,18 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getScanner
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerActive
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerFinished
+
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerProgressCurrent
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerProgressTotal
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRequestCancel
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerShowLoading
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerState
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -109,9 +109,7 @@ fun ColumnScope.LocalScannerFrag() {
     val playerConnection = LocalPlayerConnection.current
 
     // scanner vars
-    val isScannerActive by scannerActive.collectAsState()
-    val showLoading by scannerShowLoading.collectAsState()
-    val isScanFinished by scannerActive.collectAsState()
+    val scannerState by scannerState.collectAsState()
     val scannerProgressTotal by scannerProgressTotal.collectAsState()
     val scannerProgressCurrent by scannerProgressCurrent.collectAsState()
 
@@ -161,7 +159,7 @@ fun ColumnScope.LocalScannerFrag() {
         Button(
             onClick = {
                 // cancel button
-                if (isScannerActive) {
+                if (scannerState > 0) {
                     scannerRequestCancel = true
                 }
 
@@ -189,7 +187,6 @@ fun ColumnScope.LocalScannerFrag() {
                     mediaPermission = true
                 }
 
-                scannerFinished.value = false
                 scannerFailure = false
 
                 playerConnection?.player?.pause()
@@ -202,39 +199,45 @@ fun ColumnScope.LocalScannerFrag() {
                             val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
                             scanner.fullSync(database, uris, scannerSensitivity, strictExtensions)
 
+                            delay(1000)
                             // start artist linking job
-                            if (lookupYtmArtists && !isScannerActive) {
+                            if (lookupYtmArtists && scannerState <= 0) {
                                 coroutineScope.launch(Dispatchers.IO) {
-                                    Looper.prepare()
                                     try {
-                                        Toast.makeText(
-                                            context, context.getString(R.string.scanner_ytm_link_start),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                context, context.getString(R.string.scanner_ytm_link_start),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                         scanner.localToRemoteArtist(database)
-                                        Toast.makeText(
-                                            context, context.getString(R.string.scanner_ytm_link_success),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                context, context.getString(R.string.scanner_ytm_link_success),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     } catch (e: ScannerAbortException) {
-                                        Looper.prepare()
-                                        Toast.makeText(
-                                            context,
-                                            "${context.getString(R.string.scanner_ytm_link_success)}: ${e.message}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                context,
+                                                "${context.getString(R.string.scanner_ytm_link_success)}: ${e.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }
                             }
                         } catch (e: ScannerAbortException) {
                             scannerFailure = true
 
-                            Looper.prepare()
-                            Toast.makeText(
-                                context,
-                                "${context.getString(R.string.scanner_scan_fail)}: ${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "${context.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         } finally {
                             destroyScanner(SCANNER_OWNER_LM)
                             clearDtCache()
@@ -246,10 +249,10 @@ fun ColumnScope.LocalScannerFrag() {
                             val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
                             scanner.quickSync(database, uris, scannerSensitivity, strictExtensions)
 
+                            delay(1000)
                             // start artist linking job
-                            if (lookupYtmArtists && !isScannerActive) {
+                            if (lookupYtmArtists && scannerState <= 0) {
                                 coroutineScope.launch(Dispatchers.IO) {
-                                    Looper.prepare()
                                     try {
                                         Toast.makeText(
                                             context,
@@ -274,12 +277,13 @@ fun ColumnScope.LocalScannerFrag() {
                         } catch (e: ScannerAbortException) {
                             scannerFailure = true
 
-                            Looper.prepare()
-                            Toast.makeText(
-                                context,
-                                "${context.getString(R.string.scanner_scan_fail)}: ${e.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "${context.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         } finally {
                             destroyScanner(SCANNER_OWNER_LM)
                             clearDtCache()
@@ -291,16 +295,15 @@ fun ColumnScope.LocalScannerFrag() {
                     playerConnection?.service?.initQueue()
 
                     onLastLocalScanChange(LocalDateTime.now().atOffset(ZoneOffset.UTC).toEpochSecond())
-                    scannerFinished.value = true
                 }
             }
         ) {
             Text(
-                text = if (isScannerActive || showLoading) {
+                text = if ((scannerState > 0 && scannerState < 4) || scannerState == 5) {
                     stringResource(R.string.action_cancel)
                 } else if (scannerFailure) {
                     stringResource(R.string.scanner_scan_fail)
-                } else if (isScanFinished) {
+                } else if (scannerState >= 4) {
                     stringResource(R.string.scanner_progress_complete)
                 } else if (!mediaPermission) {
                     stringResource(R.string.scanner_missing_storage_perm)
@@ -312,7 +315,7 @@ fun ColumnScope.LocalScannerFrag() {
 
 
         // progress indicator
-        if (!showLoading) {
+        if (scannerState <= 0) {
             return@Row
         }
 
@@ -327,30 +330,37 @@ fun ColumnScope.LocalScannerFrag() {
 
         Spacer(Modifier.width(8.dp))
 
-        if (scannerProgressTotal != -1) {
-            Column {
-                val isSyncing = scannerProgressCurrent > -1
-                Text(
-                    text = if (isSyncing) {
-                        stringResource(R.string.scanner_progress_syncing)
+        Column {
+//            val isSyncing = scannerState > 3
+            Text(
+                text = when (scannerState) {
+                    1 -> stringResource(R.string.scanner_progress_discovering)
+                    3 -> stringResource(R.string.scanner_progress_syncing)
+                    5 -> stringResource(R.string.scanner_ytm_link_start)
+                    else -> stringResource(R.string.scanner_progress_processing)
+                },
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 12.sp
+            )
+            Text(
+                text = "${if (scannerProgressCurrent > 0) "$scannerProgressCurrent" else "—"}/${
+                    if (scannerProgressTotal >= 0) {
+                        if (scannerState == 1) {
+                            pluralStringResource(
+                                R.plurals.scanner_n_song_found, scannerProgressTotal, scannerProgressTotal
+                            )
+                        } else {
+                            pluralStringResource(
+                                R.plurals.scanner_n_song_processed, scannerProgressTotal, scannerProgressTotal
+                            )
+                        }
                     } else {
-                        stringResource(R.string.scanner_progress_scanning)
-                    },
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = "${if (isSyncing) scannerProgressCurrent else "—"}/${
-                        pluralStringResource(
-                            if (isSyncing) R.plurals.scanner_n_song_processed else R.plurals.scanner_n_song_found,
-                            scannerProgressTotal,
-                            scannerProgressTotal
-                        )
-                    }",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 12.sp
-                )
-            }
+                        "—"
+                    }
+                }",
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 12.sp
+            )
         }
     }
     // scanner checkboxes
