@@ -121,7 +121,6 @@
     <string name="local_library_enable_title">تمكين الوسائط المحلية</string>
     <string name="local_library_enable_description">التعطيل سيخفي المكتبة المحلية من التطبيق</string>
     <string name="local_player_settings_title">الوسائط المحلية</string>
-    <string name="import_m3u">استيراد قائمة تشغيل (m3u)</string>
     <string name="import_innertune_tooltip">يتم دعم استعادة النسخ الاحتياطية من InnerTune، وإن كان هناك احتمال لوجود حالات شاذة بسبب القيود الفنية</string>
     <string name="m3u_import_playlist_failed">فشل استيراد قائمة التشغيل</string>
     <string name="auto_scanner_title">المسح تلقائيًا</string>
@@ -156,17 +155,11 @@
     <string name="pause_remote_listen_history">إيقاف مؤقت لمشاركة سجل الاستماع مع YouTube Music</string>
     <string name="scanner_variant_rescan">اعادة فحص كامل المكتبة وتحديث \' metadata</string>
     <string name="scanner_online_artist_linking">محاولة ربط ملف\' فنان مع YouTube Music</string>
-    <string name="m3u_import_song_failed">تعذر الاستيراد:</string>
     <string name="experimental_settings_title">تجريبي</string>
     <string name="dev_settings_title">تمكين إعدادات المطور</string>
     <string name="dev_settings_description">يكشف عن إعدادات متقدمة إضافية مخصصة للاستخدام التطويري</string>
     <string name="swipe_to_skip_title">اسحب أفقيًا لتغيير الأغنية</string>
-    <string name="oobe_local_scan_tooltip">انقر هنا للبحث عن الأغاني</string>
     <string name="oobe_complete">اكتمل الإعداد</string>
-    <string name="oobe_ytm_content_description">YouTube Music في متناول يديك</string>
-    <string name="oobe_ad_free_description">تشغيل بدون إعلانات</string>
-    <string name="oobe_ytm_sync_description">مزامنة الحساب</string>
-    <string name="oobe_local_playback_description">تشغيل الموسيقى المحلية</string>
     <string name="oobe_use_backup">لدي نسخة احتياطية</string>
     <string name="action_back">رجوع</string>
     <string name="action_next">التالي</string>
