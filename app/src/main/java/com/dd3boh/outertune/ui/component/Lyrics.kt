@@ -557,13 +557,44 @@ fun findCurrentLineIndex(lines: List<LyricLine>, position: Long): Int {
  * Get current position in lyric line. Used for word by word lyrics
  */
 fun calculateLineProgress(line: LyricLine, currentPositionMs: Long): Float {
-    val startMs = line.start.toLong()
-    val endMs = line.end.toLong()
-    return when {
-        currentPositionMs < startMs -> 0f
-        currentPositionMs > endMs -> 1f
-        else -> (currentPositionMs - startMs).toFloat() / (endMs - startMs).toFloat()
+    val words = line.words
+
+    // by line if no words are available
+    if (words.isNullOrEmpty()) {
+        val startMs = line.start.toLong()
+        val endMs = line.end.toLong()
+        return when {
+            currentPositionMs < startMs -> 0f
+            currentPositionMs > endMs -> 1f
+            else -> (currentPositionMs - startMs).toFloat() / (endMs - startMs).toFloat()
+        }
     }
+
+    // progress based on words
+    val currentMs = currentPositionMs.toULong()
+    var completedWords = 0
+    var partialProgress = 0f
+
+    for (i in words.indices) {
+        val word = words[i]
+        val start = word.timeRange.first
+        val end = word.timeRange.last
+
+        if (currentMs < start) {
+            break // we're before this word
+        } else if (currentMs in word.timeRange) {
+            val wordDuration = (end - start).coerceAtLeast(1u).toFloat()
+            partialProgress = (currentMs - start).toFloat() / wordDuration
+            completedWords = i
+            break
+        } else {
+            completedWords++
+        }
+    }
+
+    val totalWords = words.size.toFloat()
+    val progress = (completedWords + partialProgress) / totalWords
+    return progress.coerceIn(0f, 1f)
 }
 
 const val animateScrollDuration = 300L
