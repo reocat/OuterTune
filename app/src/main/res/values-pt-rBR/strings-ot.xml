@@ -84,7 +84,7 @@
     <string name="experimental_settings_title">Experimentais</string>
     <string name="dev_settings_title">Ativar configurações de desenvolvedor</string>
     <string name="dev_settings_description">Revela configurações avançadas adicionais utilizadas no desenvolvimento</string>
-    <string name="oobe_complete">Configuração concluída</string>
+    <string name="oobe_complete">O OuterTune está configurado e pronto pra ser usado. Explore suas músicas, descubra novas faixas, e aproveite a experiência!</string>
     <string name="oobe_use_backup">Eu tenho um backup</string>
     <string name="action_back">Voltar</string>
     <string name="action_next">Avançar</string>
@@ -190,4 +190,27 @@
     <string name="dl_migrate_confirm">Isto migrará TODOS os downloads internos para \"%s\", e essa ação não poderá ser desfeita. Continuar?</string>
     <string name="dl_rescan_description">Atualizar o banco de dados e recarregar o registro de downloads caso qualquer arquivo ou pasta mudou</string>
     <string name="dl_migrate_description">Mover downloads do armazenamento interno do app para o armazenamento externo do dispositivo</string>
+    <string name="scan_paths_description">Selecione pastas no seu armazenamento local para buscar músicas</string>
+    <string name="dl_main_path_description">Selecionar local de armazenamento dos downloads</string>
+    <string name="oobe_ad_free_exp_description">Aproveite uma reprodução de música sem interrupções</string>
+    <string name="oobe_local_music_support">Suporte amplo à músicas locais</string>
+    <string name="oobe_cross_platform_sync">Sincronização entre plataformas</string>
+    <string name="oobe_ytm_logon_subtitle">Entre na sua conta do YouTube Music para sincronizar e acessar conteúdo privado da conta. Isso é opcional.</string>
+    <string name="oobe_downloads_subtitle">Selecione uma pasta na qual as músicas baixadas serão salvas.</string>
+    <string name="oobe_complete_title">Está tudo pronto!</string>
+    <string name="disable_lm_confirm">Ten certeza que quer desativar todos os recursos de mídia local?</string>
+    <string name="oobe_local_media_title">Mídia local</string>
+    <string name="oobe_cross_platform_sync_description">Mantenha sua música em harmonia entre dispositivos</string>
+    <string name="oobe_ad_free_exp">Experiência sem anúncios</string>
+    <string name="oobe_local_media_subtitle">Selecione as pastas que contém suas músicas. Iremos buscar músicas nelas para importar.</string>
+    <string name="clear_downloads_confirm">Tem certeza que quer remover todos os downloads? Somente downloads na pasta principal de downloads principal serão removidos.</string>
+    <string name="clear_image_cache_confirm">Tem certeza que quer limpar a cache de imagens? Todas as miniaturas de álbuns serão removidas.</string>
+    <string name="clear_song_cache_confirm">Tem certeza que quer limpar a cache de músicas?</string>
+    <string name="dl_oobe_tooltip">Para baixar músicas, você precisa escolher uma pasta primeiro. Você pode mudar ou adicionar pasta nas configurações mais tarde. Para desativar o download de músicas, simplesmente remova todas as pastas selecionadas</string>
+    <string name="oobe_ytm_integration">Integração com o YouTube Music</string>
+    <string name="oobe_ytm_integration_description">Acesse as suas músicas favoritas</string>
+    <string name="oobe_interface_subtitle">Customize como o OuterTune parece e que conteúdo ele te mostra.</string>
+    <string name="oobe_local_music_support_description">Toque seus arquivos de música (ex: MP3, OGG, FLAC, etc.)</string>
+    <string name="oobe_ytm_logon_title">Conta</string>
+    <string name="oobe_downloads_title">Downloads de músicas</string>
 </resources>
