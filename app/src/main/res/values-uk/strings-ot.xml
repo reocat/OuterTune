@@ -96,7 +96,7 @@
     <string name="dev_settings_title">Увімкнути налаштування розробника</string>
     <string name="action_next">Вперед</string>
     <string name="dev_settings_description">Відкриває додаткові розширені налаштування, призначені для використання під час розробки</string>
-    <string name="oobe_complete">Налаштування завершеною</string>
+    <string name="oobe_complete">OuterTune налаштовано та готовий до використання. Відкрийте для себе музику, знайдіть нові треки та насолоджуйтесь!</string>
     <string name="action_skip">Пропустити</string>
     <string name="action_back">Назад</string>
     <string name="sync_progress_active">Синхронізація з обліковим записом YouTube…</string>
