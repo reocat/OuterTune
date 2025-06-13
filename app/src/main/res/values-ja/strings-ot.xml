@@ -171,4 +171,8 @@
     <string name="grp_behavior">行動</string>
     <string name="attribution_title">帰属</string>
     <string name="m3u_ytm_lookup">アプリのデータベースに見つからない曲をYouTube Musicで検索する</string>
+    <string name="disable_lm_confirm">ローカルメディアを無効にしますか？</string>
+    <string name="clear_song_cache_confirm">曲のキャッシュを削除しますか？</string>
+    <string name="scanner_progress_processing">処理中…</string>
+    <string name="lyrics_karaoke_hz_title">カラオケ風の歌詞の更新速度を調整する</string>
 </resources>
