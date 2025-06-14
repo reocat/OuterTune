@@ -131,7 +131,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -632,7 +631,7 @@ class MusicService : MediaLibraryService(),
                         replace = replace,
                         isRadio = isRadio
                     )
-                    queueBoard.setCurrQueue()
+                    queueBoard.setCurrQueue(q)
                 }
 
                 val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
@@ -653,7 +652,7 @@ class MusicService : MediaLibraryService(),
                 } else {
                     items.addAll(initialStatus.items)
                 }
-                queueBoard.addQueue(
+                val q = queueBoard.addQueue(
                     queueTitle ?: getString(R.string.queue),
                     items,
                     shuffled = queue.startShuffled,
@@ -661,7 +660,7 @@ class MusicService : MediaLibraryService(),
                     replace = replace || preloadItem != null,
                     isRadio = isRadio
                 )
-                queueBoard.setCurrQueue()
+                queueBoard.setCurrQueue(q)
 
                 player.prepare()
                 player.playWhenReady = playWhenReady
