@@ -17,7 +17,7 @@
     <string name="queue_remote_history">Historial (remoto)</string>
     <string name="remote_history">Remoto</string>
     <string name="queues_title">Colas</string>
-    <string name="create_queue">Cola nueva</string>
+    <string name="create_queue">Nueva cola</string>
     <string name="queue_searched_songs_ot">Buscar:</string>
     <string name="song_added_to_queue">Se insertó «%s» en la cola</string>
     <string name="song_added_to_queue_end">Se añadió «%s» al final de la cola</string>
@@ -86,7 +86,7 @@
     <string name="scanner_ytm_link_success">Tarea de vinculación de artistas de YouTube completa</string>
     <plurals name="scanner_n_song_found">
         <item quantity="one">%d canción encontrada</item>
-        <item quantity="many">%d de canciones encontradas</item>
+        <item quantity="many">%d canciones encontradas</item>
         <item quantity="other">%d canciones encontradas</item>
     </plurals>
     <string name="scanner_sensitivity_title">Configurar sensibilidad del escáner</string>
@@ -118,7 +118,7 @@
     <string name="scanner_manual_btn">Activar sincronización manual</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="one">%d canción procesada</item>
-        <item quantity="many">%d de canciones procesadas</item>
+        <item quantity="many">%d canciones procesadas</item>
         <item quantity="other">%d canciones procesadas</item>
     </plurals>
     <string name="scanner_progress_syncing">Sincronizando…</string>
@@ -127,7 +127,7 @@
     <string name="scanner_type_title">Extractor de metadatos</string>
     <string name="scanner_online_artist_linking">Intenta vincular los artistas de los archivos locales con los de YouTube Music</string>
     <string name="dev_settings_description">Revela configuraciones avanzadas adicionales destinadas al uso en desarrollo</string>
-    <string name="oobe_complete">Configuración completada</string>
+    <string name="oobe_complete">OuterTune está configurado y listo para usar. ¡Explora tu música, descubre nuevas pistas y disfruta de la experiencia!</string>
     <string name="action_next">Siguiente</string>
     <string name="grp_proxy">«Proxy»</string>
     <string name="player_background_blur">Desenfoque</string>
@@ -161,6 +161,34 @@
     <string name="grp_behavior">Comportamiento</string>
     <string name="check_for_update">Buscar actualizaciones</string>
     <string name="checking_for_update">Buscando actualizaciones</string>
-    <string name="library_empty">El contenido de su fonoteca aparecerá aquí</string>
+    <string name="library_empty">El contenido de tu fonoteca aparecerá aquí</string>
     <string name="no_updates_available">No hay ninguna actualización disponible</string>
+    <string name="scan_paths_description">Selecciona carpetas de tu almacenamiento local para buscar canciones</string>
+    <string name="scanner_progress_discovering">Descubriendo…</string>
+    <string name="scanner_progress_processing">Procesando…</string>
+    <string name="dl_main_path_description">Selecciona la ubicación de almacenamiento de las descargas</string>
+    <string name="oobe_ytm_integration">Integración con YouTube Music</string>
+    <string name="oobe_local_music_support_description">Reproduce tus archivos de música (por ejemplo, MP3, OGG, FLAC, etc.)</string>
+    <string name="oobe_cross_platform_sync">Sincronización multiplataforma</string>
+    <string name="oobe_ytm_logon_title">Cuenta</string>
+    <string name="import_success_songs">Importado correctamente</string>
+    <string name="m3u_export">Exportar como archivo M3U</string>
+    <string name="oobe_interface_subtitle">Personaliza la apariencia de OuterTune y el contenido que te muestra.</string>
+    <string name="oobe_ad_free_exp">Experiencia libre de anuncios</string>
+    <string name="oobe_complete_title">¡Ya está todo listo!</string>
+    <string name="dl_migrate_title">Migrar descargas a almacenamiento externo…</string>
+    <string name="dl_migrate_description">Mueve las descargas del almacenamiento interno de la aplicación al un almacenamiento externo en el dispositivo</string>
+    <string name="tablet_ui_title">Forzar interfaz de tableta</string>
+    <string name="tablet_ui_title_description">Habilita una interfaz horizontal optimizada para pantallas más grandes, independientemente del tamaño de la pantalla actual</string>
+    <string name="attribution_title">Atribución</string>
+    <string name="oss_licenses_title">Licencias de código abierto</string>
+    <string name="lyrics_karaoke_title">Letra estilo karaoke.</string>
+    <string name="lyrics_karaoke_hz_title">Ajustar la velocidad de actualización de la letra del karaoke</string>
+    <string name="dl_extra_path_title">Configurar ubicaciones de descarga adicionales…</string>
+    <string name="dl_main_path_title">Configurar directorio de descarga…</string>
+    <string name="speed_slow">Lento</string>
+    <string name="speed_medium">Medio</string>
+    <string name="speed_very_slow">Muy lento</string>
+    <string name="speed_fast">Rápido</string>
+    <string name="speed_very_fast">Muy rápido</string>
 </resources>
