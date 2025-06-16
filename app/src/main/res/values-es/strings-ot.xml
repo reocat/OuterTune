@@ -47,7 +47,7 @@
     <string name="grp_lyrics_parser">Intérprete</string>
     <string name="special_thanks">Agradecimiento especial</string>
     <string name="new_interface">Disposición de interfaz nueva</string>
-    <string name="show_liked_and_downloaded_playlist">Mostrar listas de canciones que me gustan y descargadas en la fonoteca</string>
+    <string name="show_liked_and_downloaded_playlist">Mostrar listas de canciones que me gustan y descargadas en la biblioteca</string>
     <string name="slim_navbar_title">Barra de navegación delgada</string>
     <string name="tab_arrangement">Organizar pestañas</string>
     <string name="tab_arrangement_home_required">La pestaña Inicio es obligatoria.</string>
@@ -94,7 +94,7 @@
     <string name="scanner_sensitivity_L2">Combina títulos y artistas</string>
     <string name="scanner_sensitivity_L3">Combinar título, artistas y álbumes</string>
     <string name="scanner_type_taglib">Usar extractor de metadatos TagLib integrado</string>
-    <string name="scanner_variant_rescan">Reescanear la fonoteca entera y recargar todos los metadatos de las canciones</string>
+    <string name="scanner_variant_rescan">Reescanear la biblioteca entera y recargar todos los metadatos de las canciones</string>
     <string name="pause_remote_listen_history">Compartir historial de escucha con YouTube Music</string>
     <string name="import_failed_songs">No se pudo importar:</string>
     <string name="dev_settings_title">Activar configuraciones de desarrollo</string>
@@ -105,7 +105,7 @@
     <string name="action_cancel">Cancelar</string>
     <string name="info">Información</string>
     <string name="folders">Carpetas</string>
-    <string name="library">Fonoteca</string>
+    <string name="library">Biblioteca</string>
     <string name="queue_local_history">Historial (local)</string>
     <string name="delete_lyric_confirm">¿Realmente quiere eliminar las letras almacenadas para «%s»?</string>
     <string name="queues_empty">Sin colas</string>
@@ -148,7 +148,7 @@
     <string name="restart_to_apply_changes">Reinicia la aplicación para que los cambios tengan efecto</string>
     <string name="more_settings">Más configuraciones</string>
     <string name="grp_account_sync">Cuenta y sincronización</string>
-    <string name="grp_library_and_content">Fonoteca y contenido</string>
+    <string name="grp_library_and_content">Biblioteca y contenido</string>
     <string name="sync_mode_rw">Lectura/escritura (también permitir cambios en el contenido remoto)</string>
     <string name="sync_conflict_add_only">Mantener todo el contenido local, añadir contenido remoto nuevo</string>
     <string name="sync_conflict_overwrite">Sobrescribir contenido local con el contenido remoto</string>
@@ -161,7 +161,7 @@
     <string name="grp_behavior">Comportamiento</string>
     <string name="check_for_update">Buscar actualizaciones</string>
     <string name="checking_for_update">Buscando actualizaciones</string>
-    <string name="library_empty">El contenido de tu fonoteca aparecerá aquí</string>
+    <string name="library_empty">El contenido de tu biblioteca aparecerá aquí</string>
     <string name="no_updates_available">No hay ninguna actualización disponible</string>
     <string name="scan_paths_description">Selecciona carpetas de tu almacenamiento local para buscar canciones</string>
     <string name="scanner_progress_discovering">Descubriendo…</string>
