@@ -11,11 +11,13 @@ package com.dd3boh.outertune.ui.screens.settings.fragments
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreHoriz
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.SlimHomeScreenTilesKey
 import com.dd3boh.outertune.constants.SlimNavBarKey
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -23,6 +25,15 @@ import com.dd3boh.outertune.utils.rememberPreference
 @Composable
 fun ColumnScope.AppearanceMiscFrag() {
     val (slimNav, onSlimNavChange) = rememberPreference(SlimNavBarKey, defaultValue = false)
+    val (slimHSTiles, onSlimHSTilesChange) = rememberPreference(SlimHomeScreenTilesKey, defaultValue = false)
+
+    SwitchPreference(
+        title = { Text(stringResource(R.string.slim_hs_tiles)) },
+        description = stringResource(R.string.slim_hs_tiles_description),
+        icon = { Icon(Icons.Rounded.Tune, null) },
+        checked = slimHSTiles,
+        onCheckedChange = onSlimHSTilesChange
+    )
 
     SwitchPreference(
         title = { Text(stringResource(R.string.slim_navbar_title)) },

@@ -62,20 +62,21 @@ fun AppearanceSettings(
         ) {
             ThemeAppFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             ThemePlayerFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             AppearanceMiscFrag()
         }
+        Spacer(modifier = Modifier.height(12.dp))
     }
 
     TopAppBar(

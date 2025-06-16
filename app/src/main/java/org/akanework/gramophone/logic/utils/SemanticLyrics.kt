@@ -1,6 +1,5 @@
 package org.akanework.gramophone.logic.utils
 
-import android.util.Log
 import android.util.Xml
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
@@ -14,6 +13,7 @@ import org.akanework.gramophone.logic.utils.SemanticLyrics.UnsyncedLyrics
 import org.akanework.gramophone.logic.utils.SemanticLyrics.Word
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
+import timber.log.Timber
 import java.io.StringReader
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
@@ -1059,7 +1059,7 @@ fun parseSrt(lyricText: String, trimEnabled: Boolean): SemanticLyrics? {
             SubtitleParser.OutputOptions.allCues()
         ) { cues.add(it) }
     } catch (e: Exception) {
-        Log.w(TAG, "Failed to parse something which looks like SRT: ${Log.getStackTraceString(e)}")
+        Timber.tag(TAG).w("Failed to parse something which looks like SRT: ${e}")
         return null
     }
     var lastTs: ULong? = null

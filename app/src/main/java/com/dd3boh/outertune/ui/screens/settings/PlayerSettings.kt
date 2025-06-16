@@ -75,7 +75,7 @@ fun PlayerSettings(
         ) {
             PlayerGeneralFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_audio)
@@ -85,14 +85,14 @@ fun PlayerSettings(
         ) {
             AudioQualityFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             AudioEffectsFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_behavior)
@@ -116,7 +116,7 @@ fun PlayerSettings(
                     onCheckedChange = onPersistentQueueChange
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth()

@@ -12,7 +12,6 @@
 package com.dd3boh.outertune.viewmodels
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
@@ -77,6 +76,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.Duration
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -142,7 +142,7 @@ class LibraryFoldersViewModel @Inject constructor(
      * Trigger a scan of local directory
      */
     suspend fun getLocalSongs(dir: String? = null) {
-        Log.d(TAG, "Loading folders page: ${dir ?: path}")
+        Timber.tag(TAG).d("Loading folders page: ${dir ?: path}")
         val dt = refreshLocal(context, database, dir ?: path)
         dt.isSkeleton = false
         cacheDirectoryTree(dt)
@@ -153,7 +153,7 @@ class LibraryFoldersViewModel @Inject constructor(
      * Get total number of songs in directory
      */
     suspend fun getSongCount(dir: String? = null) {
-        Log.d(TAG, "Loading folder song count: ${dir ?: path}")
+        Timber.tag(TAG).d("Loading folder song count: ${dir ?: path}")
         localSongDtSongCount.value = database.localSongCountInPath(dir ?: path).first()
     }
 

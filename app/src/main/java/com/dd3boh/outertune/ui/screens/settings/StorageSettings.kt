@@ -65,7 +65,7 @@ fun StorageSettings(
         ) {
             DownloadsFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
 
         PreferenceGroupTitle(
@@ -77,7 +77,7 @@ fun StorageSettings(
         ) {
             SongCacheFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.image_cache)

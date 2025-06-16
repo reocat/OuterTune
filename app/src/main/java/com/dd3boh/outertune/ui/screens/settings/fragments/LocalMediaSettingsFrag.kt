@@ -65,7 +65,6 @@ import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DownloadPathKey
-import com.dd3boh.outertune.constants.ENABLE_FFMETADATAEX
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
@@ -200,7 +199,7 @@ fun ColumnScope.LocalScannerFrag() {
                     // full rescan
                     if (fullRescan) {
                         try {
-                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            val scanner = getScanner(context, SCANNER_OWNER_LM)
                             val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
                             scanner.fullSync(database, uris, scannerSensitivity, strictExtensions)
 
@@ -250,7 +249,7 @@ fun ColumnScope.LocalScannerFrag() {
                     } else {
                         // quick scan
                         try {
-                            val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            val scanner = getScanner(context, SCANNER_OWNER_LM)
                             val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
                             scanner.quickSync(database, uris, scannerSensitivity, strictExtensions)
 
@@ -610,21 +609,5 @@ fun ColumnScope.LocalScannerExtraFrag() {
         checked = strictExtensions,
         onCheckedChange = onStrictExtensionsChange
     )
-    // scanner type
-    if (ENABLE_FFMETADATAEX) {
-        EnumListPreference(
-            title = { Text(stringResource(R.string.scanner_type_title)) },
-            icon = { Icon(Icons.Rounded.Speed, null) },
-            selectedValue = scannerImpl,
-            onValueSelected = onScannerImplChange,
-            valueText = {
-                when (it) {
-                    ScannerImpl.TAGLIB -> stringResource(R.string.scanner_type_taglib)
-                    ScannerImpl.FFMPEG_EXT -> stringResource(R.string.scanner_type_ffmpeg_ext)
-                }
-            },
-            values = ScannerImpl.entries,
-        )
-    }
 }
 

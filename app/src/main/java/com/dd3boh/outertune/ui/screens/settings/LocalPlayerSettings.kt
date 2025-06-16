@@ -85,19 +85,25 @@ fun LocalPlayerSettings(
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        SwitchPreference(
-            title = { Text(stringResource(R.string.local_library_enable_title)) },
-            description = stringResource(R.string.local_library_enable_description),
-            icon = { Icon(Icons.Rounded.SdCard, null) },
-            checked = localLibEnable,
-            onCheckedChange = {
-                if (localLibEnable) {
-                    showLmDisableDialog = true
-                } else {
-                    onLocalLibEnableChange(it)
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.local_library_enable_title)) },
+                description = stringResource(R.string.local_library_enable_description),
+                icon = { Icon(Icons.Rounded.SdCard, null) },
+                checked = localLibEnable,
+                onCheckedChange = {
+                    if (localLibEnable) {
+                        showLmDisableDialog = true
+                    } else {
+                        onLocalLibEnableChange(it)
+                    }
                 }
-            }
-        )
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
 
         AnimatedVisibility(localLibEnable) {
             Column {
@@ -113,7 +119,7 @@ fun LocalPlayerSettings(
                         onCheckedChange = onAutoScanChange
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 PreferenceGroupTitle(
                     title = stringResource(R.string.grp_manual_scanner)
@@ -123,7 +129,7 @@ fun LocalPlayerSettings(
                 ) {
                     LocalScannerFrag()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 PreferenceGroupTitle(
                     title = stringResource(R.string.grp_extra_scanner_settings)
@@ -133,7 +139,7 @@ fun LocalPlayerSettings(
                 ) {
                     LocalScannerExtraFrag()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }

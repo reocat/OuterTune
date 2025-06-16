@@ -25,9 +25,9 @@ import com.dd3boh.outertune.constants.SkipOnErrorKey
 import com.dd3boh.outertune.constants.SkipSilenceKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.constants.minPlaybackDurKey
-import com.dd3boh.outertune.ui.component.CounterDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.SliderDialog
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -54,7 +54,7 @@ fun PlayerServiceFrag() {
 fun AudioQualityFrag() {
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
         key = AudioQualityKey,
-        defaultValue = AudioQuality.AUTO
+        defaultValue = AudioQuality.HIGH
     )
 
     EnumListPreference(
@@ -137,20 +137,20 @@ fun PlaybackBehaviourFrag() {
 
 
     if (showMinPlaybackDur) {
-        CounterDialog(
+        SliderDialog(
             title = stringResource(R.string.min_playback_duration),
             description = stringResource(R.string.min_playback_duration_description),
             initialValue = minPlaybackDur,
-            upperBound = 100,
-            lowerBound = 0,
-            unitDisplay = "%",
+            defaultValue = 30,
+            valueRange = 0f..100f,
+            valueSuffix = "%",
             onDismiss = { showMinPlaybackDur = false },
             onConfirm = {
                 showMinPlaybackDur = false
                 onMinPlaybackDurChange(it)
             },
-            onCancel = {
-                showMinPlaybackDur = false
+            onReset = {
+                onMinPlaybackDurChange(30)
             }
         )
     }

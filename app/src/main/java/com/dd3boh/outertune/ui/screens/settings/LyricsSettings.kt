@@ -62,7 +62,7 @@ fun LyricsSettings(
         ) {
             LyricSourceFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_lyrics_parser)
@@ -73,7 +73,7 @@ fun LyricsSettings(
         ) {
             LyricParserFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_lyrics_format)

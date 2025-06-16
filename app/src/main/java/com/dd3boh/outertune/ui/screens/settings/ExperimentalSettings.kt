@@ -10,7 +10,6 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,9 +39,11 @@ import androidx.compose.material.icons.rounded.Devices
 import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.FolderCopy
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.TextRotationAngledown
+import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -89,7 +90,6 @@ import com.dd3boh.outertune.constants.LyricUpdateSpeed
 import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
-import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
@@ -158,18 +158,24 @@ fun ExperimentalSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+            .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         PreferenceGroupTitle(
             title = stringResource(R.string.experimental_settings_title)
         )
-        SwitchPreference(
-            title = { Text(stringResource(R.string.tablet_ui_title)) },
-            description = stringResource(R.string.tablet_ui_title),
-            icon = { Icon(Icons.Rounded.Devices, null) },
-            checked = tabletUi,
-            onCheckedChange = onTabletUiChange
-        )
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.tablet_ui_title)) },
+                description = stringResource(R.string.tablet_ui_title),
+                icon = { Icon(Icons.Rounded.Devices, null) },
+                checked = tabletUi,
+                onCheckedChange = onTabletUiChange
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
@@ -198,386 +204,459 @@ fun ExperimentalSettings(
                 isEnabled = lyricsFancy
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
 
         PreferenceGroupTitle(
             title = stringResource(R.string.settings_debug)
         )
         // dev settings
-        SwitchPreference(
-            title = { Text(stringResource(R.string.dev_settings_title)) },
-            description = stringResource(R.string.dev_settings_description),
-            icon = { Icon(Icons.Rounded.DeveloperMode, null) },
-            checked = devSettings,
-            onCheckedChange = onDevSettingsChange
-        )
-
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.dev_settings_title)) },
+                description = stringResource(R.string.dev_settings_description),
+                icon = { Icon(Icons.Rounded.DeveloperMode, null) },
+                checked = devSettings,
+                onCheckedChange = onDevSettingsChange
+            )
+        }
 
         PreferenceGroupTitle(
             title = "Download settings"
         )
-
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.dl_migrate_title)) },
-            description = stringResource(R.string.dl_migrate_description),
-            icon = {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(28.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    )
-                } else {
-                    Icon(Icons.Rounded.Downloading, null)
-                }
-            },
-            onClick = {
-                showMigrationDialog = true
-            },
-            isEnabled = !isLoading
-        )
-        if (showMigrationDialog) {
-            DefaultDialog(
-                onDismiss = { showMigrationDialog = false },
-                content = {
-                    Text(
-                        text = stringResource(
-                            R.string.dl_migrate_confirm,
-                            fileFromUri(context, downloadPath.toUri())?.absolutePath ?: ""
-                        ),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 18.dp)
-                    )
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.dl_migrate_title)) },
+                description = stringResource(R.string.dl_migrate_description),
+                icon = {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(28.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    } else {
+                        Icon(Icons.Rounded.Downloading, null)
+                    }
                 },
-                buttons = {
-                    TextButton(
-                        onClick = {
-                            showMigrationDialog = false
-                        }
-                    ) {
-                        Text(text = stringResource(android.R.string.cancel))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            showMigrationDialog = false
-
-                            downloadUtil.migrateDownloads()
-                        }
-                    ) {
-                        Text(text = stringResource(android.R.string.ok))
-                    }
-                }
-            )
-        }
-
-        if (showImportDialog) {
-            DefaultDialog(
-                onDismiss = { showImportDialog = false },
-                content = {
-                    Text(
-                        text = stringResource(R.string.dl_rescan_confirm),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 18.dp)
-                    )
+                onClick = {
+                    showMigrationDialog = true
                 },
-                buttons = {
-                    TextButton(
-                        onClick = {
-                            showImportDialog = false
-                        }
-                    ) {
-                        Text(text = stringResource(android.R.string.cancel))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            showImportDialog = false
-                            downloadUtil.scanDownloads()
-                        }
-                    ) {
-                        Text(text = stringResource(android.R.string.ok))
-                    }
-                }
+                isEnabled = !isLoading
             )
-        }
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.dl_rescan_title)) },
-            description = stringResource(R.string.dl_rescan_description),
-            icon = {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(28.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    )
-                } else {
-                    Icon(Icons.Rounded.Sync, null)
-                }
-            },
-            onClick = {
-                showImportDialog = true
-            },
-            isEnabled = !isLoading
-        )
+            if (showMigrationDialog) {
+                DefaultDialog(
+                    onDismiss = { showMigrationDialog = false },
+                    content = {
+                        Text(
+                            text = stringResource(
+                                R.string.dl_migrate_confirm,
+                                fileFromUri(context, downloadPath.toUri())?.absolutePath ?: ""
+                            ),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 18.dp)
+                        )
+                    },
+                    buttons = {
+                        TextButton(
+                            onClick = {
+                                showMigrationDialog = false
+                            }
+                        ) {
+                            Text(text = stringResource(android.R.string.cancel))
+                        }
 
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.dl_extra_path_title)) },
-            description = stringResource(R.string.dl_extra_path_description),
-            icon = { Icon(Icons.Rounded.FolderCopy, null) },
-            onClick = {
-                showPathsDialog = true
-            },
-            isEnabled = !isLoading
-        )
-        if (showPathsDialog) {
-            var tempScanPaths = remember { mutableStateListOf<Uri>() }
-            LaunchedEffect(dlPathExtra) {
-                tempScanPaths.addAll(uriListFromString(dlPathExtra))
+                        TextButton(
+                            onClick = {
+                                showMigrationDialog = false
+
+                                downloadUtil.migrateDownloads()
+                            }
+                        ) {
+                            Text(text = stringResource(android.R.string.ok))
+                        }
+                    }
+                )
             }
 
-            ActionPromptDialog(
-                titleBar = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+            if (showImportDialog) {
+                DefaultDialog(
+                    onDismiss = { showImportDialog = false },
+                    content = {
                         Text(
-                            text = stringResource(R.string.scan_paths_incl),
-                            style = MaterialTheme.typography.titleLarge,
+                            text = stringResource(R.string.dl_rescan_confirm),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 18.dp)
                         )
-                    }
-                },
-                onDismiss = {
-                    showPathsDialog = false
-                    tempScanPaths.clear()
-                },
-                onConfirm = {
-                    onDlPathExtraChange(stringFromUriList(tempScanPaths.toList()))
-                    coroutineScope.launch {
-                        delay(1000)
-                        downloadUtil.cd()
-                        downloadUtil.scanDownloads()
-                    }
-
-                    showPathsDialog = false
-                    tempScanPaths.clear()
-                },
-                onReset = {
-                    // reset to whitespace so not empty
-                    tempScanPaths.clear()
-                },
-                onCancel = {
-                    showPathsDialog = false
-                    tempScanPaths.clear()
-                },
-                isInputValid = uriListFromString(scanPaths).toList().none { scanPath ->
-                    // scan path cannot be contain any dl extras path
-                    tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
-                }
-            ) {
-                val dirPickerLauncher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.OpenDocumentTree()
-                ) { uri ->
-                    if (uri == null) return@rememberLauncherForActivityResult
-                    val contentResolver = context.contentResolver
-                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    contentResolver.takePersistableUriPermission(uri, takeFlags)
-                    tempScanPaths.add(uri)
-                }
-
-                // folders list
-                Column(
-                    modifier = Modifier
-                        .padding(vertical = 12.dp)
-                        .border(
-                            2.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            RoundedCornerShape(ThumbnailCornerRadius)
-                        )
-                ) {
-                    tempScanPaths.forEach { tmpPath ->
-                        val valid = uriListFromString(scanPaths).toList().none {
-                            tmpPath.toString().contains(it.toString())
+                    },
+                    buttons = {
+                        TextButton(
+                            onClick = {
+                                showImportDialog = false
+                            }
+                        ) {
+                            Text(text = stringResource(android.R.string.cancel))
                         }
+
+                        TextButton(
+                            onClick = {
+                                showImportDialog = false
+                                downloadUtil.scanDownloads()
+                            }
+                        ) {
+                            Text(text = stringResource(android.R.string.ok))
+                        }
+                    }
+                )
+            }
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.dl_rescan_title)) },
+                description = stringResource(R.string.dl_rescan_description),
+                icon = {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(28.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    } else {
+                        Icon(Icons.Rounded.Sync, null)
+                    }
+                },
+                onClick = {
+                    showImportDialog = true
+                },
+                isEnabled = !isLoading
+            )
+
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.dl_extra_path_title)) },
+                description = stringResource(R.string.dl_extra_path_description),
+                icon = { Icon(Icons.Rounded.FolderCopy, null) },
+                onClick = {
+                    showPathsDialog = true
+                },
+                isEnabled = !isLoading
+            )
+            if (showPathsDialog) {
+                var tempScanPaths = remember { mutableStateListOf<Uri>() }
+                LaunchedEffect(dlPathExtra) {
+                    tempScanPaths.addAll(uriListFromString(dlPathExtra))
+                }
+
+                ActionPromptDialog(
+                    titleBar = {
                         Row(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
-                                .clickable { }) {
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                text = tmpPath.toString(),
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .align(Alignment.CenterVertically)
+                                text = stringResource(R.string.scan_paths_incl),
+                                style = MaterialTheme.typography.titleLarge,
                             )
-                            IconButton(
-                                onClick = {
-                                    tempScanPaths.remove(tmpPath)
-                                },
-                                onLongClick = {}
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = null,
+                        }
+                    },
+                    onDismiss = {
+                        showPathsDialog = false
+                        tempScanPaths.clear()
+                    },
+                    onConfirm = {
+                        onDlPathExtraChange(stringFromUriList(tempScanPaths.toList()))
+                        coroutineScope.launch {
+                            delay(1000)
+                            downloadUtil.cd()
+                            downloadUtil.scanDownloads()
+                        }
+
+                        showPathsDialog = false
+                        tempScanPaths.clear()
+                    },
+                    onReset = {
+                        // reset to whitespace so not empty
+                        tempScanPaths.clear()
+                    },
+                    onCancel = {
+                        showPathsDialog = false
+                        tempScanPaths.clear()
+                    },
+                    isInputValid = uriListFromString(scanPaths).toList().none { scanPath ->
+                        // scan path cannot be contain any dl extras path
+                        tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
+                    }
+                ) {
+                    val dirPickerLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.OpenDocumentTree()
+                    ) { uri ->
+                        if (uri == null) return@rememberLauncherForActivityResult
+                        val contentResolver = context.contentResolver
+                        val takeFlags: Int =
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        contentResolver.takePersistableUriPermission(uri, takeFlags)
+                        tempScanPaths.add(uri)
+                    }
+
+                    // folders list
+                    Column(
+                        modifier = Modifier
+                            .padding(vertical = 12.dp)
+                            .border(
+                                2.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                RoundedCornerShape(ThumbnailCornerRadius)
+                            )
+                    ) {
+                        tempScanPaths.forEach { tmpPath ->
+                            val valid = uriListFromString(scanPaths).toList().none {
+                                tmpPath.toString().contains(it.toString())
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
+                                    .clickable { }) {
+                                Text(
+                                    text = tmpPath.toString(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .align(Alignment.CenterVertically)
                                 )
+                                IconButton(
+                                    onClick = {
+                                        tempScanPaths.remove(tmpPath)
+                                    },
+                                    onLongClick = {}
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                // add folder button
-                Column {
-                    Button(onClick = { dirPickerLauncher.launch(null) }) {
-                        Text(stringResource(R.string.scan_paths_add_folder))
-                    }
+                    // add folder button
+                    Column {
+                        Button(onClick = { dirPickerLauncher.launch(null) }) {
+                            Text(stringResource(R.string.scan_paths_add_folder))
+                        }
 
-                    InfoLabel(
-                        text = stringResource(R.string.scan_paths_tooltip),
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-
-                    if (uriListFromString(scanPaths).toList().any { scanPath ->
-                            // scan path cannot be contain any dl extras path
-                            tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
-                        }) {
                         InfoLabel(
-                            text = stringResource(R.string.scanner_rejected_dir),
-                            isError = true,
+                            text = stringResource(R.string.scan_paths_tooltip),
                             modifier = Modifier.padding(top = 8.dp)
                         )
+
+                        if (uriListFromString(scanPaths).toList().any { scanPath ->
+                                // scan path cannot be contain any dl extras path
+                                tempScanPaths.toList()
+                                    .any { it.toString().contains(scanPath.toString()) }
+                            }) {
+                            InfoLabel(
+                                text = stringResource(R.string.scanner_rejected_dir),
+                                isError = true,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
                     }
                 }
             }
         }
+        Spacer(modifier = Modifier.height(12.dp))
+
 
         if (devSettings) {
-            PreferenceEntry(
-                title = { Text("DEBUG: Force local to remote artist migration NOW") },
-                icon = { Icon(Icons.Rounded.Backup, null) },
-                onClick = {
-                    Toast.makeText(context, context.getString(R.string.scanner_ytm_link_start), Toast.LENGTH_SHORT)
-                        .show()
-                    coroutineScope.launch(Dispatchers.IO) {
-                        val scanner = LocalMediaScanner.getScanner(context,  SCANNER_OWNER_LM)
-                        Timber.tag("Settings").d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
-                        scanner.localToRemoteArtist(database)
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                PreferenceEntry(
+                    title = { Text("DEBUG: Force local to remote artist migration NOW") },
+                    icon = { Icon(Icons.Rounded.Backup, null) },
+                    onClick = {
                         Toast.makeText(
                             context,
-                            context.getString(R.string.scanner_ytm_link_success),
+                            context.getString(R.string.scanner_ytm_link_start),
                             Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            )
-
-            PreferenceEntry(
-                title = { Text("Enter configurator") },
-                icon = { Icon(Icons.Rounded.ConfirmationNumber, null) },
-                onClick = {
-                    onOobeStatusChange(0)
-                    runBlocking { // hax. page loads before pref updates
-                        delay(500)
-                    }
-                    navController.navigate("setup_wizard")
-                }
-            )
-
-            // nukes
-            PreferenceEntry(
-                title = { Text("Tap to show nuke options") },
-                icon = { Icon(Icons.Rounded.ErrorOutline, null) },
-                onClick = {
-                    nukeEnabled = !nukeEnabled
-                }
-            )
-
-            if (nukeEnabled) {
-                PreferenceEntry(
-                    title = { Text("DEBUG: Nuke local lib") },
-                    icon = { Icon(Icons.Rounded.ErrorOutline, null) },
-                    onClick = {
-                        Toast.makeText(context, "Nuking local files from database...", Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag("Settings").d("Nuke database status:  ${database.nukeLocalData()}")
-                        }
-                    }
-                )
-                PreferenceEntry(
-                    title = { Text("DEBUG: Nuke local artists") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
-                    onClick = {
-                        Toast.makeText(context, "Nuking local artists from database...", Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag("Settings").d("Nuke database status:  ${database.nukeLocalArtists()}")
-                        }
-                    }
-                )
-                PreferenceEntry(
-                    title = { Text("DEBUG: Nuke dangling format entities") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
-                    onClick = {
-                        Toast.makeText(context, "Nuking dangling format entities from database...", Toast.LENGTH_SHORT)
+                        )
                             .show()
                         coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag("Settings").d("Nuke database status:  ${database.nukeDanglingFormatEntities()}")
-                        }
-                    }
-                )
-                PreferenceEntry(
-                    title = { Text("DEBUG: Nuke local db lyrics") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
-                    onClick = {
-                        Toast.makeText(context, "Nuking local lyrics from database...", Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag("Settings").d("Nuke database status:  ${database.nukeLocalLyrics()}")
-                        }
-                    }
-                )
-                PreferenceEntry(
-                    title = { Text("DEBUG: Nuke dangling db lyrics") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
-                    onClick = {
-                        Toast.makeText(context, "Nuking dangling lyrics from database...", Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag(SETTINGS_TAG).i("Nuke database status:  ${database.nukeDanglingLyrics()}")
-                        }
-                    }
-                )
-                PreferenceEntry(
-                    title = { Text("DEBUG: Nuke remote playlists") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
-                    onClick = {
-                        Toast.makeText(context, "Nuking remote playlists from database...", Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag("Settings").d("Nuke database status:  ${database.nukeRemotePlaylists()}")
+                            val scanner = LocalMediaScanner.getScanner(context, SCANNER_OWNER_LM)
+                            Timber.tag("Settings")
+                                .d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
+                            scanner.localToRemoteArtist(database)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.scanner_ytm_link_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 )
             }
-            PreferenceEntry(
-                title = { Text("Haptics test") },
-                icon = { Icon(Icons.Rounded.Vibration, null) },
-                onClick = {
-                    hapticsTestEnabled = !hapticsTestEnabled
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                PreferenceEntry(
+                    title = { Text("Enter configurator") },
+                    icon = { Icon(Icons.Rounded.ConfirmationNumber, null) },
+                    onClick = {
+                        onOobeStatusChange(0)
+                        runBlocking { // hax. page loads before pref updates
+                            delay(500)
+                        }
+                        navController.navigate("setup_wizard")
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // nukes
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                PreferenceEntry(
+                    title = { Text("Tap to show nuke options") },
+                    icon = { Icon(Icons.Rounded.ErrorOutline, null) },
+                    onClick = {
+                        nukeEnabled = !nukeEnabled
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (nukeEnabled) {
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    PreferenceEntry(
+                        title = { Text("DEBUG: Nuke local lib") },
+                        icon = { Icon(Icons.Rounded.ErrorOutline, null) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Nuking local files from database...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch(Dispatchers.IO) {
+                                Timber.tag("Settings")
+                                    .d("Nuke database status:  ${database.nukeLocalData()}")
+                            }
+                        }
+                    )
+                    PreferenceEntry(
+                        title = { Text("DEBUG: Nuke local artists") },
+                        icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Nuking local artists from database...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch(Dispatchers.IO) {
+                                Timber.tag("Settings")
+                                    .d("Nuke database status:  ${database.nukeLocalArtists()}")
+                            }
+                        }
+                    )
+                    PreferenceEntry(
+                        title = { Text("DEBUG: Nuke dangling format entities") },
+                        icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Nuking dangling format entities from database...",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                            coroutineScope.launch(Dispatchers.IO) {
+                                Timber.tag("Settings")
+                                    .d("Nuke database status:  ${database.nukeDanglingFormatEntities()}")
+                            }
+                        }
+                    )
+                    PreferenceEntry(
+                        title = { Text("DEBUG: Nuke local db lyrics") },
+                        icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Nuking local lyrics from database...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch(Dispatchers.IO) {
+                                Timber.tag("Settings")
+                                    .d("Nuke database status:  ${database.nukeLocalLyrics()}")
+                            }
+                        }
+                    )
+                    PreferenceEntry(
+                        title = { Text("DEBUG: Nuke dangling db lyrics") },
+                        icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Nuking dangling lyrics from database...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch(Dispatchers.IO) {
+                                Timber.tag(SETTINGS_TAG)
+                                    .i("Nuke database status:  ${database.nukeDanglingLyrics()}")
+                            }
+                        }
+                    )
+                    PreferenceEntry(
+                        title = { Text("DEBUG: Nuke remote playlists") },
+                        icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Nuking remote playlists from database...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            coroutineScope.launch(Dispatchers.IO) {
+                                Timber.tag("Settings")
+                                    .d("Nuke database status:  ${database.nukeRemotePlaylists()}")
+                            }
+                        }
+                    )
                 }
-            )
-            PreferenceEntry(
-                title = { Text("Material colors test") },
-                icon = { Icon(Icons.Rounded.Palette, null) },
-                onClick = {
-                    colorsTestEnabled = !colorsTestEnabled
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                PreferenceEntry(
+                    title = { Text("Haptics test") },
+                    icon = { Icon(Icons.Rounded.Vibration, null) },
+                    onClick = {
+                        hapticsTestEnabled = !hapticsTestEnabled
+                    }
+                )
+
+                if (hapticsTestEnabled) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HapticsTestSection()
                 }
-            )
-            if (hapticsTestEnabled) {
-                Spacer(modifier = Modifier.height(8.dp))
-                HapticsTestSection()
+
+                PreferenceEntry(
+                    title = { Text("Material colors test") },
+                    icon = { Icon(Icons.Rounded.Palette, null) },
+                    onClick = {
+                        colorsTestEnabled = !colorsTestEnabled
+                    }
+                )
+
+                if (colorsTestEnabled) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MaterialColorsTestSection()
+                }
             }
-            if (colorsTestEnabled) {
-                Spacer(modifier = Modifier.height(8.dp))
-                MaterialColorsTestSection()
-            }
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 
@@ -725,7 +804,7 @@ fun HapticFeedbackItem(
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = name,
             style = MaterialTheme.typography.bodyMedium,

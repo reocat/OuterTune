@@ -1,17 +1,22 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -19,17 +24,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.DragHandle
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Reorder
 import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material.icons.rounded.Tab
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +49,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.R
@@ -49,26 +63,51 @@ import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
 import com.dd3boh.outertune.constants.DefaultOpenTabKey
 import com.dd3boh.outertune.constants.EnabledFiltersKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
+import com.dd3boh.outertune.constants.GridCellSize
+import com.dd3boh.outertune.constants.GridCellSizeKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
+import com.dd3boh.outertune.constants.SliderStyle
+import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SwipeToQueueKey
 import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
+import com.dd3boh.outertune.ui.component.DefaultDialog
+import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
+import com.dd3boh.outertune.ui.component.PlayerSliderTrack
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
+import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
+import me.saket.squiggles.SquigglySlider
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.util.Locale
-import kotlin.collections.contains
+
+@Composable
+fun GridCellsSizeFrag() {
+    val (gridCellSize, onGridCellSizeChange) = rememberEnumPreference(GridCellSizeKey, defaultValue = GridCellSize.SMALL)
+    EnumListPreference(
+        title = { Text(stringResource(R.string.grid_cell_size)) },
+        icon = { Icon(Icons.Rounded.GridView,null) },
+        selectedValue = gridCellSize,
+        onValueSelected = onGridCellSizeChange,
+        valueText = {
+            when (it) {
+                GridCellSize.SMALL -> stringResource(R.string.small)
+                GridCellSize.BIG -> stringResource(R.string.big)
+            }
+        },
+    )
+}
 
 @Composable
 fun ColumnScope.TabArrangementFrag() {
@@ -245,33 +284,33 @@ fun ColumnScope.TabArrangementFrag() {
                         state = reorderableState,
                         key = tab.hashCode()
                     ) {
+                        val isHome = tab.first == Screens.Home
                         fun onChecked() {
-                            mutableTabs[mutableTabs.indexOf(tab)] = tab.copy(second = !tab.second)
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
-                                .fillMaxWidth()
-                                .clickable { onChecked() }
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .background(if (tab.second) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            ) {
-                                Row(
-                                    Modifier
-                                        .padding(start = 8.dp)
-                                        .background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    Text(
-                                        text = stringResource(tab.first.titleId),
-                                        modifier = Modifier.padding(start = 8.dp)
-                                    )
-                                }
+                            if (!isHome) {
+                                mutableTabs[mutableTabs.indexOf(tab)] = tab.copy(second = !tab.second)
                             }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = !isHome) { onChecked() }
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = tab.second,
+                                enabled = !isHome,
+                                onCheckedChange = { onChecked() }
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(tab.first.titleId),
+                                modifier = Modifier.weight(1f),
+                                color = if (isHome)
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                else
+                                    MaterialTheme.colorScheme.onSurface
+                            )
                             Icon(
                                 imageVector = Icons.Rounded.DragHandle,
                                 contentDescription = null,
@@ -326,40 +365,29 @@ fun ColumnScope.TabArrangementFrag() {
                         fun onChecked() {
                             mutableFilters[mutableFilters.indexOf(filter)] = filter.copy(second = !filter.second)
                         }
-
                         Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
                                 .fillMaxWidth()
                                 .clickable { onChecked() }
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .background(if (filter.second) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            ) {
-                                Row(
-                                    Modifier
-                                        .padding(start = 8.dp)
-                                        .background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    Text(
-                                        text = when (filter.first) {
-                                            LibraryFilter.ALBUMS -> stringResource(R.string.albums)
-                                            LibraryFilter.ARTISTS -> stringResource(R.string.artists)
-                                            LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
-                                            LibraryFilter.SONGS -> stringResource(R.string.songs)
-                                            LibraryFilter.FOLDERS -> stringResource(R.string.folders)
-                                            else -> {
-                                                // TODO: Do we even need this?
-                                                stringResource(R.string.tab_arrangement_disable_tip)
-                                            }
-                                        },
-                                        modifier = Modifier.padding(start = 8.dp)
-                                    )
-                                }
-                            }
+                            Checkbox(
+                                checked = filter.second,
+                                onCheckedChange = { onChecked() }
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = when (filter.first) {
+                                    LibraryFilter.ALBUMS -> stringResource(R.string.albums)
+                                    LibraryFilter.ARTISTS -> stringResource(R.string.artists)
+                                    LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
+                                    LibraryFilter.SONGS -> stringResource(R.string.songs)
+                                    LibraryFilter.FOLDERS -> stringResource(R.string.folders)
+                                    LibraryFilter.ALL -> stringResource(R.string.tab_arrangement_disable_tip)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
                             Icon(
                                 imageVector = Icons.Rounded.DragHandle,
                                 contentDescription = null,
@@ -465,4 +493,169 @@ fun ColumnScope.LocalizationFrag() {
             onContentCountryChange(newValue)
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SliderStyleFrag() {
+    val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(SliderStyleKey, defaultValue = SliderStyle.DEFAULT)
+    var showSliderOptionDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    PreferenceEntry(
+        title = { Text(stringResource(R.string.player_slider_style)) },
+        description = when (sliderStyle) {
+            SliderStyle.DEFAULT -> stringResource(R.string.default_)
+            SliderStyle.SQUIGGLY -> stringResource(R.string.squiggly)
+            SliderStyle.SLIM -> stringResource(R.string.slim)
+        },
+        icon = { Icon(painterResource(R.drawable.sliders), null) },
+        onClick = {
+            showSliderOptionDialog = true
+        }
+    )
+
+    if (showSliderOptionDialog) {
+        DefaultDialog(
+            buttons = {
+                TextButton(
+                    onClick = { showSliderOptionDialog = false }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+            },
+            onDismiss = {
+                showSliderOptionDialog = false
+            }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(
+                            1.dp,
+                            if (sliderStyle == SliderStyle.DEFAULT) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                            RoundedCornerShape(16.dp)
+                        )
+                        .clickable {
+                            onSliderStyleChange(SliderStyle.DEFAULT)
+                            showSliderOptionDialog = false
+                        }
+                        .padding(16.dp)
+                ) {
+                    var sliderValue by remember {
+                        mutableFloatStateOf(0.5f)
+                    }
+                    Slider(
+                        value = sliderValue,
+                        valueRange = 0f..1f,
+                        onValueChange = {
+                            sliderValue = it
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {}
+                                )
+                            }
+                    )
+
+                    Text(
+                        text = stringResource(R.string.default_),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(
+                            1.dp,
+                            if (sliderStyle == SliderStyle.SQUIGGLY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                            RoundedCornerShape(16.dp)
+                        )
+                        .clickable {
+                            onSliderStyleChange(SliderStyle.SQUIGGLY)
+                            showSliderOptionDialog = false
+                        }
+                        .padding(16.dp)
+                ) {
+                    var sliderValue by remember {
+                        mutableFloatStateOf(0.5f)
+                    }
+                    SquigglySlider(
+                        value = sliderValue,
+                        valueRange = 0f..1f,
+                        onValueChange = {
+                            sliderValue = it
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        text = stringResource(R.string.squiggly),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(
+                            1.dp,
+                            if (sliderStyle == SliderStyle.SLIM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                            RoundedCornerShape(16.dp)
+                        )
+                        .clickable {
+                            onSliderStyleChange(SliderStyle.SLIM)
+                            showSliderOptionDialog = false
+                        }
+                        .padding(16.dp)
+                ) {
+                    var sliderValue by remember {
+                        mutableFloatStateOf(0.5f)
+                    }
+                    Slider(
+                        value = sliderValue,
+                        valueRange = 0f..1f,
+                        onValueChange = {
+                            sliderValue = it
+                        },
+                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                        track = { sliderState ->
+                            PlayerSliderTrack(
+                                sliderState = sliderState,
+                                colors = SliderDefaults.colors()
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {}
+                                )
+                            }
+                    )
+                    Text(
+                        text = stringResource(R.string.slim),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+    }
 }

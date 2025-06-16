@@ -98,7 +98,7 @@ fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
             }
         )
     }
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(12.dp))
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()
@@ -345,8 +345,8 @@ fun ColumnScope.SongCacheFrag() {
         mutableStateOf(false)
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
     if (maxSongCacheSize != 0) {
+        Spacer(modifier = Modifier.height(12.dp))
         if (maxSongCacheSize == -1) {
             Text(
                 text = stringResource(R.string.size_used, formatFileSize(playerCacheSize)),
@@ -471,7 +471,7 @@ fun ColumnScope.ImageCacheFrag() {
     }
 
     if (maxImageCacheSize > 0) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         LinearProgressIndicator(
             progress = { (imageCacheSize.toFloat() / imageDiskCache.maxSize).coerceIn(0f, 1f) },
             modifier = Modifier
@@ -509,6 +509,7 @@ fun ColumnScope.ImageCacheFrag() {
             showClearConfirmDialog = true
         },
     )
+    Spacer(modifier = Modifier.height(12.dp))
 
 
     /**

@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -35,7 +36,9 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
+import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
+import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.ui.screens.settings.fragments.AccountFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.SyncAutoFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.SyncExtrasFrag
@@ -65,7 +68,7 @@ fun AccountSyncSettings(
         ) {
             AccountFrag(navController)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_sync)
@@ -76,29 +79,43 @@ fun AccountSyncSettings(
         ) {
             SyncAutoFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             SyncManualFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             SyncParamsFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             SyncExtrasFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.height(12.dp))
+        SettingsClickToReveal(stringResource(R.string.prefs_advanced)) {
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                PreferenceEntry(
+                    title = { Text(stringResource(R.string.spot_import_title)) },
+                    description = null,
+                    icon = { Icon(painterResource(R.drawable.spotify), null) },
+                    onClick = {
+                        navController.navigate("settings/content/import_from_spotify")
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
     }
 
     TopAppBar(

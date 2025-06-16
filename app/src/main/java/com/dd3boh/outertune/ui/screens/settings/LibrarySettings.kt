@@ -102,7 +102,7 @@ fun LibrarySettings(
                 onClick = { navController.navigate("settings/storage") }
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.privacy)
@@ -113,7 +113,7 @@ fun LibrarySettings(
         ) {
             ListenHistoryFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
@@ -132,7 +132,7 @@ fun LibrarySettings(
                     onCheckedChange = onShowLikedAndDownloadedPlaylistChange
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth()
@@ -145,7 +145,7 @@ fun LibrarySettings(
                     onCheckedChange = onFlatSubfoldersChange
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth()

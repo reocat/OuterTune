@@ -33,7 +33,9 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
+import com.dd3boh.outertune.ui.screens.settings.fragments.GridCellsSizeFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LocalizationFrag
+import com.dd3boh.outertune.ui.screens.settings.fragments.SliderStyleFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.SwipeGesturesFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.TabArrangementFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.TabExtrasFrag
@@ -59,16 +61,22 @@ fun InterfaceSettings(
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
+            GridCellsSizeFrag()
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
             TabArrangementFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             TabExtrasFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_behavior)
@@ -79,7 +87,7 @@ fun InterfaceSettings(
         ) {
             SwipeGesturesFrag()
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_localization)
@@ -89,6 +97,17 @@ fun InterfaceSettings(
         ) {
             LocalizationFrag()
         }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        PreferenceGroupTitle(
+            title = stringResource(R.string.misc)
+        )
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SliderStyleFrag()
+        }
+        Spacer(modifier = Modifier.height(12.dp))
     }
 
 

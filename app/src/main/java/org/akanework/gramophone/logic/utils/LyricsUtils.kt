@@ -1,6 +1,5 @@
 package org.akanework.gramophone.logic.utils
 
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
 import androidx.media3.common.Metadata
@@ -9,6 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.extractor.metadata.id3.BinaryFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
+import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
 
@@ -43,8 +43,8 @@ object LrcUtils {
             } catch (e: Exception) {
                 if (parserOptions.errorText == null)
                     throw e
-                Log.e(TAG, Log.getStackTraceString(e))
-                Log.e(TAG, "The lyrics are:\n$lyrics")
+                Timber.tag(TAG).e(e)
+                Timber.tag(TAG).e("The lyrics are:\n$lyrics")
                 SemanticLyrics.UnsyncedLyrics(listOf(parserOptions.errorText to null))
             }
         }
@@ -98,7 +98,7 @@ object LrcUtils {
                 lrcFile.readBytes().toString(Charset.defaultCharset())
             else null
         } catch (e: Exception) {
-            Timber.tag(TAG).e(Log.getStackTraceString(e))
+            Timber.tag(TAG).e(e)
             return errorText
         }
     }
@@ -122,7 +122,7 @@ object LrcUtils {
                 try {
                     parseLrcStringLegacy(it, parserOptions)
                 } catch (e: Exception) {
-                    Log.e(TAG, Log.getStackTraceString(e))
+                    Timber.tag(TAG).e(e)
                     mutableListOf(MediaStoreUtils.Lyric(content = parserOptions.errorText ?: "null"))
                 }
             }
@@ -141,7 +141,7 @@ object LrcUtils {
             try {
                 parseLrcStringLegacy(it, parserOptions)
             } catch (e: Exception) {
-                Timber.tag(TAG).e(Log.getStackTraceString(e))
+                Timber.tag(TAG).e(e)
                 null
             }
         }

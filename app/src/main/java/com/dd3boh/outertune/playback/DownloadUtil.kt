@@ -3,7 +3,6 @@ package com.dd3boh.outertune.playback
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.media3.database.DatabaseProvider
@@ -54,6 +53,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import okhttp3.OkHttpClient
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -125,11 +125,11 @@ class DownloadUtil @Inject constructor(
                 // copy directly from player cache
                 val playerCacheSong = getAndDeleteFromCache(playerCache, id)
                 if (playerCacheSong != null) {
-                    Log.d(TAG, "Song found in player cache. Copying from player cache.")
+                    Timber.tag(TAG).d("Song found in player cache. Copying from player cache.")
                     downloadMgr.enqueue(id, playerCacheSong, displayName = title)
                 }
 
-                Log.d(TAG, "Song NOT found in player cache. Fetching.")
+                Timber.tag(TAG).d("Song NOT found in player cache. Fetching.")
                 songUrlCache[id]?.takeIf { it.second > System.currentTimeMillis() }?.let {
                     downloadMgr.enqueue(id, it.first.toUri().toString())
                     return@launch
@@ -420,7 +420,7 @@ class DownloadUtil @Inject constructor(
                 when (ev) {
                     is DownloadEvent.Progress -> {
 //                        val pct = ev.bytesRead * 100 / (if (ev.contentLength > 0) ev.contentLength else 1)
-//                        Log.d(TAG, "DL progress: $pct")
+//                        Timber.tag(TAG).d("DL progress: $pct")
                     }
 
                     is DownloadEvent.Success -> {

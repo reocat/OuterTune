@@ -9,7 +9,6 @@
 package com.dd3boh.outertune.utils
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.dd3boh.outertune.constants.LastAlbumSyncKey
@@ -58,6 +57,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import javax.inject.Inject
@@ -100,12 +100,12 @@ class SyncUtils @Inject constructor(
         if (!context.isAutoSyncEnabled()) {
             return
         }
-        Log.d(TAG, "Starting auto sync job")
+        Timber.tag(TAG).d("Starting auto sync job")
         if (!bypassCd) {
             val lastSync = context.dataStore.get(LastFullSyncKey, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
             val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             if (currentTime - lastSync > syncCd) {
-                Log.d(TAG, "Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
+                Timber.tag(TAG).d("Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
                 return
             }
         }
@@ -128,7 +128,7 @@ class SyncUtils @Inject constructor(
         val lastSync = context.dataStore.get(key, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
         val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         if (currentTime - lastSync > syncCd) {
-            Log.d(TAG, "Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
+            Timber.tag(TAG).d("Aborting auto sync. ${(currentTime - lastSync) * 60000} minutes until eligible")
             return false
         }
         return true
@@ -166,7 +166,7 @@ class SyncUtils @Inject constructor(
         // REQUIRED: internet, no ongoing sync, and category enabled
         if (!_isSyncingRemoteLikedSongs.value && (!checkEnabled(SyncContent.LIKED_SONGS) || !context.isInternetConnected())) {
             if (_isSyncingRemoteLikedSongs.value)
-                Log.i(TAG, "Library songs synchronization already in progress")
+                Timber.tag(TAG).i("Library songs synchronization already in progress")
             return
         }
         // OPTIONAL: auto sync and cooldown
@@ -178,7 +178,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteLikedSongs.value = true
 
         try {
-            Log.d(TAG, "Liked songs synchronization started")
+            Timber.tag(TAG).d("Liked songs synchronization started")
 
             // Get remote and local liked songs
             YouTube.playlist("LM").completed().onSuccess { page ->
@@ -221,7 +221,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLikeSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Liked songs synchronization ended")
+            Timber.tag(TAG).i("Liked songs synchronization ended")
             _isSyncingRemoteLikedSongs.value = false
         }
     }
@@ -233,7 +233,7 @@ class SyncUtils @Inject constructor(
         // REQUIRED: internet, no ongoing sync, and category enabled
         if (!_isSyncingRemoteSongs.value && (!checkEnabled(SyncContent.PRIVATE_SONGS) || !context.isInternetConnected())) {
             if (_isSyncingRemoteSongs.value)
-                Log.i(TAG, "Library songs synchronization already in progress")
+                Timber.tag(TAG).i("Library songs synchronization already in progress")
             return
         }
         // OPTIONAL: auto sync and cooldown
@@ -245,7 +245,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteSongs.value = true
 
         try {
-            Log.i(TAG, "Library songs synchronization started")
+            Timber.tag(TAG).i("Library songs synchronization started")
 
             // Get remote songs (from library and uploads)
             val remoteSongs = getRemoteData<SongItem>("FEmusic_liked_videos", "FEmusic_library_privately_owned_tracks")
@@ -289,7 +289,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastLibSongSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Library songs synchronization ended")
+            Timber.tag(TAG).i("Library songs synchronization ended")
             _isSyncingRemoteSongs.value = false
         }
     }
@@ -301,7 +301,7 @@ class SyncUtils @Inject constructor(
         // REQUIRED: internet, no ongoing sync, and category enabled
         if (!_isSyncingRemoteAlbums.value && (!checkEnabled(SyncContent.ALBUMS) || !context.isInternetConnected())) {
             if (_isSyncingRemoteAlbums.value)
-                Log.i(TAG, "Library songs synchronization already in progress")
+                Timber.tag(TAG).i("Library songs synchronization already in progress")
             return
         }
         // OPTIONAL: auto sync and cooldown
@@ -313,7 +313,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteAlbums.value = true
 
         try {
-            Log.i(TAG, "Library albums synchronization started")
+            Timber.tag(TAG).i("Library albums synchronization started")
 
             // Get remote albums (from library and uploads)
             val remoteAlbums =
@@ -358,7 +358,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastAlbumSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Library albums synchronization ended")
+            Timber.tag(TAG).i("Library albums synchronization ended")
             _isSyncingRemoteAlbums.value = false // Use the correct AtomicBoolean
         }
     }
@@ -370,7 +370,7 @@ class SyncUtils @Inject constructor(
         // REQUIRED: internet, no ongoing sync, and category enabled
         if (!_isSyncingRemoteArtists.value && (!checkEnabled(SyncContent.ARTISTS) || !context.isInternetConnected())) {
             if (_isSyncingRemoteArtists.value)
-                Log.i(TAG, "Library songs synchronization already in progress")
+                Timber.tag(TAG).i("Library songs synchronization already in progress")
             return
         }
         // OPTIONAL: auto sync and cooldown
@@ -382,7 +382,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemoteArtists.value = true
 
         try {
-            Log.i(TAG, "Artist subscriptions synchronization started")
+            Timber.tag(TAG).i("Artist subscriptions synchronization started")
 
             // Get remote artists (from library and uploads)
             val likedArtists = getRemoteData<ArtistItem>(
@@ -449,7 +449,7 @@ class SyncUtils @Inject constructor(
             context.dataStore.edit { settings ->
                 settings[LastArtistSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
-            Log.i(TAG, "Artist subscriptions synchronization ended")
+            Timber.tag(TAG).i("Artist subscriptions synchronization ended")
             _isSyncingRemoteArtists.value = false
         }
     }
@@ -461,7 +461,7 @@ class SyncUtils @Inject constructor(
         // REQUIRED: internet, no ongoing sync, and category enabled
         if (!_isSyncingRemotePlaylists.value && (!checkEnabled(SyncContent.PLAYLISTS) || !context.isInternetConnected())) {
             if (_isSyncingRemotePlaylists.value)
-                Log.i(TAG, "Library songs synchronization already in progress")
+                Timber.tag(TAG).i("Library songs synchronization already in progress")
             return
         }
         // OPTIONAL: auto sync and cooldown
@@ -473,7 +473,7 @@ class SyncUtils @Inject constructor(
         _isSyncingRemotePlaylists.value = true
 
         try {
-            Log.i(TAG, "Library playlist synchronization started")
+            Timber.tag(TAG).i("Library playlist synchronization started")
 
             // Get remote and local playlists
             YouTube.library("FEmusic_liked_playlists").completed().onSuccess { page ->
@@ -549,7 +549,7 @@ class SyncUtils @Inject constructor(
                 settings[LastPlaylistSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }
             _isSyncingRemotePlaylists.value = false
-            Log.i(TAG, "Library playlist synchronization ended")
+            Timber.tag(TAG).i("Library playlist synchronization ended")
         }
     }
 
@@ -625,7 +625,7 @@ class SyncUtils @Inject constructor(
         // REQUIRED: internet, no ongoing sync, and category enabled
         if (!_isSyncingRecentActivity.value && (!checkEnabled(SyncContent.RECENT_ACTIVITY) || !context.isInternetConnected())) {
             if (_isSyncingRecentActivity.value)
-                Log.i(TAG, "Library songs synchronization already in progress")
+                Timber.tag(TAG).i("Library songs synchronization already in progress")
             return
         }
         // OPTIONAL: auto sync and cooldown

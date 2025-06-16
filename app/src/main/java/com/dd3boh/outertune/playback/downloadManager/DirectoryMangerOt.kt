@@ -2,13 +2,13 @@ package com.dd3boh.outertune.playback.downloadManager
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.documentfile.provider.DocumentFile
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scanDfRecursive
 import com.dd3boh.outertune.utils.scanners.documentFileFromUri
+import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 
@@ -18,7 +18,7 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
     var allDirs: List<DocumentFile> = mutableListOf()
 
     init {
-        Log.i(TAG, "Initializing download manager: $dir")
+        Timber.tag(TAG).i("Initializing download manager: $dir")
         try {
             mainDir = documentFileFromUri(context, dir)
             if (mainDir == null || !mainDir!!.isDirectory) {
@@ -37,9 +37,9 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
                 )
             }
             allDirs = newAllDirs.toList()
-            Log.i(TAG, "Download manager initialized successfully. ${allDirs.size}")
+            Timber.tag(TAG).i("Download manager initialized successfully. ${allDirs.size}")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to initiate download manager: " + e.message)
+            Timber.tag(TAG).e("Failed to initiate download manager: " + e.message)
             mainDir = null
             allDirs = mutableListOf()
             reportException(e)

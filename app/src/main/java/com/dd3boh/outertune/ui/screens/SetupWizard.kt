@@ -70,6 +70,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -106,11 +107,12 @@ import com.dd3boh.outertune.constants.CountryCodeToName
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DataSyncIdKey
-import com.dd3boh.outertune.constants.FirstSetupPassed
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LyricTrimKey
+import com.dd3boh.outertune.constants.OOBE_VERSION
+import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.VisitorDataKey
@@ -119,6 +121,7 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.TokenEditorDialog
+import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
@@ -140,7 +143,7 @@ fun SetupWizard(
     val layoutDirection = LocalLayoutDirection.current
     val uriHandler = LocalUriHandler.current
 
-    val (firstSetupPassed, onFirstSetupPassedChange) = rememberPreference(FirstSetupPassed, defaultValue = false)
+    var oobeStatus by rememberPreference(OobeStatusKey, defaultValue = 0)
 
     val (contentLanguage, onContentLanguageChange) = rememberPreference(
         key = ContentLanguageKey,
@@ -179,8 +182,10 @@ fun SetupWizard(
         }
     }
 
-    if (firstSetupPassed) {
-        navController.navigateUp()
+    LaunchedEffect(oobeStatus) {
+        if (oobeStatus >= OOBE_VERSION) {
+            navController.navigateUp()
+        }
     }
 
     val navBar = @Composable {
@@ -222,9 +227,6 @@ fun SetupWizard(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
-                    if (position == 1) {
-                    }
-
                     if (position < MAX_POS) {
                         position += 1
                     }
@@ -289,8 +291,7 @@ fun SetupWizard(
                         WelcomePage(
                             onNext = { position += 1 },
                             onSkip = {
-                                onFirstSetupPassedChange(true)
-                                navController.navigateUp()
+                                oobeStatus = OOBE_VERSION
                             },
                             onRestoreBackup = {
                                 navController.navigate("settings/backup_restore")
@@ -347,8 +348,7 @@ fun SetupWizard(
                         FinalPage(
                             uriHandler = uriHandler,
                             onFinish = {
-                                onFirstSetupPassedChange(true)
-                                navController.navigateUp()
+                                oobeStatus = OOBE_VERSION
                             }
                         )
                     }
@@ -364,8 +364,7 @@ fun SetupWizard(
                         if (position == 0) {
                             position += 1
                         } else {
-                            onFirstSetupPassedChange(true)
-                            navController.navigateUp()
+                            oobeStatus = OOBE_VERSION
                         }
                     }
                 ) {

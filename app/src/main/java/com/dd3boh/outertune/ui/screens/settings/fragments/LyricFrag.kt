@@ -8,12 +8,12 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.ContentCut
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.TextFields
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.EnableKugouKey
 import com.dd3boh.outertune.constants.EnableLrcLibKey
@@ -29,9 +32,9 @@ import com.dd3boh.outertune.constants.LyricFontSizeKey
 import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
-import com.dd3boh.outertune.ui.component.CounterDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.SliderDialog
 import com.dd3boh.outertune.constants.LyricsPosition
 import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.ui.component.SwitchPreference
@@ -80,19 +83,29 @@ fun ColumnScope.LyricFormatFrag() {
 
 
     if (showFontSizeDialog) {
-        CounterDialog(
+        SliderDialog(
             title = stringResource(R.string.lyrics_font_Size),
             initialValue = lyricFontSize,
-            upperBound = 32,
-            lowerBound = 8,
-            unitDisplay = " pt",
+            defaultValue = 20,
+            valueRange = 8f..32f,
+            steps = 23,
+            valueSuffix = " sp",
+            previewContent = { fontSize ->
+                Text(
+                    text = "Preview Text",
+                    fontSize = fontSize.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
             onDismiss = { showFontSizeDialog = false },
             onConfirm = {
                 onLyricFontSizeChange(it)
                 showFontSizeDialog = false
             },
-            onReset = { onLyricFontSizeChange(20) },
-            onCancel = { showFontSizeDialog = false }
+            onReset = {
+                onLyricFontSizeChange(20)
+            }
         )
     }
 }

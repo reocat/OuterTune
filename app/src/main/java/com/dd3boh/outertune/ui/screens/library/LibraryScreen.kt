@@ -611,7 +611,7 @@ fun LibraryEmptyState(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = stringResource(id = R.string.library_empty_description),

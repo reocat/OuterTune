@@ -164,13 +164,10 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="disable_lm_confirm">Are you sure you want to disable local media features?</string>
 
     <string name="import_innertune_tooltip">Restoring InnerTune backups are supported, albeit a possibility of anomalies due to technical limitations</string>
-    <string name="import_m3u">Import a playlist (m3u)</string>
-    <string name="m3u_import_playlist_failed">Failed to import playlist</string>
 
     <!-- Scanner settings -->
     <string name="auto_scanner_title">Scan automatically</string>
     <string name="auto_scanner_description">Automatically scan for songs when opening the app. This does not reload metadata of existing songs.</string>
-
     <string name="scan_paths_title">Configure scan locations…</string>
     <string name="scan_paths_tooltip">All subdirectories will also be affected</string>
     <string name="scan_paths_add_folder">Add new folder</string>
@@ -221,7 +218,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scanner_variant_rescan">Rescan the entire library and reload all songs\' metadata</string>
     <string name="scanner_online_artist_linking">Try to link local files\' artists with ones on YouTube Music</string>
 
-<!-- Storage setting -->
+    <!-- Storage setting -->
     <string name="clear_downloads_confirm">Are you sure you want to remove all downloads? Only downloads in the main download folder will be removed.</string>
     <string name="clear_image_cache_confirm">Are you sure you want to clear image cache? All exiting album thumbnails will be removed.</string>
     <string name="clear_song_cache_confirm">Are you sure you want to clear song cache?</string>
@@ -231,6 +228,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="dl_migrate_description">Move downloads from the app\'s internal storage to the device\'s external storage</string>
     <string name="dl_migrate_confirm">This will migrate ALL internal downloads to \"%s\", and this action cannot be undone. Continue?</string>
     <string name="dl_main_path_title">Configure download directory…</string>
+    <string name="dl_main_path_description">Select downloads storage location</string>
     <string name="dl_rescan_title">Rescan download folders…</string>
     <string name="dl_rescan_description">Update the database and refresh the download registry if any files or folders have changed</string>
 	<string name="dl_rescan_confirm">Rescan all download folders now? This can take a few minutes depending on the size of your library.</string>
@@ -238,9 +236,6 @@ while also allowing users to translate our app as well. New, specific strings to
 
     <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Pause sharing listen history with YouTube Music</string>
-
-    <!-- Backup and restore settings -->
-    <string name="m3u_import_song_failed">Could not import:</string>
 
     <!-- Experimental settings -->
     <string name="experimental_settings_title">Experimental</string>

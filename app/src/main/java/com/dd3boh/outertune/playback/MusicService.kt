@@ -827,7 +827,7 @@ class MusicService : MediaLibraryService(),
 
             val song = queueBoard.getCurrentQueue()?.findSong(dataSpec.key ?: "")
             if (song?.isLocal == true) {
-                Log.d(TAG, "PLAYING: local song")
+                Timber.tag(TAG).d("PLAYING: local song")
                 if (song.localPath == null) {
                     throw PlaybackException(
                         "Invalid local song. Please run scanner with full rescan enabled",

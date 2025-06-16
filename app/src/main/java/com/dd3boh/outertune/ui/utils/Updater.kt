@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.utils
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.preferences.core.edit
 import com.dd3boh.outertune.constants.LastUpdateCheckKey
 import com.dd3boh.outertune.extensions.isInternetConnected
@@ -16,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import timber.log.Timber
 import kotlin.time.Duration.Companion.days
 
 object Updater {
@@ -31,7 +31,7 @@ object Updater {
         if (lastCheckTime < 0) {
             lastCheckTime = context.dataStore.get(LastUpdateCheckKey, timeNow - 8.days.inWholeMilliseconds)
         }
-        Log.d(TAG, "Force check: $force, last check: $lastCheckTime should check = ${timeNow - lastCheckTime > 7.days.inWholeMilliseconds}")
+        Timber.tag(TAG).d("Force check: $force, last check: $lastCheckTime should check = ${timeNow - lastCheckTime > 7.days.inWholeMilliseconds}")
         if (context.isInternetConnected() && !isCheckingForUpdate
             && (force || timeNow - lastCheckTime > 7.days.inWholeMilliseconds)) {
             ret = checkForUpdate()
@@ -42,7 +42,7 @@ object Updater {
             }
         }
 
-        Log.d(TAG, "Update check status: $ret")
+        Timber.tag(TAG).d("Update check status: $ret")
         return ret
     }
 
@@ -55,7 +55,7 @@ object Updater {
             lastCheckTime = System.currentTimeMillis()
             return versionName
         } catch (e: Exception) {
-            Log.d(TAG, "Error checking for update")
+            Timber.tag(TAG).d("Error checking for update")
             reportException(e)
             return null
         } finally {

@@ -8,8 +8,8 @@
 
 package com.dd3boh.outertune.utils.scanners
 
+import android.media.AudioMetadata
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import com.dd3boh.outertune.db.entities.AlbumEntity
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.FormatEntity
@@ -21,6 +21,7 @@ import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
 import com.dd3boh.outertune.constants.DEBUG_SAVE_OUTPUT
 import com.dd3boh.outertune.constants.EXTRACTOR_DEBUG
 import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
+import timber.log.Timber
 import wah.mikooomich.ffMetadataEx.AudioMetadata
 import wah.mikooomich.ffMetadataEx.FFMpegWrapper
 import java.io.File
@@ -53,7 +54,7 @@ class FFMpegScanner() : MetadataScanner {
      */
     override fun getAllMetadataFromFile(file: File): SongTempData {
         if (EXTRACTOR_DEBUG)
-            Log.v(EXTRACTOR_TAG, "Starting Full Extractor session on: ${file.absolutePath}")
+            Timber.tag(EXTRACTOR_TAG).v("Starting Full Extractor session on: ${file.absolutePath}")
 
         val ffmpeg = FFMpegWrapper()
 
@@ -61,14 +62,14 @@ class FFMpegScanner() : MetadataScanner {
             val data: AudioMetadata? = ffmpeg.getFullAudioMetadata(fd)
 
             if (data == null) {
-                Log.e(EXTRACTOR_TAG, "Fatal extraction error")
+                Timber.tag(EXTRACTOR_TAG).e("Fatal extraction error")
                 throw RuntimeException("Fatal FFmpeg scanner extraction error")
             }
             if (data.status != 0) {
                 throw RuntimeException("Fatal FFmpeg scanner extraction error. Status: ${data.status}")
             }
             if (EXTRACTOR_DEBUG && DEBUG_SAVE_OUTPUT) {
-                Log.v(EXTRACTOR_TAG, "Full output for: $uri \n $data")
+                Timber.tag(EXTRACTOR_TAG).v("Full output for: $uri \n $data")
             }
 
             val songId = SongEntity.generateSongId()

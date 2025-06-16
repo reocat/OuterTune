@@ -42,8 +42,6 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
-import com.dd3boh.outertune.constants.PauseListenHistoryKey
-import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
 import com.dd3boh.outertune.constants.SyncConflictResolution
 import com.dd3boh.outertune.constants.SyncMode
 import com.dd3boh.outertune.constants.YtmSyncConflictKey
@@ -216,23 +214,11 @@ fun ColumnScope.SyncExtrasFrag() {
         "SAPISID" in parseCookieString(innerTubeCookie)
     }
 
-    val pauseListenHistory by rememberPreference(key = PauseListenHistoryKey, defaultValue = false)
-    val (pauseRemoteListenHistory, onPauseRemoteListenHistoryChange) = rememberPreference(
-        key = PauseRemoteListenHistoryKey,
-        defaultValue = false
-    )
     val (likedAutoDownload, onLikedAutoDownload) = rememberEnumPreference(
         LikedAutoDownloadKey,
         LikedAutodownloadMode.OFF
     )
 
-    SwitchPreference(
-        title = { Text(stringResource(R.string.pause_remote_listen_history)) },
-        icon = { Icon(Icons.Rounded.History, null) },
-        checked = pauseRemoteListenHistory,
-        onCheckedChange = onPauseRemoteListenHistoryChange,
-        isEnabled = !pauseListenHistory && isLoggedIn
-    )
     ListPreference(
         title = { Text(stringResource(R.string.like_autodownload)) },
         icon = { Icon(Icons.Rounded.Favorite, null) },

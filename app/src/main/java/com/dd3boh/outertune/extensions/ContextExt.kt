@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.PowerManager
 import androidx.annotation.RequiresPermission
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
@@ -41,4 +42,9 @@ fun Context.tabMode(): Boolean {
     val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
     val forceTabMode = dataStore.get(TabletUiKey, isTablet)
     return (isTablet || forceTabMode) && isLandscape
+}
+
+fun Context.isPowerSaver(): Boolean {
+    val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+    return powerManager.isPowerSaveMode
 }

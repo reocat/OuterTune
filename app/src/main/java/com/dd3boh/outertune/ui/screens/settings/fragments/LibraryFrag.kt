@@ -22,7 +22,6 @@ import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.PauseListenHistoryKey
-import com.dd3boh.outertune.constants.PauseRemoteListenHistoryKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.PreferenceEntry
@@ -37,10 +36,6 @@ fun ColumnScope.ListenHistoryFrag() {
 
     val (pauseListenHistory, onPauseListenHistoryChange) = rememberPreference(
         key = PauseListenHistoryKey,
-        defaultValue = false
-    )
-    val (pauseRemoteListenHistory, onPauseRemoteListenHistoryChange) = rememberPreference(
-        key = PauseRemoteListenHistoryKey,
         defaultValue = false
     )
 
@@ -59,13 +54,7 @@ fun ColumnScope.ListenHistoryFrag() {
         checked = pauseListenHistory,
         onCheckedChange = onPauseListenHistoryChange
     )
-    SwitchPreference(
-        title = { Text(stringResource(R.string.pause_remote_listen_history)) },
-        icon = { Icon(Icons.Rounded.History, null) },
-        checked = pauseRemoteListenHistory,
-        onCheckedChange = onPauseRemoteListenHistoryChange,
-        isEnabled = !pauseListenHistory && isLoggedIn
-    )
+
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_listen_history)) },
         icon = { Icon(Icons.Rounded.ClearAll, null) },

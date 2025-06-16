@@ -99,9 +99,6 @@
     <string name="import_failed_songs">No se pudo importar:</string>
     <string name="dev_settings_title">Activar configuraciones de desarrollo</string>
     <string name="oobe_welcome_message">Le damos la bienvenida a OuterTune</string>
-    <string name="oobe_local_scan_tooltip">Pulsa aquí para escanear canciones</string>
-    <string name="oobe_ytm_content_description">YouTube Music a tu alcance</string>
-    <string name="oobe_local_playback_description">Reproducción de música local</string>
     <string name="oobe_use_backup">Tengo una copia de seguridad</string>
     <string name="action_back">Atrás</string>
     <string name="action_skip">Saltar</string>
@@ -127,7 +124,6 @@
     <string name="scanner_progress_syncing">Sincronizando…</string>
     <string name="scanner_strict_file_name_description">Cuando esté activado, los nombres de los archivos NO serán ignorados. Por ejemplo, Canción.ogg será una canción diferente de Canción.flac. Se seguirá aplicando la preferencia de sensibilidad del escáner</string>
     <string name="experimental_settings_title">Experimentales</string>
-    <string name="oobe_ad_free_description">Reproducción sin anuncios</string>
     <string name="scanner_type_title">Extractor de metadatos</string>
     <string name="scanner_online_artist_linking">Intenta vincular los artistas de los archivos locales con los de YouTube Music</string>
     <string name="dev_settings_description">Revela configuraciones avanzadas adicionales destinadas al uso en desarrollo</string>

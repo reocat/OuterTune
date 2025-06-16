@@ -40,8 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
@@ -64,7 +62,6 @@ import com.dd3boh.outertune.ui.component.EditPlaylistDialog
 import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
 import com.dd3boh.outertune.ui.component.PlaylistListItem
-import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.WatchEndpoint
@@ -88,6 +85,12 @@ fun PlaylistMenu(
     val dbPlaylist by database.playlist(playlist.id).collectAsState(initial = playlist)
     var songs by remember {
         mutableStateOf(emptyList<Song>())
+    }
+
+    val songsAvailable = {
+        songs.filter { it.song.isAvailableOffline() || isNetworkConnected }
+            .map { it.toMediaMetadata() }
+            .toList()
     }
 
     val m3uLauncher = rememberLauncherForActivityResult(
