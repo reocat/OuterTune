@@ -98,6 +98,7 @@ val minPlaybackDurKey = intPreferencesKey("minPlaybackDur")
  */
 val ShowLyricsKey = booleanPreferencesKey("showLyrics")
 val LyricsClickKey = booleanPreferencesKey("lyricsClick")
+val LyricsScrollKey = booleanPreferencesKey("lyricsScrollKey")
 val LyricsTextPositionKey = stringPreferencesKey("lyricsTextPosition")
 val MultilineLrcKey = booleanPreferencesKey("multilineLrc")
 val LyricTrimKey = booleanPreferencesKey("lyricTrim")
@@ -107,9 +108,7 @@ val LyricKaraokeEnable = booleanPreferencesKey("lyricKaraokeEnable")
 val LyricUpdateSpeed = stringPreferencesKey("lyricUpdateSpeed")
 
 val MusixmatchUserTokenKey = stringPreferencesKey("musixmatch_user_token")
-
 val MusixmatchCookieKey = stringPreferencesKey("musixmatch_cookie")
-
 val MusixmatchLoggedInKey = booleanPreferencesKey("musixmatch_logged_in")
 
 
