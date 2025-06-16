@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.ContentCut
 import androidx.compose.material.icons.rounded.Lyrics
+import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -36,6 +37,7 @@ import com.dd3boh.outertune.constants.LyricFontSizeKey
 import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
 import com.dd3boh.outertune.constants.LyricsPosition
+import com.dd3boh.outertune.constants.LyricsScrollKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.constants.MusixmatchLoggedInKey
@@ -54,6 +56,8 @@ fun ColumnScope.LyricFormatFrag() {
     )
 
     val (lyricFontSize, onLyricFontSizeChange) = rememberPreference(LyricFontSizeKey, defaultValue = 20)
+
+    val (lyricsScroll, onLyricsScrollChange) = rememberPreference(LyricsScrollKey, true)
 
     var showFontSizeDialog by remember {
         mutableStateOf(false)
@@ -78,6 +82,14 @@ fun ColumnScope.LyricFormatFrag() {
         description = "$lyricFontSize sp",
         icon = { Icon(Icons.Rounded.TextFields, null) },
         onClick = { showFontSizeDialog = true },
+        isMiddle = true
+    )
+
+    SwitchPreference(
+        title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
+        icon = { Icon(Icons.Rounded.SwapVert, "Auto scroll icon") },
+        checked = lyricsScroll,
+        onCheckedChange = onLyricsScrollChange,
         isLast = true
     )
 

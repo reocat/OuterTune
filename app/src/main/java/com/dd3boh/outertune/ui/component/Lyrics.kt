@@ -121,6 +121,7 @@ import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.LyricsMenu
 import com.dd3boh.outertune.constants.LyricsPosition
+import com.dd3boh.outertune.constants.LyricsScrollKey
 import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.uninitializedLyric
@@ -161,6 +162,7 @@ fun Lyrics(
     val scope = rememberCoroutineScope()
 
     val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
+    val scrollLyrics by rememberPreference(LyricsScrollKey, true)
     val lyricsFontSize by rememberPreference(LyricFontSizeKey, 20)
 
     val lyricsFancy by rememberPreference(LyricKaraokeEnable, false)
@@ -317,7 +319,7 @@ fun Lyrics(
         if (!isSynced) return@LaunchedEffect
         if (currentLineIndex != -1) {
             deferredCurrentLineIndex = currentLineIndex
-            if (lastPreviewTime == 0L && !isSelectionMode) {
+            if (scrollLyrics && lastPreviewTime == 0L && !isSelectionMode) {
                 if (isSeeking) {
                     lazyListState.scrollToItem(
                         currentLineIndex,

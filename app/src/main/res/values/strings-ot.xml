@@ -158,6 +158,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="lyrics_prefer_local_description">Prioritize resolving local lyric files before using all cloud providers. Turn ths off to prioritize cloud providers</string>
     <string name="lyrics_settings_title">Lyrics</string>
     <string name="lyrics_trim_title">Remove spaces around lyrics</string>
+    <string name="lyrics_auto_scroll">Auto scroll lyrics</string>
 
     <!-- Local player settings -->
     <string name="local_library_enable_title">Enable local media</string>
