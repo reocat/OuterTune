@@ -83,6 +83,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastSumBy
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.PlaybackParameters
+import androidx.media3.exoplayer.offline.Download.STATE_COMPLETED
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -90,6 +92,7 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.BigSeekBar
 import com.dd3boh.outertune.ui.component.BottomSheetState
@@ -507,7 +510,7 @@ fun PlayerMenu(
         }
         if (!mediaMetadata.isLocal)
             DownloadGridMenu(
-                state = download?.song?.dateDownload,
+                state = if (downloadUtil.getCustomDownload(mediaMetadata.id)) STATE_COMPLETED else download?.state,
                 onDownload = {
                     database.transaction {
                         insert(mediaMetadata)
@@ -515,7 +518,12 @@ fun PlayerMenu(
                     downloadUtil.download(mediaMetadata)
                 },
                 onRemoveDownload = {
-                    downloadUtil.delete(mediaMetadata)
+                    DownloadService.sendRemoveDownload(
+                        context,
+                        ExoDownloadService::class.java,
+                        mediaMetadata.id,
+                        false
+                    )
                 }
             )
         if (librarySong?.song?.inLibrary != null && !librarySong!!.song.isLocal) {

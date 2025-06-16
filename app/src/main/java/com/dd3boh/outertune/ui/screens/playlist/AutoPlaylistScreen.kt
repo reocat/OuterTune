@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastSumBy
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -89,7 +90,7 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.DownloadUtil
+import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
@@ -193,14 +194,18 @@ fun AutoPlaylistScreen(
         }
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
+            val remaining = songs.filterNot { downloads[it.id]?.state == Download.STATE_COMPLETED }
             downloadState =
-                if (songs.all { downloads[it.id] != null && downloads[it.id] != DownloadUtil.DL_IN_PROGRESS }) {
+                if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s.id == it.key } }.isEmpty())
                     Download.STATE_COMPLETED
-                } else if (songs.all { downloads[it.id] == DownloadUtil.DL_IN_PROGRESS }) {
+                else if (songs.all {
+                        downloads[it.song.id]?.state == Download.STATE_QUEUED
+                                || downloads[it.song.id]?.state == Download.STATE_DOWNLOADING
+                                || downloads[it.song.id]?.state == Download.STATE_COMPLETED
+                    })
                     Download.STATE_DOWNLOADING
-                } else {
+                else
                     Download.STATE_STOPPED
-                }
         }
     }
 
@@ -239,7 +244,12 @@ fun AutoPlaylistScreen(
                         }
 
                         songs.forEach { song ->
-                            downloadUtil.delete(song)
+                            DownloadService.sendRemoveDownload(
+                                context,
+                                ExoDownloadService::class.java,
+                                song.song.id,
+                                false
+                            )
                         }
                     }
                 ) {
@@ -360,7 +370,12 @@ fun AutoPlaylistScreen(
                                             IconButton(
                                                 onClick = {
                                                     songs.forEach { song ->
-                                                        downloadUtil.delete(song)
+                                                        DownloadService.sendRemoveDownload(
+                                                            context,
+                                                            ExoDownloadService::class.java,
+                                                            song.song.id,
+                                                            false
+                                                        )
                                                     }
                                                 }
                                             ) {

@@ -105,7 +105,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.DownloadUtil
+import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.DefaultDialog
@@ -217,14 +217,18 @@ fun OnlinePlaylistScreen(
         }
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
+            val remaining = songs.filterNot { downloads[it.id]?.state == Download.STATE_COMPLETED }
             downloadState =
-                if (songs.all { downloads[it.id] != null && downloads[it.id] != DownloadUtil.DL_IN_PROGRESS }) {
+                if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s.id == it.key } }.isEmpty())
                     Download.STATE_COMPLETED
-                } else if (songs.all { downloads[it.id] == DownloadUtil.DL_IN_PROGRESS }) {
+                else if (songs.all {
+                        downloads[it.id]?.state == Download.STATE_QUEUED
+                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
+                                || downloads[it.id]?.state == Download.STATE_COMPLETED
+                    })
                     Download.STATE_DOWNLOADING
-                } else {
+                else
                     Download.STATE_STOPPED
-                }
         }
     }
 
@@ -257,7 +261,12 @@ fun OnlinePlaylistScreen(
                         }
 
                         songs.forEach { song ->
-                            downloadUtil.delete(song)
+                            DownloadService.sendRemoveDownload(
+                                context,
+                                ExoDownloadService::class.java,
+                                song.id,
+                                false
+                            )
                         }
                     }
                 ) {
@@ -400,7 +409,12 @@ fun OnlinePlaylistScreen(
                                                         IconButton(
                                                             onClick = {
                                                                 songs.forEach { song ->
-                                                                    downloadUtil.delete(song)
+                                                                    DownloadService.sendRemoveDownload(
+                                                                        context,
+                                                                        ExoDownloadService::class.java,
+                                                                        song.id,
+                                                                        false
+                                                                    )
                                                                 }
                                                             }
                                                         ) {

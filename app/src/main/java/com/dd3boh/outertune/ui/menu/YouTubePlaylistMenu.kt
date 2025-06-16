@@ -37,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -46,7 +47,7 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.DownloadUtil
+import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.DefaultDialog
@@ -139,11 +140,14 @@ fun YouTubePlaylistMenu(
     LaunchedEffect(songs) {
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
+            val remaining = songs.filterNot { downloads[it.id]?.state == Download.STATE_COMPLETED }
             downloadState =
-                if (songs.all { downloads[it.id] != null && downloads[it.id] != DownloadUtil.DL_IN_PROGRESS })
+                if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s.id == it.key } }.isEmpty())
                     Download.STATE_COMPLETED
                 else if (songs.all {
-                        downloads[it.id] == DownloadUtil.DL_IN_PROGRESS
+                        downloads[it.id]?.state == Download.STATE_QUEUED
+                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
+                                || downloads[it.id]?.state == Download.STATE_COMPLETED
                     })
                     Download.STATE_DOWNLOADING
                 else
@@ -178,7 +182,12 @@ fun YouTubePlaylistMenu(
                     onClick = {
                         showRemoveDownloadDialog = false
                         songs.forEach { song ->
-                            downloadUtil.delete(song)
+                            DownloadService.sendRemoveDownload(
+                                context,
+                                ExoDownloadService::class.java,
+                                song.id,
+                                false
+                            )
                         }
                     }
                 ) {
@@ -369,7 +378,7 @@ fun YouTubePlaylistMenu(
             DownloadGridMenu(
                 state = downloadState,
                 onDownload = {
-                    val _songs = songs.map { it.toMediaMetadata() }
+                    val _songs = songs.map{ it.toMediaMetadata() }
                     downloadUtil.download(_songs)
                 },
                 onRemoveDownload = {

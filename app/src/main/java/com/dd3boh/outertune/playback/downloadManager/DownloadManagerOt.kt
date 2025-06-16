@@ -27,10 +27,16 @@ class DownloadManagerOt(
     private val _events = MutableSharedFlow<DownloadEvent>(extraBufferCapacity = 100)
     val events = _events.asSharedFlow()
 
-    fun enqueue(mediaId: String, url: String, displayName: String? = null) {
+    fun enqueue(mediaId: String, url: String, displayName: String? = null, abort: Boolean = false) {
+
         // if already exists, immediately emit success
         local.getFilePathIfExists(mediaId)?.let {
             _events.tryEmit(DownloadEvent.Success(mediaId, it))
+            return
+        }
+
+        if (abort) {
+            _events.tryEmit(DownloadEvent.Failure(mediaId, Exception("Could not resolve download: $displayName")))
             return
         }
 

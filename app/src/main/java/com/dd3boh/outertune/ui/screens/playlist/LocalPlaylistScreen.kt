@@ -111,7 +111,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.DownloadUtil
+import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
@@ -232,7 +232,6 @@ fun LocalPlaylistScreen(
     }
 
     if (showRemoveDownloadDialog) {
-        val downloadUtil = LocalDownloadUtil.current
         DefaultDialog(
             onDismiss = { showRemoveDownloadDialog = false },
             content = {
@@ -259,7 +258,12 @@ fun LocalPlaylistScreen(
                         }
 
                         songs.forEach { song ->
-                            downloadUtil.delete(song)
+                            DownloadService.sendRemoveDownload(
+                                context,
+                                ExoDownloadService::class.java,
+                                song.song.id,
+                                false
+                            )
                         }
                     }
                 ) {
@@ -635,14 +639,19 @@ fun LocalPlaylistHeader(
     LaunchedEffect(songs) {
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
+            val remaining = songs.filterNot { downloads[it.song.id]?.state == Download.STATE_COMPLETED }
             downloadState =
-                if (songs.all { downloads[it.song.id] != null && downloads[it.song.id] != DownloadUtil.DL_IN_PROGRESS }) {
+                if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s.song.id == it.key } }
+                        .isEmpty())
                     Download.STATE_COMPLETED
-                } else if (songs.all { downloads[it.song.id] == DownloadUtil.DL_IN_PROGRESS }) {
+                else if (songs.all {
+                        downloads[it.song.id]?.state == Download.STATE_QUEUED
+                                || downloads[it.song.id]?.state == Download.STATE_DOWNLOADING
+                                || downloads[it.song.id]?.state == Download.STATE_COMPLETED
+                    })
                     Download.STATE_DOWNLOADING
-                } else {
+                else
                     Download.STATE_STOPPED
-                }
         }
     }
 
@@ -789,7 +798,12 @@ fun LocalPlaylistHeader(
                             IconButton(
                                 onClick = {
                                     songs.forEach { song ->
-                                        downloadUtil.delete(song)
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            song.song.id,
+                                            false
+                                        )
                                     }
                                 }
                             ) {
@@ -803,9 +817,7 @@ fun LocalPlaylistHeader(
                         else -> {
                             IconButton(
                                 onClick = {
-                                    songs.forEach { song ->
-                                        downloadUtil.download(song.song.song)
-                                    }
+                                   downloadUtil.download(songs.map { it.song.toMediaMetadata() })
                                 }
                             ) {
                                 Icon(

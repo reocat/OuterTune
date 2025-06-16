@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
@@ -88,7 +89,7 @@ import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.extensions.getAvailableSongs
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.DownloadUtil
+import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.FloatingFooter
@@ -166,14 +167,18 @@ fun AlbumScreen(
         val songs = albumWithSongs?.songs?.map { it.id }
         if (songs.isNullOrEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
+            val remaining = songs.filterNot { downloads[it]?.state == Download.STATE_COMPLETED }
             downloadState =
-                if (songs.all { downloads[it] != null && downloads[it] != DownloadUtil.DL_IN_PROGRESS }) {
+                if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s == it.key } }.isEmpty())
                     Download.STATE_COMPLETED
-                } else if (songs.all { downloads[it] == DownloadUtil.DL_IN_PROGRESS }) {
+                else if (songs.all {
+                        downloads[it]?.state == Download.STATE_QUEUED
+                                || downloads[it]?.state == Download.STATE_DOWNLOADING
+                                || downloads[it]?.state == Download.STATE_COMPLETED
+                    })
                     Download.STATE_DOWNLOADING
-                } else {
+                else
                     Download.STATE_STOPPED
-                }
         }
     }
 
@@ -236,10 +241,7 @@ fun AlbumScreen(
 
                             Text(
                                 text = joinByBullet(
-                                    getNSongsString(
-                                        albumWithSongsLocal.album.songCount,
-                                        albumWithSongsLocal.downloadCount
-                                    ),
+                                    getNSongsString(albumWithSongsLocal.album.songCount, albumWithSongsLocal.downloadCount),
                                     albumWithSongsLocal.album.year.toString()
                                 ),
                                 style = MaterialTheme.typography.titleMedium,
@@ -266,7 +268,12 @@ fun AlbumScreen(
                                         IconButton(
                                             onClick = {
                                                 albumWithSongsLocal.songs.forEach { song ->
-                                                    downloadUtil.delete(song)
+                                                    DownloadService.sendRemoveDownload(
+                                                        context,
+                                                        ExoDownloadService::class.java,
+                                                        song.id,
+                                                        false
+                                                    )
                                                 }
                                             }
                                         ) {
@@ -281,7 +288,12 @@ fun AlbumScreen(
                                         IconButton(
                                             onClick = {
                                                 albumWithSongsLocal.songs.forEach { song ->
-                                                    downloadUtil.delete(song)
+                                                    DownloadService.sendRemoveDownload(
+                                                        context,
+                                                        ExoDownloadService::class.java,
+                                                        song.id,
+                                                        false
+                                                    )
                                                 }
                                             }
                                         ) {
@@ -295,7 +307,7 @@ fun AlbumScreen(
                                     else -> {
                                         IconButton(
                                             onClick = {
-                                                val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
+                                                val songs = albumWithSongsLocal.songs.map{ it.toMediaMetadata() }
                                                 downloadUtil.download(songs)
                                             }
                                         ) {
@@ -311,11 +323,7 @@ fun AlbumScreen(
                                     onClick = {
                                         menuState.show {
                                             AlbumMenu(
-                                                originalAlbum = Album(
-                                                    albumWithSongsLocal.album,
-                                                    albumWithSongsLocal.downloadCount,
-                                                    albumWithSongsLocal.artists
-                                                ),
+                                                originalAlbum = Album(albumWithSongsLocal.album, albumWithSongsLocal.downloadCount, albumWithSongsLocal.artists),
                                                 navController = navController,
                                                 onDismiss = menuState::dismiss,
                                             )
@@ -339,8 +347,7 @@ fun AlbumScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()
-                                            ?: emptyList(),
+                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()?: emptyList(),
                                         playlistId = albumWithSongsLocal.album.playlistId
                                     )
                                 )
@@ -364,8 +371,7 @@ fun AlbumScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()
-                                            ?: emptyList(),
+                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()?: emptyList(),
                                         playlistId = albumWithSongsLocal.album.playlistId,
                                         startShuffled = true,
                                     )
@@ -415,9 +421,7 @@ fun AlbumScreen(
                     isSelected = selection.contains(song.id),
                     navController = navController,
                     snackbarHostState = snackbarHostState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItem()
+                    modifier = Modifier.fillMaxWidth().animateItem()
                 )
             }
 

@@ -3,6 +3,9 @@ package com.dd3boh.outertune.playback
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.media3.database.DatabaseProvider
@@ -13,23 +16,24 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
+import androidx.media3.exoplayer.offline.DownloadNotificationHelper
+import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.media3.exoplayer.offline.DownloadService
 import com.dd3boh.outertune.constants.AudioQuality
 import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
-import com.dd3boh.outertune.constants.MAX_CONCURRENT_DOWNLOAD_JOBS
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
-import com.dd3boh.outertune.di.AppModule
+import com.dd3boh.outertune.di.AppModule.PlayerCache
 import com.dd3boh.outertune.di.DownloadCache
 import com.dd3boh.outertune.extensions.getLikeAutoDownload
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.playback.downloadManager.DownloadDirectoryManagerOt
-import com.dd3boh.outertune.playback.downloadManager.DownloadEvent
 import com.dd3boh.outertune.playback.downloadManager.DownloadManagerOt
 import com.dd3boh.outertune.utils.YTPlayerUtils
 import com.dd3boh.outertune.utils.dataStore
@@ -47,17 +51,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.Executor
@@ -70,29 +74,94 @@ class DownloadUtil @Inject constructor(
     val database: MusicDatabase,
     val databaseProvider: DatabaseProvider,
     @DownloadCache val downloadCache: SimpleCache,
-    @AppModule.PlayerCache val playerCache: SimpleCache,
+    @PlayerCache val playerCache: SimpleCache,
 ) {
     val TAG = DownloadUtil::class.simpleName.toString()
 
-    private val semaphore = Semaphore(MAX_CONCURRENT_DOWNLOAD_JOBS)
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val songUrlCache = HashMap<String, Pair<String, Long>>()
+    private val dataSourceFactory = ResolvingDataSource.Factory(
+        CacheDataSource.Factory()
+            .setCache(playerCache)
+            .setUpstreamDataSourceFactory(
+                OkHttpDataSource.Factory(
+                    OkHttpClient.Builder()
+                        .proxy(YouTube.proxy)
+                        .build()
+                )
+            )
+    ) { dataSpec ->
+        val mediaId = dataSpec.key ?: error("No media id")
+        val length = if (dataSpec.length >= 0) dataSpec.length else 1
+        if (playerCache.isCached(mediaId, dataSpec.position, length)) {
+            return@Factory dataSpec
+        }
 
+        songUrlCache[mediaId]?.takeIf { it.second > System.currentTimeMillis() }?.let {
+            return@Factory dataSpec.withUri(it.first.toUri())
+        }
+
+        val playbackData = runBlocking(Dispatchers.IO) {
+            YTPlayerUtils.playerResponseForPlayback(
+                mediaId,
+                audioQuality = audioQuality,
+                connectivityManager = connectivityManager,
+            )
+        }.getOrThrow()
+        val format = playbackData.format
+
+        database.query {
+            upsert(
+                FormatEntity(
+                    id = mediaId,
+                    itag = format.itag,
+                    mimeType = format.mimeType.split(";")[0],
+                    codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                    bitrate = format.bitrate,
+                    sampleRate = format.audioSampleRate,
+                    contentLength = format.contentLength!!,
+                    loudnessDb = playbackData.audioConfig?.loudnessDb,
+                    playbackTrackingUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                )
+            )
+        }
+
+        val streamUrl = playbackData.streamUrl.let {
+            // Specify range to avoid YouTube's throttling
+            "${it}&range=0-${format.contentLength ?: 10000000}"
+        }
+
+        songUrlCache[mediaId] = streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
+        dataSpec.withUri(streamUrl.toUri())
+    }
+    val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
+    val downloadManager: DownloadManager =
+        DownloadManager(context, databaseProvider, downloadCache, dataSourceFactory, Executor(Runnable::run)).apply {
+            maxParallelDownloads = 3
+            addListener(
+                ExoDownloadService.TerminalStateNotificationHelper(
+                    context = context,
+                    notificationHelper = downloadNotificationHelper,
+                    nextNotificationId = ExoDownloadService.NOTIFICATION_ID + 1
+                )
+            )
+        }
+    val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
+
+    // Custom OT
+    val customDownloads = MutableStateFlow<Map<String, LocalDateTime>>(emptyMap())
     var localMgr = DownloadDirectoryManagerOt(
         context,
         context.dataStore.get(DownloadPathKey, "").toUri(),
         uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
     )
     val downloadMgr = DownloadManagerOt(localMgr)
-    val downloads = MutableStateFlow<Map<String, LocalDateTime>>(emptyMap())
-
     var isProcessingDownloads = MutableStateFlow(false)
 
+    fun getCustomDownload(songId: String): Boolean = customDownloads.value.any { songId == it.key }
 
-    fun getDownload(songId: String): Flow<Song?> {
-        return database.song(songId)
-    }
+    fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
 
     fun download(songs: List<MediaMetadata>) {
         songs.forEach { song -> downloadSong(song.id, song.title) }
@@ -106,71 +175,55 @@ class DownloadUtil @Inject constructor(
         downloadSong(song.id, song.title)
     }
 
-    fun resumeQueuedDownloads() {
-        val queued = downloads.value.filter { it.value == DL_IN_PROGRESS }
-
-        queued.forEach { song ->
-            // please shield your eyes.
-            downloadSong(song.key, runBlocking(Dispatchers.IO) {
-                database.song(song.key).first()?.title ?: ""
-            })
-        }
-    }
-
     private fun downloadSong(id: String, title: String) {
-        // I pray there is no limit to how many concurrent coroutines you can have.
-        CoroutineScope(Dispatchers.IO).launch {
-            database.updateDownloadStatus(id, DL_IN_PROGRESS)
-            semaphore.withPermit {
-                // copy directly from player cache
-                val playerCacheSong = getAndDeleteFromCache(playerCache, id)
-                if (playerCacheSong != null) {
-                    Timber.tag(TAG).d("Song found in player cache. Copying from player cache.")
-                    downloadMgr.enqueue(id, playerCacheSong, displayName = title)
-                }
+         if (getCustomDownload(id)) {
+             return
+         }
+        val downloadRequest = DownloadRequest.Builder(id, id.toUri())
+            .setCustomCacheKey(id)
+            .setData(title.toByteArray())
+            .build()
+        DownloadService.sendAddDownload(
+            context,
+            ExoDownloadService::class.java,
+            downloadRequest,
+            false
+        )
+    }
 
-                Timber.tag(TAG).d("Song NOT found in player cache. Fetching.")
-                songUrlCache[id]?.takeIf { it.second > System.currentTimeMillis() }?.let {
-                    downloadMgr.enqueue(id, it.first.toUri().toString())
-                    return@launch
-                }
+    fun resumeDownloadsOnStart() {
+        DownloadService.sendResumeDownloads(
+            context,
+            ExoDownloadService::class.java,
+            false
+        )
+    }
 
-                val playbackData = runBlocking(Dispatchers.IO) {
-                    YTPlayerUtils.playerResponseForPlayback(
-                        id,
-                        audioQuality = audioQuality,
-                        connectivityManager = connectivityManager,
-                    )
-                }.getOrThrow()
-                val format = playbackData.format
-                database.query {
-                    upsert(
-                        FormatEntity(
-                            id = id,
-                            itag = format.itag,
-                            mimeType = format.mimeType.split(";")[0],
-                            codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
-                            bitrate = format.bitrate,
-                            sampleRate = format.audioSampleRate,
-                            contentLength = format.contentLength!!,
-                            loudnessDb = playbackData.audioConfig?.loudnessDb,
-                            playbackTrackingUrl = playbackData.streamUrl
-                        )
-                    )
-                }
-                val streamUrl = playbackData.streamUrl.let {
-                    // Specify range to avoid YouTube's throttling
-                    "${it}&range=0-${format.contentLength ?: 10000000}"
-                }
+    fun autoDownloadIfLiked(songs: List<SongEntity>) {
+        songs.forEach { song -> autoDownloadIfLiked(song) }
+    }
 
-                songUrlCache[id] =
-                    streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
-
-                downloadMgr.enqueue(id, streamUrl, displayName = title)
-            }
+    fun autoDownloadIfLiked(song: SongEntity) {
+        if (!song.liked || song.dateDownload != null) {
+            return
         }
 
+        val isWifiConnected = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: false
+
+        if (
+            context.getLikeAutoDownload() == LikedAutodownloadMode.ON
+            || (context.getLikeAutoDownload() == LikedAutodownloadMode.WIFI_ONLY && isWifiConnected)
+        ) {
+            download(song)
+        }
     }
+
+
+
+
+
+// Deletes from custom dl
 
     fun delete(song: PlaylistSong) {
         deleteSong(song.song.id)
@@ -213,26 +266,6 @@ class DownloadUtil @Inject constructor(
         }
     }
 
-    fun autoDownloadIfLiked(songs: List<SongEntity>) {
-        songs.forEach { song -> autoDownloadIfLiked(song) }
-    }
-
-    fun autoDownloadIfLiked(song: SongEntity) {
-        if (!song.liked || song.dateDownload != null) {
-            return
-        }
-
-        val isWifiConnected = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: false
-
-        if (
-            context.getLikeAutoDownload() == LikedAutodownloadMode.ON
-            || (context.getLikeAutoDownload() == LikedAutodownloadMode.WIFI_ONLY && isWifiConnected)
-        ) {
-            download(song)
-        }
-    }
-
     /**
      * Retrieve song from cache, and delete it from cache afterwards
      */
@@ -266,6 +299,7 @@ class DownloadUtil @Inject constructor(
         if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
         CoroutineScope(Dispatchers.IO).launch {
+            var runs = 0
             try {
                 // "skeleton" of old download manager to access old download data
                 val dataSourceFactory = ResolvingDataSource.Factory(
@@ -302,6 +336,14 @@ class DownloadUtil @Inject constructor(
                 // copy all completed downloads
                 val toMigrate = downloadedSongs.filter { it.value.state == Download.STATE_COMPLETED }
                 toMigrate.forEach { s ->
+                    if (runs++ % 10 == 0) {
+                        Log.d(TAG, "Migrating download: $runs/${toMigrate.size}")
+                        if (runs % 20 == 0) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "$runs/${toMigrate.size}", LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                     val songFromCache = getAndDeleteFromCache(downloadCache, s.key)
                     if (songFromCache != null) {
                         downloadMgr.enqueue(
@@ -318,6 +360,7 @@ class DownloadUtil @Inject constructor(
         }
     }
 
+
     fun cd() {
         localMgr = DownloadDirectoryManagerOt(
             context,
@@ -325,7 +368,6 @@ class DownloadUtil @Inject constructor(
             uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
         )
     }
-
 
     /**
      * Rescan download directory and updates songs
@@ -336,8 +378,7 @@ class DownloadUtil @Inject constructor(
         val result = mutableMapOf<String, LocalDateTime>()
 
         // remove missing files
-        val missingFiles =
-            localMgr.getMissingFiles(dbDownloads.filterNot { it.song.dateDownload == DL_IN_PROGRESS })
+        val missingFiles = localMgr.getMissingFiles(dbDownloads.filterNot { it.song.dateDownload == null })
         missingFiles.forEach {
             runBlocking(Dispatchers.IO) { database.removeDownloadSong(it.song.id) }
         }
@@ -349,8 +390,9 @@ class DownloadUtil @Inject constructor(
         }
         isProcessingDownloads.value = false
 
-        downloads.value = result
+        customDownloads.value = result
     }
+
 
     /**
      * Scan and import downloaded songs from main and extra directories.
@@ -362,7 +404,7 @@ class DownloadUtil @Inject constructor(
         if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
         CoroutineScope(Dispatchers.IO).launch {
-//            val scanner = LocalMediaScanner.getScanner(context, SCANNER_OWNER_DL)
+//            val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB, SCANNER_OWNER_DL)
             runBlocking(Dispatchers.IO) { database.removeAllDownloadedSongs() }
             val result = mutableMapOf<String, LocalDateTime>()
             val timeNow = LocalDateTime.now()
@@ -395,54 +437,48 @@ class DownloadUtil @Inject constructor(
             }
 
             isProcessingDownloads.value = false
-            downloads.value = result
+            customDownloads.value = result
         }
     }
 
-    fun removeDownloadFromMap(key: String) {
-        val new = downloads.value.toMutableMap()
-        new.remove(key)
-        downloads.value = new
-    }
-
-    fun addDownloadToMap(key: String, localDateTime: LocalDateTime) {
-        val new = downloads.value.toMutableMap()
-        new.put(key, localDateTime)
-        downloads.value = new
-    }
 
     init {
-        rescanDownloads()
-        resumeQueuedDownloads()
+        val result = mutableMapOf<String, Download>()
+        val cursor = downloadManager.downloadIndex.getDownloads()
+        while (cursor.moveToNext()) {
+            result[cursor.download.request.id] = cursor.download
+        }
 
+        // custom download location
         CoroutineScope(Dispatchers.IO).launch {
-            downloadMgr.events.collect { ev ->
-                when (ev) {
-                    is DownloadEvent.Progress -> {
-//                        val pct = ev.bytesRead * 100 / (if (ev.contentLength > 0) ev.contentLength else 1)
-//                        Timber.tag(TAG).d("DL progress: $pct")
+            rescanDownloads()
+        }
+
+        downloads.value = result
+        downloadManager.addListener(
+            object : DownloadManager.Listener {
+                override fun onDownloadChanged(
+                    downloadManager: DownloadManager,
+                    download: Download,
+                    finalException: Exception?
+                ) {
+                    downloads.update { map ->
+                        map.toMutableMap().apply {
+                            set(download.request.id, download)
+                        }
                     }
 
-                    is DownloadEvent.Success -> {
-                        // playback from ev.file.absolutePath
-                        val updateTime =
-                            LocalDateTime.now().atOffset(ZoneOffset.UTC).toLocalDateTime()
-                        database.registerDownloadSong(ev.mediaId, updateTime, ev.file.toString())
-                        addDownloadToMap(ev.mediaId, updateTime)
-                    }
-
-                    is DownloadEvent.Failure -> {
-                        // show error ev.error
-                        database.removeDownloadSong(ev.mediaId)
-                        removeDownloadFromMap(ev.mediaId)
-                        reportException(ev.error)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (download.state == Download.STATE_COMPLETED) {
+                            val updateTime =
+                                Instant.ofEpochMilli(download.updateTimeMs).atZone(ZoneOffset.UTC).toLocalDateTime()
+                            database.updateDownloadStatus(download.request.id, updateTime)
+                        } else {
+                            database.updateDownloadStatus(download.request.id, null)
+                        }
                     }
                 }
             }
-        }
-    }
-
-    companion object {
-        val DL_IN_PROGRESS = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC)
+        )
     }
 }
