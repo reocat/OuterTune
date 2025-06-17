@@ -83,3 +83,9 @@ fun fileFromUri(context: Context, uri: Uri): File? {
         return rootDir?.let { File(it, relativePath) }
     }
 }
+
+fun absoluteFilePathFromUri(context: Context, uri: Uri): String? {
+    val dfUri = documentFileFromUri(context, uri)?.uri
+    if (dfUri == null) return null
+    return fileFromUri(context, dfUri)?.absolutePath
+}

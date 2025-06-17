@@ -106,6 +106,8 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
+import com.dd3boh.outertune.utils.scanners.absoluteFilePathFromUri
+import com.dd3boh.outertune.utils.scanners.documentFileFromUri
 import com.dd3boh.outertune.utils.scanners.fileFromUri
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
@@ -255,7 +257,7 @@ fun ExperimentalSettings(
                         Text(
                             text = stringResource(
                                 R.string.dl_migrate_confirm,
-                                fileFromUri(context, downloadPath.toUri())?.absolutePath ?: ""
+                                absoluteFilePathFromUri(context, downloadPath.toUri()) ?: downloadPath
                             ),
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(horizontal = 18.dp)
@@ -418,7 +420,7 @@ fun ExperimentalSettings(
                                     .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
                                     .clickable { }) {
                                 Text(
-                                    text = tmpPath.toString(),
+                                    text = absoluteFilePathFromUri(context, tmpPath) ?: tmpPath.toString(),
                                     style = MaterialTheme.typography.bodySmall,
                                     modifier = Modifier
                                         .weight(1f)

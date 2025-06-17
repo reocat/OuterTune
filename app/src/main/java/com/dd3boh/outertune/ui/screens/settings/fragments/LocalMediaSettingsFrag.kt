@@ -95,6 +95,7 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerPr
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRequestCancel
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerState
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
+import com.dd3boh.outertune.utils.scanners.absoluteFilePathFromUri
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.Dispatchers
@@ -526,7 +527,7 @@ fun ColumnScope.LocalScannerFrag() {
                             .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
                             .clickable { }) {
                         Text(
-                            text = it.toString(),
+                            text = absoluteFilePathFromUri(context, it) ?: it.toString(),
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier
                                 .weight(1f)
