@@ -10,4 +10,17 @@
     <string name="queue_remote_history">दूरस्थ इतिहास</string>
     <string name="remote_history">दूरस्थ</string>
     <string name="missing_media_permission_warning">स्थानीय मीडिया के लिए स्टोरेज अनुमति आवश्यक है। अनुमति देने के लिए क्लिक करें।</string>
+    <string name="queues_title">कतार</string>
+    <string name="create_queue">नई कतार</string>
+    <string name="queue_searched_songs_ot">खोजें:</string>
+    <string name="queues_empty">कतार खाली है</string>
+    <string name="auto_playlist">ऑटो प्लेलिस्ट</string>
+    <string name="select">चयन मोड</string>
+    <string name="like_all">सभी को लाइक करें</string>
+    <string name="more_settings">अधिक सेटिंग्स</string>
+    <string name="err_play_next_on_error">त्रुटि आई, अगला गाना चला रहे हैं</string>
+    <string name="err_stop_on_error">त्रुटि हुई। गाना रुक गया</string>
+    <string name="err_stop_on_too_many_errors">कई त्रुटियाँ हुईं। चलाना बंद हुआ</string>
+    <string name="wait_to_reconnect">कनेक्शन पुनः स्थापित हो रहा है</string>
+    <string name="sort_by_date_modified">संशोधित तिथि</string>
 </resources>
