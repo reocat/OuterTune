@@ -168,11 +168,13 @@
     <string name="library_empty">ライブラリの内容がここに表示されます</string>
     <string name="oss_licenses_title">オープンソースライセンス</string>
     <string name="tablet_ui_title_description">現在の画面サイズに関係なく、大きな画面に最適化された横向きのインターフェースを有効にします</string>
-    <string name="grp_behavior">行動</string>
+    <string name="grp_behavior">動作</string>
     <string name="attribution_title">帰属</string>
     <string name="m3u_ytm_lookup">アプリのデータベースに見つからない曲をYouTube Musicで検索する</string>
     <string name="disable_lm_confirm">ローカルメディアを無効にしますか？</string>
     <string name="clear_song_cache_confirm">曲のキャッシュを削除しますか？</string>
     <string name="scanner_progress_processing">処理中…</string>
     <string name="lyrics_karaoke_hz_title">カラオケ風の歌詞の更新速度を調整する</string>
+    <string name="scanner_progress_discovering">検出中…</string>
+    <string name="lyrics_karaoke_description">単語ごとの歌詞同期を有効にする。対応する歌詞データが必要です。</string>
 </resources>
