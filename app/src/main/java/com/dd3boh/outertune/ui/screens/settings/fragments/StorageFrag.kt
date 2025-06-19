@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -21,7 +22,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Backup
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Downloading
+import androidx.compose.material.icons.rounded.FolderCopy
 import androidx.compose.material.icons.rounded.Restore
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -32,11 +37,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,17 +52,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
 import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
 import com.dd3boh.outertune.constants.ScanPathsKey
-import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.tryOrNull
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
@@ -67,10 +76,10 @@ import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.utils.formatFileSize
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.utils.scanners.absoluteFilePathFromUri
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.dd3boh.outertune.viewmodels.BackupRestoreViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -135,6 +144,7 @@ fun ColumnScope.DownloadsFrag() {
     val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
     val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
 
+    // size stats
     var downloadCacheSize by remember {
         mutableLongStateOf(tryOrNull { downloadCache.cacheSpace } ?: 0)
     }
@@ -145,6 +155,7 @@ fun ColumnScope.DownloadsFrag() {
         mutableLongStateOf(-2L)
     }
 
+    // downloads dialogs
     var showDlPathDialog: Boolean by remember {
         mutableStateOf(false)
     }
@@ -152,6 +163,19 @@ fun ColumnScope.DownloadsFrag() {
         mutableStateOf(false)
     }
     var showDlInfoDialog by remember {
+        mutableStateOf(false)
+    }
+
+    // advanced
+    val (dlPathExtra, onDlPathExtraChange) = rememberPreference(DownloadExtraPathKey, "")
+    val isLoading by downloadUtil.isProcessingDownloads.collectAsState()
+    var showMigrationDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showImportDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showPathsDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -248,6 +272,55 @@ fun ColumnScope.DownloadsFrag() {
     )
 
     SettingsClickToReveal(stringResource(R.string.advanced)) {
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.dl_extra_path_title)) },
+            description = stringResource(R.string.dl_extra_path_description),
+            icon = { Icon(Icons.Rounded.FolderCopy, null) },
+            onClick = {
+                showPathsDialog = true
+            },
+            isEnabled = !isLoading
+        )
+
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.dl_rescan_title)) },
+            description = stringResource(R.string.dl_rescan_description),
+            icon = {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                } else {
+                    Icon(Icons.Rounded.Sync, null)
+                }
+            },
+            onClick = {
+                showImportDialog = true
+            },
+            isEnabled = !isLoading && !(downloadPath.isEmpty() && dlPathExtra.isEmpty())
+        )
+
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.dl_migrate_title)) },
+            description = stringResource(R.string.dl_migrate_description),
+            icon = {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                } else {
+                    Icon(Icons.Rounded.Downloading, null)
+                }
+            },
+            onClick = {
+                showMigrationDialog = true
+            },
+            isEnabled = !isLoading && !downloadPath.isEmpty()
+        )
     }
 
 
@@ -443,6 +516,194 @@ fun ColumnScope.DownloadsFrag() {
             }
         )
     }
+
+    if (showPathsDialog) {
+        var tempScanPaths = remember { mutableStateListOf<Uri>() }
+        LaunchedEffect(dlPathExtra) {
+            tempScanPaths.addAll(uriListFromString(dlPathExtra))
+        }
+
+        ActionPromptDialog(
+            titleBar = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.scan_paths_incl),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+            },
+            onDismiss = {
+                showPathsDialog = false
+                tempScanPaths.clear()
+            },
+            onConfirm = {
+                onDlPathExtraChange(stringFromUriList(tempScanPaths.toList()))
+                coroutineScope.launch {
+                    delay(1000)
+                    downloadUtil.cd()
+                    downloadUtil.scanDownloads()
+                }
+
+                showPathsDialog = false
+                tempScanPaths.clear()
+            },
+            onReset = {
+                // reset to whitespace so not empty
+                tempScanPaths.clear()
+            },
+            onCancel = {
+                showPathsDialog = false
+                tempScanPaths.clear()
+            },
+            isInputValid = uriListFromString(scanPaths).toList().none { scanPath ->
+                // scan path cannot be contain any dl extras path
+                tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
+            }
+        ) {
+            val dirPickerLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.OpenDocumentTree()
+            ) { uri ->
+                if (uri == null) return@rememberLauncherForActivityResult
+                val contentResolver = context.contentResolver
+                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                contentResolver.takePersistableUriPermission(uri, takeFlags)
+                tempScanPaths.add(uri)
+            }
+
+            // folders list
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .border(
+                        2.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        RoundedCornerShape(ThumbnailCornerRadius)
+                    )
+            ) {
+                tempScanPaths.forEach { tmpPath ->
+                    val valid = uriListFromString(scanPaths).toList().none {
+                        tmpPath.toString().contains(it.toString())
+                    }
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
+                            .clickable { }) {
+                        Text(
+                            text = absoluteFilePathFromUri(context, tmpPath) ?: tmpPath.toString(),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                        )
+                        IconButton(
+                            onClick = {
+                                tempScanPaths.remove(tmpPath)
+                            },
+                            onLongClick = {}
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                }
+            }
+
+            // add folder button
+            Column {
+                Button(onClick = { dirPickerLauncher.launch(null) }) {
+                    Text(stringResource(R.string.scan_paths_add_folder))
+                }
+
+                InfoLabel(
+                    text = stringResource(R.string.scan_paths_tooltip),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
+                if (uriListFromString(scanPaths).toList().any { scanPath ->
+                        // scan path cannot be contain any dl extras path
+                        tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
+                    }) {
+                    InfoLabel(
+                        text = stringResource(R.string.scanner_rejected_dir),
+                        isError = true,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    if (showImportDialog) {
+        DefaultDialog(
+            onDismiss = { showImportDialog = false },
+            content = {
+                Text(
+                    text = stringResource(R.string.dl_rescan_confirm),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 18.dp)
+                )
+            },
+            buttons = {
+                TextButton(
+                    onClick = {
+                        showImportDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+
+                TextButton(
+                    onClick = {
+                        showImportDialog = false
+                        downloadUtil.scanDownloads()
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
+
+    if (showMigrationDialog) {
+        DefaultDialog(
+            onDismiss = { showMigrationDialog = false },
+            content = {
+                Text(
+                    text = stringResource(
+                        R.string.dl_migrate_confirm,
+                        absoluteFilePathFromUri(context, downloadPath.toUri()) ?: downloadPath
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 18.dp)
+                )
+            },
+            buttons = {
+                TextButton(
+                    onClick = {
+                        showMigrationDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+
+                TextButton(
+                    onClick = {
+                        showMigrationDialog = false
+
+                        downloadUtil.migrateDownloads()
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
+
 }
 
 @Composable
