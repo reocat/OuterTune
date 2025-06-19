@@ -204,7 +204,6 @@ class MusicService : MediaLibraryService(),
     @PlayerCache
     lateinit var playerCache: SimpleCache
 
-    @Deprecated("Do not write to this cache. Please use the new download system, see DownloadDirectoryManagerOt.")
     @Inject
     @DownloadCache
     lateinit var downloadCache: SimpleCache

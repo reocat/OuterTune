@@ -106,4 +106,33 @@ class DownloadDirectoryManagerOt(private val context: Context, private var dir: 
         }
         return availableFiles
     }
+
+    fun getMainDlStorageUsage(): Long {
+        if (mainDir == null) return -1L
+        val result = ArrayList<DocumentFile>()
+        scanDfRecursive(mainDir!!, result, true)
+
+        return result.filter { it.name != null }.sumOf { it.length() }
+    }
+
+    fun getTotalDlStorageUsage(): Long {
+        if (allDirs.isEmpty()) return 0
+        val result = ArrayList<DocumentFile>()
+        for (dir in allDirs) {
+            scanDfRecursive(dir, result, true)
+        }
+
+        return result.filter { it.name != null }.sumOf { it.length() }
+    }
+
+    fun getExtraDlStorageUsage(): Long {
+        val dirs = allDirs.filter { it != mainDir }
+        if (dirs.isEmpty()) return 0
+        val result = ArrayList<DocumentFile>()
+        for (dir in dirs) {
+            scanDfRecursive(dir, result, true)
+        }
+
+        return result.filter { it.name != null }.sumOf { it.length() }
+    }
 }

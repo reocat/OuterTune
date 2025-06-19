@@ -248,7 +248,7 @@ fun ExperimentalSettings(
                 onClick = {
                     showMigrationDialog = true
                 },
-                isEnabled = !isLoading
+                isEnabled = !isLoading && !downloadPath.isEmpty()
             )
             if (showMigrationDialog) {
                 DefaultDialog(
@@ -332,7 +332,7 @@ fun ExperimentalSettings(
                 onClick = {
                     showImportDialog = true
                 },
-                isEnabled = !isLoading
+                isEnabled = !isLoading && !(downloadPath.isEmpty() && dlPathExtra.isEmpty())
             )
 
             PreferenceEntry(

@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -13,11 +14,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -32,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -52,14 +59,18 @@ import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.tryOrNull
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.DefaultDialog
+import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.ResizableIconButton
+import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.utils.formatFileSize
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.dd3boh.outertune.viewmodels.BackupRestoreViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -127,6 +138,12 @@ fun ColumnScope.DownloadsFrag() {
     var downloadCacheSize by remember {
         mutableLongStateOf(tryOrNull { downloadCache.cacheSpace } ?: 0)
     }
+    var downloadMainPathSize by remember {
+        mutableLongStateOf(-2L)
+    }
+    var downloadExtraPathSize by remember {
+        mutableLongStateOf(-2L)
+    }
 
     var showDlPathDialog: Boolean by remember {
         mutableStateOf(false)
@@ -134,10 +151,13 @@ fun ColumnScope.DownloadsFrag() {
     var showClearConfirmDialog by remember {
         mutableStateOf(false)
     }
+    var showDlInfoDialog by remember {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(downloadCache) {
         while (isActive) {
-            delay(500)
+            delay(2000)
             downloadCacheSize = tryOrNull { downloadCache.cacheSpace } ?: 0
         }
     }
@@ -150,10 +170,75 @@ fun ColumnScope.DownloadsFrag() {
     )
 
     Text(
-        text = "WIP", // stringResource(R.string.size_used, formatFileSize(downloadCacheSize)), TODO: dl size
+        text = stringResource(R.string.dl_size_used_cache, formatFileSize(downloadCacheSize)),
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
     )
+
+    if (downloadMainPathSize == -2L && downloadExtraPathSize == -2L) {
+        PreferenceEntry(
+            title = {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.dl_calculate_size))
+                    ResizableIconButton(
+                        icon = Icons.Outlined.Info,
+                        onClick = { showDlInfoDialog = true },
+                    )
+                }
+            },
+            onClick = {
+                downloadMainPathSize = -1
+                downloadCacheSize = -1
+                coroutineScope.launch(Dispatchers.IO) {
+                    downloadMainPathSize = downloadUtil.localMgr.getMainDlStorageUsage()
+                    downloadExtraPathSize = downloadUtil.localMgr.getExtraDlStorageUsage()
+                }
+            },
+        )
+    } else {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.dl_size_used_main,
+                    formatFileSize(downloadMainPathSize.coerceIn(0, Long.MAX_VALUE))
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+            if (downloadMainPathSize < 0L) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.dl_size_used_extra,
+                    formatFileSize(downloadExtraPathSize.coerceIn(0, Long.MAX_VALUE))
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+            if (downloadExtraPathSize < 0L) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+            }
+        }
+    }
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_all_downloads)) },
@@ -161,6 +246,9 @@ fun ColumnScope.DownloadsFrag() {
             showClearConfirmDialog = true
         },
     )
+
+    SettingsClickToReveal(stringResource(R.string.advanced)) {
+    }
 
 
     /**
@@ -303,17 +391,51 @@ fun ColumnScope.DownloadsFrag() {
                 TextButton(
                     onClick = {
                         showClearConfirmDialog = false
-                        // need to keep so users can clear legacy downloads
                         coroutineScope.launch(Dispatchers.IO) {
+                            // clear internal downloads
                             downloadCache.keys.forEach { key ->
                                 downloadCache.removeResource(key)
                             }
-                            database.downloadSongs(SongSortType.NAME, true).collect { songs ->
-                                songs.forEach { song ->
-                                    downloadUtil.delete(song)
-                                }
-                            }
+
+                            // TODO: Delete external downloads. Rememebr to exclude extra paths
+                            // clear external downloads
+//                            database.downloadSongs(SongSortType.NAME, true).collect { songs ->
+//                                songs.forEach { song ->
+//                                    downloadUtil.delete(song)
+//                                }
+//                            }
+
+                            downloadMainPathSize = downloadUtil.localMgr.getMainDlStorageUsage()
+                            downloadExtraPathSize = downloadUtil.localMgr.getExtraDlStorageUsage()
                         }
+                    }
+                ) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
+
+    if (showDlInfoDialog) {
+        DefaultDialog(
+            onDismiss = { showDlInfoDialog = false },
+            content = {
+                Column(
+                    modifier = Modifier
+                        .weight(1f, false)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = stringResource(R.string.dl_storage_tooltip),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(horizontal = 18.dp)
+                    )
+                }
+            },
+            buttons = {
+                TextButton(
+                    onClick = {
+                        showDlInfoDialog = false
                     }
                 ) {
                     Text(text = stringResource(android.R.string.ok))
@@ -336,7 +458,7 @@ fun ColumnScope.SongCacheFrag() {
 
     LaunchedEffect(playerCache) {
         while (isActive) {
-            delay(500)
+            delay(2000)
             playerCacheSize = tryOrNull { playerCache.cacheSpace } ?: 0
         }
     }

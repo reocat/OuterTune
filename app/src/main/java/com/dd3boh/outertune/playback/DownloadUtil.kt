@@ -176,9 +176,7 @@ class DownloadUtil @Inject constructor(
     }
 
     private fun downloadSong(id: String, title: String) {
-         if (getCustomDownload(id)) {
-             return
-         }
+        if (getCustomDownload(id)) return
         val downloadRequest = DownloadRequest.Builder(id, id.toUri())
             .setCustomCacheKey(id)
             .setData(title.toByteArray())
@@ -220,40 +218,21 @@ class DownloadUtil @Inject constructor(
     }
 
 
-
-
-
 // Deletes from custom dl
 
-    fun delete(song: PlaylistSong) {
-        deleteSong(song.song.id)
-    }
+    fun delete(song: PlaylistSong) = deleteSong(song.song.id)
 
-    fun delete(song: SongItem) {
-        deleteSong(song.id)
-    }
+    fun delete(song: SongItem) = deleteSong(song.id)
 
-    fun delete(song: Song) {
-        deleteSong(song.song.id)
-    }
+    fun delete(song: Song) = deleteSong(song.song.id)
 
-    fun delete(song: SongEntity) {
-        deleteSong(song.id)
-    }
+    fun delete(song: SongEntity) = deleteSong(song.id)
 
-    fun delete(songs: List<MediaMetadata>) {
-        songs.forEach {
-            deleteSong(it.id)
-        }
-    }
+    fun delete(song: MediaMetadata) = deleteSong(song.id)
 
-    fun delete(song: MediaMetadata) {
-        deleteSong(song.id)
-    }
-
-    private fun deleteSong(id: String) {
+    private fun deleteSong(id: String): Boolean {
         val deleted = localMgr.deleteFile(id)
-        if (!deleted) return
+        if (!deleted) return false
         downloads.update { map ->
             map.toMutableMap().apply {
                 remove(id)
@@ -264,6 +243,7 @@ class DownloadUtil @Inject constructor(
             database.song(id).first()?.song?.copy(localPath = null)
             database.updateDownloadStatus(id, null)
         }
+        return true
     }
 
     /**

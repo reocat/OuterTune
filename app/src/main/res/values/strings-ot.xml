@@ -224,16 +224,27 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="clear_downloads_confirm">Are you sure you want to remove all downloads? Only downloads in the main download folder will be removed.</string>
     <string name="clear_image_cache_confirm">Are you sure you want to clear image cache? All exiting album thumbnails will be removed.</string>
     <string name="clear_song_cache_confirm">Are you sure you want to clear song cache?</string>
-    <string name="dl_extra_path_title">Configure extra download locations…</string>
+    <string name="dl_calculate_size">Tap to calculate download size</string>
+    <string name="dl_extra_path_title">Configure extra import locations…</string>
     <string name="dl_extra_path_description">Songs from these folders will only appear in the app if you\'ve played them before or added them to a playlist</string>
     <string name="dl_migrate_title">Migrate downloads to external storage…</string>
     <string name="dl_migrate_description">Move downloads from the app\'s internal storage to the device\'s external storage</string>
     <string name="dl_migrate_confirm">This will migrate ALL internal downloads to \"%s\", and this action cannot be undone. Continue?</string>
-    <string name="dl_main_path_title">Configure download directory…</string>
+    <string name="dl_main_path_title">Set external download folder…</string>
     <string name="dl_main_path_description">Select downloads storage location</string>
+    <string name="dl_oobe_tooltip">Songs are download to the app\'s private internal storage. To download songs to the external storage, you need to choose a folder first. You can add, change or remove folders, or migrate Internal Downloads to External Downloads later in Settings.</string>
     <string name="dl_rescan_title">Rescan download folders…</string>
     <string name="dl_rescan_description">Update the database and refresh the download registry if any files or folders have changed</string>
 	<string name="dl_rescan_confirm">Rescan all download folders now? This can take a few minutes depending on the size of your library.</string>
+    <string name="dl_size_used_cache">Internal: %s used</string>
+    <string name="dl_size_used_main">External: %s used</string>
+    <string name="dl_size_used_extra">Extra imports: %s used</string>
+    <string name="dl_storage_tooltip">Internal Downloads are saved in the app’s private storage and aren’t accessible without root.
+        \n\nExternal Downloads are saved to your device’s external storage (e.g., /sdcard or micro SD cards) and can be accessed or edited directly with a file explorer. For the External Downloads folder, we recommend choosing an empty folder specifically for song downloads, as OuterTune may modify or delete files in that folder.
+        \n\nExtra Import folders are read-only and used for loading additional songs. OuterTune will never change or delete files in these folders. You can select these folders in the advanced section.
+        \n\nWhen you clear downloads, only internal songs are deleted. External Downloads and Extra Import songs must be removed manually, either through the song’s menu or manually via a file explorer.
+        \n\nRescan download folders: Song downloads in the External Downloads and Extra Imports folders are NOT updated automatically. If you manually add, remove, or change files using a file explorer, you may need to rescan the download folders to update the app’s database. This option is available in the advanced section.
+    </string>
     <string name="restart_to_apply_changes">An app restart is required for changes to take effect</string>
 
     <!-- Privacy settings -->
