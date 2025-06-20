@@ -824,14 +824,12 @@ class MusicService : MediaLibraryService(),
             Timber.d("PLAYING: song id = $mediaId")
 
             val song = queueBoard.getCurrentQueue()?.findSong(dataSpec.key ?: "")
-            if (song?.isLocal == true) {
-                Timber.tag(TAG).d("PLAYING: local song")
-                if (song.localPath == null) {
-                    throw PlaybackException(
-                        "Invalid local song. Please run scanner with full rescan enabled",
-                        Throwable(),
-                        PlaybackException.ERROR_CODE_BAD_VALUE
-                    )
+            // local song
+            if (song?.localPath != null) {
+                if (song.isLocal) {
+                    Timber.tag(TAG).d("PLAYING: local song")
+                } else {
+                    Log.d(TAG, "PLAYING: Custom downloaded song")
                 }
 
                 val file = File(song.localPath)
@@ -844,14 +842,6 @@ class MusicService : MediaLibraryService(),
                 }
 
                 return@Factory dataSpec.withUri(Uri.fromFile(file))
-            }
-
-            val isDownloadNew = downloadUtil.localMgr.getFilePathIfExists(mediaId)
-            if (isDownloadNew != null) {
-                Timber.tag(TAG).d("PLAYING: Downloaded remote song")
-                val songPath = isDownloadNew
-
-                return@Factory dataSpec.withUri(songPath)
             }
 
             val isDownload =
