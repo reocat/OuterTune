@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Input
+import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,13 +46,12 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
-import com.dd3boh.outertune.constants.ScannerSensitivityKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.ui.component.DefaultDialog
-import com.dd3boh.outertune.utils.rememberEnumPreference
+import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.compareSong
@@ -72,10 +72,9 @@ fun ImportM3uDialog(
     val context = LocalContext.current
     val database = LocalDatabase.current
 
-    val (scannerSensitivity) = rememberEnumPreference(
-        key = ScannerSensitivityKey,
-        defaultValue = ScannerMatchCriteria.LEVEL_2
-    )
+    var scannerSensitivity by remember {
+        mutableStateOf(ScannerMatchCriteria.LEVEL_1)
+    }
 
     var remoteLookup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -113,6 +112,20 @@ fun ImportM3uDialog(
         icon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
         title = { Text(stringResource(R.string.import_playlist)) },
     ) {
+        EnumListPreference(
+            title = { Text(stringResource(R.string.scanner_sensitivity_title)) },
+            icon = { Icon(Icons.Rounded.GraphicEq, null) },
+            selectedValue = scannerSensitivity,
+            onValueSelected = { scannerSensitivity = it },
+            valueText = {
+                when (it) {
+                    ScannerMatchCriteria.LEVEL_1 -> stringResource(R.string.scanner_sensitivity_L1)
+                    ScannerMatchCriteria.LEVEL_2 -> stringResource(R.string.scanner_sensitivity_L2)
+                    ScannerMatchCriteria.LEVEL_3 -> stringResource(R.string.scanner_sensitivity_L3)
+                }
+            }
+        )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
