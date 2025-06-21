@@ -438,6 +438,7 @@ fun ColumnScope.LocalScannerFrag() {
     if (showAddFolderDialog != null) {
         var tempScanPaths = remember { mutableStateListOf<Uri>() }
         LaunchedEffect(showAddFolderDialog, scanPaths, excludedScanPaths) {
+            tempScanPaths.clear()
             tempScanPaths.addAll(
                 uriListFromString(if (showAddFolderDialog == true) scanPaths else excludedScanPaths)
             )
@@ -497,7 +498,7 @@ fun ColumnScope.LocalScannerFrag() {
                 if ((dlUri) == null) return@any true
                 // scan path cannot be the download directory or subdir of download directory
                 !it.toString().contains(dlUri.toString())
-            }
+            } || tempScanPaths.isEmpty()
         ) {
             val dirPickerLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.OpenDocumentTree()
