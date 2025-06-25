@@ -145,7 +145,7 @@ fun ColumnScope.LocalScannerFrag() {
     val (excludedScanPaths, onExcludedScanPathsChange) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
 
     var fullRescan by remember { mutableStateOf(false) }
-    val (lookupYtmArtists, onLookupYtmArtistsChange) = rememberPreference(LookupYtmArtistsKey, defaultValue = true)
+    val (lookupYtmArtists, onLookupYtmArtistsChange) = rememberPreference(LookupYtmArtistsKey, defaultValue = false)
 
     val (lastLocalScan, onLastLocalScanChange) = rememberPreference(
         LastLocalScanKey,
