@@ -42,6 +42,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.Edit
@@ -52,6 +54,7 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.FolderCopy
 import androidx.compose.material.icons.rounded.LibraryAddCheck
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.OfflinePin
 import androidx.compose.material.icons.rounded.OndemandVideo
 import androidx.compose.material3.Checkbox
@@ -818,6 +821,7 @@ fun AlbumListItem(
         }
 
         LaunchedEffect(songs) {
+            val songs = songs.filterNot { it.song.isLocal }
             if (songs.isEmpty()) return@LaunchedEffect
             downloadUtil.downloads.collect { downloads ->
                 downloadState = when {
@@ -857,6 +861,7 @@ fun AlbumListItem(
     thumbnailContent = {
         ItemThumbnail(
             thumbnailUrl = album.album.thumbnailUrl,
+            placeholderIcon = Icons.Outlined.Album,
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
@@ -890,6 +895,7 @@ fun AlbumGridItem(
         }
 
         LaunchedEffect(songs) {
+            val songs = songs.filterNot { it.song.isLocal }
             if (songs.isEmpty()) return@LaunchedEffect
             downloadUtil.downloads.collect { downloads ->
                 downloadState = when {
@@ -926,6 +932,7 @@ fun AlbumGridItem(
 
         ItemThumbnail(
             thumbnailUrl = album.album.thumbnailUrl,
+            placeholderIcon = Icons.Outlined.Album,
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
@@ -1446,6 +1453,7 @@ fun YouTubeCardItem(
 @Composable
 fun ItemThumbnail(
     thumbnailUrl: String?,
+    placeholderIcon: ImageVector = Icons.Rounded.MusicNote,
     isActive: Boolean,
     isPlaying: Boolean,
     shape: Shape,
@@ -1461,10 +1469,11 @@ fun ItemThumbnail(
     ) {
         var isRectangularImage by remember { mutableStateOf(false) }
 
-        if (thumbnailUrl?.startsWith("/storage") == true) {
+        if (thumbnailUrl == null || thumbnailUrl.startsWith("/storage") == true) {
             // local thumbnail arts
             AsyncImageLocal(
-                image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
+                image = { thumbnailUrl?.let { imageCache.getLocalThumbnail(thumbnailUrl, true) } },
+                placeholderIcon = placeholderIcon,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
