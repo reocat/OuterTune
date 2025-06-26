@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.ScannerMatchCriteria
+import com.dd3boh.outertune.constants.ScannerM3uMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
@@ -54,7 +54,7 @@ import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
-import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.compareSong
+import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.compareM3uSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -73,7 +73,7 @@ fun ImportM3uDialog(
     val database = LocalDatabase.current
 
     var scannerSensitivity by remember {
-        mutableStateOf(ScannerMatchCriteria.LEVEL_1)
+        mutableStateOf(ScannerM3uMatchCriteria.LEVEL_1)
     }
 
     var remoteLookup by remember { mutableStateOf(false) }
@@ -119,9 +119,9 @@ fun ImportM3uDialog(
             onValueSelected = { scannerSensitivity = it },
             valueText = {
                 when (it) {
-                    ScannerMatchCriteria.LEVEL_1 -> stringResource(R.string.scanner_sensitivity_L1)
-                    ScannerMatchCriteria.LEVEL_2 -> stringResource(R.string.scanner_sensitivity_L2)
-                    ScannerMatchCriteria.LEVEL_3 -> stringResource(R.string.scanner_sensitivity_L3)
+                    ScannerM3uMatchCriteria.LEVEL_0 -> stringResource(R.string.scanner_sensitivity_L0)
+                    ScannerM3uMatchCriteria.LEVEL_1 -> stringResource(R.string.scanner_sensitivity_L1)
+                    ScannerM3uMatchCriteria.LEVEL_2 -> stringResource(R.string.scanner_sensitivity_L2)
                 }
             }
         )
@@ -280,7 +280,7 @@ fun loadM3u(
     context: Context,
     database: MusicDatabase,
     uri: Uri,
-    matchStrength: ScannerMatchCriteria = ScannerMatchCriteria.LEVEL_2,
+    matchStrength: ScannerM3uMatchCriteria = ScannerM3uMatchCriteria.LEVEL_1,
     searchOnline: Boolean = false
 ): Triple<ArrayList<Song>, ArrayList<String>, String> {
     val songs = ArrayList<Song>()
@@ -333,11 +333,17 @@ fun loadM3u(
                         }
                         val oldSize = songs.size
                         var foundOne = false // TODO: Eventually the user can pick from matches... eventually...
-                        for (s in matches) {
-                            if (compareSong(mockSong, s, matchStrength = matchStrength)) {
-                                songs.add(s)
-                                foundOne = true
-                                break
+
+                        // take first song when searching on YTM
+                        if (matchStrength == ScannerM3uMatchCriteria.LEVEL_0 && searchOnline && matches.isNotEmpty()) {
+                            songs.add(matches.first())
+                        } else {
+                            for (s in matches) {
+                                if (compareM3uSong(mockSong, s, matchStrength = matchStrength)) {
+                                    songs.add(s)
+                                    foundOne = true
+                                    break
+                                }
                             }
                         }
 
