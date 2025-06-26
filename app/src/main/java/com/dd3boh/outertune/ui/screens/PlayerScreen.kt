@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
@@ -31,7 +32,7 @@ fun PlayerScreen(
     val playerConnection = LocalPlayerConnection.current
     val playerBackground by rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
-        defaultValue = PlayerBackgroundStyle.DEFAULT
+        defaultValue = DEFAULT_PLAYER_BACKGROUND
     )
 
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -41,7 +42,7 @@ fun PlayerScreen(
     }
 
     val onBackgroundColor = when (playerBackground) {
-        PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.secondary
+        PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
         else ->
             if (useDarkTheme)
                 MaterialTheme.colorScheme.onSurface
