@@ -57,6 +57,9 @@ interface AlbumsDao : ArtistsDao {
     """)
     fun album(id: String): Flow<Album?>
 
+    @Query("SELECT * FROM album WHERE id = :id")
+    fun albumById(id: String): AlbumEntity?
+
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("""
@@ -80,6 +83,40 @@ interface AlbumsDao : ArtistsDao {
         LIMIT :previewSize
     """)
     fun searchAlbums(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Album>>
+
+    @Transaction
+    @Query("""
+        SELECT *
+        FROM album
+        WHERE album.isLocal = 1 AND album.title LIKE '%' || :query || '%'
+        LIMIT :previewSize
+    """)
+    fun localAlbumsByName(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<AlbumEntity>>
+
+    @Transaction
+    @Query("""
+        SELECT * FROM album
+        WHERE album.isLocal = 1
+        ORDER BY album.title ASC
+    LIMIT :previewSize""")
+    fun allLocalAlbumsByName(previewSize: Int = Int.MAX_VALUE): Flow<List<AlbumEntity>>
+
+    @Transaction
+    @Query("UPDATE song_album_map SET albumId = :newId WHERE albumId = :oldId")
+    fun updateSongAlbumMap(oldId: String, newId: String)
+
+    @Query(
+        """
+        DELETE FROM album
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM song_album_map
+            WHERE song_album_map.albumId = :albumId
+        )
+        AND id = :albumId
+    """
+    )
+    fun safeDeleteAlbum(albumId: String)
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
@@ -188,7 +225,8 @@ interface AlbumsDao : ArtistsDao {
                 album.isLocal,
                 COUNT(song.dateDownload) as downloadCount
             FROM album
-                LEFT JOIN song ON song.albumId = album.id
+                LEFT JOIN song_album_map ON album.id = song_album_map.albumId
+                LEFT JOIN song ON song.id = song_album_map.songId
             WHERE $where
             GROUP BY album.id
             ORDER BY $orderBy
@@ -300,9 +338,19 @@ interface AlbumsDao : ArtistsDao {
     @Upsert
     fun upsert(map: SongAlbumMap)
 
+    /**
+     * Set artistId
+     */
     @Transaction
     @Query("UPDATE album_artist_map SET artistId = :newId WHERE artistId = :oldId")
     fun updateAlbumArtistMap(oldId: String, newId: String)
+
+    /**
+     * Set albumId
+     */
+    @Transaction
+    @Query("UPDATE album_artist_map SET albumId = :newId WHERE albumId = :oldId")
+    fun updateArtistAlbumMap(oldId: String, newId: String)
 
     @Transaction
     @Query("DELETE FROM song_artist_map WHERE songId = :songID")
