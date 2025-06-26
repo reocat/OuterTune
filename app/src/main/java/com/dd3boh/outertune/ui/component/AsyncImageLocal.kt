@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,7 @@ val imageSession = newFixedThreadPoolContext(MAX_IMAGE_JOBS, "ImageExtractor")
 fun AsyncImageLocal(
     image: () -> Bitmap?,
     modifier: Modifier = Modifier,
+    placeholderIcon: ImageVector = Icons.Rounded.MusicNote,
     contentScale: ContentScale = ContentScale.Fit,
     contentDescription: String? = null,
 ) {
@@ -63,7 +65,7 @@ fun AsyncImageLocal(
     imageBitmapState.let { imageBitmap ->
         if (imageBitmap == null) {
             Icon(
-                Icons.Rounded.MusicNote,
+                placeholderIcon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = modifier
