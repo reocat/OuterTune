@@ -139,7 +139,9 @@ class TagLibScanner : MetadataScanner {
              * These vars need a bit more parsing
              */
 
-            val title: String = if (rawTitle != null && !rawTitle.isBlank()) { // songs with no title tag
+            val timeNow = LocalDateTime.now()
+
+            val title: String = if (rawTitle != null && rawTitle.isBlank() == false) { // songs with no title tag
                 rawTitle.trim()
             } else {
                 file.path.substringAfterLast('/').substringBeforeLast('.')
@@ -182,7 +184,7 @@ class TagLibScanner : MetadataScanner {
                         date = date,
                         dateModified = dateModified,
                         isLocal = true,
-                        inLibrary = LocalDateTime.now(),
+                        inLibrary = timeNow,
                         localPath = file.path
                     ),
                     artists = artistList,
