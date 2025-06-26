@@ -206,4 +206,16 @@
     <string name="oobe_downloads_title">Canciones descargadas</string>
     <string name="oobe_local_media_subtitle">Elige las carpetas que contienen tu música. Las escanearemos en busca de canciones para importar.</string>
     <string name="lyrics_karaoke_description">Habilita la sincronización de la letra, palabra por palabra. Es necesario compatibilidad con el formato de la letra.</string>
+    <string name="dl_extra_path_description">Las canciones de estas carpetas solo aparecerán en la aplicación si las has reproducido antes o las has agregado a una playlist</string>
+    <string name="dl_oobe_tooltip">Las canciones se descargan en el almacenamiento interno privado de la aplicación. Para descargar canciones al almacenamiento externo, primero debes seleccionar una carpeta. Puedes agregar, cambiar o eliminar carpetas, o migrar las descargas internas a las externas, más adelante en Ajustes.</string>
+    <string name="oobe_local_music_support">Amplio soporte musical local</string>
+    <string name="oobe_local_media_title">Medios locales</string>
+    <string name="dl_rescan_confirm">¿Quieres volver a escanear todas las carpetas de descarga ahora? Esto puede tardar unos minutos, dependiendo del tamaño de tu biblioteca.</string>
+    <string name="dl_size_used_cache">Interno: %s usado</string>
+    <string name="dl_size_used_main">Externo: %s usado</string>
+    <string name="dl_size_used_extra">Importaciones adicionales: %s usado</string>
+    <string name="dl_migrate_confirm">Esto migrará TODAS las descargas internas a \"%s\", y esta acción no se puede deshacer. ¿Continuar?</string>
+    <string name="dl_rescan_title">Volver a escanear carpetas de descarga.…</string>
+    <string name="dl_calculate_size">Pulsa para calcular el tamaño de descarga</string>
+    <string name="dl_storage_tooltip">Las descargas internas se guardan en el almacenamiento privado de la aplicación y no son accesibles sin root.\n\nLas descargas externas se guardan en el almacenamiento externo de tu dispositivo (por ejemplo, /sdcard o tarjetas micro SD) y puedes acceder a ellas o editarlas directamente con un explorador de archivos. Para la carpeta \"Descargas externas\", recomendamos elegir una carpeta vacía específicamente para descargas de canciones, ya que OuterTune podría modificar o eliminar archivos de esa carpeta.\n\nLas carpetas de importación adicionales son de solo lectura y se usan para cargar canciones adicionales. OuterTune nunca modificará ni eliminará los archivos de estas carpetas. Puede seleccionarlas en la sección avanzada.\n\nAl borrar las descargas, solo se eliminan las canciones internas. Las descargas externas y las canciones de importación adicional deben eliminarse manualmente, ya sea desde el menú de la canción o con un explorador de archivos.\n\nVolver a escanear las carpetas de descarga: Las descargas de canciones en las carpetas Descargas externas e Importaciones adicionales no se actualizan automáticamente. Si añades, eliminas o modificas archivos manualmente con un explorador de archivos, es posible que tengas que volver a escanear las carpetas de descarga para actualizar la base de datos de la aplicación. Esta opción está disponible en la sección avanzada.</string>
 </resources>
