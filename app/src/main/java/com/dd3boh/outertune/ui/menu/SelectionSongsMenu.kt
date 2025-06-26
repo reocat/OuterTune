@@ -86,20 +86,23 @@ fun SelectionMediaMetadataMenu(
         if (selection.isEmpty()) {
             onDismiss()
         } else {
-        downloadUtil.downloads.collect { downloads ->
-            val remaining = selection.filterNot { downloads[it.id]?.state == Download.STATE_COMPLETED }
-            downloadState =
-                if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s.id == it.key } }.isEmpty()) {
-                    Download.STATE_COMPLETED
-                } else if (selection.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED
-                                || downloads[it.id]?.state == Download.STATE_DOWNLOADING
-                                || downloads[it.id]?.state == Download.STATE_COMPLETED
-                    }) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            val selection = selection.filterNot { it.isLocal }
+            if (selection.isEmpty()) return@LaunchedEffect
+            downloadUtil.downloads.collect { downloads ->
+                val remaining = selection.filterNot { downloads[it.id]?.state == Download.STATE_COMPLETED }
+                downloadState =
+                    if (remaining.filterNot { s -> downloadUtil.customDownloads.value.any { s.id == it.key } }
+                            .isEmpty()) {
+                        Download.STATE_COMPLETED
+                    } else if (selection.all {
+                            downloads[it.id]?.state == Download.STATE_QUEUED
+                                    || downloads[it.id]?.state == Download.STATE_DOWNLOADING
+                                    || downloads[it.id]?.state == Download.STATE_COMPLETED
+                        }) {
+                        Download.STATE_DOWNLOADING
+                    } else {
+                        Download.STATE_STOPPED
+                    }
             }
         }
     }
@@ -186,7 +189,7 @@ fun SelectionMediaMetadataMenu(
         )
     }
 
-    GridMenu (
+    GridMenu(
         contentPadding = PaddingValues(
             start = 8.dp,
             top = 8.dp,

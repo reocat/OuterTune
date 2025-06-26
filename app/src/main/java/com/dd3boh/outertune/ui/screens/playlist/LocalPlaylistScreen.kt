@@ -637,6 +637,7 @@ fun LocalPlaylistHeader(
     }
 
     LaunchedEffect(songs) {
+        val songs = songs.filterNot { it.song.song.isLocal }
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             val remaining = songs.filterNot { downloads[it.song.id]?.state == Download.STATE_COMPLETED }
