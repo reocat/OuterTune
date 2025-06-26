@@ -254,7 +254,6 @@ fun SongMenu(
             if (song.song.isLocal) {
                 AsyncImageLocal(
                     image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
-                    contentDescription = null,
                     modifier = Modifier
                         .size(ListThumbnailSize)
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))

@@ -665,7 +665,6 @@ fun SongGridItem(
             if (song.song.isLocal) {
                 AsyncImageLocal(
                     image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
-                    contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
@@ -1475,7 +1474,6 @@ fun ItemThumbnail(
             // local thumbnail arts
             AsyncImageLocal(
                 image = { imageCache.getLocalThumbnail(thumbnailUrl, true) },
-                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
@@ -1586,7 +1584,6 @@ fun PlaylistThumbnail(
                     if (thumbnails.getOrNull(index)?.startsWith("/storage") == true) {
                         AsyncImageLocal(
                             image = { imageCache.getLocalThumbnail(thumbnails[index], true) },
-                            contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .align(alignment)
