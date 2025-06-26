@@ -122,6 +122,13 @@ enum class ScannerMatchCriteria {
     LEVEL_3, // Title, artists, albums
 }
 
+enum class ScannerM3uMatchCriteria {
+    LEVEL_1, // Title only
+    LEVEL_2, // Title and artists
+    LEVEL_0, // Do not compare, assume it is a match
+    // TODO: Do albums for m3u if that even is a thing
+}
+
 
 /*
 ---------------------------
