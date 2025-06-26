@@ -17,6 +17,8 @@ const val SCANNER_OWNER_DL = 32
 const val SCANNER_OWNER_LM = 1
 const val SCANNER_OWNER_M3U = 2
 
+val DEFAULT_PLAYER_BACKGROUND =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PlayerBackgroundStyle.BLUR else PlayerBackgroundStyle.GRADIENT
 
 /**
  * Debug

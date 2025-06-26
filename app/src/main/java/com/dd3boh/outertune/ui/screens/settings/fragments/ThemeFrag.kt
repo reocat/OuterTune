@@ -82,7 +82,7 @@ fun ColumnScope.ThemeAppFrag() {
 fun ColumnScope.ThemePlayerFrag() {
     val (playerBackground, onPlayerBackgroundChange) = rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
-        defaultValue = PlayerBackgroundStyle.DEFAULT
+        defaultValue = PlayerBackgroundStyle.FOLLOW_THEME
     )
     val availableBackgroundStyles = PlayerBackgroundStyle.entries.filter {
         it != PlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
@@ -95,7 +95,7 @@ fun ColumnScope.ThemePlayerFrag() {
         onValueSelected = onPlayerBackgroundChange,
         valueText = {
             when (it) {
-                PlayerBackgroundStyle.DEFAULT -> stringResource(R.string.player_background_default)
+                PlayerBackgroundStyle.FOLLOW_THEME -> stringResource(R.string.player_background_default)
                 PlayerBackgroundStyle.GRADIENT -> stringResource(R.string.player_background_gradient)
                 PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
             }

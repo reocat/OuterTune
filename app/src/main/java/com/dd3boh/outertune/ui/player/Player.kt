@@ -113,6 +113,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
@@ -238,7 +239,7 @@ fun BottomSheetPlayer(
 
     val playerBackground by rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
-        defaultValue = PlayerBackgroundStyle.DEFAULT
+        defaultValue = DEFAULT_PLAYER_BACKGROUND
     )
 
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -248,7 +249,7 @@ fun BottomSheetPlayer(
     }
 
     val onBackgroundColor = when (playerBackground) {
-        PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.secondary
+        PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
         else ->
             if (useDarkTheme)
                 MaterialTheme.colorScheme.onSurface
@@ -326,7 +327,7 @@ fun BottomSheetPlayer(
     BottomSheet(
         state = state,
         modifier = modifier,
-        backgroundColor = if (useDarkTheme || playerBackground == PlayerBackgroundStyle.DEFAULT) {
+        backgroundColor = if (useDarkTheme || playerBackground == PlayerBackgroundStyle.FOLLOW_THEME) {
             MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation)
         } else MaterialTheme.colorScheme.onSurfaceVariant,
         collapsedBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
@@ -737,7 +738,7 @@ fun BottomSheetPlayer(
                 }
             }
 
-            if (playerBackground != PlayerBackgroundStyle.DEFAULT && showLyrics) {
+            if (playerBackground != PlayerBackgroundStyle.FOLLOW_THEME && showLyrics) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
