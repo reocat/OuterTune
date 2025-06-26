@@ -124,6 +124,8 @@ fun AlbumMenu(
     }
 
     LaunchedEffect(songs) {
+        if (album.album.isLocal != false) return@LaunchedEffect
+        val songs = songs.filterNot { it.song.isLocal }
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
             val remaining = songs.filterNot { downloads[it.id]?.state == STATE_COMPLETED }
@@ -312,25 +314,27 @@ fun AlbumMenu(
                 }
             }
         }
-        DownloadGridMenu(
-            state = downloadState,
-            onDownload = {
-                val _songs = songs
-                    .filterNot { it.song.isLocal }
-                    .map{ it.toMediaMetadata() }
-                downloadUtil.download(_songs)
-            },
-            onRemoveDownload = {
-                songs.forEach { song ->
-                    DownloadService.sendRemoveDownload(
-                        context,
-                        ExoDownloadService::class.java,
-                        song.id,
-                        false
-                    )
+        if (album.album.isLocal == false) {
+            DownloadGridMenu(
+                state = downloadState,
+                onDownload = {
+                    val _songs = songs
+                        .filterNot { it.song.isLocal }
+                        .map { it.toMediaMetadata() }
+                    downloadUtil.download(_songs)
+                },
+                onRemoveDownload = {
+                    songs.forEach { song ->
+                        DownloadService.sendRemoveDownload(
+                            context,
+                            ExoDownloadService::class.java,
+                            song.id,
+                            false
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
         GridMenuItem(
             icon = R.drawable.artist,
             title = R.string.view_artist
