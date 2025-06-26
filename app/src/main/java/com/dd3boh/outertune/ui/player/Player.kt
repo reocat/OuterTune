@@ -689,7 +689,6 @@ fun BottomSheetPlayer(
                         metadata.let {
                             AsyncImageLocal(
                                 image = { imageCache.getLocalThumbnail(it.localPath) },
-                                contentDescription = null,
                                 contentScale = ContentScale.FillBounds,
                                 modifier = Modifier
                                     .fillMaxSize()

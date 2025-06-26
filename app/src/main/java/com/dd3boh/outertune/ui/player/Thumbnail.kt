@@ -109,7 +109,6 @@ fun Thumbnail(
                         mediaMetadata.let { // required to re render when song changes
                             AsyncImageLocal(
                                 image = { imageCache.getLocalThumbnail(it.localPath, false) },
-                                contentDescription = null,
                                 contentScale = contentScale,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
