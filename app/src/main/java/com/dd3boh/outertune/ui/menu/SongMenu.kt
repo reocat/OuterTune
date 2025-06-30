@@ -70,6 +70,7 @@ import com.dd3boh.outertune.constants.SyncMode
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.constants.YtmSyncModeKey
 import com.dd3boh.outertune.db.entities.Event
+import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
@@ -97,7 +98,7 @@ import kotlinx.coroutines.launch
 fun SongMenu(
     originalSong: Song,
     playlistSong: PlaylistSong? = null,
-    playlistBrowseId: String? = null,
+    playlist: Playlist? = null,
     event: Event? = null,
     navController: NavController,
     onDismiss: () -> Unit,
@@ -334,14 +335,15 @@ fun SongMenu(
             showChoosePlaylistDialog = true
         }
 
-        if (playlistSong != null && (playlistSong.song.song.isLocal || syncMode == SyncMode.RW)) {
+        if (playlistSong != null && (playlist?.playlist?.isLocal == true
+                    || (playlistSong.song.song.isLocal || syncMode == SyncMode.RW))) {
             GridMenuItem(
                 icon = Icons.Rounded.PlaylistRemove,
                 title = R.string.remove_from_playlist
             ) {
                 database.transaction {
                     coroutineScope.launch {
-                        playlistBrowseId?.let { playlistId ->
+                        playlist?.id?.let { playlistId ->
                             if (playlistSong.map.setVideoId != null) {
                                 YouTube.removeFromPlaylist(
                                     playlistId, playlistSong.map.songId, playlistSong.map.setVideoId
