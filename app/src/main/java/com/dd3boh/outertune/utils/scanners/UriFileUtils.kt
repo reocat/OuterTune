@@ -25,6 +25,7 @@ fun documentFileFromFile(file: File): DocumentFile? {
 }
 
 fun stringFromUriList(uris: List<Uri>): String {
+    if (uris.isEmpty()) return ""
     return uris.distinctBy { it.toString() }.joinToString("\n")
 }
 

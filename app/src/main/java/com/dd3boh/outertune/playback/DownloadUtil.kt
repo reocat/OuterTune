@@ -249,7 +249,7 @@ class DownloadUtil @Inject constructor(
     /**
      * Retrieve song from cache, and delete it from cache afterwards
      */
-    fun getAndDeleteFromCache(cache: SimpleCache, mediaId: String): ByteArray? {
+    fun getFromCache(cache: SimpleCache, mediaId: String): ByteArray? {
         val spans: Set<CacheSpan> = cache.getCachedSpans(mediaId)
         if (spans.isEmpty()) return null
 
@@ -261,8 +261,6 @@ class DownloadUtil @Inject constructor(
                     fis.copyTo(output)
                 }
             }
-
-            cache.removeResource(mediaId)
             return output.toByteArray()
         } catch (e: IOException) {
             reportException(e)
@@ -324,14 +322,16 @@ class DownloadUtil @Inject constructor(
                             }
                         }
                     }
-                    val songFromCache = getAndDeleteFromCache(downloadCache, s.key)
+                    val songFromCache = getFromCache(downloadCache, s.key)
                     if (songFromCache != null) {
+                        downloadCache.removeResource(s.key)
                         downloadMgr.enqueue(
                             mediaId = s.key,
                             data = songFromCache,
                             displayName = runBlocking { database.song(s.key).first()?.title ?: "" })
                     }
                 }
+                scanDownloads()
             } catch (e: Exception) {
                 reportException(e)
             } finally {
@@ -342,7 +342,7 @@ class DownloadUtil @Inject constructor(
 
 
     fun cd() {
-        localMgr = DownloadDirectoryManagerOt(
+        localMgr.doInit(
             context,
             context.dataStore.get(DownloadPathKey, "").toUri(),
             uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
