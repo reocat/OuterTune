@@ -9,7 +9,7 @@ import com.zionhuang.kugou.KuGou
 object KuGouLyricsProvider : LyricsProvider {
     override val name = "Kugou"
     override fun isEnabled(context: Context): Boolean =
-        context.dataStore[EnableKugouKey] ?: true
+        context.dataStore[EnableKugouKey] ?: false
 
     override suspend fun getLyrics(id: String, title: String, artist: String, duration: Int): Result<String> =
         KuGou.getLyrics(title, artist, duration)

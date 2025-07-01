@@ -166,7 +166,6 @@
     <string name="oobe_ytm_integration_description">Miej dostęp do swoich ulubionych utworów bez żadnych ograniczeń</string>
     <string name="oobe_cross_platform_sync">Międzyplatformowa synchonizacja</string>
     <string name="oobe_interface_subtitle">Dostosuj wygląd OuterTune oraz pokazywane treści.</string>
-    <string name="oobe_downloads_title">Pobrane piosenki</string>
     <string name="oobe_complete_title">Wszystko gotowe!</string>
     <string name="dl_migrate_description">Przenieś pobrania z wewnętrznej pamięci aplikacji do zewnętrznej pamięci urządzenia</string>
     <string name="dl_migrate_confirm">Ta akcja przeniesie WSZYSTKIE wewnętrzne pobrania do \"%s\", ta akcja nie może być cofnięta. Czy chcesz kontynuować?</string>
@@ -179,7 +178,6 @@
     <string name="oobe_ad_free_exp_description">Ciesz się nieprzerwaną muzyką</string>
     <string name="oobe_local_music_support">Ekstensywne ­wsparcie lokalnej muzyki</string>
     <string name="oobe_local_media_title">Lokalne media</string>
-    <string name="oobe_downloads_subtitle">Wybierz folder, w którym będą przechowywane pobrane piosenki.</string>
     <string name="speed_very_slow">Bardzo powolna</string>
     <string name="speed_slow">Wolna</string>
     <string name="speed_medium">Średnia</string>
@@ -208,7 +206,6 @@
     <string name="m3u_ytm_lookup">Szukaj w YouTube Music by znaleźć piosenki nie znalezione w bazie danych aplikacji</string>
     <string name="clear_downloads_confirm">Czy jesteś pewien, że chcesz usunąć wszystkie pobrane piosenki? Tylko te znajdujące się w głównym folderze pobrań zostaną usunięte.</string>
     <string name="clear_song_cache_confirm">Czy na pewno chcesz usunąć pamięć piosenek?</string>
-    <string name="scan_paths_description">Wybierz foldery znajdujące się w pamięci lokalne, który mają zostać zeskanowane w celu znalezienia piosenek</string>
     <string name="dl_oobe_tooltip">Piosenki są pobierane do prywatnej pamięci wewnętrznej aplikacji. By pobierać piosenki do zewnętrznej pamięci, musisz wybrać folder. Możesz dodawać, zmieniać lub usuwać foldery, albo zmieniać pobrania wewnątrz aplikacji na zewnętrzne później za pomocą ustawień.</string>
     <string name="dl_rescan_confirm">Czy chcesz ponownie zeskanować wszystkie foldery pobrań teraz? Ta akcja może potrwać kilka minut w zależności od wielkości twojej biblioteki.</string>
     <string name="dl_size_used_cache">Pamięć wewnętrzna: Użyto %s</string>

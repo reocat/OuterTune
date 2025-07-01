@@ -8,13 +8,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -35,62 +40,105 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PreferenceEntry(
+fun PreferenceItem(
     modifier: Modifier = Modifier,
     title: @Composable () -> Unit,
     description: String? = null,
-    content: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     isEnabled: Boolean = true,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(
-                enabled = isEnabled && onClick != null,
-                onClick = onClick ?: {}
-            )
-            .alpha(if (isEnabled) 1f else 0.5f)
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-    ) {
-        if (icon != null) {
-            Box(
-                modifier = Modifier.padding(horizontal = 4.dp)
-            ) {
-                icon()
-            }
+    val cardShape = when {
+        isFirst -> RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 2.dp, bottomEnd = 2.dp)
+        isLast -> RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
+        isMiddle -> RoundedCornerShape(2.dp)
+        else -> RoundedCornerShape(12.dp)
+    }
 
-            Spacer(Modifier.width(12.dp))
-        }
-
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.weight(1f)
+    Column {
+        Card(
+            shape = cardShape,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            modifier = modifier
         ) {
-            ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                title()
-            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        enabled = isEnabled && onClick != null,
+                        onClick = onClick ?: {}
+                    )
+                    .alpha(if (isEnabled) 1f else 0.5f)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                if (icon != null) {
+                    Box(modifier = Modifier.padding(horizontal = 4.dp)) {
+                        icon()
+                    }
+                    Spacer(Modifier.width(12.dp))
+                }
 
-            if (description != null) {
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+                        title()
+                    }
+                    if (description != null) {
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
 
-            content?.invoke()
+                if (trailingContent != null) {
+                    Spacer(Modifier.width(12.dp))
+                    trailingContent()
+                }
+            }
         }
 
-        if (trailingContent != null) {
-            Spacer(Modifier.width(12.dp))
-
-            trailingContent()
+        // Add spacer between cards if not the last item
+        if (!isLast && (isFirst || isMiddle)) {
+            Spacer(modifier = Modifier.height(1.dp))
         }
     }
+}
+
+@Composable
+fun PreferenceEntry(
+    modifier: Modifier = Modifier,
+    title: @Composable () -> Unit,
+    description: String? = null,
+    icon: (@Composable () -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
+    isEnabled: Boolean = true,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
+) {
+    PreferenceItem(
+        modifier = modifier,
+        title = title,
+        description = description,
+        icon = icon,
+        trailingContent = trailingContent,
+        onClick = onClick,
+        isEnabled = isEnabled,
+        isFirst = isFirst,
+        isLast = isLast,
+        isMiddle = isMiddle
+    )
 }
 
 @Composable
@@ -104,10 +152,12 @@ fun <T> ListPreference(
     onValueSelected: (T) -> Unit,
     onDisabled: (T) -> Boolean = { false },
     isEnabled: Boolean = true,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
 ) {
-    var showDialog by remember {
-        mutableStateOf(false)
-    }
+    var showDialog by remember { mutableStateOf(false) }
+
     if (showDialog) {
         ListDialog(
             onDismiss = { showDialog = false },
@@ -130,7 +180,6 @@ fun <T> ListPreference(
                         onClick = null,
                         enabled = !isDisabled
                     )
-
                     Text(
                         text = valueText(value),
                         style = MaterialTheme.typography.bodyLarge,
@@ -149,7 +198,10 @@ fun <T> ListPreference(
         description = valueText(selectedValue),
         icon = icon,
         onClick = { showDialog = true },
-        isEnabled = isEnabled
+        isEnabled = isEnabled,
+        isFirst = isFirst,
+        isLast = isLast,
+        isMiddle = isMiddle
     )
 }
 
@@ -157,13 +209,16 @@ fun <T> ListPreference(
 inline fun <reified T : Enum<T>> EnumListPreference(
     modifier: Modifier = Modifier,
     noinline title: @Composable () -> Unit,
-    noinline icon: @Composable () -> Unit,
+    noinline icon: (@Composable () -> Unit)? = null,
     selectedValue: T,
     noinline valueText: @Composable (T) -> String,
     noinline onValueSelected: (T) -> Unit,
     isEnabled: Boolean = true,
     values: List<T> = enumValues<T>().toList(),
-    noinline disabled: (T) -> Boolean = { false }
+    noinline onDisabled: (T) -> Boolean = { false },
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
 ) {
     ListPreference(
         modifier = modifier,
@@ -173,8 +228,11 @@ inline fun <reified T : Enum<T>> EnumListPreference(
         values = values,
         valueText = valueText,
         onValueSelected = onValueSelected,
+        onDisabled = onDisabled,
         isEnabled = isEnabled,
-        onDisabled = disabled
+        isFirst = isFirst,
+        isLast = isLast,
+        isMiddle = isMiddle
     )
 }
 
@@ -187,6 +245,9 @@ fun SwitchPreference(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     isEnabled: Boolean = true,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
 ) {
     PreferenceEntry(
         modifier = modifier,
@@ -202,13 +263,16 @@ fun SwitchPreference(
                     Icon(
                         imageVector = if (checked) Icons.Filled.Check else Icons.Filled.Close,
                         contentDescription = null,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                        modifier = Modifier.size(SwitchDefaults.IconSize)
                     )
                 }
             )
         },
         onClick = { onCheckedChange(!checked) },
-        isEnabled = isEnabled
+        isEnabled = isEnabled,
+        isFirst = isFirst,
+        isLast = isLast,
+        isMiddle = isMiddle
     )
 }
 
@@ -222,17 +286,15 @@ fun EditTextPreference(
     singleLine: Boolean = true,
     isInputValid: (String) -> Boolean = { it.isNotEmpty() },
     isEnabled: Boolean = true,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
 ) {
-    var showDialog by remember {
-        mutableStateOf(false)
-    }
+    var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
         TextFieldDialog(
-            initialTextFieldValue = TextFieldValue(
-                text = value,
-                selection = TextRange(value.length)
-            ),
+            initialTextFieldValue = TextFieldValue(text = value, selection = TextRange(value.length)),
             singleLine = singleLine,
             isInputValid = isInputValid,
             onDone = onValueChange,
@@ -246,14 +308,17 @@ fun EditTextPreference(
         description = value,
         icon = icon,
         onClick = { showDialog = true },
-        isEnabled = isEnabled
+        isEnabled = isEnabled,
+        isFirst = isFirst,
+        isLast = isLast,
+        isMiddle = isMiddle
     )
 }
 
 @Composable
 fun PreferenceGroupTitle(
     title: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = title.uppercase(),

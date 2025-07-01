@@ -20,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -57,25 +56,17 @@ fun AppearanceSettings(
         PreferenceGroupTitle(
             title = stringResource(R.string.theme)
         )
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ThemeAppFrag()
-        }
+
+        ThemeAppFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ThemePlayerFrag()
-        }
+        ThemePlayerFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            AppearanceMiscFrag()
-        }
+        AppearanceMiscFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
     }
 

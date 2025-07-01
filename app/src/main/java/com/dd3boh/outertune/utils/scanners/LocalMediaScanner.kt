@@ -368,7 +368,7 @@ class LocalMediaScanner(val context: Context) {
         scannerProgressProbe = 0
 
         runBlocking(Dispatchers.IO) {
-            Log.d(TAG, "Scanning for files...")
+            Timber.tag(TAG).d("Scanning for files...")
             // get list of all songs in db, then get songs unknown to the database
             val allSongs = database.allLocalSongs().first()
             val delta = newSongs.filterNot {
@@ -378,7 +378,7 @@ class LocalMediaScanner(val context: Context) {
                     file == dbSong.song.localPath
                 } // ignore user strictFileNames prefs for initial matching
             }
-            Log.d(TAG, "Songs found: ${delta.size}")
+            Timber.tag(TAG).d("Songs found: ${delta.size}")
 
             val finalSongs = ArrayList<SongTempData>()
             val scannerJobs = ArrayList<Deferred<SongTempData?>>()

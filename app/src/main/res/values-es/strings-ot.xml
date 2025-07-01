@@ -163,7 +163,6 @@
     <string name="checking_for_update">Buscando actualizaciones</string>
     <string name="library_empty">El contenido de tu biblioteca aparecerá aquí</string>
     <string name="no_updates_available">No hay ninguna actualización disponible</string>
-    <string name="scan_paths_description">Selecciona carpetas de tu almacenamiento local para buscar canciones</string>
     <string name="scanner_progress_discovering">Descubriendo…</string>
     <string name="scanner_progress_processing">Procesando…</string>
     <string name="dl_main_path_description">Selecciona la ubicación de almacenamiento de las descargas</string>
@@ -199,11 +198,9 @@
     <string name="oobe_ad_free_exp_description">Disfruta la reproducción de música ininterrumpida</string>
     <string name="oobe_cross_platform_sync_description">Mantén tu música en armonía en todos los dispositivos</string>
     <string name="oobe_ytm_logon_subtitle">Inicia sesión en tu cuenta de YouTube Music para sincronizar y acceder al contenido privado de la cuenta. Esto es opcional.</string>
-    <string name="oobe_downloads_subtitle">Elige la carpeta en la que se guardarán las canciones descargadas.</string>
     <string name="m3u_ytm_lookup">Busca en YouTube Music canciones que no se encuentran en la base de datos de la aplicación</string>
     <string name="dl_rescan_description">Actualiza la base de datos y registro de descargas si algún archivo o carpeta ha cambiado</string>
     <string name="clear_song_cache_confirm">¿Estás seguro que quieres eliminar la caché de canciones?</string>
-    <string name="oobe_downloads_title">Canciones descargadas</string>
     <string name="oobe_local_media_subtitle">Elige las carpetas que contienen tu música. Las escanearemos en busca de canciones para importar.</string>
     <string name="lyrics_karaoke_description">Habilita la sincronización de la letra, palabra por palabra. Es necesario compatibilidad con el formato de la letra.</string>
     <string name="dl_extra_path_description">Las canciones de estas carpetas solo aparecerán en la aplicación si las has reproducido antes o las has agregado a una playlist</string>

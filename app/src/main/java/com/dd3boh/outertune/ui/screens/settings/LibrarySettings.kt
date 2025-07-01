@@ -23,7 +23,6 @@ import androidx.compose.material.icons.rounded.FolderCopy
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.SdCard
 import androidx.compose.material.icons.rounded.Storage
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -83,94 +82,78 @@ fun LibrarySettings(
             title = stringResource(R.string.content)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.local_player_settings_title)) },
-                icon = { Icon(Icons.Rounded.SdCard, null) },
-                onClick = { navController.navigate("settings/local") }
-            )
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.lyrics_settings_title)) },
-                icon = { Icon(Icons.Rounded.Lyrics, null) },
-                onClick = { navController.navigate("settings/library/lyrics") }
-            )
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.storage)) },
-                icon = { Icon(Icons.Rounded.Storage, null) },
-                onClick = { navController.navigate("settings/storage") }
-            )
-        }
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.local_player_settings_title)) },
+            icon = { Icon(Icons.Rounded.SdCard, null) },
+            onClick = { navController.navigate("settings/local") }
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.lyrics_settings_title)) },
+            icon = { Icon(Icons.Rounded.Lyrics, null) },
+            onClick = { navController.navigate("settings/library/lyrics") }
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.storage)) },
+            icon = { Icon(Icons.Rounded.Storage, null) },
+            onClick = { navController.navigate("settings/storage") }
+        )
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.privacy)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ListenHistoryFrag()
-        }
+        ListenHistoryFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SearchHistoryFrag()
-        }
+        SearchHistoryFrag()
+
 
         SettingsClickToReveal(stringResource(R.string.advanced)) {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.show_liked_and_downloaded_playlist)) },
-                    icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistPlay, null) },
-                    checked = showLikedAndDownloadedPlaylist,
-                    onCheckedChange = onShowLikedAndDownloadedPlaylistChange
-                )
-            }
+
+            SwitchPreference(
+                title = { Text(stringResource(R.string.show_liked_and_downloaded_playlist)) },
+                icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistPlay, null) },
+                checked = showLikedAndDownloadedPlaylist,
+                onCheckedChange = onShowLikedAndDownloadedPlaylistChange
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.flat_subfolders_title)) },
-                    description = stringResource(R.string.flat_subfolders_description),
-                    icon = { Icon(Icons.Rounded.FolderCopy, null) },
-                    checked = flatSubfolders,
-                    onCheckedChange = onFlatSubfoldersChange
-                )
-            }
+            SwitchPreference(
+                title = { Text(stringResource(R.string.flat_subfolders_title)) },
+                description = stringResource(R.string.flat_subfolders_description),
+                icon = { Icon(Icons.Rounded.FolderCopy, null) },
+                checked = flatSubfolders,
+                onCheckedChange = onFlatSubfoldersChange
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.enable_proxy)) },
-                    checked = proxyEnabled,
-                    onCheckedChange = onProxyEnabledChange
-                )
+            SwitchPreference(
+                title = { Text(stringResource(R.string.enable_proxy)) },
+                checked = proxyEnabled,
+                onCheckedChange = onProxyEnabledChange
+            )
 
-                AnimatedVisibility(proxyEnabled) {
-                    Column {
-                        ListPreference(
-                            title = { Text(stringResource(R.string.proxy_type)) },
-                            selectedValue = proxyType,
-                            values = listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS),
-                            valueText = { it.name },
-                            onValueSelected = onProxyTypeChange
-                        )
-                        EditTextPreference(
-                            title = { Text(stringResource(R.string.proxy_url)) },
-                            value = proxyUrl,
-                            onValueChange = onProxyUrlChange
-                        )
-                    }
+            AnimatedVisibility(proxyEnabled) {
+                Column {
+                    ListPreference(
+                        title = { Text(stringResource(R.string.proxy_type)) },
+                        selectedValue = proxyType,
+                        values = listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS),
+                        valueText = { it.name },
+                        onValueSelected = onProxyTypeChange
+                    )
+                    EditTextPreference(
+                        title = { Text(stringResource(R.string.proxy_url)) },
+                        value = proxyUrl,
+                        onValueChange = onProxyUrlChange
+                    )
                 }
             }
         }

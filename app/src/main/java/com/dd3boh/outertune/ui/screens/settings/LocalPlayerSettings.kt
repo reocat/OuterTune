@@ -21,7 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.SdCard
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -85,60 +86,48 @@ fun LocalPlayerSettings(
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.local_library_enable_title)) },
-                description = stringResource(R.string.local_library_enable_description),
-                icon = { Icon(Icons.Rounded.SdCard, null) },
-                checked = localLibEnable,
-                onCheckedChange = {
-                    if (localLibEnable) {
-                        showLmDisableDialog = true
-                    } else {
-                        onLocalLibEnableChange(it)
-                    }
+        SwitchPreference(
+            title = { Text(stringResource(R.string.local_library_enable_title)) },
+            description = stringResource(R.string.local_library_enable_description),
+            icon = { Icon(Icons.Rounded.SdCard, null) },
+            checked = localLibEnable,
+            onCheckedChange = {
+                if (localLibEnable) {
+                    showLmDisableDialog = true
+                } else {
+                    onLocalLibEnableChange(it)
                 }
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
+            }
+        )
 
+        Spacer(modifier = Modifier.height(12.dp))
 
         AnimatedVisibility(localLibEnable) {
             Column {
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // automatic scanner
-                    SwitchPreference(
-                        title = { Text(stringResource(R.string.auto_scanner_title)) },
-                        description = stringResource(R.string.auto_scanner_description),
-                        icon = { Icon(Icons.Rounded.Autorenew, null) },
-                        checked = autoScan,
-                        onCheckedChange = onAutoScanChange
-                    )
-                }
+                // automatic scanner
+                SwitchPreference(
+                    title = { Text(stringResource(R.string.auto_scanner_title)) },
+                    description = stringResource(R.string.auto_scanner_description),
+                    icon = { Icon(Icons.Rounded.Autorenew, null) },
+                    checked = autoScan,
+                    onCheckedChange = onAutoScanChange,
+                )
                 Spacer(modifier = Modifier.height(12.dp))
-
                 PreferenceGroupTitle(
                     title = stringResource(R.string.grp_manual_scanner)
                 )
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth()
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    modifier = Modifier
                 ) {
                     LocalScannerFrag()
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-
                 PreferenceGroupTitle(
                     title = stringResource(R.string.grp_extra_scanner_settings)
                 )
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    LocalScannerExtraFrag()
-                }
+                LocalScannerExtraFrag()
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }

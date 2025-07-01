@@ -830,7 +830,7 @@ class MusicService : MediaLibraryService(),
                 if (song.isLocal) {
                     Timber.tag(TAG).d("PLAYING: local song")
                 } else {
-                    Log.d(TAG, "PLAYING: Custom downloaded song")
+                    Timber.tag(TAG).d("PLAYING: Custom downloaded song")
                 }
 
                 val file = File(song.localPath)

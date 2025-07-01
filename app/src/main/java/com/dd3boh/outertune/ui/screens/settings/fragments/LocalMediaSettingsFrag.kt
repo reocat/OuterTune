@@ -428,6 +428,7 @@ fun ColumnScope.LocalScannerFrag() {
     }
 
 
+
     /**
      * ---------------------------
      * Dialogs
@@ -603,7 +604,8 @@ fun ColumnScope.LocalScannerExtraFrag() {
                 ScannerMatchCriteria.LEVEL_2 -> stringResource(R.string.scanner_sensitivity_L2)
                 ScannerMatchCriteria.LEVEL_3 -> stringResource(R.string.scanner_sensitivity_L3)
             }
-        }
+        },
+        isFirst = true
     )
     // strict file ext
     SwitchPreference(
@@ -611,7 +613,8 @@ fun ColumnScope.LocalScannerExtraFrag() {
         description = stringResource(R.string.scanner_strict_file_name_description),
         icon = { Icon(Icons.Rounded.TextFields, null) },
         checked = strictExtensions,
-        onCheckedChange = onStrictExtensionsChange
+        onCheckedChange = onStrictExtensionsChange,
+        isLast = true
     )
 }
 

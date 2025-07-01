@@ -104,35 +104,26 @@ fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
         }
     }
 
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.action_backup)) },
-            icon = { Icon(Icons.Rounded.Backup, null) },
-            onClick = {
-                val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-                backupLauncher.launch(
-                    "${context.getString(R.string.app_name)}_${
-                        LocalDateTime.now().format(formatter)
-                    }.backup"
-                )
-            }
-        )
-    }
+    PreferenceEntry(
+        title = { Text(stringResource(R.string.action_backup)) },
+        icon = { Icon(Icons.Rounded.Backup, null) },
+        onClick = {
+            val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+            backupLauncher.launch(
+                "${context.getString(R.string.app_name)}_${
+                    LocalDateTime.now().format(formatter)
+                }.backup"
+            )
+        }
+    )
     Spacer(modifier = Modifier.height(12.dp))
-
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.action_restore)) },
-            icon = { Icon(Icons.Rounded.Restore, null) },
-            onClick = {
-                restoreLauncher.launch(arrayOf("application/octet-stream"))
-            }
-        )
-    }
+    PreferenceEntry(
+        title = { Text(stringResource(R.string.action_restore)) },
+        icon = { Icon(Icons.Rounded.Restore, null) },
+        onClick = {
+            restoreLauncher.launch(arrayOf("application/octet-stream"))
+        }
+    )
 }
 
 @Composable
@@ -765,7 +756,7 @@ fun ColumnScope.SongCacheFrag() {
         values = listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192, -1),
         valueText = {
             when (it) {
-                0 -> stringResource(androidx.compose.ui.R.string.state_off)
+                0 -> stringResource(R.string.off)
                 -1 -> stringResource(R.string.unlimited)
                 else -> formatFileSize(it * 1024 * 1024L)
             }
@@ -882,7 +873,7 @@ fun ColumnScope.ImageCacheFrag() {
         values = listOf(0, 128, 256, 512, 1024, 2048, 4096, 8192),
         valueText = {
             when (it) {
-                0 -> stringResource(androidx.compose.ui.R.string.state_off)
+                0 -> stringResource(R.string.off)
                 else -> formatFileSize(it * 1024 * 1024L)
             }
         },

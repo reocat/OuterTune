@@ -20,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -63,57 +62,38 @@ fun AccountSyncSettings(
             title = stringResource(R.string.account)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            AccountFrag(navController)
-        }
+        AccountFrag(navController)
+
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_sync)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SyncAutoFrag()
-        }
+        SyncAutoFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SyncManualFrag()
-        }
+        SyncManualFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SyncParamsFrag()
-        }
+        SyncParamsFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SyncExtrasFrag()
-        }
+        SyncExtrasFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
         SettingsClickToReveal(stringResource(R.string.prefs_advanced)) {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                PreferenceEntry(
-                    title = { Text(stringResource(R.string.spot_import_title)) },
-                    description = null,
-                    icon = { Icon(painterResource(R.drawable.spotify), null) },
-                    onClick = {
-                        navController.navigate("settings/content/import_from_spotify")
-                    }
-                )
-            }
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.spot_import_title)) },
+                description = null,
+                icon = { Icon(painterResource(R.drawable.spotify), null) },
+                onClick = {
+                    navController.navigate("settings/content/import_from_spotify")
+                }
+            )
             Spacer(modifier = Modifier.height(12.dp))
         }
     }

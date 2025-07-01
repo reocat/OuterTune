@@ -65,13 +65,15 @@ fun ColumnScope.LyricFormatFrag() {
                 LyricsPosition.CENTER -> stringResource(R.string.center)
                 LyricsPosition.RIGHT -> stringResource(R.string.right)
             }
-        }
+        },
+        isFirst = true
     )
     PreferenceEntry(
         title = { Text(stringResource(R.string.lyrics_font_Size)) },
         description = "$lyricFontSize sp",
         icon = { Icon(Icons.Rounded.TextFields, null) },
-        onClick = { showFontSizeDialog = true }
+        onClick = { showFontSizeDialog = true },
+        isLast = true
     )
 
 
@@ -122,7 +124,8 @@ fun ColumnScope.LyricParserFrag() {
         description = stringResource(R.string.lyrics_multiline_description),
         icon = { Icon(Icons.AutoMirrored.Rounded.Sort, null) },
         checked = multilineLrc,
-        onCheckedChange = onMultilineLrcChange
+        onCheckedChange = onMultilineLrcChange,
+        isFirst = true
     )
 
     // trim (remove spaces around) lyrics
@@ -130,13 +133,14 @@ fun ColumnScope.LyricParserFrag() {
         title = { Text(stringResource(R.string.lyrics_trim_title)) },
         icon = { Icon(Icons.Rounded.ContentCut, null) },
         checked = lyricTrim,
-        onCheckedChange = onLyricTrimChange
+        onCheckedChange = onLyricTrimChange,
+        isLast = true
     )
 }
 
 @Composable
 fun ColumnScope.LyricSourceFrag() {
-    val (enableKugou, onEnableKugouChange) = rememberPreference(key = EnableKugouKey, defaultValue = true)
+    val (enableKugou, onEnableKugouChange) = rememberPreference(key = EnableKugouKey, defaultValue = false)
     val (enableLrcLib, onEnableLrcLibChange) = rememberPreference(key = EnableLrcLibKey, defaultValue = true)
     val (preferLocalLyric, onPreferLocalLyric) = rememberPreference(LyricSourcePrefKey, defaultValue = true)
 
@@ -144,13 +148,15 @@ fun ColumnScope.LyricSourceFrag() {
         title = { Text(stringResource(R.string.enable_lrclib)) },
         icon = { Icon(Icons.Rounded.Lyrics, null) },
         checked = enableLrcLib,
-        onCheckedChange = onEnableLrcLibChange
+        onCheckedChange = onEnableLrcLibChange,
+        isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_kugou)) },
         icon = { Icon(Icons.Rounded.Lyrics, null) },
         checked = enableKugou,
-        onCheckedChange = onEnableKugouChange
+        onCheckedChange = onEnableKugouChange,
+        isMiddle = true
     )
     // prioritize local lyric files over all cloud providers
     SwitchPreference(
@@ -158,6 +164,7 @@ fun ColumnScope.LyricSourceFrag() {
         description = stringResource(R.string.lyrics_prefer_local_description),
         icon = { Icon(Icons.Rounded.ContentCut, null) },
         checked = preferLocalLyric,
-        onCheckedChange = onPreferLocalLyric
+        onCheckedChange = onPreferLocalLyric,
+        isLast = true
     )
 }

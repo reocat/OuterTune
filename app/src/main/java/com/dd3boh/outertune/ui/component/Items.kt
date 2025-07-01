@@ -93,9 +93,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.Download.STATE_COMPLETED
 import androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING
 import androidx.media3.exoplayer.offline.Download.STATE_QUEUED
+import androidx.media3.exoplayer.offline.Download.STATE_STOPPED
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.dd3boh.outertune.BuildConfig
@@ -189,7 +191,7 @@ inline fun ListItem(
             if (!isAvailable) {
                 Box(
                     modifier = Modifier
-                        .size(ListThumbnailSize) // Adjust size as needed
+                        .size(ListThumbnailSize)
                         .align(Alignment.Center)
                         .background(
                             Color.Black.copy(alpha = 0.25f),

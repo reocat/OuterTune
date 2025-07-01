@@ -86,13 +86,15 @@ fun AudioEffectsFrag() {
         title = { Text(stringResource(R.string.audio_normalization)) },
         icon = { Icon(Icons.AutoMirrored.Rounded.VolumeUp, null) },
         checked = audioNormalization,
-        onCheckedChange = onAudioNormalizationChange
+        onCheckedChange = onAudioNormalizationChange,
+        isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.skip_silence)) },
         icon = { Icon(painterResource(R.drawable.skip_next), null) },
         checked = skipSilence,
-        onCheckedChange = onSkipSilenceChange
+        onCheckedChange = onSkipSilenceChange,
+        isLast = true
     )
 
 }
@@ -113,20 +115,23 @@ fun PlaybackBehaviourFrag() {
     PreferenceEntry(
         title = { Text(stringResource(R.string.min_playback_duration)) },
         icon = { Icon(Icons.Rounded.Sync, null) },
-        onClick = { showMinPlaybackDur = true }
+        onClick = { showMinPlaybackDur = true },
+        isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.auto_skip_next_on_error)) },
         description = stringResource(R.string.auto_skip_next_on_error_desc),
         icon = { Icon(Icons.Rounded.FastForward, null) },
         checked = skipOnErrorKey,
-        onCheckedChange = onSkipOnErrorChange
+        onCheckedChange = onSkipOnErrorChange,
+        isMiddle = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
         icon = { Icon(Icons.Rounded.ClearAll, null) },
         checked = stopMusicOnTaskClear,
-        onCheckedChange = onStopMusicOnTaskClearChange
+        onCheckedChange = onStopMusicOnTaskClearChange,
+        isLast = true
     )
 
     /**
