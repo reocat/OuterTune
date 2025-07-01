@@ -32,7 +32,8 @@ fun ColumnScope.AppearanceMiscFrag() {
         description = stringResource(R.string.slim_hs_tiles_description),
         icon = { Icon(Icons.Rounded.Tune, null) },
         checked = slimHSTiles,
-        onCheckedChange = onSlimHSTilesChange
+        onCheckedChange = onSlimHSTilesChange,
+        isFirst = true
     )
 
     SwitchPreference(
@@ -40,6 +41,7 @@ fun ColumnScope.AppearanceMiscFrag() {
         description = stringResource(R.string.slim_navbar_description),
         icon = { Icon(Icons.Rounded.MoreHoriz, null) },
         checked = slimNav,
-        onCheckedChange = onSlimNavChange
+        onCheckedChange = onSlimNavChange,
+        isLast = true
     )
 }

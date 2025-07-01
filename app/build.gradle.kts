@@ -100,10 +100,6 @@ android {
         }
     }
 
-    tasks.withType<KotlinCompile> {
-        exclude("**/*FFMpegScanner.kt")
-    }
-
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -115,7 +111,7 @@ android {
     }
 
     lint {
-        lintConfig = file("app/lint.xml")
+        lintConfig = file("lint.xml")
     }
 
     androidResources {
@@ -181,14 +177,12 @@ dependencies {
     implementation(projects.lrclib)
     implementation(projects.kizzy)
 
-
-
     coreLibraryDesugaring(libs.desugaring)
-    
+
     implementation(libs.multidex)
 
     implementation(libs.timber)
-    
+
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)

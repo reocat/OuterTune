@@ -184,7 +184,6 @@
     <string name="scanner_rejected_dir">Недійсний вибір. Папка сканування не може бути підкаталогом папки завантажень або самою папкою завантажень</string>
     <string name="scanner_progress_discovering">Відкриття…</string>
     <string name="disable_lm_confirm">Ви впевнені, що хочете вимкнути функції локальних медіа?</string>
-    <string name="scan_paths_description">Виберіть папки на вашому локальному сховищі для сканування пісень</string>
     <string name="clear_image_cache_confirm">Ви впевнені, що хочете очистити кеш зображень? Усі існуючі мініатюри альбомів будуть видалені.</string>
     <string name="oobe_ytm_logon_title">Обліковий запис</string>
     <string name="oobe_local_media_title">Місцеві ЗМІ</string>
@@ -198,14 +197,12 @@
     <string name="oobe_local_music_support_description">Відтворюйте музичні файли (наприклад, MP3, OGG, FLAC тощо)</string>
     <string name="oobe_local_music_support">Широка підтримка місцевої музики</string>
     <string name="dl_main_path_description">Виберіть місце зберігання завантажень</string>
-    <string name="oobe_downloads_subtitle">Виберіть папку, де будуть збережені завантажені пісні.</string>
     <string name="clear_downloads_confirm">Ви впевнені, що хочете видалити всі завантаження? Будуть видалені лише завантаження з головної папки завантажень.</string>
     <string name="oobe_ytm_integration_description">Отримуйте безперешкодний доступ до своїх улюблених треків</string>
     <string name="oobe_ytm_integration">Інтеграція з YouTube Music</string>
     <string name="clear_song_cache_confirm">Ви впевнені, що хочете очистити кеш пісень?</string>
     <string name="oobe_ad_free_exp_description">Насолоджуйтесь безперервним відтворенням музики</string>
     <string name="oobe_cross_platform_sync_description">Зберігайте гармонію своєї музики на різних пристроях</string>
-    <string name="oobe_downloads_title">Завантаження пісень</string>
     <string name="dl_oobe_tooltip">Пісні завантажуються у приватну внутрішню пам’ять програми. Щоб завантажити пісні на зовнішню пам’ять, спочатку потрібно вибрати папку. Ви можете додавати, змінювати або видаляти папки, а також переносити внутрішні завантаження до зовнішніх завантажень пізніше в налаштуваннях.</string>
     <string name="dl_extra_path_description">Пісні з цих папок з’являться в додатку, лише якщо ви вже відтворювали їх раніше або додавали до списку відтворення</string>
     <string name="dl_extra_path_title">Налаштувати додаткові місця імпорту…</string>

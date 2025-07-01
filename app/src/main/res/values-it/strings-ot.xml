@@ -192,8 +192,6 @@
     <string name="oobe_cross_platform_sync_description">Mantieni la tua musica in armonia su tutti i dispositivi</string>
     <string name="oobe_local_media_title">Media locali</string>
     <string name="oobe_local_media_subtitle">Scegli cartelle che contengono la tua musica. Li scansioneremo per i brani da importare.</string>
-    <string name="oobe_downloads_title">Download brani</string>
-    <string name="oobe_downloads_subtitle">Scegli una cartella in cui verranno salvati i brani scaricati.</string>
     <string name="m3u_export">Esporta come file M3U</string>
     <string name="speed_medium">Medio</string>
     <string name="speed_very_fast">Molto veloce</string>
@@ -210,7 +208,6 @@
     <string name="dl_storage_tooltip">I download interni vengono salvati nell\'archiviazione privata dell\'app e non sono accessibili senza root.\n\nI download esterni vengono salvati nell\'archiviazione esterna del tuo dispositivo (ad es. /SDCARD o Micro SD Cards) e sono accessibili o modificati direttamente con un esploratore di file. Per la cartella dei download esterni, ti consigliamo di scegliere una cartella vuota appositamente per i download di canzoni, poiché OuterTune può modificare o eliminare i file in quella cartella.\n\nLe cartelle di importazione extra sono di sola lettura e utilizzate per il caricamento di canzoni aggiuntive. OuterTune non cambierà o eliminerà mai i file in queste cartelle. È possibile selezionare queste cartelle nella sezione avanzata.\n\nQuando si cancellano i download, vengono eliminati solo i brani interni. I download esterni e le canzoni di importazione extra devono essere rimossi manualmente, tramite il menu della canzone o manualmente tramite un esploratore di file.\n\nCartelle per il download di Rescan: I download dei brani nei download esterni e nelle cartelle extra importati non vengono aggiornate automaticamente. Se si aggiungono, rimuovi manualmente o modificare i file utilizzando un Explorer di file, potrebbe essere necessario salvare le cartelle di download per aggiornare il database dell\'app. Questa opzione è disponibile nella sezione avanzata.</string>
     <string name="scanner_rejected_dir">Selezione non valida. Una cartella di scansione non può essere una sottodirectory della cartella di download o la cartella di download stessa</string>
     <string name="lyrics_karaoke_title">Testi in stile karaoke.</string>
-    <string name="scan_paths_description">Seleziona le cartelle sull\'archiviazione locale per scansionare i brani</string>
     <string name="dl_oobe_tooltip">I brani vengono scaricati nell\'archiviazione interna privata dell\'app. Per scaricare i brani nell\'archiviazione esterna, devi prima scegliere una cartella. È possibile aggiungere, modificare o rimuovere le cartelle o migrare i Download interni a Download esterni successivamente nelle impostazioni.</string>
     <string name="lyrics_karaoke_description">Abilita la sincronizzazione lirica parola per parola. Richiede supporto in formato testi.</string>
     <string name="dl_extra_path_description">Le canzoni di queste cartelle appariranno nell\'app solo se le hai riprodotte prima o le hai aggiunte ad una playlist</string>

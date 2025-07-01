@@ -9,6 +9,7 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BlurOn
@@ -35,15 +36,18 @@ import com.dd3boh.outertune.utils.rememberPreference
 fun ColumnScope.ThemeAppFrag() {
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val (dynamicTheme, onDynamicThemeChange) = rememberPreference(DynamicThemeKey, defaultValue = true)
-
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
+
+    val isDarkModeEnabled = darkMode == DarkMode.ON || darkMode == DarkMode.AUTO && isSystemInDarkTheme()
 
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_dynamic_theme)) },
         icon = { Icon(Icons.Rounded.Palette, null) },
         checked = dynamicTheme,
-        onCheckedChange = onDynamicThemeChange
+        onCheckedChange = onDynamicThemeChange,
+        isFirst = true
     )
+
     EnumListPreference(
         title = { Text(stringResource(R.string.dark_theme)) },
         icon = { Icon(Icons.Rounded.DarkMode, null) },
@@ -55,16 +59,24 @@ fun ColumnScope.ThemeAppFrag() {
                 DarkMode.OFF -> stringResource(R.string.dark_theme_off)
                 DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
             }
-        }
+        },
+        isMiddle = true
     )
+
     SwitchPreference(
-        title = { Text(stringResource(R.string.pure_black)) },
+        title = {
+            Text(stringResource(R.string.pure_black))
+        },
+        description = if (isDarkModeEnabled) null else stringResource(R.string.pure_black_unavailable),
         icon = { Icon(Icons.Rounded.Contrast, null) },
-        checked = pureBlack,
-        onCheckedChange = onPureBlackChange
+        checked = pureBlack && isDarkModeEnabled,
+        onCheckedChange = {
+            if (isDarkModeEnabled) { onPureBlackChange(it) }
+        },
+        isEnabled = isDarkModeEnabled,
+        isLast = true
     )
 }
-
 
 @Composable
 fun ColumnScope.ThemePlayerFrag() {
@@ -91,4 +103,3 @@ fun ColumnScope.ThemePlayerFrag() {
         values = availableBackgroundStyles
     )
 }
-

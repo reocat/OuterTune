@@ -187,10 +187,7 @@
     <string name="oobe_cross_platform_sync_description">모든 기기에서 내 음악을 똑같이 유지하세요</string>
     <string name="oobe_local_media_title">로컬 미디어</string>
     <string name="oobe_ytm_logon_subtitle">YouTube Music 계정에 로그인하여 데이터를 동기화하고 비공개 콘텐츠를 이용하세요. 이는 선택 사항입니다.</string>
-    <string name="oobe_downloads_title">노래 다운로드</string>
-    <string name="oobe_downloads_subtitle">다운로드한 노래를 저장할 폴더를 선택하세요.</string>
     <string name="oobe_complete_title">모든 준비가 완료되었습니다!</string>
-    <string name="scan_paths_description">음악을 검색할 폴더를 기기에서 선택하세요</string>
     <string name="dl_migrate_description">다운로드 항목을 앱 내부 저장소에서 기기 외부 저장소로 이동합니다</string>
     <string name="oobe_ad_free_exp_description">끊김 없는 음악 재생</string>
     <string name="clear_image_cache_confirm">이미지 캐시를 비우시겠습니까? 기존의 모든 앨범 이미지가 삭제됩니다.</string>

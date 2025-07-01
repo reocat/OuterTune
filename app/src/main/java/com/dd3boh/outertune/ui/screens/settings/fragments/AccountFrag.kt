@@ -74,7 +74,8 @@ fun ColumnScope.AccountFrag(navController: NavController) {
                 ?: accountChannelHandle.takeIf { it.isNotEmpty() }
         } else null,
         icon = { Icon(Icons.Rounded.Person, null) },
-        onClick = { navController.navigate("login") }
+        onClick = { navController.navigate("login") },
+        isFirst = true
     )
     if (isLoggedIn) {
         PreferenceEntry(
@@ -82,7 +83,8 @@ fun ColumnScope.AccountFrag(navController: NavController) {
             icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
             onClick = {
                 forgetAccount(context)
-            }
+            },
+            isMiddle = true
         )
     }
 
@@ -109,6 +111,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
                 showTokenEditor = true
             }
         },
+        isMiddle = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.use_login_for_browse)) },
@@ -118,7 +121,8 @@ fun ColumnScope.AccountFrag(navController: NavController) {
         onCheckedChange = {
             YouTube.useLoginForBrowse = it
             onUseLoginForBrowseChange(it)
-        }
+        },
+        isLast = true
     )
 
 

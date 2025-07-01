@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface

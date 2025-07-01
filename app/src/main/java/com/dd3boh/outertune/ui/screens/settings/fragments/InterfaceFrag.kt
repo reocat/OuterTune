@@ -220,14 +220,16 @@ fun ColumnScope.TabArrangementFrag() {
         icon = { Icon(Icons.Rounded.Reorder, null) },
         onClick = {
             showTabArrangement = true
-        }
+        },
+        isFirst = true
     )
     PreferenceEntry(
         title = { Text(stringResource(R.string.filter_arrangement)) },
         icon = { Icon(Icons.Rounded.Reorder, null) },
         onClick = {
             showFilterArrangement = true
-        }
+        },
+        isLast = true
     )
 
 
@@ -428,14 +430,16 @@ fun ColumnScope.SwipeGesturesFrag() {
         description = stringResource(R.string.swipe2Queue_description),
         icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistAdd, null) },
         checked = swipe2Queue,
-        onCheckedChange = onSwipe2QueueChange
+        onCheckedChange = onSwipe2QueueChange,
+        isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.swipe_to_skip_title)) },
         description = stringResource(R.string.swipe_to_skip_description),
         icon = { Icon(Icons.Rounded.Swipe, null) },
         checked = swipeToSkip,
-        onCheckedChange = onSwipeToSkipChange
+        onCheckedChange = onSwipeToSkipChange,
+        isLast = true
     )
 }
 
@@ -467,9 +471,9 @@ fun ColumnScope.LocalizationFrag() {
                     ?: languageTag.takeIf { it in LanguageCodeToName }
                     ?: "en"
             )
-
             onContentLanguageChange(newValue)
-        }
+        },
+        isFirst = true
     )
     ListPreference(
         title = { Text(stringResource(R.string.content_country)) },
@@ -489,9 +493,9 @@ fun ColumnScope.LocalizationFrag() {
                     ?: locale.country.takeIf { it in CountryCodeToName }
                     ?: "US"
             )
-
             onContentCountryChange(newValue)
-        }
+        },
+        isLast = true
     )
 }
 

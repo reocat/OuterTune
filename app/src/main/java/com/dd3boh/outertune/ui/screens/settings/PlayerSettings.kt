@@ -22,7 +22,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.NoCell
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -70,72 +69,59 @@ fun PlayerSettings(
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_general)
         )
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            PlayerGeneralFrag()
-        }
+
+        PlayerGeneralFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_audio)
         )
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            AudioQualityFrag()
-        }
+
+        AudioQualityFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            AudioEffectsFrag()
-        }
+
+        AudioEffectsFrag()
+
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_behavior)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            PlaybackBehaviourFrag()
-        }
+
+        PlaybackBehaviourFrag()
+
 
         SettingsClickToReveal(stringResource(R.string.advanced)) {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.persistent_queue)) },
-                    description = stringResource(R.string.persistent_queue_desc_ot),
-                    icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
-                    checked = persistentQueue,
-                    onCheckedChange = onPersistentQueueChange
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
 
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.audio_offload)) },
-                    description = stringResource(R.string.audio_offload_description),
-                    icon = { Icon(Icons.Rounded.Bolt, null) },
-                    checked = audioOffload,
-                    onCheckedChange = onAudioOffloadChange
-                )
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.keep_alive_title)) },
-                    description = stringResource(R.string.keep_alive_description),
-                    icon = { Icon(Icons.Rounded.NoCell, null) },
-                    checked = keepAlive,
-                    onCheckedChange = onKeepAliveChange
-                )
-            }
+            SwitchPreference(
+                title = { Text(stringResource(R.string.persistent_queue)) },
+                description = stringResource(R.string.persistent_queue_desc_ot),
+                icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
+                checked = persistentQueue,
+                onCheckedChange = onPersistentQueueChange
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+            SwitchPreference(
+                title = { Text(stringResource(R.string.audio_offload)) },
+                description = stringResource(R.string.audio_offload_description),
+                icon = { Icon(Icons.Rounded.Bolt, null) },
+                checked = audioOffload,
+                onCheckedChange = onAudioOffloadChange,
+                isFirst = true
+            )
+            SwitchPreference(
+                title = { Text(stringResource(R.string.keep_alive_title)) },
+                description = stringResource(R.string.keep_alive_description),
+                icon = { Icon(Icons.Rounded.NoCell, null) },
+                checked = keepAlive,
+                onCheckedChange = onKeepAliveChange,
+                isLast = true
+            )
         }
         Spacer(Modifier.height(96.dp))
     }

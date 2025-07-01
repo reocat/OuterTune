@@ -196,10 +196,7 @@
     <string name="oobe_ytm_logon_title">Compte</string>
     <string name="oobe_local_media_title">Médias locaux</string>
     <string name="oobe_local_media_subtitle">Choisissez les dossiers contenant votre musique. Nous les analyserons pour trouver les morceaux à importer.</string>
-    <string name="oobe_downloads_title">Téléchargements de chansons</string>
-    <string name="oobe_downloads_subtitle">Choisissez un dossier dans lequel les titres téléchargés seront enregistrés.</string>
     <string name="oobe_complete_title">Vous êtes prêt !</string>
-    <string name="scan_paths_description">Sélectionnez les dossiers sur votre stockage local pour rechercher des titres</string>
     <string name="oobe_interface_subtitle">Personnalisez l\'apparence d\'OuterTune et le contenu qu\'il vous montre.</string>
     <string name="scanner_rejected_dir">Sélection non valide. Un dossier d\'analyse ne peut pas être un sous-répertoire du dossier de téléchargement, ni le dossier de téléchargement lui-même.</string>
     <string name="clear_downloads_confirm">Voulez-vous vraiment supprimer tous les téléchargements ? Seuls les téléchargements du dossier principal seront supprimés.</string>

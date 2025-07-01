@@ -37,10 +37,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OuterTune"
         android:enableOnBackInvokedCallback="true"
-        tools:targetApi="tiramisu">
-        <uses-library
-            android:name="org.apache.http.legacy"
-            android:required="false" />
+        tools:targetApi="baklava">
 
         <activity
             android:name=".MainActivity"

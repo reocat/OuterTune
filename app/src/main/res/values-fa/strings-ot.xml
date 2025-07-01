@@ -114,7 +114,6 @@
     <string name="auto_scanner_title">اسکن خودکار</string>
     <string name="auto_scanner_description">هنگام باز کردن برنامه، به طور خودکار آهنگ‌ها را اسکن می‌کند. این کار فراداده آهنگ‌های موجود را دوباره بارگذاری نمی‌کند.</string>
     <string name="scan_paths_title">پیکربندی مکان‌های اسکن…</string>
-    <string name="scan_paths_description">پوشه‌های موجود در حافظه محلی خود را برای اسکن آهنگ‌ها انتخاب کنید</string>
     <string name="scan_paths_tooltip">همه زیرشاخه‌ها نیز تحت تأثیر قرار خواهند گرفت</string>
     <string name="scan_paths_add_folder">اضافه پوشه جدید</string>
     <string name="scan_paths_incl">مسیرهای اسکن</string>
@@ -196,8 +195,6 @@
     <string name="oobe_ytm_logon_subtitle">برای همگام‌ سازی و دسترسی به محتوای حساب خصوصی، وارد حساب YouTube Music خود شوید. این گزینه اختیاری است.</string>
     <string name="oobe_local_media_title">رسانه محلی</string>
     <string name="oobe_local_media_subtitle">پوشه‌هایی را که حاوی موسیقی شما هستند انتخاب کنید. ما آنها را برای یافتن آهنگ‌های قابل وارد کردن اسکن خواهیم کرد.</string>
-    <string name="oobe_downloads_title">دانلود آهنگ</string>
-    <string name="oobe_downloads_subtitle">پوشه‌ ای را انتخاب کنید که آهنگ‌های دانلود شده در آن ذخیره شوند.</string>
     <string name="oobe_complete_title">همه چیز آماده است!</string>
     <string name="oobe_complete">OuterTune تنظیم و آماده استفاده است. موسیقی خود را کاوش کنید، آهنگ‌های جدید کشف کنید و از این تجربه لذت ببرید!</string>
     <string name="import_failed_songs">وارد نشد</string>

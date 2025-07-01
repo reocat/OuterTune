@@ -492,7 +492,6 @@ private fun WelcomePage(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Maybe add quick restore from backup here
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
@@ -618,7 +617,6 @@ private fun InterfacePage(
                 }
             )
 
-            // Content country/region selector
             ListPreference(
                 title = { Text(stringResource(R.string.content_country)) },
                 icon = { Icon(Icons.Rounded.LocationOn, null) },
@@ -673,7 +671,6 @@ private fun AccountPage(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Title, Subtitle, and Icon
         Icon(
             imageVector = Icons.Rounded.AccountCircle,
             contentDescription = null,
@@ -699,7 +696,6 @@ private fun AccountPage(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Login/Account Info Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -716,7 +712,6 @@ private fun AccountPage(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Logout Card (if logged in)
         if (isLoggedIn) {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth()
@@ -731,7 +726,6 @@ private fun AccountPage(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Token Management Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -765,7 +759,6 @@ private fun AccountPage(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // YTM Sync Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -816,7 +809,6 @@ private fun LocalMediaPage(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Title, Subtitle, and Icon
         Icon(
             imageVector = Icons.Rounded.LibraryMusic,
             contentDescription = null,
@@ -854,338 +846,93 @@ private fun LocalMediaPage(
             )
         }
 
-                        AnimatedVisibility(localLibEnable) {
-                            Column {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                ElevatedCard(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    SwitchPreference(
-                                        title = { Text(stringResource(R.string.auto_scanner_title)) },
-                                        description = stringResource(R.string.auto_scanner_description),
-                                        icon = { Icon(Icons.Rounded.Autorenew, null) },
-                                        checked = autoScan,
-                                        onCheckedChange = onAutoScanChange
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                ElevatedCard(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    PreferenceGroupTitle(
-                                        title = stringResource(R.string.grp_manual_scanner)
-                                    )
+        Spacer(modifier = Modifier.height(16.dp))
 
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.auto_scanner_title)) },
+                description = stringResource(R.string.auto_scanner_description),
+                icon = { Icon(Icons.Rounded.Autorenew, null) },
+                checked = autoScan,
+                onCheckedChange = onAutoScanChange,
+                isEnabled = localLibEnable
+            )
+        }
 
-                                    LocalScannerFrag()
-                                }
-                            }
+        Spacer(modifier = Modifier.height(16.dp))
 
-                        }
-                    }
-
-                    // downloads
-                    4 -> {
-                        val downloadUtil = LocalDownloadUtil.current
-                        val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
-                        val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
-
-                        var showDlPathDialog: Boolean by remember {
-                            mutableStateOf(false)
-                        }
-
-
-                        Icon(
-                            imageVector = Icons.Rounded.Download,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(80.dp)
-                                .padding(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            text = stringResource(R.string.oobe_downloads_title),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                        )
-
-                        Text(
-                            text = stringResource(R.string.oobe_downloads_subtitle),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)
-                        )
-
-                        ElevatedCard(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            PreferenceEntry(
-                                title = { Text(stringResource(R.string.dl_main_path_title)) },
-                                onClick = {
-                                    showDlPathDialog = true
-                                },
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        InfoLabel(stringResource(R.string.dl_oobe_tooltip))
-
-
-                        if (showDlPathDialog) {
-                            var tempFilePath by remember {
-                                mutableStateOf<Uri?>(null)
-                            }
-                            LaunchedEffect(downloadPath) {
-                                tempFilePath = uriListFromString(downloadPath).firstOrNull()
-                            }
-
-                            ActionPromptDialog(
-                                titleBar = {
-                                    Text(
-                                        text = stringResource(R.string.dl_main_path_title),
-                                        style = MaterialTheme.typography.titleLarge,
-                                    )
-                                },
-                                onDismiss = {
-                                    showDlPathDialog = false
-                                    tempFilePath = null
-                                },
-                                onConfirm = {
-                                    tempFilePath?.let { f ->
-                                        val uris = stringFromUriList(listOfNotNull(f))
-                                        onDownloadPathChange(uris)
-                                    }
-
-                                    showDlPathDialog = false
-                                    tempFilePath = null
-
-                                    coroutineScope.launch {
-                                        delay(1000)
-                                        downloadUtil.cd()
-                                    }
-                                },
-                                onReset = {
-                                    tempFilePath = null
-                                },
-                                onCancel = {
-                                    showDlPathDialog = false
-                                    tempFilePath = null
-                                },
-                                isInputValid = uriListFromString(scanPaths).none {
-                                    // download path cannot a scan path, or a subdir of a scan path
-                                    tempFilePath.toString().length <= it.toString().length && tempFilePath.toString()
-                                        .contains(it.toString())
-                                }
-                            ) {
-
-                                val dirPickerLauncher = rememberLauncherForActivityResult(
-                                    ActivityResultContracts.OpenDocumentTree()
-                                ) { uri ->
-                                    if (tempFilePath.toString() == uri.toString()) return@rememberLauncherForActivityResult
-                                    if (uri?.path != null) {
-                                        // Take persistable URI permission
-                                        val contentResolver = context.contentResolver
-                                        val takeFlags: Int =
-                                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                        contentResolver.takePersistableUriPermission(uri, takeFlags)
-
-                                        tempFilePath = uri
-                                    }
-                                }
-
-                                val valid = uriListFromString(scanPaths).none {
-                                    // download path cannot a scan path, or a subdir of a scan path
-                                    tempFilePath.toString().length <= it.toString().length && tempFilePath.toString()
-                                        .contains(it.toString())
-                                }
-
-                                Text(
-                                    text = stringResource(R.string.dl_main_path_description),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
-                                Spacer(Modifier.padding(vertical = 8.dp))
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                        .border(
-                                            2.dp,
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                            RoundedCornerShape(ThumbnailCornerRadius)
-                                        )
-                                        .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
-                                ) {
-                                    tempFilePath?.let {
-                                        Text(
-                                            text = it.toString(),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                    }
-                                }
-
-                                // add folder button
-                                Column {
-                                    Button(onClick = { dirPickerLauncher.launch(null) }) {
-                                        Text(stringResource(R.string.scan_paths_add_folder))
-                                    }
-
-                                    InfoLabel(
-                                        text = stringResource(R.string.scan_paths_tooltip),
-                                        modifier = Modifier.padding(vertical = 16.dp)
-                                    )
-
-                                    if (!valid) {
-                                        InfoLabel(
-                                            text = stringResource(R.string.scanner_rejected_dir),
-                                            isError = true,
-                                            modifier = Modifier.padding(top = 8.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // exit page
-                    5 -> {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Check,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .padding(16.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = stringResource(R.string.oobe_complete_title),
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                            )
-                            Text(
-                                text = stringResource(R.string.oobe_complete),
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            ) {
-                                IconLabelButton(
-                                    text = "GitHub",
-                                    icon = Icons.Rounded.Code,
-                                    onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune") },
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-
-                                IconLabelButton(
-                                    text = "Wiki",
-                                    icon = Icons.Outlined.Info,
-                                    onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune/wiki") },
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-                            }
-                            Text(
-                                text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (oobeStatus == 0 || oobeStatus == MAX_POS) {
-                FloatingActionButton(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.BottomEnd),
-                    onClick = {
-                        if (oobeStatus == 0) {
-                            oobeStatus += 1
-                        } else {
-                            oobeStatus = OOBE_VERSION
-                            navController.navigateUp()
-                        }
-                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                        contentDescription = null
-                    )
-                }
+        if (localLibEnable) {
+            ElevatedButton(
+                onClick = { navController.navigate("settings/local") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.Search,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(stringResource(R.string.oobe_scan_for_local_music))
             }
         }
     }
 }
-
-
 @Composable
-private fun OobeFeatureRow(title: String, description: String?, icon: ImageVector, tint: Color) {
-    val haptic = LocalHapticFeedback.current
-
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
-            },
+private fun FinalPage(
+    uriHandler: UriHandler,
+    onFinish: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Row(
+        Icon(
+            imageVector = Icons.Rounded.Check,
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
+                .size(80.dp)
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = stringResource(R.string.oobe_complete_title),
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+        )
+        Text(
+            text = stringResource(R.string.oobe_complete),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(vertical = 16.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(4.dp),
-                contentAlignment = Alignment.Center
+            FilledTonalIconButton(
+                onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune") },
+                modifier = Modifier.padding(horizontal = 8.dp)
             ) {
                 Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
+                    painter = painterResource(R.drawable.github),
+                    contentDescription = "GitHub",
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                description?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
+        Text(
+            text = "${com.dd3boh.outertune.BuildConfig.VERSION_NAME} (${com.dd3boh.outertune.BuildConfig.VERSION_CODE}) | ${com.dd3boh.outertune.BuildConfig.FLAVOR}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }

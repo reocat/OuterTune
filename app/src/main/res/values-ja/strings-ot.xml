@@ -177,9 +177,7 @@
     <string name="lyrics_karaoke_hz_title">カラオケ風の歌詞の更新速度を調整する</string>
     <string name="scanner_progress_discovering">検出中…</string>
     <string name="lyrics_karaoke_description">単語ごとの歌詞同期を有効にする。対応する歌詞データが必要です。</string>
-    <string name="oobe_downloads_subtitle">ダウンロードした曲を保存するフォルダを選択します。</string>
     <string name="oobe_complete_title">準備完了です！</string>
-    <string name="scan_paths_description">ローカルストレージ上のフォルダを選択して曲をスキャンします</string>
     <string name="clear_downloads_confirm">すべてのダウンロードを削除してもよろしいすか？メインのダウンロードフォルダ内のダウンロードのみが削除されます。</string>
     <string name="clear_image_cache_confirm">画像のキャッシュを削除してもよろしいですか？ 既存のアルバムのサムネイルはすべて削除されます。</string>
     <string name="dl_extra_path_title">追加のインポート場所を設定する…</string>
@@ -196,7 +194,6 @@
     <string name="oobe_ytm_logon_title">アカウント</string>
     <string name="oobe_ytm_logon_subtitle">YouTube Music アカウントにログインすると、アカウントの非公開コンテンツを同期してアクセスできます。これは任意です。</string>
     <string name="oobe_local_media_title">ローカルメディア</string>
-    <string name="oobe_downloads_title">曲のダウンロード</string>
     <string name="dl_calculate_size">タップしてダウンロードサイズを計算します</string>
     <string name="dl_migrate_confirm">これにより、すべての内部ダウンロードが「%s」に移行されます。この操作は元に戻せません。続行しますか？</string>
     <string name="dl_main_path_title">外部ダウンロードフォルダを設定…</string>

@@ -20,6 +20,8 @@ import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncLock
 import androidx.compose.material.icons.rounded.SyncProblem
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -104,71 +106,85 @@ fun ColumnScope.SyncManualFrag() {
     val isSyncingRemoteLikedSongs by syncUtils.isSyncingRemoteLikedSongs.collectAsState()
     val isSyncingRecentActivity by syncUtils.isSyncingRecentActivity.collectAsState()
 
-    PreferenceEntry(
-        title = { Text(stringResource(R.string.scanner_manual_btn)) },
-        icon = { Icon(Icons.Rounded.Sync, null) },
-        onClick = {
-            Toast.makeText(context, context.getString(R.string.sync_progress_active), Toast.LENGTH_SHORT).show()
-            coroutineScope.launch(Dispatchers.Main) {
-                syncUtils.tryAutoSync(true)
-                Toast.makeText(context, context.getString(R.string.sync_progress_success), Toast.LENGTH_SHORT).show()
-            }
-        },
-        isEnabled = isLoggedIn && isNetworkConnected
-    )
-
-    val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
-    encodeSyncString(enabledContent.toList())
-    SyncContent.entries.filterNot { it == SyncContent.NULL }.forEach { item ->
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 48.dp, vertical = 4.dp)
-        ) {
-            val title = when (item) {
-                SyncContent.ALBUMS -> stringResource(R.string.albums)
-                SyncContent.ARTISTS -> stringResource(R.string.artists)
-                SyncContent.PLAYLISTS -> stringResource(R.string.playlists)
-                SyncContent.LIKED_SONGS -> stringResource(R.string.liked_songs)
-                SyncContent.PRIVATE_SONGS -> stringResource(R.string.songs)
-                SyncContent.RECENT_ACTIVITY -> stringResource(R.string.recent_activity)
-                else -> ""
-            }
-            val syncProgressIndicator = when (item) {
-                SyncContent.ALBUMS -> isSyncingRemoteAlbums
-                SyncContent.ARTISTS -> isSyncingRemoteArtists
-                SyncContent.PLAYLISTS -> isSyncingRemotePlaylists
-                SyncContent.LIKED_SONGS -> isSyncingRemoteLikedSongs
-                SyncContent.PRIVATE_SONGS -> isSyncingRemoteSongs
-                SyncContent.RECENT_ACTIVITY -> isSyncingRecentActivity
-                else -> false
-            }
-
-            if (syncProgressIndicator) {
-                Row(
-                    modifier = Modifier.padding(14.dp)
-                ) {
-                    SyncProgressItem(true)
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier = Modifier
+    ) {
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.scanner_manual_btn)) },
+            icon = { Icon(Icons.Rounded.Sync, null) },
+            onClick = {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.sync_progress_active),
+                    Toast.LENGTH_SHORT
+                ).show()
+                coroutineScope.launch(Dispatchers.Main) {
+                    syncUtils.tryAutoSync(true)
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.sync_progress_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            } else {
-                Checkbox(
-                    checked = enabledContent.contains(item),
-                    onCheckedChange = { checked ->
-                        val updated = enabledContent.toMutableList()
-                        if (checked) {
-                            updated.add(item)
-                        } else {
-                            updated.removeAll { it == item }
-                        }
-                        onSyncContentChange(encodeSyncString(updated))
-                    },
-                    enabled = isLoggedIn
+            },
+            isEnabled = isLoggedIn && isNetworkConnected
+        )
+
+        val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
+        encodeSyncString(enabledContent.toList())
+        SyncContent.entries.filterNot { it == SyncContent.NULL }.forEach { item ->
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 48.dp, vertical = 4.dp)
+            ) {
+                val title = when (item) {
+                    SyncContent.ALBUMS -> stringResource(R.string.albums)
+                    SyncContent.ARTISTS -> stringResource(R.string.artists)
+                    SyncContent.PLAYLISTS -> stringResource(R.string.playlists)
+                    SyncContent.LIKED_SONGS -> stringResource(R.string.liked_songs)
+                    SyncContent.PRIVATE_SONGS -> stringResource(R.string.songs)
+                    SyncContent.RECENT_ACTIVITY -> stringResource(R.string.recent_activity)
+                    else -> ""
+                }
+                val syncProgressIndicator = when (item) {
+                    SyncContent.ALBUMS -> isSyncingRemoteAlbums
+                    SyncContent.ARTISTS -> isSyncingRemoteArtists
+                    SyncContent.PLAYLISTS -> isSyncingRemotePlaylists
+                    SyncContent.LIKED_SONGS -> isSyncingRemoteLikedSongs
+                    SyncContent.PRIVATE_SONGS -> isSyncingRemoteSongs
+                    SyncContent.RECENT_ACTIVITY -> isSyncingRecentActivity
+                    else -> false
+                }
+
+                if (syncProgressIndicator) {
+                    Row(
+                        modifier = Modifier.padding(14.dp)
+                    ) {
+                        SyncProgressItem(true)
+                    }
+                } else {
+                    Checkbox(
+                        checked = enabledContent.contains(item),
+                        onCheckedChange = { checked ->
+                            val updated = enabledContent.toMutableList()
+                            if (checked) {
+                                updated.add(item)
+                            } else {
+                                updated.removeAll { it == item }
+                            }
+                            onSyncContentChange(encodeSyncString(updated))
+                        },
+                        enabled = isLoggedIn
+                    )
+                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge
-            )
         }
     }
 }
@@ -191,7 +207,8 @@ fun ColumnScope.SyncParamsFrag() {
                 SyncMode.RO -> stringResource(R.string.sync_mode_ro)
                 SyncMode.RW -> stringResource(R.string.sync_mode_rw)
             }
-        }
+        },
+        isFirst = true
     )
     EnumListPreference(
         title = { Text(stringResource(R.string.sync_conflict_title)) },
@@ -204,6 +221,7 @@ fun ColumnScope.SyncParamsFrag() {
                 SyncConflictResolution.OVERWRITE_WITH_REMOTE -> stringResource(R.string.sync_conflict_overwrite)
             }
         },
+        isLast = true
     )
 }
 
@@ -226,8 +244,8 @@ fun ColumnScope.SyncExtrasFrag() {
         selectedValue = likedAutoDownload,
         valueText = {
             when (it) {
-                LikedAutodownloadMode.OFF -> stringResource(androidx.compose.ui.R.string.state_off)
-                LikedAutodownloadMode.ON -> stringResource(androidx.compose.ui.R.string.state_on)
+                LikedAutodownloadMode.OFF -> stringResource(R.string.off)
+                LikedAutodownloadMode.ON -> stringResource(R.string.on)
                 LikedAutodownloadMode.WIFI_ONLY -> stringResource(R.string.wifi_only)
             }
         },

@@ -3,7 +3,6 @@ package com.dd3boh.outertune.playback
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.core.content.getSystemService
@@ -57,6 +56,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -122,7 +122,7 @@ class DownloadUtil @Inject constructor(
                     sampleRate = format.audioSampleRate,
                     contentLength = format.contentLength!!,
                     loudnessDb = playbackData.audioConfig?.loudnessDb,
-                    playbackTrackingUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                    playbackTrackingUrl = playbackData.streamUrl
                 )
             )
         }
@@ -317,7 +317,7 @@ class DownloadUtil @Inject constructor(
                 val toMigrate = downloadedSongs.filter { it.value.state == Download.STATE_COMPLETED }
                 toMigrate.forEach { s ->
                     if (runs++ % 10 == 0) {
-                        Log.d(TAG, "Migrating download: $runs/${toMigrate.size}")
+                        Timber.tag(TAG).d("Migrating download: $runs/${toMigrate.size}")
                         if (runs % 20 == 0) {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, "$runs/${toMigrate.size}", LENGTH_SHORT).show()

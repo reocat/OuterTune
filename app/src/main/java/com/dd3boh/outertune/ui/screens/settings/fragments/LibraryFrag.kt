@@ -52,13 +52,15 @@ fun ColumnScope.ListenHistoryFrag() {
         title = { Text(stringResource(R.string.pause_listen_history)) },
         icon = { Icon(Icons.Rounded.History, null) },
         checked = pauseListenHistory,
-        onCheckedChange = onPauseListenHistoryChange
+        onCheckedChange = onPauseListenHistoryChange,
+        isFirst = true
     )
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_listen_history)) },
         icon = { Icon(Icons.Rounded.ClearAll, null) },
-        onClick = { showClearListenHistoryDialog = true }
+        onClick = { showClearListenHistoryDialog = true },
+        isLast = true
     )
 
     /**
@@ -115,12 +117,14 @@ fun ColumnScope.SearchHistoryFrag() {
         title = { Text(stringResource(R.string.pause_search_history)) },
         icon = { Icon(Icons.AutoMirrored.Rounded.ManageSearch, null) },
         checked = pauseSearchHistory,
-        onCheckedChange = onPauseSearchHistoryChange
+        onCheckedChange = onPauseSearchHistoryChange,
+        isFirst = true
     )
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_search_history)) },
         icon = { Icon(Icons.Rounded.ClearAll, null) },
-        onClick = { showClearSearchHistoryDialog = true }
+        onClick = { showClearSearchHistoryDialog = true },
+        isLast = true
     )
 
     /**

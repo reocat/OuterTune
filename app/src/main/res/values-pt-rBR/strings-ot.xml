@@ -190,13 +190,11 @@
     <string name="dl_migrate_confirm">Isto migrará TODOS os downloads internos para \"%s\", e essa ação não poderá ser desfeita. Continuar?</string>
     <string name="dl_rescan_description">Atualizar o banco de dados e recarregar o registro de downloads caso qualquer arquivo ou pasta mudou</string>
     <string name="dl_migrate_description">Mover downloads do armazenamento interno do app para o armazenamento externo do dispositivo</string>
-    <string name="scan_paths_description">Selecione pastas no seu armazenamento local para buscar músicas</string>
     <string name="dl_main_path_description">Selecionar local de armazenamento dos downloads</string>
     <string name="oobe_ad_free_exp_description">Aproveite uma reprodução de música sem interrupções</string>
     <string name="oobe_local_music_support">Suporte amplo à músicas locais</string>
     <string name="oobe_cross_platform_sync">Sincronização entre plataformas</string>
     <string name="oobe_ytm_logon_subtitle">Conecte-se à sua conta do YouTube Music para sincronizar e acessar conteúdo privado da conta. Isso é opcional.</string>
-    <string name="oobe_downloads_subtitle">Selecione uma pasta na qual as músicas baixadas serão salvas.</string>
     <string name="oobe_complete_title">Está tudo pronto!</string>
     <string name="disable_lm_confirm">Ten certeza que quer desativar todos os recursos de mídia local?</string>
     <string name="oobe_local_media_title">Mídia local</string>
@@ -212,7 +210,6 @@
     <string name="oobe_interface_subtitle">Customize como o OuterTune parece e que conteúdo ele te mostra.</string>
     <string name="oobe_local_music_support_description">Toque seus arquivos de música (ex: MP3, OGG, FLAC, etc.)</string>
     <string name="oobe_ytm_logon_title">Conta</string>
-    <string name="oobe_downloads_title">Downloads de músicas</string>
     <string name="dl_size_used_cache">Interno: %s usados</string>
     <string name="dl_size_used_extra">Importados extra: %s usados</string>
     <string name="dl_storage_tooltip">Os downloads internos são salvos no armazenamento privado do app, e não são acessíveis sem root.\n\nOs downloads externos são salvos no armazenamento externo do seu dispositivo (ex: /sdcard ou em cartões micro SD) e podem serem acessados e editados diretamente com um explorador de arquivos. Para a pasta de downloads externos, recomendamos selecionar uma pasta vazia especificamente para baixar músicas, já que o OuterTune pode modificar ou apagar arquivos nesta pasta.\n\nPastas de importações extra são somente de leitura, e são usadas para carregar músicas adicionais. O OuterTune nunca alterará ou apagará arquivos nestas pastas. Pode selecionar uma dessas pastas na seção avançada.\n\nAo apagar downloads, somente as músicas internas serão apagadas. Os downloads externos e as importações extra devem serem apagados manualmente, ou pelo menu da música ou manualmente usando um explorador de arquivos.\n\nPastas de busca de downloads: Downloads de músicas externos e importações extra NÃO são atualizados automaticamente. Se você adicionar, remover, ou alterar arquivos manualmente usando um explorador de arquivos, você precisará buscar as pastas de downloads novamente para atualizar o banco de dados do app. Esta opção está disponível na seção avançada.</string>

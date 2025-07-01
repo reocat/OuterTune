@@ -103,7 +103,6 @@
     <string name="lyrics_trim_title">लिरिक्स के चारों ओर की खाली जगह हटाएं</string>
     <string name="local_library_enable_title">स्थानीय मीडिया सक्षम करें</string>
     <string name="local_library_enable_description">अक्षम करने पर स्थानीय लाइब्रेरी ऐप में नहीं दिखाई देगी</string>
-    <string name="scan_paths_description">गानों को स्कैन करने के लिए अपनी स्थानीय स्टोरेज में फ़ोल्डर चुनें</string>
     <string name="lyrics_prefer_local_description">सभी क्लाउड प्रदाताओं का उपयोग करने से पहले स्थानीय लिरिक्स फ़ाइलों को प्राथमिकता दें। क्लाउड प्रदाताओं को प्राथमिकता देने के लिए इसे बंद करें</string>
     <string name="disable_lm_confirm">क्या आप वाकई स्थानीय मीडिया सुविधाओं को अक्षम करना चाहते हैं?</string>
     <string name="scanner_local_title">स्थानीय स्कैनर</string>

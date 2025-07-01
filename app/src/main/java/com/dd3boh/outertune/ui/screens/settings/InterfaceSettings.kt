@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -58,55 +57,31 @@ fun InterfaceSettings(
             title = stringResource(R.string.grp_layout)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            GridCellsSizeFrag()
-        }
+        GridCellsSizeFrag()
         Spacer(modifier = Modifier.height(12.dp))
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            TabArrangementFrag()
-        }
+        TabArrangementFrag()
         Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            TabExtrasFrag()
-        }
+        TabExtrasFrag()
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_behavior)
         )
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwipeGesturesFrag()
-        }
+        SwipeGesturesFrag()
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.grp_localization)
         )
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            LocalizationFrag()
-        }
+        LocalizationFrag()
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.misc)
         )
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SliderStyleFrag()
-        }
+        SliderStyleFrag()
         Spacer(modifier = Modifier.height(12.dp))
     }
 

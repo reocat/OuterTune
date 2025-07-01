@@ -162,14 +162,11 @@
     <string name="clear_image_cache_confirm">Сигурни ли сте, че искате да изчистите кеша на изображенията? Всички съществуващи миниатюри на албуми ще бъдат премахнати.</string>
     <string name="sync_mode_ro">Само за четене (Преглед на отдалечено съдържание)</string>
     <string name="disable_lm_confirm">Сигурни ли сте, че искате да деактивирате функциите за местни медии?</string>
-    <string name="scan_paths_description">Изберете папки в местното си хранилище, за да сканирате за песни</string>
     <string name="no_updates_available">Няма налични актуализации</string>
     <string name="scanner_rejected_dir">Невалиден избор. Папката за сканиране не може да бъде поддиректория на папката за изтегляне или самата папка за изтегляне</string>
     <string name="scanner_progress_discovering">Откриване…</string>
     <string name="clear_downloads_confirm">Сигурни ли сте, че искате да премахнете всички изтегляния? Ще бъдат премахнати само изтеглянията в основната папка за изтегляния.</string>
     <string name="oobe_local_music_support_description">Възпроизвеждайте музикалните си файлове (напр. MP3, OGG, FLAC и др.)</string>
-    <string name="oobe_downloads_title">Изтеглени песни</string>
-    <string name="oobe_downloads_subtitle">Изберете папка, където ще се запазят изтеглените песни.</string>
     <string name="oobe_interface_subtitle">Персонализирайте как изглежда OuterTune и какво съдържание ви показва.</string>
     <string name="oobe_ad_free_exp_description">Наслаждавайте се на непрекъснато възпроизвеждане на музика</string>
     <string name="dl_migrate_title">Преместване на изтеглянията към външна памет…</string>
