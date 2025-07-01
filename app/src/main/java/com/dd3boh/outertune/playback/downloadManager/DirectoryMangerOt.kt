@@ -12,22 +12,29 @@ import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 
-class DownloadDirectoryManagerOt(private val context: Context, private var dir: Uri, extraDirs: List<Uri>) {
+class DownloadDirectoryManagerOt(private var context: Context, private var dir: Uri, extraDirs: List<Uri>) {
     val TAG = DownloadDirectoryManagerOt::class.simpleName.toString()
     var mainDir: DocumentFile? = null
     var allDirs: List<DocumentFile> = mutableListOf()
 
     init {
+        doInit(context, dir, extraDirs)
+    }
+
+    fun doInit(context: Context, dir: Uri, extraDirs: List<Uri>) {
         Timber.tag(TAG).i("Initializing download manager: $dir")
+        this.context = context
+        this.dir = dir
         try {
             mainDir = documentFileFromUri(context, dir)
             if (mainDir == null || !mainDir!!.isDirectory) {
                 throw IOException("Invalid directory")
             }
 
-            if (!mainDir!!.listFiles().any { it.name == ".nomedia" }) {
-                documentFileFromUri(context, dir)?.createFile("audio/mka", ".nomedia")
-            }
+            // TODO: .nomedia for downloads folder (permission denied)
+//            if (!mainDir!!.listFiles().any { it.name == ".nomedia" }) {
+//                documentFileFromUri(context, dir)?.createFile("audio/mka", ".nomedia")
+//            }
 
             val newAllDirs = mutableListOf<DocumentFile>()
             newAllDirs.add(mainDir!!)

@@ -65,6 +65,7 @@ import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
 import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
 import com.dd3boh.outertune.constants.ScanPathsKey
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
+import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.extensions.tryOrNull
 import com.dd3boh.outertune.ui.component.ActionPromptDialog
 import com.dd3boh.outertune.ui.component.DefaultDialog
@@ -110,7 +111,7 @@ fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
         onClick = {
             val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
             backupLauncher.launch(
-                "${context.getString(R.string.app_name)}_${
+                "${context.getString(R.string.app_name)}_${MusicDatabase.MUSIC_DATABASE_VERSION}_${
                     LocalDateTime.now().format(formatter)
                 }.backup"
             )
@@ -342,10 +343,8 @@ fun ColumnScope.DownloadsFrag() {
                 tempFilePath = null
             },
             onConfirm = {
-                tempFilePath?.let { f ->
-                    val uris = stringFromUriList(listOfNotNull(f))
-                    onDownloadPathChange(uris)
-                }
+                val uris = stringFromUriList(listOfNotNull(tempFilePath))
+                onDownloadPathChange(uris)
 
                 showDlPathDialog = false
                 tempFilePath = null
@@ -409,7 +408,7 @@ fun ColumnScope.DownloadsFrag() {
             ) {
                 tempFilePath?.let {
                     Text(
-                        text = it.toString(),
+                        text = absoluteFilePathFromUri(context, it) ?: it.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(8.dp)
                     )
