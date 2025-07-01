@@ -20,10 +20,6 @@ fun documentFileFromUri(context: Context, uri: Uri): DocumentFile? {
     return DocumentFile.fromTreeUri(context, uri)
 }
 
-fun documentFileFromFile(file: File): DocumentFile? {
-    return DocumentFile.fromFile(file)
-}
-
 fun stringFromUriList(uris: List<Uri>): String {
     if (uris.isEmpty()) return ""
     return uris.distinctBy { it.toString() }.joinToString("\n")
