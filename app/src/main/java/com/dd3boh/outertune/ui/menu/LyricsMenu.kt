@@ -31,7 +31,6 @@ import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncAlt
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -63,6 +62,7 @@ import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.GridMenu
 import com.dd3boh.outertune.ui.component.GridMenuItem
+import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.ListDialog
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SettingsClickToReveal

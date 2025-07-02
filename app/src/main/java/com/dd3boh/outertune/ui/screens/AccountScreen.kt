@@ -191,7 +191,6 @@ fun AccountScreen(
                         onClick = {
                             navController.navigate("settings/account_sync")
                         },
-                        onLongClick = { },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         Icon(

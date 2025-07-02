@@ -537,7 +537,6 @@ fun ColumnScope.LocalScannerFrag() {
                             onClick = {
                                 tempScanPaths.remove(it)
                             },
-                            onLongClick = {}
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
