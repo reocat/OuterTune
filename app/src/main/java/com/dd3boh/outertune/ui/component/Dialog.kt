@@ -407,7 +407,6 @@ fun CounterDialog(
                                 tempValue.intValue += 1
                             }
                         },
-                        onLongClick = {}
                     ) {
                         Text(
                             text = "+",
@@ -423,7 +422,6 @@ fun CounterDialog(
                                 tempValue.intValue -= 1
                             }
                         },
-                        onLongClick = {}
                     ) {
                         Text(
                             text = "—",

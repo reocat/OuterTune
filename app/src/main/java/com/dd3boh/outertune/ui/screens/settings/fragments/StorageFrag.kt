@@ -595,7 +595,6 @@ fun ColumnScope.DownloadsFrag() {
                             onClick = {
                                 tempScanPaths.remove(tmpPath)
                             },
-                            onLongClick = {}
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
