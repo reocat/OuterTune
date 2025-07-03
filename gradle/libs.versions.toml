@@ -1,6 +1,6 @@
 [versions]
 aboutLibraries = "12.2.3"
-adaptive = "1.2.0-alpha07"
+adaptive = "1.2.0-alpha08"
 androidGradlePlugin = "8.12.0-alpha07"
 json = "20250517"
 kotlin = "2.2.0"
