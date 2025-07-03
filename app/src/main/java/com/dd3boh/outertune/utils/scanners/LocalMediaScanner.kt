@@ -12,6 +12,9 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastDistinctBy
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastMapNotNull
 import androidx.datastore.preferences.core.edit
 import androidx.documentfile.provider.DocumentFile
@@ -203,16 +206,23 @@ class LocalMediaScanner(val context: Context) {
         scannerProgressTotal.value = finalSongs.size
         scannerProgressCurrent.value = 0
         scannerProgressProbe = 0
+        val mod = if (newSongs.size < 20) {
+            2
+        } else if (newSongs.size < 50) {
+            8
+        } else {
+            20
+        }
 
         // sync
         var runs = 0
         finalSongs.forEach { song ->
             runs++
-            if (SCANNER_DEBUG && runs % 20 == 0) {
+            if (SCANNER_DEBUG && runs % mod == 0) {
                 Timber.tag(TAG).d("------------ SYNC: Local Library Sync: $runs/${finalSongs.size} processed ------------")
             }
-            if (runs % 20 == 0) {
-                scannerProgressCurrent.value += 20
+            if (runs % mod == 0) {
+                scannerProgressCurrent.value += mod
             }
 
             if (scannerRequestCancel) {
@@ -346,6 +356,7 @@ class LocalMediaScanner(val context: Context) {
             }
         }
 
+        scannerProgressCurrent.value = scannerProgressTotal.value
         // do not delete songs from database automatically, we just disable them
         if (!noDisable) {
             finalize(database)
@@ -389,6 +400,13 @@ class LocalMediaScanner(val context: Context) {
             val converted = newSongs.fastMapNotNull { fileFromUri(context, it)?.absolutePath }
             val delta = converted.minus(allSongs)
             Timber.tag(TAG).d("Songs found: ${delta.size}")
+            val mod = if (newSongs.size < 20) {
+                2
+            } else if (newSongs.size < 50) {
+                8
+            } else {
+                20
+            }
 
             val finalSongs = ArrayList<SongTempData>()
             val scannerJobs = ArrayList<Deferred<SongTempData?>>()
@@ -421,12 +439,12 @@ class LocalMediaScanner(val context: Context) {
                                 try {
                                     ret = advancedScan(File(s))
                                     scannerProgressProbe++
-                                    if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
-Timber.tag(TAG).d(
+                                    if (SCANNER_DEBUG && scannerProgressProbe % mod == 0) {
+                                        Timber.tag(TAG).d(
                                             "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------"
                                         )
                                     }
-                                    if (scannerProgressProbe % 20 == 0) {
+                                    if (scannerProgressProbe % mod == 0) {
                                         scannerProgressCurrent.value = scannerProgressProbe
                                     }
                                 } catch (e: InvalidAudioFileException) {
@@ -470,10 +488,11 @@ Timber.tag(TAG).d(
                 Timber.tag(TAG).i("Not syncing, no valid songs found!")
             }
 
+            scannerProgressCurrent.value = scannerProgressProbe
             // we handle disabling songs here instead
             scannerState.value = 3
             finalize(database)
-            disableSongsByUri(newSongs, database)
+            disableSongsByPath(converted, database)
         }
 
         scannerState.value = 0
@@ -506,6 +525,13 @@ Timber.tag(TAG).d(
         scannerProgressTotal.value = newSongs.size
         scannerProgressCurrent.value = 0
         scannerProgressProbe = 0
+        val mod = if (newSongs.size < 20) {
+            2
+        } else if (newSongs.size < 50) {
+            8
+        } else {
+            20
+        }
 
         runBlocking(Dispatchers.IO) {
             val finalSongs = ArrayList<SongTempData>()
@@ -537,12 +563,12 @@ Timber.tag(TAG).d(
                                 try {
                                     val ret = advancedScan(uri)
                                     scannerProgressProbe++
-                                    if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
-Timber.tag(TAG).d(
+                                    if (SCANNER_DEBUG && scannerProgressProbe % mod == 0) {
+                                        Timber.tag(TAG).d(
                                             "------------ SCAN: Full Scanner: $scannerProgressProbe discovered ------------"
                                         )
                                     }
-                                    if (scannerProgressProbe % 20 == 0) {
+                                    if (scannerProgressProbe % mod == 0) {
                                         scannerProgressCurrent.value = scannerProgressProbe
                                     }
                                     ret
@@ -569,6 +595,7 @@ Timber.tag(TAG).d(
                 song?.song?.let { finalSongs.add(song) }
             }
 
+            scannerProgressCurrent.value = scannerProgressProbe
             if (finalSongs.isNotEmpty()) {
                 /**
                  * TODO: Delete all local format entity before scan
@@ -603,6 +630,13 @@ Timber.tag(TAG).d(
             scannerProgressTotal.value = allLocal.size
             scannerProgressCurrent.value = 0
             scannerProgressProbe = 0
+            val mod = if (allLocal.size < 20) {
+                2
+            } else if (allLocal.size < 50) {
+                8
+            } else {
+                20
+            }
 
             allLocal.forEach { element ->
                 val artistVal = element.name.trim()
@@ -650,10 +684,10 @@ Timber.tag(TAG).d(
                 }
 
                 scannerProgressProbe++
-                if (scannerProgressProbe % 20 == 0) {
+                if (scannerProgressProbe % mod == 0) {
                     scannerProgressCurrent.value = scannerProgressProbe
                 }
-                if (SCANNER_DEBUG && scannerProgressProbe % 20 == 0) {
+                if (SCANNER_DEBUG && scannerProgressProbe % mod == 0) {
                     Timber.tag(TAG).v(
                         "------------ SYNC: youtubeArtistLookup job: $ scannerProgressCurrent.value/${scannerProgressTotal.value} artists processed ------------"
                     )
