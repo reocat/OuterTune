@@ -8,16 +8,15 @@ import android.os.storage.StorageManager
 import android.provider.DocumentsContract
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import androidx.documentfile.provider.TreeDocumentFile
 import java.io.File
 
 fun documentFileFromUri(context: Context, uris: List<Uri>): List<DocumentFile> {
-    return uris
-        .mapNotNull { DocumentFile.fromTreeUri(context, it) }
-        .filter { it.isDirectory }
+    return uris.map { customDocFileFromTreeTreeUri(context, it) }.filter { it.isDirectory }
 }
 
 fun documentFileFromUri(context: Context, uri: Uri): DocumentFile? {
-    return DocumentFile.fromTreeUri(context, uri)
+    return customDocFileFromTreeTreeUri(context, uri)
 }
 
 fun stringFromUriList(uris: List<Uri>): String {
@@ -90,3 +89,9 @@ fun absoluteFilePathFromUri(context: Context, uri: Uri): String? {
     if (dfUri == null) return null
     return fileFromUri(context, dfUri)?.absolutePath
 }
+
+private fun customDocFileFromTreeTreeUri(context: Context, uri: Uri) = TreeDocumentFile(
+    null, context, DocumentsContract.buildDocumentUriUsingTree(
+        uri, DocumentsContract.getTreeDocumentId(uri)
+    )
+)

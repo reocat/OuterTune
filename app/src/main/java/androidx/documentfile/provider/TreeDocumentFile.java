@@ -27,11 +27,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 @RequiresApi(21)
-class TreeDocumentFile extends DocumentFile {
+public class TreeDocumentFile extends DocumentFile {
     private static final String TAG = "DocumentFile";
     private Context mContext;
     private Uri mUri;
-    TreeDocumentFile(@Nullable DocumentFile parent, Context context, Uri uri) {
+    public TreeDocumentFile(@Nullable DocumentFile parent, Context context, Uri uri) {
         super(parent);
         mContext = context;
         mUri = uri;
