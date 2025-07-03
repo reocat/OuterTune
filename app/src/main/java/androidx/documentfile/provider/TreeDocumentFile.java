@@ -31,10 +31,17 @@ public class TreeDocumentFile extends DocumentFile {
     private static final String TAG = "DocumentFile";
     private Context mContext;
     private Uri mUri;
+    private String mName;
     public TreeDocumentFile(@Nullable DocumentFile parent, Context context, Uri uri) {
         super(parent);
         mContext = context;
         mUri = uri;
+    }
+    public TreeDocumentFile(@Nullable DocumentFile parent, Context context, Uri uri, String name) {
+        super(parent);
+        mContext = context;
+        mUri = uri;
+        mName = name;
     }
     @Override
     public @Nullable DocumentFile createFile(@NonNull String mimeType,
@@ -63,7 +70,11 @@ public class TreeDocumentFile extends DocumentFile {
     }
     @Override
     public @Nullable String getName() {
-        return DocumentsContractApi19.getName(mContext, mUri);
+        if (mName != null) {
+            return mName;
+        } else {
+            return DocumentsContractApi19.getName(mContext, mUri);
+        }
     }
     @Override
     public @Nullable String getType() {
@@ -115,14 +126,19 @@ public class TreeDocumentFile extends DocumentFile {
         final Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(mUri,
                 DocumentsContract.getDocumentId(mUri));
         final ArrayList<Uri> results = new ArrayList<>();
+        final ArrayList<String> resultNames = new ArrayList<>();
         Cursor c = null;
         try {
             c = resolver.query(childrenUri, new String[] {
-                    DocumentsContract.Document.COLUMN_DOCUMENT_ID }, null, null, null);
+                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME
+            }, null, null, null);
             while (c.moveToNext()) {
                 final String documentId = c.getString(0);
+                final String documentName = c.getString(1);
                 final Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(mUri,
                         documentId);
+                resultNames.add(documentName);
                 results.add(documentUri);
             }
         } catch (Exception e) {
@@ -131,9 +147,10 @@ public class TreeDocumentFile extends DocumentFile {
             closeQuietly(c);
         }
         final Uri[] result = results.toArray(new Uri[0]);
+        final String[] name = resultNames.toArray(new String[0]);
         final DocumentFile[] resultFiles = new DocumentFile[result.length];
         for (int i = 0; i < result.length; i++) {
-            resultFiles[i] = new TreeDocumentFile(this, mContext, result[i]);
+            resultFiles[i] = new TreeDocumentFile(this, mContext, result[i], name[i]);
         }
         return resultFiles;
     }
