@@ -211,4 +211,5 @@
     <string name="speed_medium">متوسط</string>
     <string name="speed_fast">سریع</string>
     <string name="speed_very_fast">خیلی سریع</string>
+    <string name="scanner_sensitivity_L0">وقتی جستجو در یوتیوب فعال است، اولین نتیجه ارائه شده توسط یوتیوب را انتخاب کند، در غیر این صورت با عنوان مطابقت داشته باشد</string>
 </resources>
