@@ -52,12 +52,12 @@ data class RelatedPage(
                         ?.content?.musicPlayButtonRenderer?.playNavigationEndpoint
                         ?.watchPlaylistEndpoint?.playlistId ?: return null,
                     title = renderer.title.runs?.firstOrNull()?.text ?: return null,
-                    artists = renderer.subtitle?.runs?.oddElements()?.drop(1)?.map {
-                        Artist(
-                            name = it.text,
-                            id = it.navigationEndpoint?.browseEndpoint?.browseId
-                        )
-                    },
+                    artists = listOfNotNull(Artist(
+                        name = "",
+                        id = renderer.menu?.menuRenderer?.items?.find {
+                            it.menuNavigationItemRenderer?.icon?.iconType == "ARTIST"
+                        }?.menuNavigationItemRenderer?.navigationEndpoint?.browseEndpoint?.browseId,
+                    )),
                     year = renderer.subtitle?.runs?.lastOrNull()?.text?.toIntOrNull(),
                     thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
                     explicit = renderer.subtitleBadges?.find {
@@ -69,11 +69,8 @@ data class RelatedPage(
                     title = renderer.title.runs?.firstOrNull()?.text ?: return null,
                     description = "",
                     privacyStatus = "PUBLIC",
-                    author = Artist(
-                        name = renderer.subtitle?.runs?.lastOrNull()?.text ?: return null,
-                        id = null
-                    ),
-                    songCountText = renderer.subtitle.runs.getOrNull(4)?.text,
+                    author = null,
+                    songCountText = renderer.subtitle?.runs?.lastOrNull()?.text,
                     thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
                     playEndpoint = renderer.thumbnailOverlay
                         ?.musicItemThumbnailOverlayRenderer?.content
