@@ -40,12 +40,7 @@ data class LibraryPage(
                     title = renderer.title.runs?.firstOrNull()?.text ?: return null,
                     description = "",
                     privacyStatus = "PUBLIC",
-                    author = renderer.subtitle?.runs?.getOrNull(2)?.let {
-                        Artist(
-                            name = it.text,
-                            id = it.navigationEndpoint?.browseEndpoint?.browseId
-                        )
-                    },
+                    author = null,
                     songCountText = renderer.subtitle?.runs?.lastOrNull()?.text,
                     thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl(),
                     playEndpoint = renderer.thumbnailOverlay
