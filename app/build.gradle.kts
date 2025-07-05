@@ -151,8 +151,6 @@ dependencies {
     implementation(libs.palette)
     implementation(libs.materialKolor)
 
-    implementation(libs.squigglyslider)
-
     implementation(libs.coil)
 
     implementation(libs.shimmer)
@@ -165,8 +163,6 @@ dependencies {
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
-
-    implementation(libs.apache.lang3)
 
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
