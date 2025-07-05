@@ -166,7 +166,6 @@
     <string name="m3u_ytm_lookup">Pesquisar no YouTube Music por músicas ausentes no banco de dados do app</string>
     <string name="tablet_ui_title_description">Ativar uma interface em modo paisagem que é otimizada para telas maiores, independente do tamanho da tela atual</string>
     <string name="tablet_ui_title">Forçar interface de tablet</string>
-    <string name="oss_licenses_title">Licenças de código aberto</string>
     <string name="lyrics_karaoke_description">Ativa a sincronização de palavra por palavra. Requer suporte pelo formato da letra.</string>
     <string name="lyrics_karaoke_hz_title">Ajustar velocidade de recarregamento da letra de karaoke</string>
     <string name="import_success_songs">Importadas com sucesso</string>
@@ -177,7 +176,6 @@
     <string name="speed_fast">Rápido</string>
     <string name="speed_very_fast">Muito rápido</string>
     <string name="lyrics_karaoke_title">Letra em estilo karaoke.</string>
-    <string name="attribution_title">Atribuições</string>
     <string name="scanner_rejected_dir">Seleção inválida. A pasta de busca não pode ser uma subpasta da pasta de downloads, ou ser a própria pasta de downloads</string>
     <string name="scanner_progress_discovering">Descobrindo…</string>
     <string name="scanner_progress_processing">Processando…</string>

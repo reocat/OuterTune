@@ -76,8 +76,6 @@
     <string name="grp_account_sync">Tài khoản và đồng bộ</string>
     <string name="no_updates_available">Nâng cấp không khả dụng</string>
     <string name="tablet_ui_title">Bắt buộc hiển thị kiểu máy tính bảng</string>
-    <string name="attribution_title">Ghi công</string>
-    <string name="oss_licenses_title">Giấy phép mã nguồn mở</string>
     <string name="tablet_ui_title_description">Bật giao diện nằm ngang được tối ưu cho màn hình lớn, bất kể kích thước màn hình hiện tại</string>
     <string name="token_shown">Chạm lại để sao chép hoặc chỉnh sửa</string>
     <string name="sync_conflict_title">Xung đột độ phân giải</string>

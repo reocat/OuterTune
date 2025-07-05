@@ -56,9 +56,7 @@
     <string name="attrib_zhuang">زیون هوانگ برای InnerTune</string>
     <string name="check_for_update">بررسی به ‌روزرسانی</string>
     <string name="checking_for_update">در حال بررسی به ‌روزرسانی</string>
-    <string name="attribution_title">انتساب</string>
     <string name="no_updates_available">به روز رسانی در دسترس نیست</string>
-    <string name="oss_licenses_title">مجوزهای منبع باز</string>
     <string name="special_thanks">تشکر ویژه</string>
     <string name="new_interface">طرح رابط جدید</string>
     <string name="player_background_blur">تیرگی</string>

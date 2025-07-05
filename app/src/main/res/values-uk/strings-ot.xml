@@ -170,8 +170,6 @@
     <string name="lyrics_karaoke_hz_title">Налаштуйте швидкість оновлення текстів пісень караоке-пісень</string>
     <string name="m3u_export">Експортувати як файл M3U</string>
     <string name="lyrics_karaoke_title">Тексти пісень у стилі караоке.</string>
-    <string name="attribution_title">Атрибуція</string>
-    <string name="oss_licenses_title">Ліцензії з відкритим кодом</string>
     <string name="lyrics_karaoke_description">Дозволяє синхронізувати тексти пісень послівно. Потрібна підтримка формату текстів пісень.</string>
     <string name="tablet_ui_title_description">Увімкнути альбомний інтерфейс, оптимізований для більших екранів, незалежно від поточного розміру екрана</string>
     <string name="m3u_ytm_lookup">Пошук у YouTube Music пісень, яких немає в базі даних програми</string>

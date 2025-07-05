@@ -188,8 +188,6 @@
     <string name="playlist_missing_note">Brakujące playlisty? Kliknij tutaj, by pozwolić na synchronizację typu czytaj-pisz w ustawieniach</string>
     <string name="grp_behavior">Zachowanie</string>
     <string name="dl_rescan_description">Zaktualizuje bazę danych i odśwież register pobrań jeżeli jakiekolwiek pliki lub foldery zostały zmienione</string>
-    <string name="attribution_title">Atrybucja</string>
-    <string name="oss_licenses_title">Licencja open source</string>
     <string name="lyrics_karaoke_title">Wyświetl tekst jako karaoke.</string>
     <string name="lyrics_karaoke_description">Włącz tłumaczenie typu słowo po słowie. Potrzebne wsparcie formatu tekstu.</string>
     <string name="lyrics_karaoke_hz_title">Dostosuj prędkość aktualizowanie tekstu karaoke</string>
