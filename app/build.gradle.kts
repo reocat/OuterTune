@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.aboutlibraries)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -189,9 +188,6 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.client.encoding)
     implementation(libs.ktor.serialization.json)
-
-    implementation(libs.aboutlibraries.core)
-    implementation(libs.aboutlibraries.compose.m3)
 
     implementation(libs.taglib)
 

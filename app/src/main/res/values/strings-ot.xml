@@ -90,9 +90,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="attrib_zhuang">Zion Huang for InnerTune</string>
     <string name="check_for_update">Check for updates</string>
     <string name="checking_for_update">Checking for updates</string>
-    <string name="attribution_title">Attribution</string>
     <string name="no_updates_available">No updates available</string>
-    <string name="oss_licenses_title">Open source licenses</string>
     <string name="special_thanks">Special thanks</string>
 
     <!-- Appearance settings -->
