@@ -179,8 +179,6 @@
     <string name="dl_migrate_description">Mueve las descargas del almacenamiento interno de la aplicación al un almacenamiento externo en el dispositivo</string>
     <string name="tablet_ui_title">Forzar interfaz de tableta</string>
     <string name="tablet_ui_title_description">Habilita una interfaz horizontal optimizada para pantallas más grandes, independientemente del tamaño de la pantalla actual</string>
-    <string name="attribution_title">Atribución</string>
-    <string name="oss_licenses_title">Licencias de código abierto</string>
     <string name="lyrics_karaoke_title">Letra estilo karaoke.</string>
     <string name="lyrics_karaoke_hz_title">Ajustar la velocidad de actualización de la letra del karaoke</string>
     <string name="dl_extra_path_title">Configurar ubicaciones de descarga adicionales…</string>

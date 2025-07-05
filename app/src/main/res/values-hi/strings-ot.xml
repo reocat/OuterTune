@@ -55,9 +55,7 @@
     <string name="grp_sync">सिंक</string>
     <string name="check_for_update">अपडेट जांचें</string>
     <string name="checking_for_update">अपडेट की जांच की जा रही है</string>
-    <string name="attribution_title">श्रेय</string>
     <string name="no_updates_available">कोई अपडेट उपलब्ध नहीं है</string>
-    <string name="oss_licenses_title">ओपन सोर्स लाइसेंस</string>
     <string name="special_thanks">विशेष धन्यवाद</string>
     <string name="new_interface">विशेष धन्यवाद</string>
     <string name="player_background_blur">धुंधला करें</string>

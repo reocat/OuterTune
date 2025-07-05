@@ -161,11 +161,9 @@
     <string name="library_empty">라이브러리</string>
     <string name="m3u_ytm_lookup">앱 데이터베이스에서 찾을 수 없는 노래를 YouTube Music에서 검색하세요</string>
     <string name="lyrics_karaoke_title">노래방 스타일 자막.</string>
-    <string name="attribution_title">기여</string>
     <string name="speed_very_fast">매우 빠름</string>
     <string name="tablet_ui_title">강제 테블릿 UI</string>
     <string name="tablet_ui_title_description">현재 화면 크기에 관계없이 더 큰 화면에 최적화된 가로형 인터페이스를 활성화합니다</string>
-    <string name="oss_licenses_title">오픈 소스 라이센스</string>
     <string name="lyrics_karaoke_description">단어별 가사 동기화를 지원합니다. 가사 형식 지원이 필요합니다.</string>
     <string name="lyrics_karaoke_hz_title">노래방 자막 속도 조정</string>
     <string name="import_success_songs">성공적으로 가져왔습니다</string>

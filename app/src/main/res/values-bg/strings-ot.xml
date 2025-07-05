@@ -156,7 +156,6 @@
     <string name="grp_account_sync">Профил и синхронизиране</string>
     <string name="swipe_to_skip_description">Активирайте хоризонтално плъзгане в плейъра за превключване между песни</string>
     <string name="more_settings">Още настройки</string>
-    <string name="oss_licenses_title">Лицензи с отворен код</string>
     <string name="sync_conflict_overwrite">Презаписване на местно съдържание с отдалечено съдържание</string>
     <string name="dl_oobe_tooltip">Песните се изтеглят в личното вътрешно хранилище на приложението. За да изтеглите песни във външно хранилище, първо трябва да изберете папка. Можете да добавяте, променяте или премахвате папки или да преместите вътрешните изтегляния към външните изтегляния по-късно в „Настройки“.</string>
     <string name="clear_image_cache_confirm">Сигурни ли сте, че искате да изчистите кеша на изображенията? Всички съществуващи миниатюри на албуми ще бъдат премахнати.</string>
@@ -191,7 +190,6 @@
     <string name="dl_extra_path_title">Конфигуриране на допълнителни местоположения за внасяне…</string>
     <string name="dl_migrate_description">Преместете изтеглянията от вътрешната памет на приложението във външната памет на устройството</string>
     <string name="dl_migrate_confirm">Това ще доведе до преместване на ВСИЧКИ вътрешни изтегляния към \"%s\" и това действие не може да бъде отменено. Продължете?</string>
-    <string name="attribution_title">Приписване</string>
     <string name="sync_conflict_add_only">Запазете цялото местно съдържание, добавете ново отдалечено съдържание</string>
     <string name="sync_conflict_title">Разрешаване на конфликти</string>
     <string name="sync_mode">Режим на синхронизация</string>
