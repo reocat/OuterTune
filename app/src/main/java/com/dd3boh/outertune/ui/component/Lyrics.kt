@@ -443,7 +443,7 @@ fun Lyrics(
                         val isCurrentLine = index == displayedCurrentLineIndex
                         if (isCurrentLine && lyricsFancy && item.words != null && !context.isPowerSaver()) {
                             val style = LocalTextStyle.current.copy(
-                                fontSize = lyricsFontSize.sp,
+                                fontSize = 20.sp,
                                 color = textColor,
                                 fontWeight = FontWeight.Bold
                             )
@@ -475,23 +475,23 @@ fun Lyrics(
                                 ) {
                                     Text(
                                         text = it.text,
-                                        fontSize = lyricsFontSize.sp,
+                                        fontSize = 20.sp,
                                         color = textColor,
-                                        fontWeight = if (isCurrentLine) FontWeight.ExtraBold else FontWeight.Medium
+                                        fontWeight = FontWeight.ExtraBold
                                     )
                                 }
                             }
                         } else {
                             Text(
                                 text = item.text,
-                                fontSize = lyricsFontSize.sp,
+                                fontSize = 20.sp,
                                 color = textColor,
                                 textAlign = when (lyricsTextPosition) {
                                     LyricsPosition.LEFT -> TextAlign.Left
                                     LyricsPosition.CENTER -> TextAlign.Center
                                     LyricsPosition.RIGHT -> TextAlign.Right
                                 },
-                                fontWeight = if (isCurrentLine) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -502,7 +502,7 @@ fun Lyrics(
         if (lyricsModel == uninitializedLyric) {
             Text(
                 text = stringResource(R.string.lyrics_not_found),
-                fontSize = lyricsFontSize.sp,
+                fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.secondary,
                 textAlign = when (lyricsTextPosition) {
                     LyricsPosition.LEFT -> TextAlign.Left
