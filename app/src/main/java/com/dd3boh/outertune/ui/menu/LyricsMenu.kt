@@ -56,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.db.entities.LyricsEntity
+import com.dd3boh.outertune.extensions.isInternetConnected
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.DefaultDialog
 import com.dd3boh.outertune.ui.component.GridMenu
@@ -286,7 +287,11 @@ fun LyricsMenu(
             if (!isLoading && results.isEmpty()) {
                 item {
                     Text(
-                        text = context.getString(R.string.lyrics_not_found),
+                        text = if (!context.isInternetConnected()) {
+                            context.getString(R.string.error_no_internet)
+                        } else {
+                            context.getString(R.string.lyrics_not_found)
+                        },
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()

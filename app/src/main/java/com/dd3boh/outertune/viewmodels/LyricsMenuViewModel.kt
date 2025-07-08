@@ -31,14 +31,18 @@ class LyricsMenuViewModel @Inject constructor(
         results.value = emptyList()
         job?.cancel()
         job = viewModelScope.launch(Dispatchers.IO) {
-            withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
-                lyricsHelper.getAllLyrics(mediaId, title, artist, duration) { result ->
-                    results.update {
-                        it + result
+            try {
+                withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
+                    lyricsHelper.getAllLyrics(mediaId, title, artist, duration) { result ->
+                        results.update {
+                            it + result
+                        }
                     }
                 }
+            } catch (e: Exception) {
+            } finally {
+                isLoading.value = false
             }
-            isLoading.value = false
         }
     }
 
