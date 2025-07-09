@@ -49,6 +49,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -77,10 +78,15 @@ class DownloadUtil @Inject constructor(
     @PlayerCache val playerCache: SimpleCache,
 ) {
     val TAG = DownloadUtil::class.simpleName.toString()
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val songUrlCache = HashMap<String, Pair<String, Long>>()
+
+    lateinit var localMgr: DownloadDirectoryManagerOt
+    lateinit var downloadMgr: DownloadManagerOt
+
     private val dataSourceFactory = ResolvingDataSource.Factory(
         CacheDataSource.Factory()
             .setCache(playerCache)
@@ -151,30 +157,19 @@ class DownloadUtil @Inject constructor(
 
     // Custom OT
     val customDownloads = MutableStateFlow<Map<String, LocalDateTime>>(emptyMap())
-    var localMgr = DownloadDirectoryManagerOt(
-        context,
-        context.dataStore.get(DownloadPathKey, "").toUri(),
-        uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
-    )
-    val downloadMgr = DownloadManagerOt(localMgr)
     var isProcessingDownloads = MutableStateFlow(false)
 
     fun getCustomDownload(songId: String): Boolean = customDownloads.value.any { songId == it.key }
-
     fun getDownload(songId: String): Flow<Download?> = downloads.map { it[songId] }
-
     fun download(songs: List<MediaMetadata>) {
         songs.forEach { song -> downloadSong(song.id, song.title) }
     }
-
     fun download(song: MediaMetadata) {
         downloadSong(song.id, song.title)
     }
-
     fun download(song: SongEntity) {
         downloadSong(song.id, song.title)
     }
-
     private fun downloadSong(id: String, title: String) {
         if (getCustomDownload(id)) return
         val downloadRequest = DownloadRequest.Builder(id, id.toUri())
@@ -188,7 +183,6 @@ class DownloadUtil @Inject constructor(
             false
         )
     }
-
     fun resumeDownloadsOnStart() {
         DownloadService.sendResumeDownloads(
             context,
@@ -196,16 +190,13 @@ class DownloadUtil @Inject constructor(
             false
         )
     }
-
     fun autoDownloadIfLiked(songs: List<SongEntity>) {
         songs.forEach { song -> autoDownloadIfLiked(song) }
     }
-
     fun autoDownloadIfLiked(song: SongEntity) {
         if (!song.liked || song.dateDownload != null) {
             return
         }
-
         val isWifiConnected = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
             ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: false
 
@@ -217,19 +208,13 @@ class DownloadUtil @Inject constructor(
         }
     }
 
-
-// Deletes from custom dl
+    // Deletes from custom dl
 
     fun delete(song: PlaylistSong) = deleteSong(song.song.id)
-
     fun delete(song: SongItem) = deleteSong(song.id)
-
     fun delete(song: Song) = deleteSong(song.song.id)
-
     fun delete(song: SongEntity) = deleteSong(song.id)
-
     fun delete(song: MediaMetadata) = deleteSong(song.id)
-
     private fun deleteSong(id: String): Boolean {
         val deleted = localMgr.deleteFile(id)
         if (!deleted) return false
@@ -238,7 +223,6 @@ class DownloadUtil @Inject constructor(
                 remove(id)
             }
         }
-
         runBlocking {
             database.song(id).first()?.song?.copy(localPath = null)
             database.updateDownloadStatus(id, null)
@@ -252,7 +236,6 @@ class DownloadUtil @Inject constructor(
     fun getFromCache(cache: SimpleCache, mediaId: String): ByteArray? {
         val spans: Set<CacheSpan> = cache.getCachedSpans(mediaId)
         if (spans.isEmpty()) return null
-
         val output = ByteArrayOutputStream()
         try {
             for (span in spans) {
@@ -342,11 +325,7 @@ class DownloadUtil @Inject constructor(
 
 
     fun cd() {
-        localMgr.doInit(
-            context,
-            context.dataStore.get(DownloadPathKey, "").toUri(),
-            uriListFromString(context.dataStore.get(DownloadExtraPathKey, ""))
-        )
+        scope.launch { rescanDownloads() }
     }
 
     /**
@@ -364,15 +343,14 @@ class DownloadUtil @Inject constructor(
         }
 
         // register new files
-        val availableDownloads = dbDownloads.minus(missingFiles)
+        val availableDownloads = dbDownloads.minus(missingFiles.toSet())
         availableDownloads.forEach { s ->
-            result[s.song.id] = s.song.dateDownload!! // sql should cover our butts
+            result[s.song.id] = s.song.dateDownload!!
         }
         isProcessingDownloads.value = false
 
         customDownloads.value = result
     }
-
 
     /**
      * Scan and import downloaded songs from main and extra directories.
@@ -384,7 +362,6 @@ class DownloadUtil @Inject constructor(
         if (isProcessingDownloads.value) return
         isProcessingDownloads.value = true
         CoroutineScope(Dispatchers.IO).launch {
-//            val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB, SCANNER_OWNER_DL)
             runBlocking(Dispatchers.IO) { database.removeAllDownloadedSongs() }
             val result = mutableMapOf<String, LocalDateTime>()
             val timeNow = LocalDateTime.now()
@@ -396,19 +373,12 @@ class DownloadUtil @Inject constructor(
                     try {
                         val file = fileFromUri(context, f.value)
                         if (file == null) throw (InvalidAudioFileException("Hello darkness my old friend"))
-                        // TODO: validate files in download folder
-//                        val format: FormatEntity? = scanner.advancedScan(f.value).format
-//                        if (format != null) {
-//                            database.upsert(format)
-//                        }
                         database.registerDownloadSong(f.key, timeNow, file.absolutePath)
-
                     } catch (e: InvalidAudioFileException) {
                         reportException(e)
                     }
                 }
             }
-//            LocalMediaScanner.destroyScanner(SCANNER_OWNER_DL)
 
             // pull from db again
             val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedSongs().first() }
@@ -423,15 +393,29 @@ class DownloadUtil @Inject constructor(
 
 
     init {
+        scope.launch {
+            context.dataStore.data.map { preferences ->
+                val path = preferences[DownloadPathKey] ?: ""
+                val extras = preferences[DownloadExtraPathKey] ?: ""
+                path to extras
+            }.distinctUntilChanged().collect { (path, extras) ->
+                Timber.d("Download path setting changed. Re-initializing download managers. Path: '$path'")
+
+                localMgr = DownloadDirectoryManagerOt(
+                    context,
+                    path.toUri(),
+                    uriListFromString(extras)
+                )
+                downloadMgr = DownloadManagerOt(localMgr)
+
+                cd()
+            }
+        }
+
         val result = mutableMapOf<String, Download>()
         val cursor = downloadManager.downloadIndex.getDownloads()
         while (cursor.moveToNext()) {
             result[cursor.download.request.id] = cursor.download
-        }
-
-        // custom download location
-        CoroutineScope(Dispatchers.IO).launch {
-            rescanDownloads()
         }
 
         downloads.value = result

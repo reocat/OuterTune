@@ -2,7 +2,6 @@ package com.dd3boh.outertune.playback.downloadManager
 
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.documentfile.provider.DocumentFile
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.utils.reportException
@@ -18,7 +17,11 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     var allDirs: List<DocumentFile> = mutableListOf()
 
     init {
-        doInit(context, dir, extraDirs)
+        if (dir.path.isNullOrEmpty()) {
+            Timber.tag(TAG).w("Download directory URI is not set. Download manager will not be initialized.")
+        } else {
+            doInit(context, dir, extraDirs)
+        }
     }
 
     fun doInit(context: Context, dir: Uri, extraDirs: List<Uri>) {
@@ -31,11 +34,11 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
                 throw IOException("Invalid directory")
             }
 
-            // TODO: .nomedia for downloads folder (permission denied)
-//            if (!mainDir!!.listFiles().any { it.name == ".nomedia" }) {
-//                documentFileFromUri(context, dir)?.createFile("audio/mka", ".nomedia")
-//            }
-
+            /* TODO: .nomedia for downloads folder (permission denied)
+            if (!mainDir!!.listFiles().any { it.name == ".nomedia" }) {
+               documentFileFromUri(context, dir)?.createFile("audio/mka", ".nomedia")
+            }
+            */
             val newAllDirs = mutableListOf<DocumentFile>()
             newAllDirs.add(mainDir!!)
             if (extraDirs.isNotEmpty()) {
@@ -44,13 +47,12 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
                 )
             }
             allDirs = newAllDirs.toList()
-            Timber.tag(TAG).i("Download manager initialized successfully. ${allDirs.size}")
+            Timber.tag(TAG).i("Download manager initialized successfully. Found ${allDirs.size} directories.")
         } catch (e: Exception) {
-            Timber.tag(TAG).e("Failed to initiate download manager: " + e.message)
+            Timber.tag(TAG).e(e, "Failed to initiate download manager")
             mainDir = null
             allDirs = mutableListOf()
             reportException(e)
-//            Toast.makeText(context, "Failed to initiate download manager: " + e.message, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -60,13 +62,12 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     }
 
     fun saveFile(mediaId: String, input: InputStream, displayName: String?): Uri? {
-        val resolver = context.contentResolver
-        val directory = DocumentFile.fromTreeUri(context, dir)
-
+        val directory = mainDir
         if (directory == null || !directory.isDirectory) {
             throw IOException("Invalid directory")
         }
 
+        val resolver = context.contentResolver
         val fileName = "$displayName [$mediaId].mka"
         val newFile = directory.createFile("audio/mka", fileName)
 
@@ -81,6 +82,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     }
 
     fun isExists(mediaId: String): DocumentFile? {
+        if (allDirs.isEmpty()) return null
         val result = ArrayList<DocumentFile>()
         for (dir in allDirs) {
             scanDfRecursive(dir, result, true) { it.substringAfterLast('[').substringBeforeLast(']') == mediaId }
@@ -89,11 +91,13 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     }
 
     fun getFilePathIfExists(mediaId: String): Uri? {
-        var existingFile: DocumentFile? = isExists(mediaId)
+        val existingFile: DocumentFile? = isExists(mediaId)
         return existingFile?.uri
     }
 
     fun getMissingFiles(mediaId: List<Song>): List<Song> {
+        if (allDirs.isEmpty()) return emptyList()
+
         val missingFiles = mediaId.toMutableSet()
         val result = getAvailableFiles()
         missingFiles.removeIf { f -> result.any { it.key == f.id } }
@@ -101,6 +105,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     }
 
     fun getAvailableFiles(): Map<String, Uri> {
+        if (allDirs.isEmpty()) return emptyMap()
         val availableFiles = HashMap<String, Uri>()
         val result = ArrayList<DocumentFile>()
         for (dir in allDirs) {
@@ -109,7 +114,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
 
         for (file in result) {
             val path = file.name ?: continue
-            availableFiles.put(path.substringAfterLast('[').substringBeforeLast(']'), file.uri)
+            availableFiles[path.substringAfterLast('[').substringBeforeLast(']')] = file.uri
         }
         return availableFiles
     }
