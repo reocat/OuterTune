@@ -440,7 +440,7 @@ fun Lyrics(
                                 }
                             )
                     ) {
-                        val isCurrentLine = index == displayedCurrentLineIndex
+                        val isCurrentLine = currentPos.toULong() in item.start..item.end
                         if (isCurrentLine && lyricsFancy && item.words != null && !context.isPowerSaver()) {
                             val style = LocalTextStyle.current.copy(
                                 fontSize = lyricsFontSize.sp,
@@ -491,7 +491,8 @@ fun Lyrics(
                                     LyricsPosition.CENTER -> TextAlign.Center
                                     LyricsPosition.RIGHT -> TextAlign.Right
                                 },
-                                fontWeight = if (isCurrentLine) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f)
                             )
                         }
                     }
@@ -875,7 +876,7 @@ fun ShareAsImageDialog(
 fun HorizontalReveal(
     progress: Float,
     modifier: Modifier = Modifier,
-    backgroundAlpha: Float = 0.3f,
+    backgroundAlpha: Float = 0.5f,
     rtl: Boolean = false,
     content: @Composable () -> Unit
 ) {
