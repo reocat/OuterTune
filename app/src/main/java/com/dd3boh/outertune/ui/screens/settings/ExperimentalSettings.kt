@@ -85,6 +85,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,31 +138,31 @@ fun ExperimentalSettings(
         Spacer(modifier = Modifier.height(12.dp))
 
 
-            SwitchPreference(
-                title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
-                description = stringResource(R.string.lyrics_karaoke_description),
-                icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
-                checked = lyricsFancy,
-                onCheckedChange = onLyricsFancyChange,
-                isFirst = true
-            )
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
+            description = stringResource(R.string.lyrics_karaoke_description),
+            icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
+            checked = lyricsFancy,
+            onCheckedChange = onLyricsFancyChange,
+            isFirst = true
+        )
 
-            ListPreference(
-                title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
-                icon = { Icon(Icons.Rounded.Speed, null) },
-                selectedValue = lyricUpdateSpeed,
-                onValueSelected = onLyricsUpdateSpeedChange,
-                values = Speed.entries,
-                valueText = {
-                    when (it) {
-                        Speed.SLOW -> stringResource(R.string.speed_slow)
-                        Speed.MEDIUM -> stringResource(R.string.speed_medium)
-                        Speed.FAST -> stringResource(R.string.speed_fast)
-                    }
-                },
-                isEnabled = lyricsFancy,
-                isLast = true
-            )
+        ListPreference(
+            title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
+            icon = { Icon(Icons.Rounded.Speed, null) },
+            selectedValue = lyricUpdateSpeed,
+            onValueSelected = onLyricsUpdateSpeedChange,
+            values = Speed.entries,
+            valueText = {
+                when (it) {
+                    Speed.SLOW -> stringResource(R.string.speed_slow)
+                    Speed.MEDIUM -> stringResource(R.string.speed_medium)
+                    Speed.FAST -> stringResource(R.string.speed_fast)
+                }
+            },
+            isEnabled = lyricsFancy,
+            isLast = true
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -170,13 +171,13 @@ fun ExperimentalSettings(
             title = stringResource(R.string.settings_debug)
         )
         // dev settings
-            SwitchPreference(
-                title = { Text(stringResource(R.string.dev_settings_title)) },
-                description = stringResource(R.string.dev_settings_description),
-                icon = { Icon(Icons.Rounded.DeveloperMode, null) },
-                checked = devSettings,
-                onCheckedChange = onDevSettingsChange
-            )
+        SwitchPreference(
+            title = { Text(stringResource(R.string.dev_settings_title)) },
+            description = stringResource(R.string.dev_settings_description),
+            icon = { Icon(Icons.Rounded.DeveloperMode, null) },
+            checked = devSettings,
+            onCheckedChange = onDevSettingsChange
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -196,11 +197,13 @@ fun ExperimentalSettings(
                         Timber.tag("Settings")
                             .d("Force Migrating local artists to YTM (MANUAL TRIGGERED)")
                         scanner.localToRemoteArtist(database)
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.scanner_ytm_link_success),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.scanner_ytm_link_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             )
@@ -233,12 +236,14 @@ fun ExperimentalSettings(
                     title = { Text("DEBUG: Nuke local lib") },
                     icon = { Icon(Icons.Rounded.ErrorOutline, null) },
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Nuking local files from database...",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         coroutineScope.launch(Dispatchers.IO) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Nuking local files from database...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeLocalData()}")
                         }
@@ -248,12 +253,14 @@ fun ExperimentalSettings(
                     title = { Text("DEBUG: Nuke local artists") },
                     icon = { Icon(Icons.Rounded.WarningAmber, null) },
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Nuking local artists from database...",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         coroutineScope.launch(Dispatchers.IO) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Nuking local artists from database...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeLocalArtists()}")
                         }
@@ -263,13 +270,14 @@ fun ExperimentalSettings(
                     title = { Text("DEBUG: Nuke dangling format entities") },
                     icon = { Icon(Icons.Rounded.WarningAmber, null) },
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Nuking dangling format entities from database...",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
                         coroutineScope.launch(Dispatchers.IO) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Nuking dangling format entities from database...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeDanglingFormatEntities()}")
                         }
@@ -279,12 +287,14 @@ fun ExperimentalSettings(
                     title = { Text("DEBUG: Nuke local db lyrics") },
                     icon = { Icon(Icons.Rounded.WarningAmber, null) },
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Nuking local lyrics from database...",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         coroutineScope.launch(Dispatchers.IO) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Nuking local lyrics from database...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeLocalLyrics()}")
                         }
@@ -294,13 +304,15 @@ fun ExperimentalSettings(
                     title = { Text("DEBUG: Nuke dangling db lyrics") },
                     icon = { Icon(Icons.Rounded.WarningAmber, null) },
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Nuking dangling lyrics from database...",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         coroutineScope.launch(Dispatchers.IO) {
-                            Timber.tag(SETTINGS_TAG)
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Nuking dangling lyrics from database...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            Timber.tag("Settings")
                                 .i("Nuke database status:  ${database.nukeDanglingLyrics()}")
                         }
                     }
@@ -309,12 +321,14 @@ fun ExperimentalSettings(
                     title = { Text("DEBUG: Nuke remote playlists") },
                     icon = { Icon(Icons.Rounded.WarningAmber, null) },
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Nuking remote playlists from database...",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         coroutineScope.launch(Dispatchers.IO) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Nuking remote playlists from database...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeRemotePlaylists()}")
                         }
@@ -332,7 +346,7 @@ fun ExperimentalSettings(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             if (hapticsTestEnabled) {
                 Spacer(modifier = Modifier.height(12.dp))
                 HapticsTestSection()

@@ -462,22 +462,24 @@ class MainActivity : ComponentActivity() {
                                         try {
                                             scanner.localToRemoteArtist(database)
                                         } catch (e: ScannerAbortException) {
-                                            Looper.prepare()
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    this@MainActivity,
+                                                    "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
                                         }
                                     }
                                 }
                             } catch (e: ScannerAbortException) {
-                                Looper.prepare()
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        this@MainActivity,
+                                        "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             } finally {
                                 destroyScanner(SCANNER_OWNER_LM)
                             }

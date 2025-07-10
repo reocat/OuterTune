@@ -31,13 +31,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.GraphicEq
-import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -60,7 +58,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat.requestPermissions
-import androidx.core.net.toUri
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -90,7 +87,6 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.getScanner
-
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerProgressCurrent
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerProgressTotal
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRequestCancel
@@ -228,7 +224,7 @@ fun ColumnScope.LocalScannerFrag() {
                                         withContext(Dispatchers.Main) {
                                             Toast.makeText(
                                                 context,
-                                                "${context.getString(R.string.scanner_ytm_link_success)}: ${e.message}",
+                                                "${context.getString(R.string.scanner_ytm_link_fail)}: ${e.message}",
                                                 Toast.LENGTH_LONG
                                             ).show()
                                         }
@@ -261,23 +257,29 @@ fun ColumnScope.LocalScannerFrag() {
                             if (lookupYtmArtists && scannerState <= 0) {
                                 coroutineScope.launch(Dispatchers.IO) {
                                     try {
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.scanner_ytm_link_start),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.scanner_ytm_link_start),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                         scanner.localToRemoteArtist(database)
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.scanner_ytm_link_success),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.scanner_ytm_link_success),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     } catch (e: ScannerAbortException) {
-                                        Toast.makeText(
-                                            context,
-                                            "${context.getString(R.string.scanner_ytm_link_fail)}: ${e.message}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                context,
+                                                "${context.getString(R.string.scanner_ytm_link_fail)}: ${e.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }
                             }
@@ -621,4 +623,3 @@ fun ColumnScope.LocalScannerExtraFrag() {
         isLast = true
     )
 }
-
