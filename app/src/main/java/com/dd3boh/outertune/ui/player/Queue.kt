@@ -237,9 +237,7 @@ fun BoxScope.QueueContent(
 
     // preferences
     var lockQueue by rememberPreference(LockQueueKey, defaultValue = false)
-
-    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
-
+    
     // player
     val currentWindowIndex by playerConnection.currentWindowIndex.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -290,8 +288,7 @@ fun BoxScope.QueueContent(
     val filteredSongs = remember(mutableSongs, query) {
         if (query.text.isEmpty()) mutableSongs
         else mutableSongs.filter { song ->
-            song.title.contains(query.text, ignoreCase = true) == true
-                    || song.artists.fastAny { it.name.contains(query.text, ignoreCase = true) == true } == true
+            song.title.contains(query.text, ignoreCase = true) || song.artists.fastAny { it.name.contains(query.text, ignoreCase = true) }
         }
     }
     val focusRequester = remember { FocusRequester() }
@@ -638,36 +635,18 @@ fun BoxScope.QueueContent(
                     state = reorderableState,
                     key = window.hashCode()
                 ) {
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        positionalThreshold = { totalDistance ->
-                            totalDistance
-                        },
-                        confirmValueChange = { dismissValue ->
-                            when (dismissValue) {
-                                SwipeToDismissBoxValue.StartToEnd -> {
-                                    if (qb.removeCurrentQueueSong(index)) {
-                                        playerConnection.player.removeMediaItem(index)
-                                        mutableSongs.removeAt(index)
-                                    }
-                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                                    return@rememberSwipeToDismissBoxState true
-                                }
+                    val dismissState = rememberSwipeToDismissBoxState()
 
-                                SwipeToDismissBoxValue.EndToStart -> {
-                                    if (qb.removeCurrentQueueSong(index)) {
-                                        playerConnection.player.removeMediaItem(index)
-                                        mutableSongs.removeAt(index)
-                                    }
-                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                                    return@rememberSwipeToDismissBoxState true
-                                }
-
-                                SwipeToDismissBoxValue.Settled -> {
-                                    return@rememberSwipeToDismissBoxState false
-                                }
+                    LaunchedEffect(dismissState.currentValue) {
+                        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+                            if (qb.removeCurrentQueueSong(index)) {
+                                playerConnection.player.removeMediaItem(index)
+                                mutableSongs.removeAt(index)
                             }
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            dismissState.reset()
                         }
-                    )
+                    }
 
                     val onCheckedChange: (Boolean) -> Unit = {
                         haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
