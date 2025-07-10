@@ -6,5 +6,5 @@ val NavController.canNavigateUp: Boolean
     get() = currentBackStackEntry?.destination?.parent?.route != null
 
 fun NavController.backToMain() {
-    while (canNavigateUp) { navigateUp() }
+    do { navigateUp() } while (canNavigateUp)
 }

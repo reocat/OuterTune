@@ -238,6 +238,7 @@ import com.dd3boh.outertune.ui.theme.extractThemeColor
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.Updater
 import com.dd3boh.outertune.ui.utils.appBarScrollBehavior
+import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.clearDtCache
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.ui.utils.resetHeightOffset
@@ -1367,6 +1368,7 @@ class MainActivity : ComponentActivity() {
                                                                 searchBarScrollBehavior.state.resetHeightOffset()
                                                             }
                                                         } else {
+                                                            navController.backToMain()
                                                             navController.navigate(screen.route) {
                                                                 popUpTo(navController.graph.startDestinationId) {
                                                                     saveState = true
@@ -1454,6 +1456,7 @@ class MainActivity : ComponentActivity() {
                                                         searchBarScrollBehavior.state.resetHeightOffset()
                                                     }
                                                 } else {
+                                                    navController.backToMain()
                                                     navController.navigate(screen.route) {
                                                         popUpTo(navController.graph.startDestinationId) {
                                                             saveState = true
