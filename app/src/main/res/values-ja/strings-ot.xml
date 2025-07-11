@@ -10,13 +10,13 @@
     <string name="auto_playlist">自動再生リスト</string>
     <string name="select">選択モード</string>
     <string name="like_all">すべてにいいね</string>
-    <string name="err_play_next_on_error">エラーが発生しました。次の曲を再生します。</string>
+    <string name="err_play_next_on_error">エラーが発生しましたため次の曲を再生</string>
     <string name="err_stop_on_error">エラーが発生しました。再生を停止しました</string>
     <string name="err_stop_on_too_many_errors">エラーが多すぎます。再生が停止しました</string>
     <string name="wait_to_reconnect">再接続を待っています</string>
     <string name="sort_by_date_modified">更新日</string>
     <string name="sort_by_date_released">リリース日</string>
-    <string name="sort_by_like_date">いいねした日付</string>
+    <string name="sort_by_like_date">いいねした日</string>
     <string name="sort_by_play_count">再生回数</string>
     <string name="create_sync_playlist">再生リストを同期</string>
     <string name="create_sync_playlist_description">注: YouTube Music との同期が可能になります。これは後で変更できません。同期した再生リストに端末内の曲は追加できません。</string>
