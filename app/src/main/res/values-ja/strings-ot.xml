@@ -216,4 +216,6 @@
     <string name="help_bug_report_action">バグ報告を送信 (Github)</string>
     <string name="help_support_forum">ヘルプとサポート (Github)</string>
     <string name="wiki">ウィキ</string>
+    <string name="help_contact_email_inquiries">その他のお問い合わせ（タップでメールをコピー）</string>
+    <string name="scanner_sensitivity_L0">YouTubeで検索が有効になっている場合はYouTubeから提供される最初の結果を取得し、そうでない場合はタイトルが一致するものを取得します</string>
 </resources>
