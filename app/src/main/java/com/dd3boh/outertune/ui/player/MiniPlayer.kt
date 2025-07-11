@@ -9,6 +9,9 @@
 
 package com.dd3boh.outertune.ui.player
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -50,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,6 +78,8 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.PureBlackKey
+import com.dd3boh.outertune.constants.SwipeSensitivityKey
+import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.MediaMetadata
@@ -81,6 +87,7 @@ import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberPreference
+import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -100,38 +107,94 @@ fun MiniPlayer(
 
     val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
     val currentView = LocalView.current
+    val coroutineScope = rememberCoroutineScope()
+    val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
+    val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
     val layoutDirection = LocalLayoutDirection.current
-    var offsetX by remember { mutableFloatStateOf(0f) }
+
+    val offsetXAnimatable = remember { Animatable(0f) }
+    var dragStartTime by remember { mutableStateOf(0L) }
+    var totalDragDistance by remember { mutableFloatStateOf(0f) }
+
+    val animationSpec = spring<Float>(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessLow
+    )
+
+    // secret formula (don't question it)
+    val autoSwipeThreshold = (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()  // 400px at 0.73 sensitivity
+    // val autoSwipeThreshold = (-550f*swipeSensitivity+600f).roundToInt().toFloat()  // 200px at 0.73 sensitivity
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(MiniPlayerHeight)
             .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant)
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onDragStart = {},
-                    onDragCancel = {
-                        offsetX = 0f
-                    },
-                    onHorizontalDrag = { _, dragAmount ->
-                        val adjustedDragAmount =
-                            if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
-                        offsetX += adjustedDragAmount
-                    },
-                    onDragEnd = {
-                        val threshold = 0.15f * currentView.width // 15% of screen width
-                        when {
-                            offsetX > threshold && canSkipPrevious -> {
-                                playerConnection.player.seekToPreviousMediaItem()
+            .let { baseModifier ->
+                if (swipeToSkip) {
+                    baseModifier.pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = {
+                                dragStartTime = System.currentTimeMillis()
+                                totalDragDistance = 0f
+                            },
+                            onDragCancel = {
+                                coroutineScope.launch {
+                                    offsetXAnimatable.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = animationSpec
+                                    )
+                                }
+                            },
+                            onHorizontalDrag = { _, dragAmount ->
+                                val adjustedDragAmount =
+                                    if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
+                                val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
+                                val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
+                                val allowLeft = adjustedDragAmount < 0 && canSkipNext
+                                val allowRight = adjustedDragAmount > 0 && canSkipPrevious
+                                if (allowLeft || allowRight) {
+                                    totalDragDistance += kotlin.math.abs(adjustedDragAmount)
+                                    coroutineScope.launch {
+                                        offsetXAnimatable.snapTo(offsetXAnimatable.value + adjustedDragAmount)
+                                    }
+                                }
+                            },
+                            onDragEnd = {
+                                val dragDuration = System.currentTimeMillis() - dragStartTime
+                                val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
+                                val currentOffset = offsetXAnimatable.value
+
+                                val minDistanceThreshold = 50f
+                                val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
+
+                                val shouldChangeSong = (
+                                        kotlin.math.abs(currentOffset) > minDistanceThreshold &&
+                                                velocity > velocityThreshold
+                                        ) || (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
+
+                                if (shouldChangeSong) {
+                                    val isRightSwipe = currentOffset > 0
+
+                                    if (isRightSwipe && canSkipPrevious) {
+                                        playerConnection.player.seekToPreviousMediaItem()
+                                    } else if (!isRightSwipe && canSkipNext) {
+                                        playerConnection.player.seekToNext()
+                                    }
+                                }
+
+                                coroutineScope.launch {
+                                    offsetXAnimatable.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = animationSpec
+                                    )
+                                }
                             }
-                            offsetX < -threshold && canSkipNext -> {
-                                playerConnection.player.seekToNext()
-                            }
-                        }
-                        offsetX = 0f
+                        )
                     }
-                )
+                } else {
+                    baseModifier
+                }
             }
     ) {
         LinearProgressIndicator(
@@ -151,7 +214,7 @@ fun MiniPlayer(
                         .add(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
                 )
                 .fillMaxSize()
-                .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
                 .padding(end = 6.dp),
         ) {
             Box(Modifier.weight(1f)) {
@@ -191,21 +254,19 @@ fun MiniPlayer(
                 )
             }
         }
-        // Visual cloud indicator
-        if (offsetX.absoluteValue > 50f) {
+        // Visual indicator
+        if (offsetXAnimatable.value.absoluteValue > 50f) {
             Box(
                 modifier = Modifier
-                    .align(if (offsetX > 0) Alignment.CenterStart else Alignment.CenterEnd)
+                    .align(if (offsetXAnimatable.value > 0) Alignment.CenterStart else Alignment.CenterEnd)
                     .padding(horizontal = 16.dp)
             ) {
                 Icon(
                     painter = painterResource(
-                        if (offsetX > 0) R.drawable.skip_previous else R.drawable.skip_next
-                    ),
+                        if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next                    ),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary.copy(
-                        alpha = (offsetX.absoluteValue / 200f).coerceIn(0f, 1f)
-                    ),
+                        alpha = (offsetXAnimatable.value.absoluteValue / autoSwipeThreshold).coerceIn(0f, 1f)                    ),
                     modifier = Modifier.size(24.dp)
                 )
             }
