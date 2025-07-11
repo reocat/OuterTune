@@ -215,5 +215,7 @@
     <string name="app_info_title">Информация за приложението</string>
     <string name="device_info_title">Информация за устройството</string>
     <string name="help_bug_report_action">Подаване на доклад за грешка (чрез Github)</string>
-    <string name="help_contact_email_inquiries">Други запитвания (Докоснете, за да копирате Имейла)</string>
+    <string name="help_contact_email_inquiries">Други запитвания (докоснете, за да копирате Имейла)</string>
+    <string name="help_support_forum">Помощ и поддръжка (чрез Github)</string>
+    <string name="wiki">Уики</string>
 </resources>
