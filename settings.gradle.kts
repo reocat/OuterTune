@@ -21,7 +21,7 @@ rootProject.name = "OuterTune"
 include(":app")
 include(":innertube")
 include(":kugou")
-include(":lrclib")
+include(":lyricsProviders")
 include(":kizzy")
 
 // Use a local copy of NewPipe Extractor by uncommenting the lines below.

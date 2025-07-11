@@ -4,37 +4,45 @@ import android.content.Context
 import org.akanework.gramophone.logic.utils.LrcUtils
 import org.akanework.gramophone.logic.utils.LrcUtils.loadAndParseLyricsFile
 import org.akanework.gramophone.logic.utils.SemanticLyrics
+import timber.log.Timber
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-
 
 object LocalLyricsProvider : LyricsProvider {
     override val name = "Local LRC"
     override fun isEnabled(context: Context) = true
 
     /**
-     * This function is "hot-wired" to adapted to the
-     * interface design. As a result, title is actually the file path.
-     * The lrc file is assumed to be in the same directory as the song.
-     * All the other fields serve no purpose.
-     *
-     * @param title file path of the song, NOT the song title
+     * This function is adapted to the interface design.
+     * The `title` parameter is assumed to be the file path to the song.
+     * The lrc file should be in the same directory.
      */
     override suspend fun getLyrics(
         id: String,
         title: String,
         artist: String,
         duration: Int,
-    ): Result<String> {
-        throw NotImplementedError()
+    ): Result<SemanticLyrics> = runCatching {
+        Timber.d("Searching for local lyrics using song file path: $title")
+        val parserOptions = LrcUtils.LrcParserOptions(trim = true, multiLine = true, errorText = "Failed to parse local lyrics")
+        val songFile = File(title)
+        loadAndParseLyricsFile(songFile, parserOptions)
+            ?: throw IllegalStateException("Local lyrics not found or failed to parse for: $title")
     }
 
+    /**
+     * This is the preferred method for getting local lyrics, called by LyricsHelper.
+     */
     fun getLyricsNew(
         path: String,
         parserOptions: LrcUtils.LrcParserOptions
     ): SemanticLyrics? {
-        return loadAndParseLyricsFile(File(path), parserOptions)
+        Timber.d("Looking for .lrc file next to: $path")
+        val result = loadAndParseLyricsFile(File(path), parserOptions)
+        if (result != null) {
+            Timber.d("Found a local .lrc file! OwO")
+        } else {
+            Timber.d("No local .lrc file found at that path. ;w;")
+        }
+        return result
     }
-
 }

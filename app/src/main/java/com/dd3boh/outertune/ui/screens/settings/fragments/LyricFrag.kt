@@ -15,6 +15,8 @@ import androidx.compose.material.icons.rounded.ContentCut
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,21 +24,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.EnableKugouKey
 import com.dd3boh.outertune.constants.EnableLrcLibKey
 import com.dd3boh.outertune.constants.LyricFontSizeKey
 import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
+import com.dd3boh.outertune.constants.LyricsPosition
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
+import com.dd3boh.outertune.constants.MultilineLrcKey
+import com.dd3boh.outertune.constants.MusixmatchLoggedInKey
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SliderDialog
-import com.dd3boh.outertune.constants.LyricsPosition
-import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -139,10 +144,11 @@ fun ColumnScope.LyricParserFrag() {
 }
 
 @Composable
-fun ColumnScope.LyricSourceFrag() {
+fun ColumnScope.LyricSourceFrag(navController: NavController) {
     val (enableKugou, onEnableKugouChange) = rememberPreference(key = EnableKugouKey, defaultValue = false)
     val (enableLrcLib, onEnableLrcLibChange) = rememberPreference(key = EnableLrcLibKey, defaultValue = true)
     val (preferLocalLyric, onPreferLocalLyric) = rememberPreference(LyricSourcePrefKey, defaultValue = true)
+    val (musixmatchLoggedIn, onMusixmatchLoggedInChange) = rememberPreference(MusixmatchLoggedInKey, false)
 
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_lrclib)) },
@@ -156,6 +162,21 @@ fun ColumnScope.LyricSourceFrag() {
         icon = { Icon(Icons.Rounded.Lyrics, null) },
         checked = enableKugou,
         onCheckedChange = onEnableKugouChange,
+        isMiddle = true
+    )
+    PreferenceEntry(
+        title = { Text("Musixmatch") },
+        description = if (musixmatchLoggedIn) stringResource(R.string.logged_in) else stringResource(R.string.logged_out),
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.musixmatch),
+                contentDescription = null,
+                tint = if (musixmatchLoggedIn) MaterialTheme.colorScheme.primary else LocalContentColor.current
+            )
+        },
+        onClick = {
+            navController.navigate("settings/musixmatch_login")
+        },
         isMiddle = true
     )
     // prioritize local lyric files over all cloud providers

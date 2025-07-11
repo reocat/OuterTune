@@ -67,7 +67,6 @@ import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.ui.component.TextFieldDialog
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricFormatFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricParserFrag
-import com.dd3boh.outertune.ui.screens.settings.fragments.LyricSourceFrag
 import com.dd3boh.outertune.viewmodels.LyricsMenuViewModel
 
 
@@ -208,7 +207,8 @@ fun LyricsMenu(
         ListDialog(
             onDismiss = { showSearchResultDialog = false }
         ) {
-            itemsIndexed(results) { index, result ->
+            // FIX: No need for an extra LazyColumn here. ListDialog's scope is a LazyListScope.
+            itemsIndexed(results, key = { _, result -> result.providerName }) { index, result ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -225,7 +225,8 @@ fun LyricsMenu(
                             }
                         }
                         .padding(12.dp)
-                        .animateContentSize()
+                        .animateContentSize(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
                         modifier = Modifier.weight(1f)
@@ -247,10 +248,11 @@ fun LyricsMenu(
                                 color = MaterialTheme.colorScheme.secondary,
                                 maxLines = 1
                             )
-                            if (result.lyrics.startsWith("[")) {
+                            if (result.isSynced) {
                                 Icon(
                                     imageVector = Icons.Rounded.Sync,
-                                    contentDescription = null,
+                                    // FIX: stringResource now finds the new string
+                                    contentDescription = stringResource(R.string.synced_lyrics),
                                     tint = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier
                                         .padding(start = 4.dp)
@@ -277,7 +279,9 @@ fun LyricsMenu(
                 item {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp)
                     ) {
                         CircularProgressIndicator()
                     }
@@ -295,6 +299,7 @@ fun LyricsMenu(
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(vertical = 16.dp)
                     )
                 }
             }
@@ -366,11 +371,6 @@ fun LyricsMenu(
 
                     SettingsClickToReveal(stringResource(R.string.more_settings)) {
                         PreferenceGroupTitle(
-                            title = stringResource(R.string.grp_lyrics_source)
-                        )
-                        LyricSourceFrag()
-
-                        PreferenceGroupTitle(
                             title = stringResource(R.string.grp_lyrics_parser)
                         )
                         LyricParserFrag()
@@ -417,7 +417,6 @@ fun LyricsMenu(
             showSearchDialog = true
         }
         if (lyricsProvider() != null) {
-            // TODO: hide this for when lrc exists and lyrics is not in the database
             GridMenuItem(
                 icon = Icons.Rounded.Delete,
                 title = R.string.delete,

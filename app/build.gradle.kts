@@ -191,7 +191,7 @@ dependencies {
     implementation(projects.innertube)
     implementation(projects.kizzy)
     implementation(projects.kugou)
-    implementation(projects.lrclib)
+    implementation(projects.lyricsProviders)
 
     // Networking
     implementation(libs.ktor.client.content.negotiation)

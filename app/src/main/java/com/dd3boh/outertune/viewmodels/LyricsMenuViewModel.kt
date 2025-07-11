@@ -12,9 +12,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,25 +25,30 @@ class LyricsMenuViewModel @Inject constructor(
     val database: MusicDatabase,
 ) : ViewModel() {
     private var job: Job? = null
-    val results = MutableStateFlow(emptyList<LyricsResult>())
-    val isLoading = MutableStateFlow(false)
+
+    private val _results = MutableStateFlow<List<LyricsResult>>(emptyList())
+    val results = _results.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
 
     fun search(mediaId: String, title: String, artist: String, duration: Int) {
-        isLoading.value = true
-        results.value = emptyList()
+        _isLoading.value = true
+        _results.value = emptyList()
         job?.cancel()
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
                 withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
                     lyricsHelper.getAllLyrics(mediaId, title, artist, duration) { result ->
-                        results.update {
-                            it + result
+                        _results.update { currentResults ->
+                            currentResults + result
                         }
                     }
                 }
             } catch (e: Exception) {
+                Timber.e(e, "Error fetching lyrics")
             } finally {
-                isLoading.value = false
+                _isLoading.value = false
             }
         }
     }
@@ -53,7 +60,7 @@ class LyricsMenuViewModel @Inject constructor(
 
     fun refetchLyrics(mediaMetadata: MediaMetadata) {
         CoroutineScope(Dispatchers.IO).launch {
-            database.deleteLyricById(mediaMetadata.id)
+            database.query { deleteLyricById(mediaMetadata.id) }
             withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
                 lyricsHelper.getLyrics(mediaMetadata)
             }

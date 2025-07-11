@@ -105,6 +105,12 @@ val LyricFontSizeKey = intPreferencesKey("lyricFontSize")
 val LyricKaraokeEnable = booleanPreferencesKey("lyricKaraokeEnable")
 val LyricUpdateSpeed = stringPreferencesKey("lyricUpdateSpeed")
 
+val MusixmatchUserTokenKey = stringPreferencesKey("musixmatch_user_token")
+
+val MusixmatchCookieKey = stringPreferencesKey("musixmatch_cookie")
+
+val MusixmatchLoggedInKey = booleanPreferencesKey("musixmatch_logged_in")
+
 
 /**
  * Storage
