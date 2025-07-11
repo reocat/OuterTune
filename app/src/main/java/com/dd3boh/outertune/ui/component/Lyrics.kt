@@ -234,8 +234,12 @@ fun Lyrics(
                     lyricRefreshRate = Speed.SLOW.toLrcRefreshMillis()
                 }
             } else {
-                model.convertForLegacy()?.first()?.content?.let {
-                    lines.add(LyricLine(it, 0L.toULong(), 0L.toULong(), null, null, false))
+                model.convertForLegacy()?.first()?.content?.let { content ->
+                    content.split('\n').forEach { line ->
+                        if (line.isNotBlank()) {
+                            lines.add(LyricLine(line, 0L.toULong(), 0L.toULong(), null, null, false))
+                        }
+                    }
                 }
                 lyricRefreshRate = Speed.SLOW.toLrcRefreshMillis()
             }
