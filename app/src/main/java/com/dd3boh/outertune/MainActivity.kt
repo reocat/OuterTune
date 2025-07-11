@@ -193,6 +193,7 @@ import com.dd3boh.outertune.ui.screens.HistoryScreen
 import com.dd3boh.outertune.ui.screens.HomeScreen
 import com.dd3boh.outertune.ui.screens.LoginScreen
 import com.dd3boh.outertune.ui.screens.MoodAndGenresScreen
+import com.dd3boh.outertune.ui.screens.MusixmatchLoginScreen
 import com.dd3boh.outertune.ui.screens.PlayerScreen
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
@@ -1138,6 +1139,9 @@ class MainActivity : ComponentActivity() {
                                             scrollBehavior = scrollBehavior,
                                             isMiniPlayerVisible = isMiniPlayerVisible
                                         )
+                                    }
+                                    composable("settings/musixmatch_login") {
+                                        MusixmatchLoginScreen(navController)
                                     }
                                 }
                             }
