@@ -55,7 +55,7 @@
     <string name="grp_interface">Layout und Verhalten</string>
     <string name="player_background_style">Player Hintergrundstil</string>
     <string name="sort_by_date_released">Erscheinungsdatum</string>
-    <string name="sort_by_like_date">Zuletzt mir gefallen</string>
+    <string name="sort_by_like_date">“Gefällt mir”-Datum</string>
     <string name="sort_by_play_count">Wiedergabehäufigkeit</string>
     <string name="play_count">Wiedergabehäufigkeit</string>
     <string name="grp_layout">Layout</string>
@@ -79,4 +79,9 @@
     <string name="checking_for_update">Sucht nach Updates</string>
     <string name="no_updates_available">Keine Updates verfügbar</string>
     <string name="library_empty">Hier erscheinen die Inhalte der Bibliothek</string>
+    <string name="grp_extra_scanner_settings">Zusätzliche Scannereinstellungen</string>
+    <string name="grp_manual_scanner">Manueller Scanner</string>
+    <string name="app_info_title">Appinformationen</string>
+    <string name="device_info_title">Geräteinformationen</string>
+    <string name="help_bug_report_action">Einen Fehler melden (über Github)</string>
 </resources>
