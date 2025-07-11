@@ -6,11 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -71,13 +75,14 @@ import com.dd3boh.outertune.constants.PlaylistViewTypeKey
 import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.constants.SmallGridThumbnailHeight
 import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.ui.component.ActionDropdown
+import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsRow
-import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
+import com.dd3boh.outertune.ui.component.DropdownItem
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
-import com.dd3boh.outertune.ui.component.IconTextButton
 import com.dd3boh.outertune.ui.component.LibraryPlaylistGridItem
 import com.dd3boh.outertune.ui.component.LibraryPlaylistListItem
 import com.dd3boh.outertune.ui.component.LocalMenuState
@@ -188,10 +193,11 @@ fun LibraryPlaylistsScreen(
         }
     }
 
+    // TODO: full migration to flow row?
     val headerContent = @Composable {
-        Row(
+        FlowRow(
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            itemVerticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -210,20 +216,25 @@ fun LibraryPlaylistsScreen(
                 }
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp)
+            Row (
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconTextButton(R.string.import_playlist, Icons.AutoMirrored.Rounded.Input) {
-                    showImportM3uDialog = true
+                playlists?.let { playlists ->
+                    Text(
+                        text = pluralStringResource(R.plurals.n_playlist, playlists.size, playlists.size),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
-            }
-
-            playlists?.let { playlists ->
-                Text(
-                    text = pluralStringResource(R.plurals.n_playlist, playlists.size, playlists.size),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
+                Spacer(Modifier.width(4.dp))
+                ActionDropdown(
+                    actions = listOf(
+                        DropdownItem(
+                            title = stringResource(R.string.import_playlist),
+                            leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
+                            action = { showImportM3uDialog = true }
+                        )
+                    ),
                 )
             }
         }
