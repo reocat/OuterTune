@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.Packaging
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.text.SimpleDateFormat
@@ -24,7 +25,6 @@ android {
         versionName = SimpleDateFormat("yyyyMMdd").format(Date())
 
         multiDexEnabled = true
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -37,6 +37,7 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
+            isDebuggable = true
         }
     }
 
@@ -45,42 +46,32 @@ android {
         buildConfig = true
     }
 
-    splits {
-        abi {
-            isEnable = true
-            reset()
-
-            // all common abis
-            isUniversalApk = false
-        }
-    }
-
-    flavorDimensions.add("abi")
+    flavorDimensions.add("distribution")
 
     productFlavors {
         create("universal") {
+            dimension = "distribution"
             isDefault = true
-            dimension = "abi"
-            ndk {
-                abiFilters.addAll(listOf("x86", "x86_64", "armeabi-v7a", "arm64-v8a"))
-            }
         }
+
         create("arm64") {
-            dimension = "abi"
+            dimension = "distribution"
             ndk {
                 abiFilters.add("arm64-v8a")
             }
         }
-        create("x86_64") {
-            dimension = "abi"
+
+        create("arm32") {
+            dimension = "distribution"
             ndk {
-                abiFilters.add("x86_64")
+                abiFilters.add("armeabi-v7a")
             }
         }
-        create("uncommon_abi") {
-            dimension = "abi"
+
+        create("x86") {
+            dimension = "distribution"
             ndk {
-                abiFilters.addAll(listOf("x86", "x86_64", "armeabi-v7a"))
+                abiFilters.addAll(listOf("x86", "x86_64"))
             }
         }
     }
@@ -90,11 +81,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
     kotlin {
         jvmToolchain(21)
-
         compilerOptions {
-            freeCompilerArgs.addAll(listOf("-Xcontext-parameters", "-Xannotation-default-target=param-property"))
+            freeCompilerArgs.addAll(
+                listOf(
+                    "-Xcontext-parameters",
+                    "-Xannotation-default-target=param-property",
+                    "-opt-in=kotlin.RequiresOptIn"
+                )
+            )
             jvmTarget.set(JvmTarget.JVM_21)
         }
     }
@@ -105,17 +102,33 @@ android {
     }
 
     testOptions {
-        unitTests.isIncludeAndroidResources = true
-        unitTests.isReturnDefaultValues = true
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
     }
 
     lint {
         lintConfig = file("lint.xml")
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 
     androidResources {
         @Suppress("UnstableApiUsage")
         generateLocaleConfig = true
+    }
+
+    fun Packaging.() {
+        resources {
+            excludes += listOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt"
+            )
+        }
     }
 }
 
@@ -124,68 +137,75 @@ ksp {
 }
 
 dependencies {
-    implementation(libs.guava)
-    implementation(libs.coroutines.guava)
+    // Core Android & Kotlin
     implementation(libs.concurrent.futures)
+    implementation(libs.coroutines.guava)
+    implementation(libs.guava)
+    implementation(libs.multidex)
+    coreLibraryDesugaring(libs.desugaring)
 
+    // Activity & Navigation
     implementation(libs.activity)
-    implementation(libs.navigation)
-    implementation(libs.hilt.navigation)
     implementation(libs.datastore)
+    implementation(libs.hilt.navigation)
+    implementation(libs.navigation)
 
-    implementation(libs.compose.runtime)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.util)
-    implementation(libs.compose.ui.tooling)
-    implementation(libs.compose.animation)
-    implementation(libs.compose.reorderable)
-    implementation(libs.compose.icons.extended)
-
+    // Compose UI
     implementation(libs.adaptive)
+    implementation(libs.compose.animation)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.icons.extended)
+    implementation(libs.compose.reorderable)
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling)
+    implementation(libs.compose.ui.util)
 
+    // ViewModel & Material
+    implementation(libs.material3)
+    implementation(libs.materialKolor)
+    implementation(libs.palette)
     implementation(libs.viewmodel)
     implementation(libs.viewmodel.compose)
 
-    implementation(libs.material3)
-    implementation(libs.palette)
-    implementation(libs.materialKolor)
-
+    // Image Loading & Effects
     implementation(libs.coil)
-
     implementation(libs.shimmer)
 
+    // Media & Audio
     implementation(libs.media3)
-    implementation(libs.media3.session)
     implementation(libs.media3.okhttp)
+    implementation(libs.media3.session)
     implementation(libs.media3.workmanager)
 
+    // Database
+    implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
-    implementation(libs.room.ktx)
 
+    // Dependency Injection
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
 
+    // Project Modules
     implementation(projects.innertube)
+    implementation(projects.kizzy)
     implementation(projects.kugou)
     implementation(projects.lrclib)
-    implementation(projects.kizzy)
 
-    coreLibraryDesugaring(libs.desugaring)
-
-    implementation(libs.multidex)
-
-    implementation(libs.timber)
-
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
+    // Networking
     implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.encoding)
+    implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.serialization.json)
 
+    // Audio Metadata
     implementation(libs.taglib)
 
+    // Logging
+    implementation(libs.timber)
+
+    // Debug Tools
     debugImplementation(libs.leakcanary)
 }

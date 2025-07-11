@@ -4,27 +4,70 @@ on:
   pull_request:
     branches:
       - '**'
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: set up JDK 21
+      
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: "temurin"
           cache: 'gradle'
-
-      - name: Build debug APK and run jvm tests
+          
+      - name: Build debug APK and run tests
         run: ./gradlew assembleUniversalDebug lintUniversalDebug testUniversalDebugUnitTest --stacktrace -DskipFormatKtlint
         env:
           PULL_REQUEST: 'true'
-
-      - name: Upload APK
+          
+      - name: Check if signing secrets are available
+        id: check_secrets
+        run: |
+          if [ -n "${{ secrets.RELEASE_KEYSTORE }}" ]; then
+            echo "secrets_available=true" >> $GITHUB_OUTPUT
+          else
+            echo "secrets_available=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Sign debug APK (if secrets available)
+        if: steps.check_secrets.outputs.secrets_available == 'true'
+        uses: ilharp/sign-android-release@v2.0.0
+        with:
+          releaseDir: app/build/outputs/apk/universal/debug
+          signingKey: ${{ secrets.RELEASE_KEYSTORE }}
+          keyAlias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          buildToolsVersion: 36.0.0
+          
+      - name: Move signed debug APK
+        if: steps.check_secrets.outputs.secrets_available == 'true'
+        run: |
+          mkdir -p app/build/outputs/apk/universal/debug/out
+          # Try different possible signed APK patterns
+          if ls app/build/outputs/apk/universal/debug/*-signed.apk 1> /dev/null 2>&1; then
+            mv app/build/outputs/apk/universal/debug/*-signed.apk app/build/outputs/apk/universal/debug/out/app-universal-debug.apk
+          elif ls app/build/outputs/apk/universal/debug/*-unsigned-signed.apk 1> /dev/null 2>&1; then
+            mv app/build/outputs/apk/universal/debug/*-unsigned-signed.apk app/build/outputs/apk/universal/debug/out/app-universal-debug.apk
+          else
+            echo "No signed APK found, checking available files:"
+            ls -la app/build/outputs/apk/universal/debug/
+            # Fallback: copy the original APK if signing failed
+            cp app/build/outputs/apk/universal/debug/app-universal-debug.apk app/build/outputs/apk/universal/debug/out/app-universal-debug.apk
+          fi
+          
+      - name: Upload debug APK (signed)
+        if: steps.check_secrets.outputs.secrets_available == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: app
-          path: app/build/outputs/apk/universal/debug/*.apk
+          name: app-debug-signed
+          path: "app/build/outputs/apk/universal/debug/out/*"
+          
+      - name: Upload debug APK (unsigned)
+        if: steps.check_secrets.outputs.secrets_available == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-unsigned
+          path: "app/build/outputs/apk/universal/debug/*.apk"

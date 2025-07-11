@@ -7,24 +7,61 @@ on:
       - '**'
     paths-ignore:
       - 'README.md'
-      - 'fastlane/**'
-      - 'assets/**'
-      - '.github/**/*.md'
+      - 'fastlane/'
+      - 'assets/'
+      - '.github//*.md'
       - '.github/FUNDING.yml'
       - '.github/ISSUE_TEMPLATE/**'
 
 permissions:
   contents: write
   discussions: write
+  actions: write 
 
 jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup old caches
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const caches = await github.rest.actions.getActionsCacheList({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              });
+
+              const cachesToDelete = caches.data.actions_caches
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(5);
+
+              for (const cache of cachesToDelete) {
+                try {
+                  await github.rest.actions.deleteActionsCacheById({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    cache_id: cache.id,
+                  });
+                  console.log(`Deleted cache: ${cache.key}`);
+                } catch (error) {
+                  console.log(`Failed to delete cache ${cache.key}: ${error.message}`);
+                }
+              }
+            } catch (error) {
+              console.log(`Error in cache cleanup: ${error.message}`);
+            }
+
   build:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    needs: cleanup
 
     strategy:
       matrix:
-        abi: [ "universal", "arm64", "x86_64", "uncommon_abi" ]
+        abi: [ "universal", "arm64", "arm32", "x86" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +85,13 @@ jobs:
         env:
           PULL_REQUEST: 'false'
 
+      - name: List generated APKs
+        run: |
+          echo "Generated APKs:"
+          find app/build/outputs/apk -name "*.apk" -type f | sort
+          echo "Directory structure:"
+          ls -la app/build/outputs/apk/${{ matrix.abi }}/release/
+
       - name: Sign APKs
         uses: ilharp/sign-android-release@v2.0.0
         with:
@@ -56,12 +100,26 @@ jobs:
           keyAlias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          buildToolsVersion: 35.0.0
+          buildToolsVersion: 36.0.0
 
-      - name: Move signed APK
+      - name: List signed APKs
+        run: |
+          echo "Signed APKs:"
+          find app/build/outputs/apk/${{ matrix.abi }}/release -name "*-signed.apk" -type f | sort
+
+      - name: Organize signed APKs
         run: |
           mkdir -p app/build/outputs/apk/${{ matrix.abi }}/release/out
-          mv app/build/outputs/apk/${{ matrix.abi }}/release/*-unsigned-signed.apk app/build/outputs/apk/${{ matrix.abi }}/release/out/app-${{ matrix.abi }}-release.apk
+          signed_apk=$(find app/build/outputs/apk/${{ matrix.abi }}/release -name "*-signed.apk" | head -1)
+          if [ -f "$signed_apk" ]; then
+            cp "$signed_apk" "app/build/outputs/apk/${{ matrix.abi }}/release/out/app-${{ matrix.abi }}-release.apk"
+            echo "Moved signed APK: $signed_apk"
+          else
+            echo "No signed APK found!"
+            exit 1
+          fi
+          echo "Final APKs in out directory:"
+          ls -la app/build/outputs/apk/${{ matrix.abi }}/release/out/
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
