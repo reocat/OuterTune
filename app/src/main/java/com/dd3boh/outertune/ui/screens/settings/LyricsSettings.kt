@@ -55,7 +55,7 @@ fun LyricsSettings(
             title = stringResource(R.string.grp_lyrics_source)
         )
 
-        LyricSourceFrag()
+        LyricSourceFrag(navController)
 
         Spacer(modifier = Modifier.height(12.dp))
 
