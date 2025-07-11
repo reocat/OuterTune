@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Reorder
 import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material.icons.rounded.Tab
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -70,6 +73,7 @@ import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
+import com.dd3boh.outertune.constants.SwipeSensitivityKey
 import com.dd3boh.outertune.constants.SwipeToQueueKey
 import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
@@ -81,6 +85,7 @@ import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.SliderDialog
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
@@ -91,6 +96,7 @@ import com.dd3boh.outertune.ui.component.SquigglySlider
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun GridCellsSizeFrag() {
@@ -424,6 +430,10 @@ fun ColumnScope.TabExtrasFrag() {
 fun ColumnScope.SwipeGesturesFrag() {
     val (swipeToSkip, onSwipeToSkipChange) = rememberPreference(SwipeToSkip, defaultValue = true)
     val (swipe2Queue, onSwipe2QueueChange) = rememberPreference(SwipeToQueueKey, defaultValue = true)
+    val (swipeSensitivity, onSwipeSensitivityChange) = rememberPreference(
+        SwipeSensitivityKey,
+        defaultValue = 0.73f
+    )
 
     SwitchPreference(
         title = { Text(stringResource(R.string.swipe2Queue)) },
@@ -441,6 +451,35 @@ fun ColumnScope.SwipeGesturesFrag() {
         onCheckedChange = onSwipeToSkipChange,
         isLast = true
     )
+    AnimatedVisibility(swipeToSkip) {
+        var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
+
+        if (showSensitivityDialog) {
+            SliderDialog(
+                title = stringResource(R.string.swipe_sensitivity),
+                initialValue = (swipeSensitivity * 100).roundToInt(),
+                defaultValue = 73,
+                valueRange = 0f..100f,
+                valueSuffix = "%",
+                onDismiss = { showSensitivityDialog = false },
+                onConfirm = { newValue ->
+                    onSwipeSensitivityChange(newValue / 100f)
+                    showSensitivityDialog = false
+                },
+                onReset = {
+                    onSwipeSensitivityChange(0.73f)
+                }
+            )
+        }
+        
+        Spacer(Modifier.height(12.dp))
+        PreferenceEntry(
+            title = { Text(stringResource(R.string.swipe_sensitivity)) },
+            description = "${(swipeSensitivity * 100).roundToInt()}%",
+            icon = { Icon(Icons.Rounded.Tune, null) },
+            onClick = { showSensitivityDialog = true }
+        )
+    }
 }
 
 @Composable
