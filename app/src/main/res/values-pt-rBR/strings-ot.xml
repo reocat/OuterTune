@@ -214,4 +214,10 @@
     <string name="dl_calculate_size">Toque para calcular o tamanho dos downloads</string>
     <string name="dl_size_used_main">Externo: %s usados</string>
     <string name="scanner_sensitivity_L0">Usar o primeiro resultado fornecido pelo YouTube quando a pesquisa no YouTube está ativada, caso contrário combinar título</string>
+    <string name="app_info_title">Informações do aplicativo</string>
+    <string name="device_info_title">Informações do dispositivo</string>
+    <string name="help_bug_report_action">Enviar um relatório de erro (pelo GitHub)</string>
+    <string name="help_contact_email_inquiries">Outras consultas (toque para copiar o e-mail)</string>
+    <string name="help_support_forum">Ajuda e suporte (pelo GitHub)</string>
+    <string name="wiki">Wiki</string>
 </resources>
