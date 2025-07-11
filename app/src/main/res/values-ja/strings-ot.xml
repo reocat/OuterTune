@@ -10,7 +10,7 @@
     <string name="auto_playlist">自動再生リスト</string>
     <string name="select">選択モード</string>
     <string name="like_all">すべてにいいね</string>
-    <string name="err_play_next_on_error">エラーが発生しました。次の曲を再生</string>
+    <string name="err_play_next_on_error">エラーが発生したため次の曲を再生</string>
     <string name="err_stop_on_error">エラーが発生しました。再生を停止しました</string>
     <string name="err_stop_on_too_many_errors">エラーが多すぎます。再生が停止しました</string>
     <string name="wait_to_reconnect">再接続を待っています</string>
@@ -135,7 +135,7 @@
     <string name="scanner_progress_complete">スキャンが終わりました</string>
     <string name="action_cancel">キャンセル</string>
     <string name="queues_title">キュー</string>
-    <string name="queues_empty">キューはありません</string>
+    <string name="queues_empty">キューがありません</string>
     <string name="pause_remote_listen_history">YouTube Music に視聴履歴を保存する</string>
     <string name="filter_arrangement">フィルターの配置</string>
     <string name="swipe_to_skip_title">曲を変えるには横にスワイプしてください</string>
