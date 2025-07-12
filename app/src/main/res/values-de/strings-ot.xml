@@ -108,4 +108,13 @@
     <string name="lyrics_multiline_title">Mehrzeilige Liedertexte lesen</string>
     <string name="lyrics_multiline_description">Behandle alle Zeilen zwischen Synchronisationspunkten als einen Liedertext</string>
     <string name="lyrics_prefer_local">Bevorzuge lokale Liedertextdateien</string>
+    <string name="local_player_settings_title">Lokale Medien</string>
+    <string name="flat_subfolders_description">Deaktivieren um die Ordnerstruktur wie auf dem Speicher beizubehalten</string>
+    <string name="disable_lm_confirm">Bist du sicher, dass die lokalen Medienfunktionen deaktiviert werden sollen?</string>
+    <string name="auto_scanner_title">Automatisch scannen</string>
+    <string name="flat_subfolders_title">Ordnerstruktur vereinfachen</string>
+    <string name="scan_paths_incl">Pfade scannen</string>
+    <string name="scan_paths_excl">Ausgeschlossene Scanpfade</string>
+    <string name="scanner_local_title">Lokaler Scanner</string>
+    <string name="scanner_manual_btn">Manuellen Scan starten</string>
 </resources>
