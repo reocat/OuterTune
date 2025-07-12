@@ -333,7 +333,7 @@ class DownloadUtil @Inject constructor(
      */
     fun rescanDownloads() {
         isProcessingDownloads.value = true
-        val dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedOrQueuedSongs().first() }
+        var dbDownloads = runBlocking(Dispatchers.IO) { database.downloadedOrQueuedSongs().first() }
         val result = mutableMapOf<String, LocalDateTime>()
 
         // remove missing files
@@ -350,6 +350,25 @@ class DownloadUtil @Inject constructor(
         isProcessingDownloads.value = false
 
         customDownloads.value = result
+
+        // Re scan internal downloads
+        dbDownloads = runBlocking(Dispatchers.IO) { database.downloadRelinkableSongs().first() }
+        val cursor = downloadManager.downloadIndex.getDownloads()
+        val candidates = ArrayList<Download>()
+        while (cursor.moveToNext()) {
+            if (dbDownloads.any { it.id == cursor.download.request.id && it.song.dateDownload == null }) {
+                candidates.add(cursor.download)
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.transaction {
+                for (d in candidates) {
+                    val updateTime = Instant.ofEpochMilli(d.updateTimeMs).atZone(ZoneOffset.UTC).toLocalDateTime()
+                    updateDownloadStatus(d.request.id, updateTime)
+                }
+            }
+        }
     }
 
     /**
