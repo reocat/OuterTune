@@ -14,13 +14,15 @@ import com.dd3boh.outertune.db.entities.SongArtistMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SpotifyAuthResponse
 import com.dd3boh.outertune.models.SpotifyUserProfile
-import com.dd3boh.outertune.models.spotify.tracks.TrackItem
-import com.dd3boh.outertune.models.spotify.tracks.SpotifyResultPaginatedResponse
 import com.dd3boh.outertune.models.spotify.playlists.SpotifyPlaylistPaginatedResponse
+import com.dd3boh.outertune.models.spotify.tracks.SpotifyResultPaginatedResponse
+import com.dd3boh.outertune.models.spotify.tracks.TrackItem
 import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.ImportFromSpotifyScreenState
 import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.ImportProgressEvent
 import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.Playlist
+import com.dd3boh.outertune.utils.RandomStringUtil
 import com.zionhuang.innertube.YouTube
+import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.HttpClient
@@ -68,6 +70,9 @@ class ImportFromSpotifyViewModel @Inject constructor(
     val isLikedSongsSelectedForImport = mutableStateOf(false)
     val isImportingCompleted = mutableStateOf(false)
     val isImportingInProgress = mutableStateOf(false)
+
+    private val logTag = "SpotifyImport"
+
     fun spotifyLoginAndFetchPlaylists(
         clientId: String, clientSecret: String, authorizationCode: String, context: Context
     ) {
@@ -97,7 +102,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                                     isObtainingAccessTokenSuccessful = true
                                 )
 
-                            logTheString(importFromSpotifyScreenState.value.accessToken)
+                            logTheString("Successfully obtained Spotify access token.")
 
                             getUserProfileFromSpotify(
                                 importFromSpotifyScreenState.value.accessToken, context
@@ -189,7 +194,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
                         name = it.playlistName, id = it.playlistId
                     )
                 })
-                logTheString(url)
+                logTheString("Fetched playlist page: $url")
                 url = response.nextUrl
             }
         }
@@ -259,7 +264,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
     }
 
     fun logTheString(string: String) {
-        Timber.tag("OuterTune Log").d(string)
+        Timber.tag(logTag).d(string)
     }
 
     private val generatedPlaylistId = PlaylistEntity.generatePlaylistId()
@@ -311,16 +316,17 @@ class ImportFromSpotifyViewModel @Inject constructor(
         isImportingInProgress.value = true
         viewModelScope.launch(Dispatchers.IO) {
             supervisorScope {
-                logTheString("Starting the import process")
+                val importSessionId = RandomStringUtil.random(8, true, true)
+                logTheString("Starting import process with session ID: $importSessionId")
                 val likedSongsJob = launch {
                     saveInDefaultLikedSongs?.let {
-                        importSpotifyLikedSongs(it, context)
+                        importSpotifyLikedSongs(it, context, importSessionId)
                     }
                 }
 
                 val playlistsJob = launch {
                     importPlaylists(
-                        selectedPlaylists, importFromSpotifyScreenState.value.accessToken
+                        selectedPlaylists, importFromSpotifyScreenState.value.accessToken, importSessionId
                     )
                 }
                 likedSongsJob.join()
@@ -333,7 +339,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
     }
 
     private suspend fun importPlaylists(
-        selectedPlaylists: List<Playlist>, authToken: String
+        selectedPlaylists: List<Playlist>, authToken: String, importSessionId: String
     ) = supervisorScope {
         selectedPlaylists.forEachIndexed { playlistIndex, playlist ->
             progressedTracksInAPlaylistCount = 0
@@ -349,64 +355,16 @@ class ImportFromSpotifyViewModel @Inject constructor(
                 val trackJobs = mutableListOf<Job>()
                 trackItems.forEach { trackItem ->
                     trackJobs.add(launch {
-                        val youtubeSearchResult = YouTube.search(
-                            query = trackItem.trackName + " " + trackItem.artists.first().name,
-                            filter = YouTube.SearchFilter.FILTER_SONG
+                        processAndSaveTrack(trackItem, generatedPlaylistId, importSessionId)
+                        _playlistsImportProgress.emit(
+                            ImportProgressEvent.PlaylistsProgress(
+                                completed = false,
+                                progressedTrackCount = ++progressedTracksInAPlaylistCount,
+                                playlistName = playlist.name,
+                                totalTracksCount = trackItems.size,
+                                currentPlaylistIndex = playlistIndex
+                            )
                         )
-                        youtubeSearchResult.onSuccess { result ->
-                            if (result.items.isEmpty()) {
-                                return@onSuccess
-                            }
-                            val firstSong = result.items.first() as SongItem
-                            firstSong.artists.forEachIndexed { index, artist ->
-                                artist.id?.let { artistId ->
-                                    try {
-                                        // Artist names like "XYZ & ABC" or "XYZ" can refer to the same id, but there's no way to tell which name is correct. To avoid this, if the `id` doesn’t exist (in the local database), we’ll fetch the name from the artist page instead of assuming it's always "XYZ & ABC"
-                                        if (localDatabase.artistIdExists(artistId).not()) {
-                                            YouTube.artist(artistId).onSuccess { artistPage ->
-                                                localDatabase.insert(
-                                                    ArtistEntity(
-                                                        id = artistId,
-                                                        name = artistPage.artist.title
-                                                    )
-                                                )
-                                            }
-                                        }
-                                        localDatabase.insert(
-                                            SongArtistMap(
-                                                songId = firstSong.id,
-                                                artistId = artistId,
-                                                position = index
-                                            )
-                                        )
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                            }
-                            localDatabase.insert(
-                                SongEntity(
-                                    id = firstSong.id,
-                                    thumbnailUrl = firstSong.thumbnail.getOriginalSizeThumbnail(),
-                                    title = firstSong.title,
-                                    localPath = null
-                                )
-                            )
-                            localDatabase.insert(
-                                PlaylistSongMap(
-                                    playlistId = generatedPlaylistId, songId = firstSong.id
-                                )
-                            )
-                            _playlistsImportProgress.emit(
-                                ImportProgressEvent.PlaylistsProgress(
-                                    completed = false,
-                                    progressedTrackCount = ++progressedTracksInAPlaylistCount,
-                                    playlistName = playlist.name,
-                                    totalTracksCount = trackItems.size,
-                                    currentPlaylistIndex = playlistIndex
-                                )
-                            )
-                        }
                     })
                 }
                 trackJobs.joinAll()
@@ -447,7 +405,7 @@ class ImportFromSpotifyViewModel @Inject constructor(
     private var progressedTracksInTheLikedSongsCount = 0
 
     private suspend fun importSpotifyLikedSongs(
-        saveInDefaultLikedSongs: Boolean, context: Context
+        saveInDefaultLikedSongs: Boolean, context: Context, importSessionId: String
     ): Unit = supervisorScope {
         var url: String? = "https://api.spotify.com/v1/me/tracks?offset=0&limit=50"
         var totalSongsCount = -1
@@ -456,85 +414,16 @@ class ImportFromSpotifyViewModel @Inject constructor(
                 authToken = importFromSpotifyScreenState.value.accessToken, url = url, context
             ).let { spotifyLikedSongsPaginatedResponse ->
                 totalSongsCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
-                spotifyLikedSongsPaginatedResponse.tracks.forEachIndexed { index, likedSong ->
+                spotifyLikedSongsPaginatedResponse.tracks.forEach { likedSong ->
                     launch {
-                        val youtubeSearchResult = YouTube.search(
-                            query = likedSong.trackItem.trackName + " " + likedSong.trackItem.artists.first().name,
-                            filter = YouTube.SearchFilter.FILTER_SONG
-                        )
-                        youtubeSearchResult.onSuccess { result ->
-                            if (result.items.isEmpty()) {
-                                return@onSuccess
-                            }
-                            result.items.first().let { songItem ->
-                                songItem as SongItem
-                                withContext(Dispatchers.IO) {
-                                    localDatabase.insert(
-                                        SongEntity(
-                                            id = songItem.id,
-                                            title = songItem.title,
-                                            localPath = null,
-                                            liked = saveInDefaultLikedSongs,
-                                            thumbnailUrl = songItem.thumbnail.getOriginalSizeThumbnail()
-                                        )
-                                    )
-                                    songItem.artists.forEachIndexed { index, artist ->
-                                        artist.id?.let { artistId ->
-                                            try {
-                                                // Artist names like "XYZ & ABC" or "XYZ" can refer to the same id, but there's no way to tell which name is correct. To avoid this, if the `id` doesn’t exist (in the local database), we’ll fetch the name from the artist page instead of assuming it's always "XYZ & ABC"
-                                                if (localDatabase.artistIdExists(artistId).not()) {
-                                                    YouTube.artist(artistId)
-                                                        .onSuccess { artistPage ->
-                                                            localDatabase.insert(
-                                                                ArtistEntity(
-                                                                    id = artistId,
-                                                                    name = artistPage.artist.title
-                                                                )
-                                                            )
-                                                        }
-                                                }
-                                                localDatabase.insert(
-                                                    SongArtistMap(
-                                                        songId = songItem.id,
-                                                        artistId = artistId,
-                                                        position = index
-                                                    )
-                                                )
-                                            } catch (e: Exception) {
-                                                e.printStackTrace()
-                                            }
-                                        }
-                                    }
-                                    if (saveInDefaultLikedSongs.not()) {
-                                        localDatabase.insert(
-                                            PlaylistEntity(
-                                                id = generatedPlaylistId,
-                                                name = "Liked Songs",
-                                                bookmarkedAt = currentTime
-                                            )
-                                        )
-                                        localDatabase.insert(
-                                            PlaylistSongMap(
-                                                playlistId = generatedPlaylistId,
-                                                songId = songItem.id
-                                            )
-                                        )
-                                    } else {/*
-                                     Updates `liked` to `true` for a song already in the database.
-                                     Does not affect a newly added song if it is already marked as `liked`.
-                                     */
-                                        localDatabase.toggleLikedToTrue(songId = songItem.id)
-                                    }
-                                }
-                            }
-                            _likedSongsImportProgress.emit(
-                                ImportProgressEvent.LikedSongsProgress(
-                                    completed = false,
-                                    currentCount = ++progressedTracksInTheLikedSongsCount,
-                                    totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
-                                )
+                        processAndSaveTrack(likedSong.trackItem, null, importSessionId, saveInDefaultLikedSongs)
+                        _likedSongsImportProgress.emit(
+                            ImportProgressEvent.LikedSongsProgress(
+                                completed = false,
+                                currentCount = ++progressedTracksInTheLikedSongsCount,
+                                totalTracksCount = spotifyLikedSongsPaginatedResponse.totalCountOfLikedSongs
                             )
-                        }
+                        )
                     }
                 }
                 url = spotifyLikedSongsPaginatedResponse.nextPaginatedUrl
@@ -547,6 +436,135 @@ class ImportFromSpotifyViewModel @Inject constructor(
                 totalTracksCount = totalSongsCount
             )
         )
+    }
+
+    private suspend fun processAndSaveTrack(
+        trackItem: TrackItem,
+        playlistId: String?,
+        importSessionId: String,
+        saveInDefaultLikedSongs: Boolean = false
+    ) {
+        Timber.tag(logTag).d("[$importSessionId] --- Processing Spotify Track: '${trackItem.trackName}' ---")
+        Timber.tag(logTag).d("[$importSessionId] Spotify Artists: ${trackItem.artists.joinToString { it.name }}")
+
+        val artistQuery = if (trackItem.artists.isNotEmpty()) {
+            trackItem.artists.joinToString(" ") { it.name }
+        } else {
+            ""
+        }
+        val searchQuery = "${trackItem.trackName} $artistQuery".trim()
+
+        if (searchQuery.isBlank()) {
+            Timber.tag(logTag).w("[$importSessionId] Skipping track due to blank title and artist.")
+            return
+        }
+
+        Timber.tag(logTag).d("[$importSessionId] YouTube Search Query: '$searchQuery'")
+
+        val primaryArtistId = trackItem.artists.firstOrNull()?.let { primaryArtist ->
+            YouTube.search(query = primaryArtist.name, filter = YouTube.SearchFilter.FILTER_ARTIST)
+                .getOrNull()?.items?.firstOrNull { it is ArtistItem }?.id
+        }
+        Timber.tag(logTag).d("[$importSessionId] Primary Artist Lookup Result (ID): $primaryArtistId")
+
+        val youtubeSearchResult = YouTube.search(
+            query = searchQuery,
+            filter = YouTube.SearchFilter.FILTER_SONG
+        )
+
+        youtubeSearchResult.onSuccess { result ->
+            if (result.items.isEmpty()) {
+                Timber.tag(logTag).w("[$importSessionId] No YouTube search results for query: '$searchQuery'")
+                return@onSuccess
+            }
+
+            Timber.tag(logTag).d("[$importSessionId] YouTube Search returned ${result.items.size} results.")
+            result.items.take(3).forEachIndexed { index, item ->
+                if (item is SongItem) {
+                    Timber.tag(logTag).d("[$importSessionId]   Result ${index + 1}: Title='${item.title}', Artists=${item.artists.map { "'${it.name}' (ID: ${it.id ?: "NULL"})" }}, VideoID='${item.id}'")
+                }
+            }
+
+            val bestMatch = if (primaryArtistId != null) {
+                result.items.firstOrNull { song ->
+                    (song as? SongItem)?.artists?.any { artist -> artist.id == primaryArtistId } == true
+                } as? SongItem
+            } else {
+                null
+            }
+
+            val finalSong = bestMatch ?: (result.items.first() as SongItem)
+            Timber.tag(logTag).d("[$importSessionId] Chosen Song: Title='${finalSong.title}', Artists=${finalSong.artists.map { "'${it.name}' (ID: ${it.id ?: "NULL"})" }}")
+
+            withContext(Dispatchers.IO) {
+                localDatabase.insert(
+                    SongEntity(
+                        id = finalSong.id,
+                        thumbnailUrl = finalSong.thumbnail.getOriginalSizeThumbnail(),
+                        title = finalSong.title,
+                        localPath = null,
+                        liked = saveInDefaultLikedSongs
+                    )
+                )
+                Timber.tag(logTag).d("[$importSessionId] Inserted Song: '${finalSong.title}' (ID: ${finalSong.id})")
+
+                finalSong.artists.forEachIndexed { index, artist ->
+                    artist.id?.let { artistId ->
+                        Timber.tag(logTag).d("[$importSessionId]   Processing Artist for DB: Name='${artist.name}', ID='$artistId'")
+                        try {
+                            if (localDatabase.artistIdExists(artistId).not()) {
+                                YouTube.artist(artistId).onSuccess { artistPage ->
+                                    localDatabase.insert(
+                                        ArtistEntity(
+                                            id = artistId,
+                                            name = artistPage.artist.title
+                                        )
+                                    )
+                                    Timber.tag(logTag).d("[$importSessionId]     New artist '${artistPage.artist.title}' inserted.")
+                                }
+                            }
+                            localDatabase.insert(
+                                SongArtistMap(
+                                    songId = finalSong.id,
+                                    artistId = artistId,
+                                    position = index
+                                )
+                            )
+                            Timber.tag(logTag).d("[$importSessionId]     Inserting into SongArtistMap: songId='${finalSong.id}', artistId='$artistId'")
+                        } catch (e: Exception) {
+                            Timber.tag(logTag).e(e, "[$importSessionId]     Error processing artist: ${artist.name} (Ask Gemini)")
+                        }
+                    } ?: Timber.tag(logTag).w("[$importSessionId]     Skipping artist '${artist.name}' because ID is null.")
+                }
+
+                playlistId?.let {
+                    localDatabase.insert(
+                        PlaylistSongMap(
+                            playlistId = it, songId = finalSong.id
+                        )
+                    )
+                } ?: if (saveInDefaultLikedSongs.not()) {
+                    localDatabase.insert(
+                        PlaylistEntity(
+                            id = generatedPlaylistId,
+                            name = "Liked Songs",
+                            bookmarkedAt = currentTime
+                        )
+                    )
+                    localDatabase.insert(
+                        PlaylistSongMap(
+                            playlistId = generatedPlaylistId,
+                            songId = finalSong.id
+                        )
+                    )
+                } else {
+                    localDatabase.toggleLikedToTrue(songId = finalSong.id)
+                }
+            }
+        }
+        youtubeSearchResult.onFailure { error ->
+            Timber.tag(logTag).e(error, "[$importSessionId] YouTube search failed for query: '$searchQuery'")
+        }
     }
 }
 
