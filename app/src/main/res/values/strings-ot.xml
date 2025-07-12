@@ -142,8 +142,8 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="min_playback_duration_description">The minimum amount of a song that must be played before it is considered \"played\"</string>
     <string name="swipe2Queue">Swipe to queue</string>
     <string name="swipe2Queue_description">Swipe on a song to add it to "enqueue next" directly after currently playing song</string>
-    <string name="swipe_sensitivity">Swipe sensitivity</string>
-    <string name="swipe_sensitivity_desc">Adjust how sensitive swipe gestures are for changing songs</string>
+    <string name="swipe_sensitivity">Mini player swipe sensitivity</string>
+    <string name="sensitivity_percentage">%1$d%%</string>
     <string name="on_error">On error</string>
     <string name="pause">Pause</string>
 
