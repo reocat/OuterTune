@@ -443,42 +443,46 @@ fun ColumnScope.SwipeGesturesFrag() {
         onCheckedChange = onSwipe2QueueChange,
         isFirst = true
     )
+
     SwitchPreference(
         title = { Text(stringResource(R.string.swipe_to_skip_title)) },
         description = stringResource(R.string.swipe_to_skip_description),
         icon = { Icon(Icons.Rounded.Swipe, null) },
         checked = swipeToSkip,
         onCheckedChange = onSwipeToSkipChange,
-        isLast = true
+        isMiddle = swipeToSkip,
+        isLast = !swipeToSkip
     )
     AnimatedVisibility(swipeToSkip) {
-        var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
+        Column {
+            var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
 
-        if (showSensitivityDialog) {
-            SliderDialog(
-                title = stringResource(R.string.swipe_sensitivity),
-                initialValue = (swipeSensitivity * 100).roundToInt(),
-                defaultValue = 73,
-                valueRange = 0f..100f,
-                valueSuffix = "%",
-                onDismiss = { showSensitivityDialog = false },
-                onConfirm = { newValue ->
-                    onSwipeSensitivityChange(newValue / 100f)
-                    showSensitivityDialog = false
-                },
-                onReset = {
-                    onSwipeSensitivityChange(0.73f)
-                }
+            if (showSensitivityDialog) {
+                SliderDialog(
+                    title = stringResource(R.string.swipe_sensitivity),
+                    initialValue = (swipeSensitivity * 100).roundToInt(),
+                    defaultValue = 73,
+                    valueRange = 0f..100f,
+                    valueSuffix = "%",
+                    onDismiss = { showSensitivityDialog = false },
+                    onConfirm = { newValue ->
+                        onSwipeSensitivityChange(newValue / 100f)
+                        showSensitivityDialog = false
+                    },
+                    onReset = {
+                        onSwipeSensitivityChange(0.73f)
+                    }
+                )
+            }
+
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.swipe_sensitivity)) },
+                description = stringResource(R.string.sensitivity_percentage, (swipeSensitivity * 100).roundToInt()),
+                icon = { Icon(Icons.Rounded.Tune, null) },
+                onClick = { showSensitivityDialog = true },
+                isLast = true
             )
         }
-        
-        Spacer(Modifier.height(12.dp))
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.swipe_sensitivity)) },
-            description = "${(swipeSensitivity * 100).roundToInt()}%",
-            icon = { Icon(Icons.Rounded.Tune, null) },
-            onClick = { showSensitivityDialog = true }
-        )
     }
 }
 
