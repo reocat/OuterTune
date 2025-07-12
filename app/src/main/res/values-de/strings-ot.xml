@@ -2,7 +2,7 @@
 <resources>
     <string name="err_stop_on_error">Ein Fehler ist aufgetreten. Wiedergabe angehalten</string>
     <string name="queue_searched_songs_ot">Suche:</string>
-    <string name="recent_activity">Neueste Aktivität</string>
+    <string name="recent_activity">Aktuelles</string>
     <string name="folders">Ordner</string>
     <string name="library">Bibliothek</string>
     <string name="local_history">Lokal</string>
@@ -15,20 +15,20 @@
     <string name="song_added_to_queue_end">\"%s\" wurde an das Ende der Warteschlange hinzugefügt</string>
     <string name="queues_empty">Keine Warteschlangen</string>
     <string name="auto_playlist">Automatische Playlist</string>
-    <string name="like_all">Alle liken</string>
+    <string name="like_all">Alle Favorisieren</string>
     <string name="delete_lyric_confirm">Möchtest du wirklich den gespeicherten Songtext für \"%s\" löschen?</string>
     <string name="err_play_next_on_error">Ein Fehler ist aufgetreten. Nächstes wird abgespielt</string>
     <string name="android_auto">Android Auto</string>
     <string name="select">Auswahlmodus</string>
     <string name="show_liked_and_downloaded_playlist">Zeige die Wiedergabelisten für Favoriten und heruntergeladene Titel in der Bibliothek</string>
-    <string name="playlist_missing_note">Playlist fehlt? Klicke hier, um den \"Read-Write\"-Modus der Synchronisation in den Einstellungen zu aktivieren.</string>
+    <string name="playlist_missing_note">Playlist fehlt? Klicke hier, um den \"Read-Write\"-Modus der Synchronisation in den Einstellungen zu aktivieren</string>
     <string name="player_background_default">Farbschema folgen</string>
     <string name="token_adv_login_description">Dies ist eine FORTGESCHRITTENE Loginmethode. Alternativ zum Webportal kann hier das Login-Token direkt eingegeben werden. So kann beispielsweise das Einloggen auf verschiedenen Geräten beschleunigt werden. Bitte beachten Sie, dass ungültige Formatierungen des Tokens nicht akzeptiert werden</string>
     <string name="grp_sync">Synchronisation</string>
     <string name="filter_arrangement">Filter anordnen</string>
     <string name="ytm_sync">Automatisch mit Ihrem Youtube Music-Konto synchronisieren</string>
     <string name="missing_media_permission_warning">Speicherzugriff ist nötig für lokale Medien. Klicken, um Berechtigung zu erteilen.</string>
-    <string name="more_settings">Mehr Einstellungen</string>
+    <string name="more_settings">Weitere Einstellungen</string>
     <string name="create_sync_playlist">Synchronisierte Playlist</string>
     <string name="prefs_advanced">Fortgeschritten</string>
     <string name="grp_account_sync">Konto und Synchronisation</string>
@@ -57,7 +57,7 @@
     <string name="sort_by_date_released">Erscheinungsdatum</string>
     <string name="sort_by_like_date">“Gefällt mir”-Datum</string>
     <string name="sort_by_play_count">Wiedergabehäufigkeit</string>
-    <string name="play_count">Wiedergabehäufigkeit</string>
+    <string name="play_count">Wiedergabeanzahl</string>
     <string name="grp_layout">Layout</string>
     <string name="check_for_update">Suche nach Updates</string>
     <string name="sort_by_date_modified">Zuletzt modifiziert</string>
@@ -78,7 +78,7 @@
     <string name="grp_general">Generell</string>
     <string name="checking_for_update">Sucht nach Updates</string>
     <string name="no_updates_available">Keine Updates verfügbar</string>
-    <string name="library_empty">Hier erscheinen die Inhalte der Bibliothek</string>
+    <string name="library_empty">Hier erscheinen die Inhalte deiner Bibliothek</string>
     <string name="grp_extra_scanner_settings">Zusätzliche Scannereinstellungen</string>
     <string name="grp_manual_scanner">Manueller Scanner</string>
     <string name="app_info_title">Appinformationen</string>
