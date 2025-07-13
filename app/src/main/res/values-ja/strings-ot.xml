@@ -48,7 +48,7 @@
     <string name="scanner_manual_btn">手動で同期する</string>
     <string name="scanner_warning">初期設定では、上記で指定しない限り、スキャンは既存の曲のメタデータを再読み込みしません。ライブラリの量によっては、時間がかかります。</string>
     <string name="scanner_missing_ffmpeg">FFmpeg 抽出プログラムが検出されませんでした</string>
-    <string name="scanner_missing_storage_perm">スキャンするには保存領域への権限が必要</string>
+    <string name="scanner_missing_storage_perm">スキャンするにはストレージの権限が必要</string>
     <string name="scanner_progress_scanning">スキャン中…</string>
     <string name="folders">フォルダ</string>
     <string name="recent_activity">最近のアクティビティ</string>
@@ -65,16 +65,16 @@
     <string name="import_innertune_tooltip">InnerTune のバックアップの復元に対応していますが、技術的な制限により異常が発生する可能性があります</string>
     <string name="auto_scanner_description">アプリを開いたら曲を自動でスキャンします。既存の曲のメタデータは再読み込みしません。</string>
     <string name="library">ライブラリ</string>
-    <string name="grp_extra_scanner_settings">その他のスキャン設定</string>
+    <string name="grp_extra_scanner_settings">ほかのスキャン設定</string>
     <string name="grp_lyrics_source">歌詞の提供元</string>
     <string name="grp_proxy">プロキシ</string>
-    <string name="tab_arrangement_disable_tip">ここにドラッグして無効化する</string>
+    <string name="tab_arrangement_disable_tip">--- ここにドラッグして無効化 ---</string>
     <string name="like_autodownload">いいねした曲を自動でダウンロード</string>
     <string name="wifi_only">Wi-Fiのみ</string>
     <string name="keep_alive_title">システムがアプリを終了するのを防止</string>
     <string name="persistent_queue_desc_ot">アプリ起動時に前回のキューを復元する</string>
     <string name="show_liked_and_downloaded_playlist">ライブラリ内にいいねやダウンロードした曲の再生リストを表示</string>
-    <string name="ytm_sync">YouTube Music アカウントと同期する</string>
+    <string name="ytm_sync">YouTube Music アカウントと自動で同期</string>
     <string name="token_hidden">タップしてトークンを表示</string>
     <string name="grp_manual_scanner">手動でスキャン</string>
     <string name="attrib_zhuang">Zion Huang の InnerTune</string>
@@ -104,7 +104,7 @@
         <item quantity="other">%d 曲を発見</item>
     </plurals>
     <string name="scanner_strict_file_name_title">ファイル名を厳格に扱う</string>
-    <string name="scanner_strict_file_name_description">有効にすると、ファイル名は無視されません。例: Song.ogg は Song.flac とは異なる曲になります。スキャナの感度設定は引き続き適用されます</string>
+    <string name="scanner_strict_file_name_description">有効にすると、ファイル名は無視されません。例: Song.ogg は Song.flac とは異なる曲になります。スキャンの感度設定は引き続き適用されます</string>
     <string name="scanner_sensitivity_title">スキャンの感度を設定</string>
     <string name="scanner_sensitivity_L2">タイトルとアーティストが一致</string>
     <string name="scanner_sensitivity_L3">タイトル、アーティスト、アルバムが一致</string>
@@ -129,7 +129,7 @@
     <string name="new_interface">新しいレイアウト</string>
     <string name="experimental_settings_title">実験的な設定</string>
     <string name="grp_general">一般</string>
-    <string name="queue_remote_history">再生履歴 (リモート)</string>
+    <string name="queue_remote_history">履歴 (リモート)</string>
     <string name="queue_local_history">履歴 (端末内)</string>
     <string name="scanner_btn_idle">スキャン</string>
     <string name="scanner_progress_complete">スキャン完了</string>
@@ -141,7 +141,7 @@
     <string name="swipe_to_skip_title">横にスワイプで、曲を変更</string>
     <string name="swipe_to_skip_description">プレーヤー内で水平にスワイプして曲を切り替える</string>
     <string name="restart_to_apply_changes">変更を反映するには、アプリを再起動してください</string>
-    <string name="missing_media_permission_warning">端末内のメディアに対する保存領域の権限が必要です。クリックし権限を付与してください。</string>
+    <string name="missing_media_permission_warning">端末内のメディアに対するストレージの権限が必要です。クリックし権限を付与してください。</string>
     <string name="more_settings">その他の設定</string>
     <string name="grp_account_sync">アカウントと同期</string>
     <string name="sync_conflict_overwrite">端末内コンテンツをリモートのコンテンツで上書きする</string>
@@ -154,7 +154,7 @@
     <string name="no_updates_available">利用可能なアップデートなし</string>
     <string name="checking_for_update">更新を確認中</string>
     <string name="check_for_update">更新を確認</string>
-    <string name="sync_mode">同期のモード</string>
+    <string name="sync_mode">同期方法</string>
     <string name="sync_conflict_title">競合の解決</string>
     <string name="playlist_missing_note">再生リストが見つからない？設定で同期の読み書きモードを有効にするには、ここをクリック</string>
     <string name="speed_slow">遅い</string>
@@ -216,6 +216,6 @@
     <string name="help_bug_report_action">バグ報告を送信 (Github)</string>
     <string name="help_support_forum">ヘルプとサポート (Github)</string>
     <string name="wiki">ウィキ</string>
-    <string name="help_contact_email_inquiries">その他のお問い合わせ（タップでメールをコピー）</string>
+    <string name="help_contact_email_inquiries">その他お問い合わせ (タップでメアドをコピー)</string>
     <string name="scanner_sensitivity_L0">YouTubeで検索が有効になっている場合はYouTubeから提供される最初の結果を取得し、そうでない場合はタイトルが一致するものを取得します</string>
 </resources>
