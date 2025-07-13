@@ -119,6 +119,9 @@
     <string name="scanner_manual_btn">Manuellen Scan starten</string>
     <string name="scanner_btn_idle">Scannen</string>
     <string name="scanner_progress_complete">Scannen abgeschossen</string>
-    <string name="scanner_progress_discovering">Durchsuche…</string>
+    <string name="scanner_progress_discovering">Durchsuchen…</string>
     <string name="scanner_progress_processing">Verarbeiten…</string>
+    <string name="scanner_progress_scanning">Scannen…</string>
+    <string name="scanner_progress_syncing">Synchronisieren…</string>
+    <string name="scanner_scan_fail">Scanner gescheitert…</string>
 </resources>
