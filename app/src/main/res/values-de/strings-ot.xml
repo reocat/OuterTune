@@ -123,6 +123,7 @@
     <string name="scanner_progress_processing">Verarbeiten…</string>
     <string name="scanner_progress_scanning">Scannen…</string>
     <string name="scanner_progress_syncing">Synchronisieren…</string>
-    <string name="scanner_scan_fail">Scanner gescheitert</string>
+    <string name="scanner_scan_fail">Scannen fehlgeschlagen</string>
     <string name="scanner_ytm_link_fail">YouTube-Künstler-Verknüpfung fehlgeschlagen</string>
+    <string name="scanner_ytm_link_start">Starte YouTube-Künstler-Verknüpfung</string>
 </resources>
