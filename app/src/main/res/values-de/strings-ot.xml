@@ -117,4 +117,7 @@
     <string name="scan_paths_excl">Ausgeschlossene Scanpfade</string>
     <string name="scanner_local_title">Lokaler Scanner</string>
     <string name="scanner_manual_btn">Manuellen Scan starten</string>
+    <string name="scanner_btn_idle">Scannen</string>
+    <string name="scanner_progress_complete">Scannen abgeschossen</string>
+    <string name="scanner_progress_discovering">Durchsuche</string>
 </resources>
