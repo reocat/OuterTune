@@ -10,9 +10,9 @@
     <string name="auto_playlist">自動再生リスト</string>
     <string name="select">選択モード</string>
     <string name="like_all">すべてにいいね</string>
-    <string name="err_play_next_on_error">エラーが発生。次の曲を再生します</string>
+    <string name="err_play_next_on_error">エラーが発生。次の曲を再生</string>
     <string name="err_stop_on_error">エラーが発生。再生を停止しました</string>
-    <string name="err_stop_on_too_many_errors">エラーが多すぎます。再生が停止しました</string>
+    <string name="err_stop_on_too_many_errors">エラーが多すぎます。再生を停止しました</string>
     <string name="wait_to_reconnect">再接続を待っています</string>
     <string name="sort_by_date_modified">更新日</string>
     <string name="sort_by_date_released">リリース日</string>
@@ -180,7 +180,7 @@
     <string name="clear_downloads_confirm">すべてのダウンロードメディアを削除しますか？メインのダウンロードフォルダ内のダウンロードのみが削除されます。</string>
     <string name="clear_image_cache_confirm">画像のキャッシュを削除しますか？ 既存のアルバムのサムネイルはすべて削除されます。</string>
     <string name="dl_extra_path_title">追加のインポート場所を設定…</string>
-    <string name="dl_extra_path_description">これらのフォルダの曲は以前に再生したか再生リストに追加した場合にのみアプリに表示されます</string>
+    <string name="dl_extra_path_description">これらのフォルダの曲は、以前に再生したか再生リストに追加した場合にのみアプリに表示されます</string>
     <string name="dl_migrate_title">ダウンロードファイルを外部の保存領域に移行…</string>
     <string name="dl_migrate_description">アプリの内部の保存領域から、端末の外部の保存領域にダウンロードファイルを移動</string>
     <string name="dl_main_path_description">ダウンロードの保存場所を選択</string>
