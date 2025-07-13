@@ -78,4 +78,5 @@
     <string name="delete_lyric_confirm">האם אתה באמת רוצה למחוק את המילים המאוחסנות עבור \"%s\"?</string>
     <string name="slim_navbar_title">Slim navbar</string>
     <string name="audio_offload_description">השתמש בנתיב השמעה של עומס (offload audio) להשמעת שמע. השבתת אפשרות זו עשויה להגביר את צריכת החשמל, אך יכולה להיות שימושית אם אתה נתקל בבעיות בהשמעת שמע או בעיבוד לאחר מכן.</string>
+    <string name="library_empty">תוכן הספרייה שלך יופיע פה</string>
 </resources>
