@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import org.akanework.gramophone.logic.utils.SemanticLyrics
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -58,11 +59,12 @@ class LyricsMenuViewModel @Inject constructor(
         job = null
     }
 
-    fun refetchLyrics(mediaMetadata: MediaMetadata) {
+    fun refetchLyrics(mediaMetadata: MediaMetadata, onDone: (SemanticLyrics?) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             database.query { deleteLyricById(mediaMetadata.id) }
             withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
-                lyricsHelper.getLyrics(mediaMetadata)
+                val lyrics = lyricsHelper.getLyrics(mediaMetadata)
+                onDone(lyrics)
             }
         }
     }

@@ -167,7 +167,10 @@ fun Lyrics(
     var lyricRefreshRate = lyricsUpdateSpeed.toLrcRefreshMillis()
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
-    val lyricsModel by playerConnection.currentLyrics.collectAsState(initial = null)
+
+    // NOTE: lyricsModel is the current display lyrics that is updated by playerLyrics AND/OR manually
+    val playerLyrics by playerConnection.currentLyrics.collectAsState(initial = null)
+    var lyricsModel by remember { mutableStateOf(playerLyrics) }
 
     val playerBackground by rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
@@ -219,6 +222,10 @@ fun Lyrics(
             } catch (_: Exception) {
             }
         }
+    }
+
+    LaunchedEffect(playerLyrics) {
+        lyricsModel = playerLyrics
     }
 
     LaunchedEffect(lyricsModel) {
@@ -581,7 +588,8 @@ fun Lyrics(
                                         dbLyric
                                     },
                                     mediaMetadataProvider = { mediaMetadata },
-                                    onDismiss = menuState::dismiss
+                                    onRefreshRequest = { lyricsModel = it },
+                                    onDismiss = menuState::dismiss,
                                 )
                             }
                         }
