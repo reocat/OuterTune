@@ -5,7 +5,7 @@
     <string name="recent_activity">Aktuelles</string>
     <string name="folders">Ordner</string>
     <string name="library">Bibliothek</string>
-    <string name="local_history">Lokales</string>
+    <string name="local_history">Lokal</string>
     <string name="queue_local_history">Verlauf (lokal)</string>
     <string name="queue_remote_history">Verlauf (online)</string>
     <string name="remote_history">Online</string>
@@ -148,4 +148,5 @@
     <string name="scanner_missing_storage_perm">Der Scanner benötigt Speicherzugriff</string>
     <string name="scanner_type_title">Metadaten-Extraktor</string>
     <string name="scanner_variant_rescan">Gesamte Medienbibliothek erneut scannen und alle Metadaten neu laden</string>
+    <string name="scan_paths_tooltip">Dies betrifft auch alle Unterordner</string>
 </resources>
