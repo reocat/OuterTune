@@ -136,5 +136,11 @@
         <item quantity="other">%d Lieder gefunden</item>
     </plurals>
     <string name="scanner_strict_file_name_title">Strenge Dateinamen</string>
-    <string name="scanner_strict_file_name_description">Wenn aktiviert, werden Dateiendungen NICHT ignoriert. Bspw. Lied.ogg unterscheidet sich dann von Lied.flac. Scannersensitivität wird weiterhin angewendet.</string>
+    <string name="scanner_strict_file_name_description">Wenn aktiviert, werden Dateiendungen NICHT ignoriert. Bspw. Lied.ogg unterscheidet sich dann von Lied.flac. Scannersensitivität wird weiterhin angewendet</string>
+    <string name="scanner_sensitivity_title">Scannersensitivität einstellen</string>
+    <string name="lyrics_settings_title">Liedtexte</string>
+    <string name="lyrics_trim_title">Entferne Abstände um Liedtexte</string>
+    <string name="local_library_enable_title">Aktiviere lokale Medien</string>
+    <string name="local_library_enable_description">Deaktivieren blockiert den Zugriff der App auf die lokale Medienbibliothek</string>
+    <string name="scan_paths_title">Scanorte einstellen</string>
 </resources>
