@@ -104,7 +104,8 @@ fun PlaylistMenu(
                     songs.forEach { s ->
                         val se = s.song
                         result += "#EXTINF:${se.duration},${s.artists.joinToString(";") { it.name }} - ${s.title}\n"
-                        result += if (se.isLocal) se.localPath else "https://music.youtube.com/watch?v=${se.id}\n"
+                        result += if (se.isLocal) "${se.id}, ${se.localPath}" else "https://youtube.com/watch?v=${se.id}"
+                        result += "\n"
                     }
                     context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                         outputStream.write(result.toByteArray(Charsets.UTF_8))

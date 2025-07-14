@@ -304,17 +304,31 @@ fun loadM3u(
                                 id = "",
                                 title = title,
                                 isLocal = true,
-                                localPath = if (source?.startsWith("http") == false) source else null
+                                localPath = if (source?.startsWith("http") == false) source.substringAfter(',') else null
                             ),
                             artists = artists.map { ArtistEntity("", it) },
                         )
 
                         // now find the best match
                         // first, search for songs in the database. Supplement with remote songs if no results are found
-                        val matches = runBlocking(Dispatchers.IO) {
-                            database.searchSongsInDb(title).first().toMutableList()
+                        val matches = if (source == null) {
+                            runBlocking(Dispatchers.IO) {
+                                database.searchSongsInDb(title).first().toMutableList()
+                            }
+                        } else {
+                            runBlocking(Dispatchers.IO) {
+                                // local songs have a source format of "<id>, <path>", YTM songs have "<url>
+                                var id = source.substringBefore(',')
+                                if (id.isEmpty()) {
+                                    id = source.substringAfter("watch?").substringAfter("=").substringBefore('?')
+                                }
+                                val dbResult = mutableListOf(database.song(id).first())
+                                dbResult.addAll(database.searchSongsInDb(title).first())
+                                dbResult.filterNotNull().toMutableList()
+                            }
                         }
-                        if (searchOnline && matches.isEmpty()) {
+                        // do not search for local songs
+                        if (searchOnline && matches.isEmpty() && source?.contains(',') == false) {
                             val onlineResult = runBlocking(Dispatchers.IO) {
                                 LocalMediaScanner.youtubeSongLookup("$title ${artists.joinToString(" ")}", source)
                             }
