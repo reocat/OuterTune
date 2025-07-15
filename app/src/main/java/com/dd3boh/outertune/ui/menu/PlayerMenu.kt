@@ -537,7 +537,7 @@ fun PlayerMenu(
                     toggleInLibrary(mediaMetadata.id, null)
                 }
             }
-        } else {
+        } else if (!mediaMetadata.isLocal) {
             GridMenuItem(
                 icon = Icons.Rounded.LibraryAdd,
                 title = R.string.add_to_library,

@@ -178,6 +178,14 @@ interface SongsDao {
     """)
     fun _localSongsInDirShallow(filter: String): Flow<List<Song>>
 
+    fun localSongsInDirDeep(filter: String): Flow<List<Song>> {
+        return _localSongsInDirDeep(fixFilePath(filter))
+    }
+
+    @Transaction
+    @Query("SELECT * FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL AND localpath LIKE :filter || '%'")
+    fun _localSongsInDirDeep(filter: String): Flow<List<Song>>
+
     @Transaction
     @Query("SELECT count(*) FROM song WHERE isLocal = 1 and inLibrary IS NOT NULL AND localpath LIKE :path || '%'")
     fun localSongCountInPath(path: String): Flow<Int>

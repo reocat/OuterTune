@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -67,6 +68,7 @@ import androidx.compose.ui.util.fastSumBy
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -84,6 +86,7 @@ import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.SongSortTypeKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.Song
+import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
@@ -110,9 +113,12 @@ import com.dd3boh.outertune.viewmodels.LibraryFoldersViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -125,6 +131,8 @@ fun FolderScreen(
     libraryFilterContent: @Composable (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val database = LocalDatabase.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val snackbarHostState = LocalSnackbarHostState.current
@@ -499,13 +507,20 @@ fun FolderScreen(
             lazyListState = lazyListState,
             icon = Icons.Rounded.Shuffle,
             onClick = {
-                playerConnection.playQueue(
-                    ListQueue(
-                        title = currDir.currentDir.substringAfterLast('/'),
-                        items = currDir.toSortedList(sortType, sortDescending).map { it.toMediaMetadata() },
-                        startShuffled = true
+                coroutineScope.launch {
+                    val songs = runBlocking(Dispatchers.IO) { database.localSongsInDirDeep(currDir.getFullPath()) }
+                    playerConnection.playQueue(
+                        ListQueue(
+                            title = currDir.currentDir.substringAfterLast('/'),
+                            items = DirectoryTree(
+                                path = "",
+                                culmSongs = CulmSongs(0),
+                                files = ArrayList(songs.first())
+                            ).toSortedList(sortType, sortDescending).map { it.toMediaMetadata() },
+                            startShuffled = true
+                        )
                     )
-                )
+                }
             }
         )
 
