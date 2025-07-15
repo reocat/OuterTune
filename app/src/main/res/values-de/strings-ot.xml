@@ -149,4 +149,6 @@
     <string name="scanner_type_title">Metadaten-Extraktor</string>
     <string name="scanner_variant_rescan">Gesamte Medienbibliothek erneut scannen und alle Metadaten neu laden</string>
     <string name="scan_paths_tooltip">Dies betrifft auch alle Unterordner</string>
+    <string name="lyrics_prefer_local_description">Verwendung lokaler Liedtextdateien priorisieren. Deaktivieren um Cloudanbieter bevorzugt zu verwenden</string>
+    <string name="auto_scanner_description">Beim öffnen der App automatisch nach Liedern scannen. Dies führt nicht zum erneuten laden der Metadaten von bereits existierenden Liedern.</string>
 </resources>
