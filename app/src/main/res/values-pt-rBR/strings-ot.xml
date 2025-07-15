@@ -220,4 +220,5 @@
     <string name="help_contact_email_inquiries">Outras consultas (toque para copiar o e-mail)</string>
     <string name="help_support_forum">Ajuda e suporte (pelo GitHub)</string>
     <string name="wiki">Wiki</string>
+    <string name="err_invalid_ytm_song">Falha ao reproduzir a música. Somente conteúdo acessível pelo YouTube Music pode ser reproduzido</string>
 </resources>
