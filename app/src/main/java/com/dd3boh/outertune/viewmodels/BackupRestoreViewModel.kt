@@ -3,6 +3,7 @@ package com.dd3boh.outertune.viewmodels
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.dd3boh.outertune.MainActivity
@@ -34,10 +35,12 @@ import javax.inject.Inject
 import kotlin.system.exitProcess
 
 @HiltViewModel
-class BackupRestoreViewModel @Inject constructor( // TODO: make these calls non-blocking
+class BackupRestoreViewModel @Inject constructor(
+    // TODO: make these calls non-blocking
     @ApplicationContext val context: Context,
     val database: MusicDatabase,
 ) : ViewModel() {
+    val TAG = BackupRestoreViewModel::class.simpleName.toString()
     fun backup(uri: Uri) {
         runCatching {
             context.applicationContext.contentResolver.openOutputStream(uri)?.use {
@@ -64,7 +67,7 @@ class BackupRestoreViewModel @Inject constructor( // TODO: make these calls non-
         }
     }
 
-    fun restore(uri: Uri, player: MusicService?) {
+    fun restore(uri: Uri) {
         runCatching {
             context.applicationContext.contentResolver.openInputStream(uri)?.use {
                 it.zipInputStream().use { inputStream ->
@@ -79,12 +82,45 @@ class BackupRestoreViewModel @Inject constructor( // TODO: make these calls non-
                             }
 
                             InternalDatabase.DB_NAME -> {
+                                Log.i(TAG, "Starting database restore")
                                 runBlocking(Dispatchers.IO) {
                                     database.checkpoint()
                                 }
                                 database.close()
-                                FileOutputStream(database.openHelper.writableDatabase.path).use { outputStream ->
+
+                                Log.i(TAG, "Testing new database for compatibility...")
+                                val destFile = context.getDatabasePath(InternalDatabase.TEST_DB_NAME)
+                                destFile.parentFile?.apply {
+                                    if (!exists()) mkdirs()
+                                }
+                                FileOutputStream(destFile).use { outputStream ->
                                     inputStream.copyTo(outputStream)
+                                }
+
+                                val status = try {
+                                    val t = InternalDatabase.newTestInstance(context, InternalDatabase.TEST_DB_NAME)
+                                    t.openHelper.writableDatabase.isDatabaseIntegrityOk
+                                    t.close()
+                                    true
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "DB validation failed", e)
+                                    false
+                                }
+
+                                if (status) {
+                                    Log.i(TAG, "Found valid database, proceeding with restore")
+                                    destFile.inputStream().use { inputStream ->
+                                        FileOutputStream(database.openHelper.writableDatabase.path).use { outputStream ->
+                                            inputStream.copyTo(outputStream)
+                                        }
+                                    }
+                                } else {
+                                    Log.e(TAG, "Incompatible database, aborting restore")
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.err_restore_incompatible_database),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         }

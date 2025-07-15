@@ -124,6 +124,7 @@ abstract class InternalDatabase : RoomDatabase() {
 
     companion object {
         const val DB_NAME = "song.db"
+        const val TEST_DB_NAME = "probe_song.db"
 
         fun newInstance(context: Context): MusicDatabase =
             MusicDatabase(
@@ -133,6 +134,17 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
                     .addMigrations(MIGRATION_18_19)
+                    .build()
+            )
+
+        // keep this separate in the rare case we come across concepts of a plan to support migrations from other forks
+        fun newTestInstance(context: Context, dbName: String): MusicDatabase =
+            MusicDatabase(
+                delegate = Room.databaseBuilder(context, InternalDatabase::class.java, dbName)
+                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_14_15)
+                    .addMigrations(MIGRATION_15_16)
+                    .addMigrations(MIGRATION_16_17)
                     .build()
             )
     }

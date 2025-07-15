@@ -91,7 +91,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
     val context = LocalContext.current
-    val playerConnection = LocalPlayerConnection.current
 
     val backupLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
@@ -101,7 +100,7 @@ fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
         }
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            viewModel.restore(uri, playerConnection?.service)
+            viewModel.restore(uri)
         }
     }
 
