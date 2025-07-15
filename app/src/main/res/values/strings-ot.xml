@@ -44,6 +44,7 @@ while also allowing users to translate our app as well. New, specific strings to
 
     <!-- Player -->
     <string name="err_general" translatable="false">plr</string>
+    <string name="err_invalid_ytm_song">Failed to play song. Only content accessible on YouTube Music can be played</string>
     <string name="err_play_next_on_error">Error occurred. Playing next</string>
     <string name="err_stop_on_error">Error occurred. Playback stopped</string>
     <string name="err_stop_on_too_many_errors">Too many errors. Playback stopped</string>
@@ -180,8 +181,8 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scanner_warning">By default, the scanner will NOT reload any metadata of existing songs unless you specify otherwise above. Depending on the size of your library, it make take a while.</string>
 
     <!-- Scanner progress strings-->
-    <string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
-    <string name="scanner_missing_storage_perm">The scanner requires storage permissions</string>
+	<string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
+    <string name="scanner_missing_storage_perm">The local media scanner requires storage permissions to function</string>
 
     <string name="scanner_btn_idle">Scan</string>
     <string name="scanner_progress_complete">Scan complete</string>
@@ -296,6 +297,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="import_failed_songs">Could not import</string>
     <string name="import_success_songs">Successfully imported</string>
     <string name="m3u_export">Export as M3U file</string>
+    <string name="m3u_import_failed"> "No songs found. Invalid M3U file, or no song matches were found"</string>
     <string name="m3u_import_playlist">Import a playlist (m3u)</string>
     <string name="m3u_import_playlist_failed">Failed to import</string>
     <string name="m3u_ytm_lookup">Search on YouTube Music for songs not found in the app database</string>

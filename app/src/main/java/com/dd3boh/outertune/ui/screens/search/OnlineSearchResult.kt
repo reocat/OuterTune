@@ -39,6 +39,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.SearchFilterHeight
@@ -87,7 +88,7 @@ fun OnlineSearchResult(
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalSnackbarHostState.current
 
     val searchFilter by viewModel.filter.collectAsState()
     val searchSummary = viewModel.summaryPage

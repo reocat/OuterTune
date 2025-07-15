@@ -47,6 +47,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -66,6 +67,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -76,8 +78,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DialogCornerRadius
+import com.dd3boh.outertune.constants.MenuCornerRadius
+import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.MediaMetadata
 import kotlinx.coroutines.delay
@@ -489,6 +494,7 @@ fun DetailsDialog(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = LocalSnackbarHostState.current
 
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -568,10 +574,19 @@ fun DetailsDialog(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = {
+                                val clipData = ClipData.newPlainText("label", displayText)
+                                clipboard.setClipEntry(ClipEntry(clipData))
+                                
                                 coroutineScope.launch {
-                                    val clipData = ClipData.newPlainText("label", displayText)
-                                    clipboard.setClipEntry(ClipEntry(clipData))
-                                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                                    val job = launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.copied),
+                                            withDismissAction = true,
+                                            duration = SnackbarDuration.Indefinite
+                                        )
+                                    }
+                                    delay(SNACKBAR_VERY_SHORT)
+                                    job.cancel()
                                 }
                             }
                         )

@@ -66,6 +66,7 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.HistorySource
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
@@ -106,7 +107,7 @@ fun HistoryScreen(
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalSnackbarHostState.current
 
     val historySource by viewModel.historySource.collectAsState()
     var isSearching by rememberSaveable { mutableStateOf(false) }

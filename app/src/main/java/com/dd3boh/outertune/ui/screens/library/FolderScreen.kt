@@ -70,6 +70,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.MainActivity
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.CONTENT_TYPE_FOLDER
@@ -127,7 +128,7 @@ fun FolderScreen(
     val context = LocalContext.current
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalSnackbarHostState.current
 
     val (flatSubfolders, onFlatSubfoldersChange) = rememberPreference(FlatSubfoldersKey, defaultValue = true)
     val lastLocalScan by rememberPreference(

@@ -44,6 +44,7 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.SuggestionItemHeight
 import com.dd3boh.outertune.extensions.toMediaItem
@@ -87,7 +88,7 @@ fun OnlineSearchScreen(
     val viewState by viewModel.viewState.collectAsState()
 
     val lazyListState = rememberLazyListState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = LocalSnackbarHostState.current
 
     LaunchedEffect(Unit) {
         snapshotFlow { lazyListState.firstVisibleItemScrollOffset }

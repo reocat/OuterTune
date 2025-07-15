@@ -7,7 +7,6 @@
  */
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
@@ -27,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,24 +39,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.LocalNetworkConnected
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.LocalSyncUtils
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LikedAutoDownloadKey
 import com.dd3boh.outertune.constants.LikedAutodownloadMode
 import com.dd3boh.outertune.constants.SyncConflictResolution
+import com.dd3boh.outertune.constants.SyncContent
 import com.dd3boh.outertune.constants.SyncMode
 import com.dd3boh.outertune.constants.YtmSyncConflictKey
 import com.dd3boh.outertune.constants.YtmSyncContentKey
 import com.dd3boh.outertune.constants.YtmSyncKey
 import com.dd3boh.outertune.constants.YtmSyncModeKey
+import com.dd3boh.outertune.constants.decodeSyncString
+import com.dd3boh.outertune.constants.encodeSyncString
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.constants.SyncContent
-import com.dd3boh.outertune.constants.decodeSyncString
-import com.dd3boh.outertune.constants.encodeSyncString
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -85,9 +86,10 @@ fun ColumnScope.SyncAutoFrag() {
 @Composable
 fun ColumnScope.SyncManualFrag() {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val isNetworkConnected = LocalNetworkConnected.current
     val syncUtils = LocalSyncUtils.current
-    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = LocalSnackbarHostState.current
 
 
     val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
@@ -106,31 +108,27 @@ fun ColumnScope.SyncManualFrag() {
     val isSyncingRemoteLikedSongs by syncUtils.isSyncingRemoteLikedSongs.collectAsState()
     val isSyncingRecentActivity by syncUtils.isSyncingRecentActivity.collectAsState()
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier
-    ) {
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.scanner_manual_btn)) },
-            icon = { Icon(Icons.Rounded.Sync, null) },
-            onClick = {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.sync_progress_active),
-                    Toast.LENGTH_SHORT
-                ).show()
-                coroutineScope.launch(Dispatchers.Main) {
-                    syncUtils.tryAutoSync(true)
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.sync_progress_success),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            },
-            isEnabled = isLoggedIn && isNetworkConnected
-        )
+    PreferenceEntry(
+        title = { Text(stringResource(R.string.scanner_manual_btn)) },
+        icon = { Icon(Icons.Rounded.Sync, null) },
+        onClick = {
+            coroutineScope.launch(Dispatchers.Main) {
+                snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.sync_progress_active),
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short
+                )
+
+                syncUtils.tryAutoSync(true)
+                snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.sync_progress_success),
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short
+                )
+            }
+        },
+        isEnabled = isLoggedIn && isNetworkConnected
+    )
 
         val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
         encodeSyncString(enabledContent.toList())

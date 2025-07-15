@@ -11,6 +11,7 @@ const val MAX_CONCURRENT_JOBS = 4
  * Constants
  */
 const val LYRIC_FETCH_TIMEOUT = 60000L
+const val SNACKBAR_VERY_SHORT = 2000L
 const val OOBE_VERSION = 5
 const val SCANNER_OWNER_DL = 32
 const val SCANNER_OWNER_LM = 1

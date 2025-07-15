@@ -19,7 +19,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.os.Looper
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -80,6 +79,9 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -374,7 +376,9 @@ class MainActivity : ComponentActivity() {
         val bitmapLoader = CoilBitmapLoader(this, CoroutineScope(Dispatchers.IO))
 
         setContent {
+            val coroutineScope = rememberCoroutineScope()
             val haptic = LocalHapticFeedback.current
+            val snackbarHostState = remember { SnackbarHostState() }
 
             val isNetworkConnected by connectivityObserver.networkStatus.collectAsState(false)
 
@@ -464,23 +468,23 @@ class MainActivity : ComponentActivity() {
                                         try {
                                             scanner.localToRemoteArtist(database)
                                         } catch (e: ScannerAbortException) {
-                                            withContext(Dispatchers.Main) {
-                                                Toast.makeText(
-                                                    this@MainActivity,
-                                                    "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    message = "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                                                    withDismissAction = true,
+                                                    duration = SnackbarDuration.Long
+                                                )
                                             }
                                         }
                                     }
                                 }
                             } catch (e: ScannerAbortException) {
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "${this@MainActivity.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                                        withDismissAction = true,
+                                        duration = SnackbarDuration.Short
+                                    )
                                 }
                             } finally {
                                 destroyScanner(SCANNER_OWNER_LM)
@@ -620,6 +624,15 @@ class MainActivity : ComponentActivity() {
                                         YouTube.queue(listOf(videoId))
                                     }.onSuccess {
                                         sharedSong = it.firstOrNull()
+                                        if (sharedSong == null) {
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    message = getString(R.string.err_invalid_ytm_song),
+                                                    withDismissAction = true,
+                                                    duration = SnackbarDuration.Long
+                                                )
+                                            }
+                                        }
                                     }.onFailure {
                                         reportException(it)
                                     }
@@ -713,7 +726,12 @@ class MainActivity : ComponentActivity() {
                     )
 
                     val playerAwareWindowInsets =
-                        remember(bottomInset, shouldShowNavigationBar, playerBottomSheetState.isDismissed, shouldShowNavigationRail) {
+                        remember(
+                            bottomInset,
+                            shouldShowNavigationBar,
+                            playerBottomSheetState.isDismissed,
+                            shouldShowNavigationRail
+                        ) {
                             var bottom = bottomInset
 
                             if (!playerBottomSheetState.isDismissed && !tabMode) bottom += MiniPlayerHeight
@@ -835,7 +853,8 @@ class MainActivity : ComponentActivity() {
                         LocalDownloadUtil provides downloadUtil,
                         LocalShimmerTheme provides ShimmerTheme,
                         LocalSyncUtils provides syncUtils,
-                        LocalNetworkConnected provides isNetworkConnected
+                        LocalNetworkConnected provides isNetworkConnected,
+                        LocalSnackbarHostState provides snackbarHostState,
                     ) {
                         Box(
                             modifier = Modifier
@@ -1519,6 +1538,13 @@ class MainActivity : ComponentActivity() {
                                 bottomSheetMenu()
                             }
 
+                            SnackbarHost(
+                                hostState = snackbarHostState,
+                                modifier = Modifier
+                                    .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                                    .align(Alignment.BottomCenter)
+                            )
+
                             sharedSong?.let { song ->
                                 playerConnection?.let {
                                     Dialog(
@@ -1615,3 +1641,4 @@ val LocalPlayerAwareWindowInsets = compositionLocalOf<WindowInsets> { error("No 
 val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No DownloadUtil provided") }
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
 val LocalNetworkConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
+val LocalSnackbarHostState = staticCompositionLocalOf<SnackbarHostState> { error("No SnackbarHostState provided") }
