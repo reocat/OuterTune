@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Radio
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.HorizontalDivider
@@ -62,6 +63,7 @@ import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.DownloadGridMenu
 import com.dd3boh.outertune.ui.component.GridMenu
@@ -248,6 +250,18 @@ fun YouTubeSongMenu(
             title = R.string.start_radio
         ) {
             playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
+            onDismiss()
+        }
+        GridMenuItem(
+            icon = Icons.Rounded.PlayArrow,
+            title = R.string.play
+        ) {
+            playerConnection.playQueue(
+                queue = ListQueue(
+                    title = song.title,
+                    items = listOf(song.toMediaMetadata())
+                )
+            )
             onDismiss()
         }
         GridMenuItem(
