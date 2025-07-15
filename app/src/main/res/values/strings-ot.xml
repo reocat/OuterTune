@@ -251,6 +251,10 @@ while also allowing users to translate our app as well. New, specific strings to
     <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Pause sharing listen history with YouTube Music</string>
 
+    <!-- Backup and restore settings -->
+    <string name="err_restore_incompatible_database">Could not restore incompatible database</string>
+    <string name="import_innertune_tooltip">Restoring InnerTune backups are supported, albeit a possibility of anomalies due to technical limitations</string>
+
     <!-- Experimental settings -->
     <string name="experimental_settings_title">Experimental</string>
     <string name="dev_settings_title">Enable developer settings</string>
