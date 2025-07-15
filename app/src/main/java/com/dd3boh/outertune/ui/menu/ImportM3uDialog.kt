@@ -25,6 +25,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,7 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.constants.ScannerM3uMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -57,6 +61,7 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.compareM3uSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -71,6 +76,7 @@ fun ImportM3uDialog(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
+    val snackbarHostState = LocalSnackbarHostState.current
 
     var scannerSensitivity by remember {
         mutableStateOf(ScannerM3uMatchCriteria.LEVEL_1)
@@ -90,7 +96,14 @@ fun ImportM3uDialog(
             try {
                 isLoading = true
                 if (uri != null) {
-                    val result = loadM3u(context, database, uri, matchStrength = scannerSensitivity, remoteLookup)
+                    val result = loadM3u(
+                        context,
+                        database,
+                        snackbarHostState,
+                        uri,
+                        matchStrength = scannerSensitivity,
+                        searchOnline = remoteLookup
+                    )
                     importedSongs.clear()
                     importedSongs.addAll(result.first)
                     rejectedSongs.clear()
@@ -279,6 +292,7 @@ fun ImportM3uDialog(
 fun loadM3u(
     context: Context,
     database: MusicDatabase,
+    snackbarHostState: SnackbarHostState,
     uri: Uri,
     matchStrength: ScannerM3uMatchCriteria = ScannerM3uMatchCriteria.LEVEL_1,
     searchOnline: Boolean = false
@@ -374,12 +388,13 @@ fun loadM3u(
     }
 
     if (songs.isEmpty()) {
-        Looper.prepare()
-        Toast.makeText(
-            context,
-            "No songs found. Invalid file, or perhaps no song matches were found.",
-            Toast.LENGTH_SHORT
-        ).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            snackbarHostState.showSnackbar(
+                message = context.getString(R.string.m3u_import_failed),
+                withDismissAction = true,
+                duration = SnackbarDuration.Long
+            )
+        }
     }
     return Triple(songs, rejectedSongs, uri.path?.substringAfterLast('/')?.substringBeforeLast('.') ?: "")
 }

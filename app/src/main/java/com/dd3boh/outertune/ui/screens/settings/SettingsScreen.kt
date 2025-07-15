@@ -33,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,6 +42,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,10 +54,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ENABLE_UPDATE_CHECKER
 import com.dd3boh.outertune.constants.LastVersionKey
+import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.constants.UpdateAvailableKey
 import com.dd3boh.outertune.ui.component.IconButton
@@ -65,6 +69,7 @@ import com.dd3boh.outertune.utils.compareVersion
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -96,6 +101,7 @@ fun SettingsScreen(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val context = LocalContext.current
+    val snackbarHostState = LocalSnackbarHostState.current
     val uriHandler = LocalUriHandler.current
 
     val lastVer by rememberPreference(LastVersionKey, defaultValue = "0.0.0")
@@ -241,30 +247,26 @@ fun SettingsScreen(
                         } else {
                             CoroutineScope(Dispatchers.IO).launch {
                                 Updater.tryCheckUpdate(context, true)?.let {
-                                    withContext(Dispatchers.Main) {
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.check_for_update),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    snackbarHostState.showSnackbar(
+                                        message = context.getString(R.string.check_for_update),
+                                        withDismissAction = true,
+                                        duration = SnackbarDuration.Short
+                                    )
                                     if (compareVersion(lastVer, it) < 0) {
                                         onUpdateAvailableChange(true)
                                         Timber.tag(SETTINGS_TAG).d("Update available. UpdateAvailable set to true")
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.new_version_available),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.new_version_available),
+                                            withDismissAction = true,
+                                            duration = SnackbarDuration.Short
+                                        )
                                     } else {
                                         Timber.tag(SETTINGS_TAG).d("No new updates available")
-                                        withContext(Dispatchers.Main) {
-                                            Toast.makeText(
-                                                context,
-                                                context.getString(R.string.no_updates_available),
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(R.string.no_updates_available),
+                                            withDismissAction = true,
+                                            duration = SnackbarDuration.Short
+                                        )
                                     }
                                 }
                             }
