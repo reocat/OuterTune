@@ -222,5 +222,5 @@
     <string name="wiki">Wiki</string>
     <string name="err_invalid_ytm_song">Falha ao reproduzir a música. Somente conteúdo acessível pelo YouTube Music pode ser reproduzido</string>
     <string name="err_restore_incompatible_database">Não foi possível restaurar banco de dados incompatível</string>
-    <string name="m3u_import_failed">Nenhuma música encontrada. Arquivo M3U inválido, ou nenhuma correspondência das músicas foram encontradas</string>
+    <string name="m3u_import_failed">Nenhuma música encontrada. Arquivo M3U inválido, ou nenhuma correspondência das músicas foi encontrada</string>
 </resources>
