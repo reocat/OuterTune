@@ -132,4 +132,26 @@
     <string name="queue_local_history">历史（本地）</string>
     <string name="queue_remote_history">历史记录（远程）</string>
     <string name="pause_remote_listen_history">与 YouTube Music 分享收听记录</string>
+    <string name="queues_empty">无播放队列</string>
+    <string name="speed_fast">快速</string>
+    <string name="speed_very_fast">非常快速</string>
+    <string name="android_auto">安卓自动</string>
+    <string name="err_restore_incompatible_database">无法恢复不兼容的数据库</string>
+    <string name="grp_library_and_content">音乐库和内容</string>
+    <string name="grp_account_sync">账号和同步</string>
+    <string name="grp_behavior">行为</string>
+    <string name="help_bug_report_action">提交BUG报告（通过GitHub）</string>
+    <string name="help_support_forum">帮助和支持（通过GitHub）</string>
+    <string name="help_contact_email_inquiries">其他咨询（点击复制邮箱）</string>
+    <string name="import_success_songs">导入成功</string>
+    <string name="library_empty">你的音乐库将在此显示</string>
+    <string name="lyrics_karaoke_hz_title">调整卡拉ok歌词更新速度</string>
+    <string name="lyrics_karaoke_description">开启歌词同步。需要支持的歌词格式</string>
+    <string name="lyrics_karaoke_title">卡拉ok风格歌词</string>
+    <string name="m3u_export">导出为M3U文件</string>
+    <string name="m3u_import_failed">没有找到歌曲。无效的M3U文件，或没有找到匹配的歌曲</string>
+    <string name="m3u_ytm_lookup">在YouTube音乐中搜索不在APP数据库中的歌曲</string>
+    <string name="more_settings">更多设置</string>
+    <string name="no_updates_available">没有可用的更新</string>
+    <string name="missing_media_permission_warning">需要获取存储权限以获得本地媒体。点此授予权限</string>
 </resources>
