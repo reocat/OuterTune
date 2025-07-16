@@ -136,4 +136,5 @@
     <string name="scanner_strict_file_name_description">जब यह सक्षम होता है, तो फ़ाइल नामों की अनदेखी नहीं की जाती है। उदाहरण: Song.ogg को Song.flac से अलग गाना माना जाएगा। स्कैनर की संवेदनशीलता की वरीयता फिर भी लागू रहेगी</string>
     <string name="scanner_sensitivity_title">स्कैनर की संवेदनशीलता सेट करें</string>
     <string name="scanner_sensitivity_L1">शीर्षक मिलाएं</string>
+    <string name="err_invalid_ytm_song">गाना बजाने में विफल। केवल वही गाने चलाए जा सकते है जो यूट्यूब म्यूजिक पर उपलब्ध हो।</string>
 </resources>
