@@ -218,5 +218,6 @@
     <string name="help_contact_email_inquiries">Други запитвания (докоснете, за да копирате Имейла)</string>
     <string name="help_support_forum">Помощ и поддръжка (чрез Github)</string>
     <string name="wiki">Уики</string>
-    <string name="err_invalid_ytm_song">Не успя да възпроизведе песента. Може да се възпроизвежда само съдържание, достъпно в YouTube Music</string>
+    <string name="err_invalid_ytm_song">Неуспешно изпълнение на песен. Може да се възпроизвежда само съдържание, достъпно в YouTube Music</string>
+    <string name="m3u_import_failed">Няма намерени песни. Невалиден M3U файл или не са намерени съвпадения на песни.</string>
 </resources>
