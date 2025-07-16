@@ -165,4 +165,10 @@
     <string name="oobe_local_music_support_description">播放你的歌曲文件（例如MP3, OGG, FLAC等）</string>
     <string name="oobe_cross_platform_sync_description">保持你的音乐在不同设备中同调</string>
     <string name="oobe_interface_subtitle">个性化OuterTune样式以及显示的内容</string>
+    <string name="action_cancel">取消</string>
+    <string name="grp_sync">同步</string>
+    <string name="check_for_update">检查更新</string>
+    <string name="clear_song_cache_confirm">您确认想清理音乐换成吗?</string>
+    <string name="disable_lm_confirm">您确定要禁用本地媒体功能吗？</string>
+    <string name="scan_paths_description">选择本地存储上的文件夹来扫描歌曲</string>
 </resources>
