@@ -164,11 +164,17 @@
     <string name="oobe_local_music_support">扩展的本地音乐支持</string>
     <string name="oobe_local_music_support_description">播放你的歌曲文件（例如MP3, OGG, FLAC等）</string>
     <string name="oobe_cross_platform_sync_description">保持你的音乐在不同设备中同调</string>
-    <string name="oobe_interface_subtitle">个性化OuterTune样式以及显示的内容</string>
+    <string name="oobe_interface_subtitle">个性化OuterTune样式以及显示的内容。</string>
     <string name="action_cancel">取消</string>
     <string name="grp_sync">同步</string>
     <string name="check_for_update">检查更新</string>
     <string name="clear_song_cache_confirm">您确认想清理音乐换成吗?</string>
     <string name="disable_lm_confirm">您确定要禁用本地媒体功能吗？</string>
     <string name="scan_paths_description">选择本地存储上的文件夹来扫描歌曲</string>
+    <string name="oobe_local_media_title">本地歌曲</string>
+    <string name="oobe_ytm_logon_subtitle">登录你的YouTube音乐账号以同步和进入私人账户内容。此为可选项。</string>
+    <string name="oobe_complete_title">全部设置完毕！</string>
+    <string name="oobe_local_media_subtitle">选择拥有你的音乐的文件夹。我们将扫描并导入这些文件夹中的曲目.</string>
+    <string name="oobe_downloads_subtitle">选择保存下载的文件夹。</string>
+    <string name="speed_very_slow">非常缓慢</string>
 </resources>
