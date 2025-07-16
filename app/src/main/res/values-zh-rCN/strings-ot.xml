@@ -113,7 +113,7 @@
     <string name="dev_settings_title">启用开发人员设置</string>
     <string name="dev_settings_description">显示用于开发的其他高级设置</string>
     <string name="oobe_welcome_message">欢迎来到 OuterTune</string>
-    <string name="oobe_complete">设置完成</string>
+    <string name="oobe_complete">OuterTune设置完成，可立即使用。探索你的音乐，发现新歌曲，享受美好的体验吧！</string>
     <string name="oobe_use_backup">我有备份</string>
     <string name="action_back">返回</string>
     <string name="action_next">下一个</string>
@@ -153,5 +153,16 @@
     <string name="m3u_ytm_lookup">在YouTube音乐中搜索不在APP数据库中的歌曲</string>
     <string name="more_settings">更多设置</string>
     <string name="no_updates_available">没有可用的更新</string>
-    <string name="missing_media_permission_warning">需要获取存储权限以获得本地媒体。点此授予权限</string>
+    <string name="missing_media_permission_warning">需要获取存储权限以获得本地媒体。点此授予权限。</string>
+    <string name="oobe_ad_free_exp">无广告体验</string>
+    <string name="oobe_ad_free_exp_description">体验连续的回放音乐</string>
+    <string name="oobe_cross_platform_sync">跨平台同步</string>
+    <string name="swipe_to_skip_title">水平划动以更换曲目</string>
+    <string name="swipe_to_skip_description">开启在播放器中水平划动切换曲目</string>
+    <string name="oobe_ytm_integration">合并YouTube音乐</string>
+    <string name="oobe_ytm_integration_description">无缝进入你最喜欢的曲目</string>
+    <string name="oobe_local_music_support">扩展的本地音乐支持</string>
+    <string name="oobe_local_music_support_description">播放你的歌曲文件（例如MP3, OGG, FLAC等）</string>
+    <string name="oobe_cross_platform_sync_description">保持你的音乐在不同设备中同调</string>
+    <string name="oobe_interface_subtitle">个性化OuterTune样式以及显示的内容</string>
 </resources>
