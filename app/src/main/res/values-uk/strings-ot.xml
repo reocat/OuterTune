@@ -222,4 +222,5 @@
     <string name="help_contact_email_inquiries">Інші запити (Натисніть, щоб скопіювати електронну пошту)</string>
     <string name="help_support_forum">Довідка та підтримка (через Github)</string>
     <string name="wiki">Вікі</string>
+    <string name="err_invalid_ytm_song">Не вдалося відтворити пісню. Можна відтворити лише контент, доступний у YouTube Music.</string>
 </resources>
