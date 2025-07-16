@@ -103,7 +103,7 @@
     <string name="sync_progress_success">Synchronisation terminée</string>
     <string name="tab_arrangement_home_required">L\'onglet Accueil est obligatoire.</string>
     <string name="scanner_manual_btn">Déclencher la synchronisation manuelle</string>
-    <string name="scanner_missing_storage_perm">Le scanner nécessite des autorisations de stockage</string>
+    <string name="scanner_missing_storage_perm">Le scanner multimédia local nécessite des autorisations de stockage pour fonctionner</string>
     <string name="scanner_progress_scanning">Analyse…</string>
     <string name="scanner_scan_fail">Échec de l\'analyse</string>
     <string name="scanner_ytm_link_fail">La tâche de liaison des artistes YouTube a échoué</string>
@@ -220,4 +220,7 @@
     <string name="help_contact_email_inquiries">Autres demandes (Appuyez pour copier l\'e-mail)</string>
     <string name="help_support_forum">Aide et support (via Github)</string>
     <string name="wiki">Wiki</string>
+    <string name="err_invalid_ytm_song">Impossible de lire le titre. Seul le contenu accessible sur YouTube Music peut être lu.</string>
+    <string name="err_restore_incompatible_database">Impossible de restaurer une base de données incompatible</string>
+    <string name="m3u_import_failed">Aucun titre trouvé. Fichier M3U invalide ou aucun titre correspondant trouvé.</string>
 </resources>
