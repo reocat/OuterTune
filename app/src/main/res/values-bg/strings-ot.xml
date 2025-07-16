@@ -136,7 +136,7 @@
     <string name="scanner_strict_file_name_description">Когато е активирано, имената на файловете НЯМА да бъдат игнорирани. Например, Song.ogg ще бъде различна песен от Song.flac. Предпочитанието за чувствителност на сканиране ще продължи да се прилага</string>
     <string name="sync_progress_success">Синхронизирането е завършено</string>
     <string name="m3u_import_playlist_failed">Неуспешно внасяне</string>
-    <string name="scanner_missing_storage_perm">Сканирането изисква разрешения за съхранение</string>
+    <string name="scanner_missing_storage_perm">Местният медиен скенер изисква разрешения за съхранение, за да функционира</string>
     <string name="scanner_progress_processing">Обработва се…</string>
     <string name="clear_song_cache_confirm">Сигурни ли сте, че искате да изчистите кеша на песните?</string>
     <string name="dl_main_path_description">Изберете място за съхранение на изтеглени файлове</string>
@@ -219,5 +219,6 @@
     <string name="help_support_forum">Помощ и поддръжка (чрез Github)</string>
     <string name="wiki">Уики</string>
     <string name="err_invalid_ytm_song">Неуспешно изпълнение на песен. Може да се възпроизвежда само съдържание, достъпно в YouTube Music</string>
-    <string name="m3u_import_failed">Няма намерени песни. Невалиден M3U файл или не са намерени съвпадения на песни.</string>
+    <string name="m3u_import_failed">Няма намерени песни. Невалиден M3U файл или не са намерени съвпадения на песни</string>
+    <string name="err_restore_incompatible_database">Несъвместимата база данни не можа да бъде възстановена</string>
 </resources>
