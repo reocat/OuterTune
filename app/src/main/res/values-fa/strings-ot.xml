@@ -121,7 +121,7 @@
     <string name="scanner_rejected_dir">انتخاب نامعتبر است. پوشه اسکن نمی‌تواند زیرشاخه‌ای از پوشه دانلود یا خود پوشه دانلود باشد</string>
     <string name="scanner_warning">به طور پیش‌فرض، اسکنر هیچ فراداده‌ای از آهنگ‌های موجود را بارگیری مجدد نمی‌کند، مگر اینکه در بالا طور دیگری مشخص کرده باشید. بسته به اندازه کتابخانه شما، این کار کمی طول می‌کشد.</string>
     <string name="scanner_missing_ffmpeg">استخراج کننده FFmpeg شناسایی نشد</string>
-    <string name="scanner_missing_storage_perm">اسکنر به مجوزهای ذخیره‌ سازی نیاز دارد</string>
+    <string name="scanner_missing_storage_perm">اسکنر رسانه محلی برای عملکرد به مجوزهای ذخیره‌ سازی نیاز دارد</string>
     <string name="scanner_btn_idle">اسکن</string>
     <string name="scanner_progress_complete">اسکن کامل شد</string>
     <string name="scanner_progress_discovering">در حال یافتن…</string>
@@ -218,4 +218,7 @@
     <string name="help_contact_email_inquiries">سایر سوالات (برای کپی، روی ایمیل ضربه بزنید)</string>
     <string name="help_support_forum">راهنمایی و پشتیبانی (در گیت هاب)</string>
     <string name="wiki">ویکی</string>
+    <string name="err_invalid_ytm_song">پخش آهنگ ناموفق بود. فقط محتوای قابل دسترسی در یوتیوب قابل پخش است</string>
+    <string name="err_restore_incompatible_database">پایگاه داده ناسازگار بازیابی نشد</string>
+    <string name="m3u_import_failed">هیچ آهنگی یافت نشد. فایل M3U نامعتبر است، یا هیچ آهنگ منطبقی پیدا نشد</string>
 </resources>
