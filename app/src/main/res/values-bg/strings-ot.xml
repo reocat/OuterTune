@@ -92,7 +92,7 @@
     <string name="scanner_progress_complete">Сканирането е завършено</string>
     <string name="scanner_progress_scanning">Сканиране…</string>
     <string name="scanner_progress_syncing">Синхронизиране…</string>
-    <string name="scanner_scan_fail">Сканирането е неуспешно</string>
+    <string name="scanner_scan_fail">Неуспешно сканиране</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="one">%d песен е обработена</item>
         <item quantity="other">%d песни са обработени</item>
@@ -122,7 +122,7 @@
     <string name="tab_arrangement">Подреждане на раздели</string>
     <string name="tab_arrangement_disable_tip">--- Плъзнете тук отдолу, за да деактивирате ---</string>
     <string name="scan_paths_excl">Изключени пътища за сканиране</string>
-    <string name="scanner_ytm_link_fail">Задачата за свързване на изпълнител в YouTube не бе успешна</string>
+    <string name="scanner_ytm_link_fail">Неуспешна задача за свързване на изпълнител в YouTube</string>
     <string name="experimental_settings_title">Експериментални</string>
     <string name="dev_settings_title">Активирайте настройките за програмисти</string>
     <string name="oobe_use_backup">Имам резервно копие</string>
@@ -218,4 +218,5 @@
     <string name="help_contact_email_inquiries">Други запитвания (докоснете, за да копирате Имейла)</string>
     <string name="help_support_forum">Помощ и поддръжка (чрез Github)</string>
     <string name="wiki">Уики</string>
+    <string name="err_invalid_ytm_song">Не успя да възпроизведе песента. Може да се възпроизвежда само съдържание, достъпно в YouTube Music</string>
 </resources>
