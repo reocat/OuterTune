@@ -106,7 +106,7 @@
     <string name="swipe2Queue_description">Проведіть по пісні, щоби додати її до черги одразу після пісні, яка відтворюється зараз</string>
     <string name="swipe2Queue">Проведіть для додавання в чергу</string>
     <string name="scanner_missing_ffmpeg">Витягувач FFmpeg не виявлено</string>
-    <string name="scanner_missing_storage_perm">Сканер потребує дозволів на зберігання даних</string>
+    <string name="scanner_missing_storage_perm">Для роботи локального сканера медіа потрібні дозволи на зберігання</string>
     <string name="scanner_progress_scanning">Сканування…</string>
     <string name="scanner_scan_fail">Не вдалося просканувати</string>
     <string name="scanner_ytm_link_fail">Не вдалося пов\'язати з виконавцем на YouTube</string>
@@ -222,5 +222,7 @@
     <string name="help_contact_email_inquiries">Інші запити (Натисніть, щоб скопіювати електронну пошту)</string>
     <string name="help_support_forum">Довідка та підтримка (через Github)</string>
     <string name="wiki">Вікі</string>
-    <string name="err_invalid_ytm_song">Не вдалося відтворити пісню. Можна відтворити лише контент, доступний у YouTube Music.</string>
+    <string name="err_invalid_ytm_song">Не вдалося відтворити пісню. Можна відтворити лише контент, доступний у YouTube Music</string>
+    <string name="err_restore_incompatible_database">Не вдалося відновити несумісну базу даних</string>
+    <string name="m3u_import_failed">Пісні не знайдено. Недійсний файл M3U або відповідні пісні не знайдено</string>
 </resources>
