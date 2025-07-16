@@ -220,5 +220,5 @@
     <string name="scanner_sensitivity_L0">YouTubeで検索が有効になっている場合はYouTubeから提供される最初の結果を取得し、そうでない場合はタイトルが一致するものを取得します</string>
     <string name="err_invalid_ytm_song">曲の再生に失敗。YouTube Musicで利用可能なコンテンツのみ再生できます</string>
     <string name="err_restore_incompatible_database">互換性のないデータベースを復元できませんでした</string>
-    <string name="m3u_import_failed">曲が見つかりません。無効なM3Uファイルか、一致する曲が見つかりませんでした。</string>
+    <string name="m3u_import_failed">曲が見つかりません。無効なM3Uファイルか、一致する曲が見つかりませんでした</string>
 </resources>
