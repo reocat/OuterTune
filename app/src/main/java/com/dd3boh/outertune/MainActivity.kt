@@ -346,6 +346,8 @@ class MainActivity : ComponentActivity() {
         } else {
             playerConnection?.service?.saveQueueToDisk()
         }
+
+        super.onDestroy()
     }
 
     @SuppressLint("UnusedBoxWithConstraintsScope")
