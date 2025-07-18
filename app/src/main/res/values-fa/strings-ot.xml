@@ -212,12 +212,6 @@
     <string name="speed_fast">سریع</string>
     <string name="speed_very_fast">خیلی سریع</string>
     <string name="scanner_sensitivity_L0">وقتی جستجو در یوتیوب فعال است، اولین نتیجه ارائه شده توسط یوتیوب را انتخاب کند، در غیر این صورت با عنوان مطابقت داشته باشد</string>
-    <string name="app_info_title">اطلاعات نرم افزار</string>
-    <string name="device_info_title">اطلاعات دستگاه</string>
-    <string name="help_bug_report_action">گزارش باگ (در گیت هاب)</string>
-    <string name="help_contact_email_inquiries">سایر سوالات (برای کپی، روی ایمیل ضربه بزنید)</string>
-    <string name="help_support_forum">راهنمایی و پشتیبانی (در گیت هاب)</string>
-    <string name="wiki">ویکی</string>
     <string name="err_invalid_ytm_song">پخش آهنگ ناموفق بود. فقط محتوای قابل دسترسی در یوتیوب قابل پخش است</string>
     <string name="err_restore_incompatible_database">پایگاه داده ناسازگار بازیابی نشد</string>
     <string name="m3u_import_failed">هیچ آهنگی یافت نشد. فایل M3U نامعتبر است، یا هیچ آهنگ منطبقی پیدا نشد</string>
