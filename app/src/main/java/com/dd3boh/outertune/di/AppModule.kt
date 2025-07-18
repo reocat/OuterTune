@@ -44,7 +44,7 @@ object AppModule {
     @Provides
     @Singleton
     @ImageCache
-    fun provideImageCache(): LmImageCacheMgr = LmImageCacheMgr()
+    fun provideImageCache(@ApplicationContext context: Context): LmImageCacheMgr = LmImageCacheMgr(context)
 
     @Singleton
     @Provides

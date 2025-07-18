@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
+import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.MiniPlayerHeight
@@ -88,7 +89,6 @@ import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -299,6 +299,7 @@ fun MiniMediaInfo(
     pureBlack: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val imageCache = LocalImageCache.current
     val playerConnection = LocalPlayerConnection.current
     val isWaitingForNetwork by playerConnection?.waitingForNetworkConnection?.collectAsState(initial = false)
         ?: remember { mutableStateOf(false) }
@@ -317,7 +318,7 @@ fun MiniMediaInfo(
             if (mediaMetadata.isLocal) {
                 // local thumbnail arts
                 AsyncImageLocal(
-                    image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, true) },
+                    image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, true, true) },
                     modifier = Modifier
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
                         .aspectRatio(ratio = 1f)

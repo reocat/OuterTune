@@ -256,6 +256,7 @@ import com.dd3boh.outertune.ui.screens.settings.MonetSettings
 import com.dd3boh.outertune.constants.MonetStyle
 import com.dd3boh.outertune.constants.MonetThemeStyleKey
 import com.dd3boh.outertune.constants.MonetTintBackgroundKey
+import com.dd3boh.outertune.di.ImageCache
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
@@ -269,10 +270,10 @@ import com.dd3boh.outertune.ui.utils.Updater
 import com.dd3boh.outertune.ui.utils.appBarScrollBehavior
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.clearDtCache
-import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.ui.utils.resetHeightOffset
 import com.dd3boh.outertune.utils.ActivityLauncherHelper
 import com.dd3boh.outertune.utils.CoilBitmapLoader
+import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.utils.NetworkConnectivityObserver
 import com.dd3boh.outertune.utils.SyncUtils
 import com.dd3boh.outertune.utils.compareVersion
@@ -313,6 +314,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var syncUtils: SyncUtils
+
+    @Inject
+    @ImageCache
+    lateinit var imageCache: LmImageCacheMgr
 
     lateinit var activityLauncher: ActivityLauncherHelper
     lateinit var connectivityObserver: NetworkConnectivityObserver
@@ -401,7 +406,7 @@ class MainActivity : ComponentActivity() {
 
         lifecycle.addObserver(connectivityObserver)
 
-        val bitmapLoader = CoilBitmapLoader(this, CoroutineScope(Dispatchers.IO))
+        val bitmapLoader = CoilBitmapLoader(this, CoroutineScope(Dispatchers.IO), imageCache = imageCache)
 
         setContent {
             val coroutineScope = rememberCoroutineScope()
@@ -1732,3 +1737,4 @@ val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No Downl
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
 val LocalNetworkConnected = staticCompositionLocalOf<Boolean> { error("No Network Status provided") }
 val LocalSnackbarHostState = staticCompositionLocalOf<SnackbarHostState> { error("No SnackbarHostState provided") }
+val LocalImageCache = staticCompositionLocalOf<LmImageCacheMgr> { error("No LmImageCacheMgr provided") }

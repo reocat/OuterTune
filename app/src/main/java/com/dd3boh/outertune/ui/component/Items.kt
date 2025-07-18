@@ -106,6 +106,7 @@ import coil.compose.AsyncImage
 import com.dd3boh.outertune.BuildConfig
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
+import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -130,7 +131,6 @@ import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.menu.FolderMenu
 import com.dd3boh.outertune.ui.menu.SongMenu
 import com.dd3boh.outertune.ui.utils.getNSongsString
-import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.reportException
@@ -662,6 +662,7 @@ fun SongGridItem(
             modifier = Modifier.size(GridThumbnailHeight)
         ) {
             if (song.song.isLocal) {
+                val imageCache = LocalImageCache.current
                 AsyncImageLocal(
                     image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
                     modifier = Modifier
@@ -1457,6 +1458,7 @@ fun ItemThumbnail(
 ) {
     // ehhhh make a nicer thing for later
     val context = LocalContext.current
+    val imageCache = LocalImageCache.current
 
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
@@ -1573,6 +1575,7 @@ fun PlaylistThumbnail(
     placeHolder: @Composable () -> Unit,
     shape: Shape,
 ) {
+    val imageCache = LocalImageCache.current
     when (thumbnails.size) {
         0 -> placeHolder()
 
