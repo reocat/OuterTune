@@ -15,12 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.icons.rounded.SyncLock
 import androidx.compose.material.icons.rounded.SyncProblem
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -130,59 +127,58 @@ fun ColumnScope.SyncManualFrag() {
         isEnabled = isLoggedIn && isNetworkConnected
     )
 
-        val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
-        encodeSyncString(enabledContent.toList())
-        SyncContent.entries.filterNot { it == SyncContent.NULL }.forEach { item ->
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 48.dp, vertical = 4.dp)
-            ) {
-                val title = when (item) {
-                    SyncContent.ALBUMS -> stringResource(R.string.albums)
-                    SyncContent.ARTISTS -> stringResource(R.string.artists)
-                    SyncContent.PLAYLISTS -> stringResource(R.string.playlists)
-                    SyncContent.LIKED_SONGS -> stringResource(R.string.liked_songs)
-                    SyncContent.PRIVATE_SONGS -> stringResource(R.string.songs)
-                    SyncContent.RECENT_ACTIVITY -> stringResource(R.string.recent_activity)
-                    else -> ""
-                }
-                val syncProgressIndicator = when (item) {
-                    SyncContent.ALBUMS -> isSyncingRemoteAlbums
-                    SyncContent.ARTISTS -> isSyncingRemoteArtists
-                    SyncContent.PLAYLISTS -> isSyncingRemotePlaylists
-                    SyncContent.LIKED_SONGS -> isSyncingRemoteLikedSongs
-                    SyncContent.PRIVATE_SONGS -> isSyncingRemoteSongs
-                    SyncContent.RECENT_ACTIVITY -> isSyncingRecentActivity
-                    else -> false
-                }
+    val enabledContent = decodeSyncString(syncContent).sortedBy { it.name }
+    encodeSyncString(enabledContent.toList())
+    SyncContent.entries.filterNot { it == SyncContent.NULL }.forEach { item ->
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 48.dp, vertical = 4.dp)
+        ) {
+            val title = when (item) {
+                SyncContent.ALBUMS -> stringResource(R.string.albums)
+                SyncContent.ARTISTS -> stringResource(R.string.artists)
+                SyncContent.PLAYLISTS -> stringResource(R.string.playlists)
+                SyncContent.LIKED_SONGS -> stringResource(R.string.liked_songs)
+                SyncContent.PRIVATE_SONGS -> stringResource(R.string.songs)
+                SyncContent.RECENT_ACTIVITY -> stringResource(R.string.recent_activity)
+                else -> ""
+            }
+            val syncProgressIndicator = when (item) {
+                SyncContent.ALBUMS -> isSyncingRemoteAlbums
+                SyncContent.ARTISTS -> isSyncingRemoteArtists
+                SyncContent.PLAYLISTS -> isSyncingRemotePlaylists
+                SyncContent.LIKED_SONGS -> isSyncingRemoteLikedSongs
+                SyncContent.PRIVATE_SONGS -> isSyncingRemoteSongs
+                SyncContent.RECENT_ACTIVITY -> isSyncingRecentActivity
+                else -> false
+            }
 
-                if (syncProgressIndicator) {
-                    Row(
-                        modifier = Modifier.padding(14.dp)
-                    ) {
-                        SyncProgressItem(true)
-                    }
-                } else {
-                    Checkbox(
-                        checked = enabledContent.contains(item),
-                        onCheckedChange = { checked ->
-                            val updated = enabledContent.toMutableList()
-                            if (checked) {
-                                updated.add(item)
-                            } else {
-                                updated.removeAll { it == item }
-                            }
-                            onSyncContentChange(encodeSyncString(updated))
-                        },
-                        enabled = isLoggedIn
-                    )
+            if (syncProgressIndicator) {
+                Row(
+                    modifier = Modifier.padding(14.dp)
+                ) {
+                    SyncProgressItem(true)
                 }
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge
+            } else {
+                Checkbox(
+                    checked = enabledContent.contains(item),
+                    onCheckedChange = { checked ->
+                        val updated = enabledContent.toMutableList()
+                        if (checked) {
+                            updated.add(item)
+                        } else {
+                            updated.removeAll { it == item }
+                        }
+                        onSyncContentChange(encodeSyncString(updated))
+                    },
+                    enabled = isLoggedIn
                 )
             }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }

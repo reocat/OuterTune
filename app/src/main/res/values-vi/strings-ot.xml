@@ -85,12 +85,6 @@
     <string name="token_adv_login_description">Đây là một phương thức đăng nhập NÂNG CAO. Thay vì sử dụng cổng web, bạn có thể nhập hoặc cập nhật mã đăng nhập (token) trực tiếp tại đây. Cách này giúp tăng tốc quá trình đăng nhập trên nhiều thiết bị. Lưu ý: mọi mã token không hợp lệ hoặc không thể phân tích sẽ không được chấp nhận</string>
     <string name="ytm_sync">Tự động đồng bộ với tài khoản YouTube Music của bạn</string>
     <string name="android_auto">Android Auto</string>
-    <string name="app_info_title">Thông tin ứng dụng</string>
-    <string name="device_info_title">Thông tin thiết bị</string>
-    <string name="help_bug_report_action">Báo cáo về một lỗi [ Thông qua GitHub ]</string>
-    <string name="help_contact_email_inquiries">Các câu hỏi khác [ Nhấn để copy Email ]</string>
-    <string name="help_support_forum">Hỗ trợ [ Thông qua GitHub ]</string>
-    <string name="wiki">Trang Wiki</string>
     <string name="audio_offload_description">Sử dụng đường dẫn truyền tải âm thanh. Tắt cài đặt này có thể làm tăng mức tiêu thụ pin, nhưng sẽ hữu dụng nếu bạn gặp các vấn đề về phát lại hoặc xử lí</string>
     <string name="keep_alive_title">Cho phép ứng dụng chạy ngầm</string>
 </resources>

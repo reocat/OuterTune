@@ -140,9 +140,6 @@
     <string name="grp_library_and_content">音乐库和内容</string>
     <string name="grp_account_sync">账号和同步</string>
     <string name="grp_behavior">行为</string>
-    <string name="help_bug_report_action">提交BUG报告（通过GitHub）</string>
-    <string name="help_support_forum">帮助和支持（通过GitHub）</string>
-    <string name="help_contact_email_inquiries">其他咨询（点击复制邮箱）</string>
     <string name="import_success_songs">导入成功</string>
     <string name="library_empty">你的音乐库将在此显示</string>
     <string name="lyrics_karaoke_hz_title">调整卡拉ok歌词更新速度</string>
@@ -170,11 +167,9 @@
     <string name="check_for_update">检查更新</string>
     <string name="clear_song_cache_confirm">您确认想清理音乐换成吗?</string>
     <string name="disable_lm_confirm">您确定要禁用本地媒体功能吗？</string>
-    <string name="scan_paths_description">选择本地存储上的文件夹来扫描歌曲</string>
     <string name="oobe_local_media_title">本地歌曲</string>
     <string name="oobe_ytm_logon_subtitle">登录你的YouTube音乐账号以同步和进入私人账户内容。此为可选项。</string>
     <string name="oobe_complete_title">全部设置完毕！</string>
     <string name="oobe_local_media_subtitle">选择拥有你的音乐的文件夹。我们将扫描并导入这些文件夹中的曲目.</string>
-    <string name="oobe_downloads_subtitle">选择保存下载的文件夹。</string>
     <string name="speed_very_slow">非常缓慢</string>
 </resources>

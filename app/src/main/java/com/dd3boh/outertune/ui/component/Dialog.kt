@@ -11,7 +11,6 @@ package com.dd3boh.outertune.ui.component
 
 import android.content.ClipData
 import android.text.format.Formatter
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -64,10 +63,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -81,7 +78,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DialogCornerRadius
-import com.dd3boh.outertune.constants.MenuCornerRadius
 import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.MediaMetadata
@@ -572,9 +568,9 @@ fun DetailsDialog(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = {
-                                val clipData = ClipData.newPlainText("label", displayText)
-                                clipboard.setClipEntry(ClipEntry(clipData))
-                                
+                                val clipData = ClipData.newPlainText(label, AnnotatedString(displayText))
+                                clipboard.nativeClipboard.setPrimaryClip(clipData)
+
                                 coroutineScope.launch {
                                     val job = launch {
                                         snackbarHostState.showSnackbar(

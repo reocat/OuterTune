@@ -165,8 +165,6 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="flat_subfolders_description">Disable to preserve the file structure as on disk</string>
     <string name="disable_lm_confirm">Are you sure you want to disable local media features?</string>
 
-    <string name="import_innertune_tooltip">Restoring InnerTune backups are supported, albeit a possibility of anomalies due to technical limitations</string>
-
     <!-- Scanner settings -->
     <string name="auto_scanner_title">Scan automatically</string>
     <string name="auto_scanner_description">Automatically scan for songs when opening the app. This does not reload metadata of existing songs.</string>
