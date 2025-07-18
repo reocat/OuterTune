@@ -13,7 +13,6 @@ import android.os.Build
 import com.dd3boh.outertune.constants.MAX_CONCURRENT_JOBS
 import com.dd3boh.outertune.models.CulmSongs
 import com.dd3boh.outertune.models.DirectoryTree
-import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.utils.fixFilePath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,8 +32,6 @@ const val STORAGE_ROOT = "/storage/"
 val ARTIST_SEPARATORS = Regex("\\s*;\\s*|\\s*ft\\.\\s*|\\s*feat\\.\\s*|\\s*&\\s*|\\s*,\\s*", RegexOption.IGNORE_CASE)
 val uninitializedDirectoryTree = DirectoryTree(STORAGE_ROOT, CulmSongs(0))
 private var cachedDirectoryTree: ArrayList<DirectoryTree> = ArrayList()
-var imageCache: LmImageCacheMgr = LmImageCacheMgr()
-
 /**
  * ==========================
  * Various misc helpers
