@@ -29,13 +29,11 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.dd3boh.outertune.constants.MAX_IMAGE_JOBS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
-
-const val MAX_IMAGE_JOBS = 4
-
 @OptIn(DelicateCoroutinesApi::class)
 val imageSession = newFixedThreadPoolContext(MAX_IMAGE_JOBS, "ImageExtractor")
 
@@ -68,7 +66,7 @@ fun AsyncImageLocal(
         if (imageBitmap == null) {
             Icon(
                 placeholderIcon,
-                contentDescription = null,
+                contentDescription = contentDescription,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
@@ -78,7 +76,8 @@ fun AsyncImageLocal(
                 bitmap = imageBitmap,
                 contentDescription = contentDescription,
                 contentScale = contentScale,
-                modifier = modifier,
+                modifier = modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
                 colorFilter = colorFilter
             )
         }
