@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat.requestPermissions
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
@@ -83,7 +84,6 @@ import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.clearDtCache
-import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
@@ -108,6 +108,7 @@ fun ColumnScope.LocalScannerFrag() {
     val context = LocalContext.current
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
+    val imageCache = LocalImageCache.current
     val playerConnection = LocalPlayerConnection.current
     val snackbarHostState = LocalSnackbarHostState.current
 
@@ -132,10 +133,6 @@ fun ColumnScope.LocalScannerFrag() {
     val scannerSensitivity by rememberEnumPreference(
         key = ScannerSensitivityKey,
         defaultValue = ScannerMatchCriteria.LEVEL_2
-    )
-    val scannerImpl by rememberEnumPreference(
-        key = ScannerImplKey,
-        defaultValue = ScannerImpl.TAGLIB
     )
     val strictExtensions by rememberPreference(ScannerStrictExtKey, defaultValue = false)
     val downloadPath by rememberPreference(DownloadPathKey, "")

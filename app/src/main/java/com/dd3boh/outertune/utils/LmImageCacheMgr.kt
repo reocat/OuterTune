@@ -12,111 +12,74 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
-import androidx.collection.LruCache
 import androidx.core.graphics.scale
-import com.dd3boh.outertune.App
-import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
-import java.io.File
-import java.math.BigInteger
-import java.security.MessageDigest
+import com.dd3boh.outertune.models.ImageCacheManager
+import com.dd3boh.outertune.utils.CoilBitmapLoader.Companion.drawPlaceholder
 
-class LmImageCacheMgr {
+class LmImageCacheMgr(context: Context, val placeholderImage: Bitmap = drawPlaceholder(context, 2000, 2000)) {
 
-    // Keep a small in-memory cache for frequently accessed thumbnails
-    private val memCache: LruCache<String, Bitmap> = LruCache(50 * 1024 * 1024) // 50MB memory cache
+    private var localImageCache = ImageCacheManager(300)
 
-    private fun getDiskCacheDir(context: Context): File {
-        return File(context.cacheDir, "embedded_thumbnails").also { it.mkdirs() }
-    }
 
     /**
-     * Extract the album art from the audio file.
-     * This now uses a persistent disk cache for performance.
+     * Extract the album art from the audio file. The image is not resized
+     *
+     * @param path Full path of audio file
+     */
+    fun getLocalThumbnail(path: String?): Bitmap? = getLocalThumbnail(path, false, false)
+
+    /**
+     * Extract the album art from the audio file. No fallback image is created.
+     *
+     * @param path Full path of audio file
+     */
+    fun getLocalThumbnail(path: String?, resize: Boolean): Bitmap? = getLocalThumbnail(path, resize, false)
+
+    /**
+     * Extract the album art from the audio file
      *
      * @param path Full path of audio file
      * @param resize Whether to resize the Bitmap to a thumbnail size (300x300)
+     * @param fallback Use a default fallback image if no image could be resolved
      */
-    fun getLocalThumbnail(path: String?, resize: Boolean): Bitmap? {
-        if (path == null) return null
+    fun getLocalThumbnail(path: String?, resize: Boolean, fallback: Boolean): Bitmap? {
+        val fallbackReturn = if (fallback) placeholderImage else null
+        if (path == null) {
+            return fallbackReturn
+        }
+        // try cache lookup
+        val cachedImage = if (resize) {
+            localImageCache.retrieveImage(path)?.resizedImage
+        } else {
+            localImageCache.retrieveImage(path)?.image
+        }
 
-        val key = generateCacheKey(path, resize)
-        val context = App.instance.applicationContext
-
-        memCache[key]?.let { return it }
-
-        val diskCacheDir = getDiskCacheDir(context)
-        val file = File(diskCacheDir, key)
-        if (file.exists()) {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            if (bitmap != null) {
-                memCache.put(key, bitmap)
-                return bitmap
-            }
+        if (cachedImage == null) {
+//        Timber.tag(TAG).d("Cache miss on $path")
+        } else {
+            return cachedImage
         }
 
         val mData = MediaMetadataRetriever()
-        try {
+
+        var image: Bitmap = try {
             mData.setDataSource(path)
-            val art = mData.embeddedPicture ?: return null
-            val bitmap = BitmapFactory.decodeByteArray(art, 0, art.size)
-
-            val finalBitmap = if (resize) {
-                bitmap.scale(300, 300, false)
-            } else {
-                bitmap
-            }
-
-            file.outputStream().use {
-                finalBitmap.compress(Bitmap.CompressFormat.WEBP, 85, it)
-            }
-            memCache.put(key, finalBitmap)
-
-            manageDiskCacheSize(context, diskCacheDir)
-
-            return finalBitmap
+            val art = mData.embeddedPicture
+            BitmapFactory.decodeByteArray(art, 0, art!!.size)
         } catch (e: Exception) {
-            reportException(e)
-            return null
-        } finally {
-            mData.release()
+            localImageCache.cache(path, fallbackReturn, resize)
+            null
+        } ?: return fallbackReturn
+
+        if (resize) {
+            image = image.scale(100, 100, false)
         }
+
+        localImageCache.cache(path, image, resize)
+        return image
     }
 
-    private fun generateCacheKey(path: String, resize: Boolean): String {
-        return md5(path) + if (resize) "_thumb" else "_full"
-    }
-
-    private fun manageDiskCacheSize(context: Context, diskCacheDir: File) {
-        val maxSizeMB = context.dataStore.get(MaxImageCacheSizeKey, 512)
-        if (maxSizeMB <= 0) {
-            purgeCache()
-            return
-        }
-        val maxSize = maxSizeMB * 1024 * 1024L
-        val files = diskCacheDir.listFiles() ?: return
-        var currentSize = files.sumOf { it.length() }
-
-        if (currentSize > maxSize) {
-            val sortedFiles = files.sortedBy { it.lastModified() }
-            for (cacheFile in sortedFiles) {
-                if (currentSize <= maxSize) break
-                currentSize -= cacheFile.length()
-                cacheFile.delete()
-            }
-        }
-    }
-
-    /**
-     * Purges both memory and disk caches.
-     */
     fun purgeCache() {
-        val context = App.instance.applicationContext
-        memCache.evictAll()
-        getDiskCacheDir(context).deleteRecursively()
-    }
-
-    private fun md5(input: String): String {
-        val md = MessageDigest.getInstance("MD5")
-        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+        localImageCache.purgeCache()
     }
 }

@@ -8,6 +8,8 @@ const val MAX_CONCURRENT_DOWNLOAD_JOBS = 3 // ytm defaults to 3
 // maximum parallel scanner jobs allowed
 const val MAX_CONCURRENT_JOBS = 4
 
+// Maximum concurrent image resolution jobs
+const val MAX_IMAGE_JOBS = 4
 
 /**
  * Constants

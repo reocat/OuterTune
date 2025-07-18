@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.ShowLyricsKey
@@ -68,7 +69,6 @@ import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.Lyrics
-import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -82,6 +82,7 @@ fun Thumbnail(
     customMediaMetadata: MediaMetadata? = null
 ) {
     val haptic = LocalHapticFeedback.current
+    val imageCache = LocalImageCache.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val currentView = LocalView.current
     val playerMediaMetadata by playerConnection.mediaMetadata.collectAsState()
@@ -129,7 +130,7 @@ fun Thumbnail(
         if (lastMediaId != null && currentMediaId != null && lastMediaId != currentMediaId) {
             if (!swipeTriggeredChange && !isAnimatingTransition) {
                 isAnimatingTransition = true
-                nextThumbnailUrl = mediaMetadata?.thumbnailUrl
+                nextThumbnailUrl = mediaMetadata.thumbnailUrl
                 animationDirection = if (currentQueueIndex > lastQueueIndex) {
                     false
                 } else if (currentQueueIndex < lastQueueIndex) {
@@ -156,7 +157,7 @@ fun Thumbnail(
             } else if (swipeTriggeredChange) {
                 swipeTriggeredChange = false
             } else if (isAnimatingTransition) {
-                nextThumbnailUrl = mediaMetadata?.thumbnailUrl
+                nextThumbnailUrl = mediaMetadata.thumbnailUrl
             }
         } else if (lastMediaId == null) {
             displayedThumbnailUrl = mediaMetadata?.thumbnailUrl
@@ -328,7 +329,7 @@ fun Thumbnail(
                 ) {
                     if (mediaMetadata?.isLocal == true) {
                         AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false) },
+                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false, true) },
                             contentScale = ContentScale.FillBounds,
                             modifier = Modifier
                                 .fillMaxSize()
@@ -341,7 +342,7 @@ fun Thumbnail(
                                 )
                         )
                         AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false) },
+                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false, true) },
                             contentScale = contentScale,
                             modifier = Modifier
                                 .fillMaxSize()
