@@ -82,7 +82,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" 
 
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 
-newpipe-extractor = { group = "com.github.libre-tube", name = "NewPipeExtractor", version.ref = "newpipe" }
+newpipe-extractor = { group = "com.github.teamnewpipe", name = "NewPipeExtractor", version.ref = "newpipe" }
 
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 
