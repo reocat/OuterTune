@@ -18,7 +18,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -91,6 +95,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -139,9 +144,12 @@ import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
 import com.dd3boh.outertune.ui.component.ResizableIconButton
+import com.dd3boh.outertune.ui.component.SquigglySlider
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState
 import com.dd3boh.outertune.ui.menu.PlayerMenu
+import com.dd3boh.outertune.ui.theme.darken
 import com.dd3boh.outertune.ui.theme.extractGradientColors
+import com.dd3boh.outertune.ui.theme.lighten
 import com.dd3boh.outertune.ui.utils.SnapLayoutInfoProvider
 import com.dd3boh.outertune.ui.utils.imageCache
 import com.dd3boh.outertune.utils.makeTimeString
@@ -151,7 +159,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import com.dd3boh.outertune.ui.component.SquigglySlider
 import kotlin.math.max
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -212,7 +219,7 @@ fun BottomSheetPlayer(
     }
 
     LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
-        val index = maxOf(0, currentMediaIndex)
+        val index = max(0, currentMediaIndex)
         if (index >= 0) {
             try {
                 if (state.isExpanded)
@@ -315,11 +322,6 @@ fun BottomSheetPlayer(
         }
     }
 
-    // On today's episode of compose horror stories: The queue sheet click to expand on my Pixel with one-notch lower
-    // display size and one-notch higher font size. The player sheet isd fine, but the queue sheet won't open on click.
-    // Solution: collapsedBound = dismissedBound + 1.dp for the sheet to work *after* the first manual drag, and set
-    // initialAnchor = 1 for the button to work without the first manual drag. I wish I was making this up but both are
-    // required.
     val dismissedBound = QueuePeekHeight + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
     val queueSheetState = rememberBottomSheetState(
         dismissedBound = dismissedBound,
@@ -508,8 +510,6 @@ fun BottomSheetPlayer(
                         valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
                         onValueChange = {
                             sliderPosition = it.toLong()
-                            // slider too granular for this haptic to feel right
-//                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                         },
                         onValueChangeFinished = {
                             sliderPosition?.let {
@@ -634,7 +634,6 @@ fun BottomSheetPlayer(
                             } else {
                                 playerConnection.player.togglePlayPause()
                             }
-                            // play/pause is slightly harder haptic
                             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         }
                 ) {
@@ -696,7 +695,8 @@ fun BottomSheetPlayer(
                 targetState = mediaMetadata,
                 transitionSpec = {
                     fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
-                }
+                },
+                label = "playerBackground"
             ) { metadata ->
                 if (playerBackground == PlayerBackgroundStyle.BLUR) {
                     if (metadata?.isLocal == true) {
@@ -732,13 +732,70 @@ fun BottomSheetPlayer(
                 targetState = gradientColors,
                 transitionSpec = {
                     fadeIn(tween(1000)) togetherWith fadeOut(tween(1000))
-                }
+                },
+                label = "playerGradient"
             ) { colors ->
                 if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
+                    val gradientBrush = remember(colors, useDarkTheme) {
+                        val topColor = colors[0]
+                        val middleColor = if (colors.size >= 3) colors[1] else colors[0].darken(0.2f)
+                        val bottomColor = colors.last()
+
+                        val finalTopColor = if (useDarkTheme) topColor.lighten(0.1f) else topColor.lighten(0.1f)
+                        val finalMiddleColor = if (useDarkTheme) middleColor else middleColor
+                        val finalBottomColor = if (useDarkTheme) bottomColor.lighten(0.2f) else bottomColor.darken(0.1f)
+
+                        Brush.radialGradient(
+                            colors = listOf(
+                                finalTopColor.copy(alpha = if (useDarkTheme) 1.0f else 0.9f),
+                                finalMiddleColor.copy(alpha = if (useDarkTheme) 0.95f else 0.85f),
+                                finalBottomColor.copy(alpha = if (useDarkTheme) 0.9f else 0.95f),
+                                Color.Black.copy(alpha = if (useDarkTheme) 0.3f else 0.3f)
+                            ),
+                            radius = if (useDarkTheme) 1000f else 1200f,
+                            center = Offset(0.3f, 0.2f)
+                        )
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Brush.verticalGradient(colors), alpha = 0.8f)
+                            .background(gradientBrush)
+                    )
+                }
+            }
+
+            // Optional shimmer effect
+            AnimatedVisibility(
+                visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying,
+                enter = fadeIn(tween(1000)),
+                exit = fadeOut(tween(1000))
+            ) {
+                if (playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.size >= 2) {
+                    val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
+                    val shimmerOffset by infiniteTransition.animateFloat(
+                        initialValue = -1f,
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(3000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "shimmerOffset"
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.White.copy(alpha = 0.05f),
+                                        Color.Transparent
+                                    ),
+                                    start = Offset(shimmerOffset * 1000f, shimmerOffset * 1000f),
+                                    end = Offset((shimmerOffset + 0.5f) * 1000f, (shimmerOffset + 0.5f) * 1000f)
+                                )
+                            )
                     )
                 }
             }
