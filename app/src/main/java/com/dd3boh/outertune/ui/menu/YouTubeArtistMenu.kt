@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Radio
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -17,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -63,7 +64,7 @@ fun YouTubeArtistMenu(
                 }
             ) {
                 Icon(
-                    painter = painterResource(if (libraryArtist?.artist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
+                    imageVector = if (libraryArtist?.artist?.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     tint = if (libraryArtist?.artist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
                     contentDescription = null
                 )
@@ -84,7 +85,7 @@ fun YouTubeArtistMenu(
     ) {
         artist.radioEndpoint?.let { watchEndpoint ->
             GridMenuItem(
-                icon = Icons.Rounded.Radio,
+                icon = Icons.Outlined.Radio,
                 title = R.string.start_radio
             ) {
                 playerConnection.playQueue(YouTubeQueue(watchEndpoint), isRadio = true)
@@ -93,7 +94,7 @@ fun YouTubeArtistMenu(
         }
         artist.shuffleEndpoint?.let { watchEndpoint ->
             GridMenuItem(
-                icon = Icons.Rounded.Shuffle,
+                icon = Icons.Outlined.Shuffle,
                 title = R.string.shuffle
             ) {
                 playerConnection.playQueue(YouTubeQueue(watchEndpoint), isRadio = true)
@@ -101,7 +102,7 @@ fun YouTubeArtistMenu(
             }
         }
         GridMenuItem(
-            icon = Icons.Rounded.Share,
+            icon = Icons.Outlined.Share,
             title = R.string.share
         ) {
             val intent = Intent().apply {

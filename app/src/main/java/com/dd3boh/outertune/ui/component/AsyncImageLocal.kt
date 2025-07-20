@@ -12,7 +12,7 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,9 +46,10 @@ val imageSession = newFixedThreadPoolContext(MAX_IMAGE_JOBS, "ImageExtractor")
 fun AsyncImageLocal(
     image: () -> Bitmap?,
     modifier: Modifier = Modifier,
-    placeholderIcon: ImageVector = Icons.Rounded.MusicNote,
+    placeholderIcon: ImageVector = Icons.Outlined.MusicNote,
     contentScale: ContentScale = ContentScale.Fit,
     contentDescription: String? = null,
+    colorFilter: ColorFilter? = null,
 ) {
     var imageBitmapState by remember { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(image) {
@@ -77,6 +79,7 @@ fun AsyncImageLocal(
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 modifier = modifier,
+                colorFilter = colorFilter
             )
         }
     }

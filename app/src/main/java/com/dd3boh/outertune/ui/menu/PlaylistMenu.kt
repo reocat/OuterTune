@@ -10,16 +10,18 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Output
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.PlaylistRemove
-import androidx.compose.material.icons.rounded.Radio
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Output
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.PlaylistRemove
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -37,7 +39,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
@@ -296,7 +297,7 @@ fun PlaylistMenu(
                     }
                 ) {
                     Icon(
-                        painter = painterResource(if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
+                        imageVector = if (dbPlaylist?.playlist?.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                         tint = if (dbPlaylist?.playlist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
                         contentDescription = null
                     )
@@ -316,7 +317,7 @@ fun PlaylistMenu(
         )
     ) {
         GridMenuItem(
-            icon = Icons.Rounded.PlayArrow,
+            icon = Icons.Outlined.PlayArrow,
             title = R.string.play
         ) {
             onDismiss()
@@ -328,7 +329,7 @@ fun PlaylistMenu(
         }
 
         GridMenuItem(
-            icon = Icons.Rounded.Shuffle,
+            icon = Icons.Outlined.Shuffle,
             title = R.string.shuffle
         ) {
             onDismiss()
@@ -346,7 +347,7 @@ fun PlaylistMenu(
             playlist.playlist.browseId?.let { browseId ->
                 playlist.playlist.radioEndpointParams?.let { radioEndpointParams ->
                     GridMenuItem(
-                        icon = Icons.Rounded.Radio,
+                        icon = Icons.Outlined.Radio,
                         title = R.string.start_radio
                     ) {
                         playerConnection.playQueue(YouTubeQueue(WatchEndpoint(
@@ -360,7 +361,7 @@ fun PlaylistMenu(
         }
 
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
+            icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
             title = R.string.play_next
         ) {
             coroutineScope.launch {
@@ -370,14 +371,14 @@ fun PlaylistMenu(
         }
 
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.QueueMusic,
+            icon = Icons.AutoMirrored.Outlined.QueueMusic,
             title = R.string.add_to_queue
         ) {
             showChooseQueueDialog = true
         }
 
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
             title = R.string.add_to_playlist
         ) {
             showChoosePlaylistDialog = true
@@ -396,14 +397,14 @@ fun PlaylistMenu(
 
         if (editable) {
             GridMenuItem(
-                icon = Icons.Rounded.Edit,
+                icon = Icons.Outlined.Edit,
                 title = R.string.edit
             ) {
                 showEditDialog = true
             }
         }
         GridMenuItem(
-            icon = Icons.Rounded.PlaylistRemove,
+            icon = Icons.Outlined.PlaylistRemove,
             title = R.string.delete
         ) {
             showDeletePlaylistDialog = true
@@ -411,7 +412,7 @@ fun PlaylistMenu(
 
         playlist.playlist.shareLink?.let { shareLink ->
             GridMenuItem(
-                icon = Icons.Rounded.Share,
+                icon = Icons.Outlined.Share,
                 title = R.string.share
             ) {
                 val intent = Intent().apply {
@@ -424,7 +425,7 @@ fun PlaylistMenu(
             }
         }
         GridMenuItem(
-            icon = Icons.Rounded.Output,
+            icon = Icons.Outlined.Output,
             title = R.string.m3u_export
         ) {
             m3uLauncher.launch("playlist.m3u")

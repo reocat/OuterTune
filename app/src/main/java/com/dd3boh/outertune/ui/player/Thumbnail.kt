@@ -29,7 +29,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.OndemandVideo
+import androidx.compose.material.icons.outlined.OndemandVideo
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -379,6 +379,28 @@ fun Thumbnail(
                                 .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics }
                         )
                     }
+                    if (isRectangularImage) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(bottom = 8.dp, end = 8.dp)
+                                .size(32.dp)
+                                .background(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent)
+                                    ),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.OndemandVideo,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
 
                 nextThumbnailUrl?.let { nextUrl ->
@@ -415,28 +437,6 @@ fun Thumbnail(
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-
-                if (isRectangularImage) {
-                    val radial = Brush.radialGradient(
-                        0.0f to Color.Black.copy(alpha = 0.5f),
-                        0.8f to Color.Black.copy(alpha = 0.05f),
-                        1.0f to Color.Transparent,
-                    )
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(48.dp)
-                            .offset(x = (-12).dp, y = (-12).dp)
-                            .background(brush = radial, shape = CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.OndemandVideo,
-                            contentDescription = null,
-                            tint = Color.White
                         )
                     }
                 }

@@ -61,12 +61,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Language
-import androidx.compose.material.icons.rounded.LibraryMusic
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -463,7 +476,7 @@ class MainActivity : ComponentActivity() {
                                 val scanner = LocalMediaScanner.getScanner(
                                     this@MainActivity, SCANNER_OWNER_LM
                                 )
-                                val uris = scanner.scanLocal(scanPaths, excludedScanPaths,)
+                                val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
                                 scanner.quickSync(database, uris, scannerSensitivity, strictExtensions)
 
                                 // start artist linking job
@@ -1217,9 +1230,9 @@ class MainActivity : ComponentActivity() {
                                                                 "search"
                                                             ) == true
                                                         ) {
-                                                            Icons.AutoMirrored.Rounded.ArrowBack
+                                                            Icons.AutoMirrored.Outlined.ArrowBack
                                                         } else {
-                                                            Icons.Rounded.Search
+                                                            Icons.Outlined.Search
                                                         },
                                                     contentDescription = null
                                                 )
@@ -1232,7 +1245,7 @@ class MainActivity : ComponentActivity() {
                                                         onClick = { onQueryChange(TextFieldValue("")) }
                                                     ) {
                                                         Icon(
-                                                            imageVector = Icons.Rounded.Close,
+                                                            imageVector = Icons.Outlined.Close,
                                                             contentDescription = null
                                                         )
                                                     }
@@ -1245,8 +1258,8 @@ class MainActivity : ComponentActivity() {
                                                 ) {
                                                     Icon(
                                                         imageVector = when (searchSource) {
-                                                            SearchSource.LOCAL -> Icons.Rounded.LibraryMusic
-                                                            SearchSource.ONLINE -> Icons.Rounded.Language
+                                                            SearchSource.LOCAL -> Icons.Outlined.LibraryMusic
+                                                            SearchSource.ONLINE -> Icons.Outlined.Language
                                                         },
                                                         contentDescription = null
                                                     )
@@ -1271,7 +1284,7 @@ class MainActivity : ComponentActivity() {
                                                         }
                                                     ) {
                                                         Icon(
-                                                            imageVector = Icons.Rounded.Settings,
+                                                            imageVector = Icons.Outlined.Settings,
                                                             contentDescription = null
                                                         )
                                                     }
@@ -1352,7 +1365,6 @@ class MainActivity : ComponentActivity() {
                                                 Spacer(Modifier.height(8.dp))
                                                 Image(
                                                     modifier = Modifier
-
                                                         .size(36.dp)
                                                         .padding(start = 8.dp),
                                                     painter = painterResource(R.drawable.small_icon),
@@ -1361,17 +1373,32 @@ class MainActivity : ComponentActivity() {
                                             }
                                         ) {
                                             navigationItems.fastForEach { screen ->
-                                                // TODO: display selection when based on root page user entered
-//                                                val isSelected = navBackStackEntry?.destination?.hierarchy?.any {
-//                                                    it.route?.substringBefore("?")?.substringBefore("/") == screen.route
-//                                                } == true
+                                                val isSelected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true
                                                 NavigationRailItem(
-                                                    selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
+                                                    selected = isSelected,
                                                     icon = {
-                                                        Icon(
-                                                            screen.icon,
-                                                            contentDescription = null
-                                                        )
+                                                        val iconToShow = if (isSelected) {
+                                                            when (screen) {
+                                                                Screens.Home -> Icons.Filled.Home
+                                                                Screens.Library -> Icons.Filled.LibraryMusic
+                                                                Screens.Playlists -> Icons.AutoMirrored.Filled.QueueMusic
+                                                                Screens.Artists -> Icons.Filled.Person
+                                                                Screens.Albums -> Icons.Filled.Album
+                                                                Screens.Songs -> Icons.Filled.MusicNote
+                                                                Screens.Folders -> Icons.Filled.Folder
+                                                            }
+                                                        } else {
+                                                            when (screen) {
+                                                                Screens.Home -> Icons.Outlined.Home
+                                                                Screens.Library -> Icons.Outlined.LibraryMusic
+                                                                Screens.Playlists -> Icons.AutoMirrored.Outlined.QueueMusic
+                                                                Screens.Artists -> Icons.Outlined.Person
+                                                                Screens.Albums -> Icons.Outlined.Album
+                                                                Screens.Songs -> Icons.Outlined.MusicNote
+                                                                Screens.Folders -> Icons.Outlined.Folder
+                                                            }
+                                                        }
+                                                        Icon(iconToShow, contentDescription = null)
                                                     },
                                                     label = {
                                                         if (!slimNav) {
@@ -1454,17 +1481,32 @@ class MainActivity : ComponentActivity() {
                                         .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
                                 ) {
                                     navigationItems.fastForEach { screen ->
-                                        // TODO: display selection when based on root page user entered
-//                                        val isSelected = navBackStackEntry?.destination?.hierarchy?.any {
-//                                            it.route?.substringBefore("?")?.substringBefore("/") == screen.route
-//                                        } == true
+                                        val isSelected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true
                                         NavigationBarItem(
-                                            selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true,
+                                            selected = isSelected,
                                             icon = {
-                                                Icon(
-                                                    screen.icon,
-                                                    contentDescription = null
-                                                )
+                                                val iconToShow = if (isSelected) {
+                                                    when (screen) {
+                                                        Screens.Home -> Icons.Filled.Home
+                                                        Screens.Library -> Icons.Filled.LibraryMusic
+                                                        Screens.Playlists -> Icons.AutoMirrored.Filled.QueueMusic
+                                                        Screens.Artists -> Icons.Filled.Person
+                                                        Screens.Albums -> Icons.Filled.Album
+                                                        Screens.Songs -> Icons.Filled.MusicNote
+                                                        Screens.Folders -> Icons.Filled.Folder
+                                                    }
+                                                } else {
+                                                    when (screen) {
+                                                        Screens.Home -> Icons.Outlined.Home
+                                                        Screens.Library -> Icons.Outlined.LibraryMusic
+                                                        Screens.Playlists -> Icons.AutoMirrored.Outlined.QueueMusic
+                                                        Screens.Artists -> Icons.Outlined.Person
+                                                        Screens.Albums -> Icons.Outlined.Album
+                                                        Screens.Songs -> Icons.Outlined.MusicNote
+                                                        Screens.Folders -> Icons.Outlined.Folder
+                                                    }
+                                                }
+                                                Icon(iconToShow, contentDescription = null)
                                             },
                                             label = {
                                                 if (!slimNav) {

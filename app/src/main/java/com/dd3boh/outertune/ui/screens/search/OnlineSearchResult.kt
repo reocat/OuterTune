@@ -17,11 +17,10 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -152,7 +151,7 @@ fun OnlineSearchResult(
                         }
                     ) {
                         Icon(
-                            Icons.Rounded.MoreVert,
+                            Icons.Outlined.MoreVert,
                             contentDescription = null
                         )
                     }
@@ -232,7 +231,7 @@ fun OnlineSearchResult(
             if (searchSummary?.summaries?.isEmpty() == true) {
                 item {
                     EmptyPlaceholder(
-                        icon = Icons.Rounded.Search,
+                        icon = Icons.Outlined.Search,
                         text = stringResource(R.string.no_results_found),
                         modifier = Modifier.animateItem()
                     )
@@ -259,7 +258,7 @@ fun OnlineSearchResult(
             if (itemsPage?.items?.isEmpty() == true) {
                 item {
                     EmptyPlaceholder(
-                        icon = Icons.Rounded.Search,
+                        icon = Icons.Outlined.Search,
                         text = stringResource(R.string.no_results_found),
                         modifier = Modifier.animateItem()
                     )

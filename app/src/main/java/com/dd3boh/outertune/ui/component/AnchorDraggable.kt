@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
@@ -165,7 +165,7 @@ fun SwipeToQueueBox(
                 DragActionIcon(
                     color = MaterialTheme.colorScheme.primary,
                     tint = MaterialTheme.colorScheme.onPrimary,
-                    icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
+                    icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
                     modifier = Modifier
                         .alpha(if (progress.intValue == 1) 1f else 0.6f)
                         .width(defaultActionSize)
@@ -179,7 +179,7 @@ fun SwipeToQueueBox(
                 DragActionIcon(
                     color = MaterialTheme.colorScheme.secondary,
                     tint = MaterialTheme.colorScheme.onSecondary,
-                    icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                    icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
                     modifier = Modifier
                         .alpha(if (progress.intValue == 2) 1f else 0.6f)
                         .width(defaultActionSize)

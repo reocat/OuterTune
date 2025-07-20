@@ -20,22 +20,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Backup
-import androidx.compose.material.icons.rounded.ConfirmationNumber
-import androidx.compose.material.icons.rounded.DeveloperMode
-import androidx.compose.material.icons.rounded.Devices
-import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Speed
-import androidx.compose.material.icons.rounded.TextRotationAngledown
-import androidx.compose.material.icons.rounded.Vibration
-import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.ConfirmationNumber
+import androidx.compose.material.icons.outlined.DeveloperMode
+import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.TextRotationAngledown
+import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -130,7 +129,7 @@ fun ExperimentalSettings(
         SwitchPreference(
             title = { Text(stringResource(R.string.tablet_ui_title)) },
             description = stringResource(R.string.tablet_ui_title),
-            icon = { Icon(Icons.Rounded.Devices, null) },
+            icon = { Icon(Icons.Outlined.Devices, null) },
             checked = tabletUi,
             onCheckedChange = onTabletUiChange
         )
@@ -141,7 +140,7 @@ fun ExperimentalSettings(
         SwitchPreference(
             title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
             description = stringResource(R.string.lyrics_karaoke_description),
-            icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
+            icon = { Icon(Icons.Outlined.TextRotationAngledown, null) },
             checked = lyricsFancy,
             onCheckedChange = onLyricsFancyChange,
             isFirst = true
@@ -149,7 +148,7 @@ fun ExperimentalSettings(
 
         ListPreference(
             title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
-            icon = { Icon(Icons.Rounded.Speed, null) },
+            icon = { Icon(Icons.Outlined.Speed, null) },
             selectedValue = lyricUpdateSpeed,
             onValueSelected = onLyricsUpdateSpeedChange,
             values = Speed.entries,
@@ -174,7 +173,7 @@ fun ExperimentalSettings(
         SwitchPreference(
             title = { Text(stringResource(R.string.dev_settings_title)) },
             description = stringResource(R.string.dev_settings_description),
-            icon = { Icon(Icons.Rounded.DeveloperMode, null) },
+            icon = { Icon(Icons.Outlined.DeveloperMode, null) },
             checked = devSettings,
             onCheckedChange = onDevSettingsChange
         )
@@ -184,7 +183,7 @@ fun ExperimentalSettings(
         if (devSettings) {
             PreferenceEntry(
                 title = { Text("DEBUG: Force local to remote artist migration NOW") },
-                icon = { Icon(Icons.Rounded.Backup, null) },
+                icon = { Icon(Icons.Outlined.Backup, null) },
                 onClick = {
                     Toast.makeText(
                         context,
@@ -210,7 +209,7 @@ fun ExperimentalSettings(
             Spacer(modifier = Modifier.height(12.dp))
             PreferenceEntry(
                 title = { Text("Enter configurator") },
-                icon = { Icon(Icons.Rounded.ConfirmationNumber, null) },
+                icon = { Icon(Icons.Outlined.ConfirmationNumber, null) },
                 onClick = {
                     onOobeStatusChange(0)
                     runBlocking { // hax. page loads before pref updates
@@ -224,7 +223,7 @@ fun ExperimentalSettings(
             // nukes
             PreferenceEntry(
                 title = { Text("Tap to show nuke options") },
-                icon = { Icon(Icons.Rounded.ErrorOutline, null) },
+                icon = { Icon(Icons.Outlined.ErrorOutline, null) },
                 onClick = {
                     nukeEnabled = !nukeEnabled
                 }
@@ -234,7 +233,7 @@ fun ExperimentalSettings(
             if (nukeEnabled) {
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke local lib") },
-                    icon = { Icon(Icons.Rounded.ErrorOutline, null) },
+                    icon = { Icon(Icons.Outlined.ErrorOutline, null) },
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             withContext(Dispatchers.Main) {
@@ -251,7 +250,7 @@ fun ExperimentalSettings(
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke local artists") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                    icon = { Icon(Icons.Outlined.WarningAmber, null) },
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             withContext(Dispatchers.Main) {
@@ -268,7 +267,7 @@ fun ExperimentalSettings(
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke dangling format entities") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                    icon = { Icon(Icons.Outlined.WarningAmber, null) },
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             withContext(Dispatchers.Main) {
@@ -285,7 +284,7 @@ fun ExperimentalSettings(
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke local db lyrics") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                    icon = { Icon(Icons.Outlined.WarningAmber, null) },
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             withContext(Dispatchers.Main) {
@@ -302,7 +301,7 @@ fun ExperimentalSettings(
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke dangling db lyrics") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                    icon = { Icon(Icons.Outlined.WarningAmber, null) },
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             withContext(Dispatchers.Main) {
@@ -319,7 +318,7 @@ fun ExperimentalSettings(
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke remote playlists") },
-                    icon = { Icon(Icons.Rounded.WarningAmber, null) },
+                    icon = { Icon(Icons.Outlined.WarningAmber, null) },
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             withContext(Dispatchers.Main) {
@@ -339,7 +338,7 @@ fun ExperimentalSettings(
 
             PreferenceEntry(
                 title = { Text("Haptics test") },
-                icon = { Icon(Icons.Rounded.Vibration, null) },
+                icon = { Icon(Icons.Outlined.Vibration, null) },
                 onClick = {
                     hapticsTestEnabled = !hapticsTestEnabled
                 },
@@ -354,7 +353,7 @@ fun ExperimentalSettings(
 
             PreferenceEntry(
                 title = { Text("Material colors test") },
-                icon = { Icon(Icons.Rounded.Palette, null) },
+                icon = { Icon(Icons.Outlined.Palette, null) },
                 onClick = {
                     colorsTestEnabled = !colorsTestEnabled
                 }
@@ -376,7 +375,7 @@ fun ExperimentalSettings(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }
@@ -507,7 +506,7 @@ fun HapticFeedbackItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Rounded.Vibration,
+            imageVector = Icons.Outlined.Vibration,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)

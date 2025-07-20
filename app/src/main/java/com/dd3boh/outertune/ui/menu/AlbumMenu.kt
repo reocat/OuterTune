@@ -16,13 +16,15 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.LibraryAdd
-import androidx.compose.material.icons.rounded.LibraryAddCheck
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.LibraryAdd
+import androidx.compose.material.icons.outlined.LibraryAddCheck
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -44,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -254,7 +255,7 @@ fun AlbumMenu(
                 }
             ) {
                 Icon(
-                    painter = painterResource(if (album.album.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border),
+                    imageVector = if (album.album.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     tint = if (album.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
                     contentDescription = null
                 )
@@ -273,27 +274,27 @@ fun AlbumMenu(
         )
     ) {
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
+            icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
             title = R.string.play_next
         ) {
             onDismiss()
             playerConnection.enqueueNext(songs.map { it.toMediaItem() })
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.QueueMusic,
+            icon = Icons.AutoMirrored.Outlined.QueueMusic,
             title = R.string.add_to_queue
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
             title = R.string.add_to_playlist
         ) {
             showChoosePlaylistDialog = true
         }
         if (allInLibrary) {
             GridMenuItem(
-                icon = Icons.Rounded.LibraryAddCheck,
+                icon = Icons.Outlined.LibraryAddCheck,
                 title = R.string.remove_all_from_library
             ) {
                 database.transaction {
@@ -304,7 +305,7 @@ fun AlbumMenu(
             }
         } else {
             GridMenuItem(
-                icon = Icons.Rounded.LibraryAdd,
+                icon = Icons.Outlined.LibraryAdd,
                 title = R.string.add_all_to_library
             ) {
                 database.transaction {
@@ -349,7 +350,7 @@ fun AlbumMenu(
         GridMenuItem(
             icon = {
                 Icon(
-                    imageVector = Icons.Rounded.Sync,
+                    imageVector = Icons.Outlined.Sync,
                     contentDescription = null,
                     modifier = Modifier.graphicsLayer(rotationZ = rotationAnimation)
                 )
@@ -367,7 +368,7 @@ fun AlbumMenu(
             }
         }
         GridMenuItem(
-            icon = Icons.Rounded.Share,
+            icon = Icons.Outlined.Share,
             title = R.string.share
         ) {
             onDismiss()

@@ -9,9 +9,9 @@ package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Logout
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.VpnKey
+import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -73,14 +73,14 @@ fun ColumnScope.AccountFrag(navController: NavController) {
             accountEmail.takeIf { it.isNotEmpty() }
                 ?: accountChannelHandle.takeIf { it.isNotEmpty() }
         } else null,
-        icon = { Icon(Icons.Rounded.Person, null) },
+        icon = { Icon(Icons.Outlined.Person, null) },
         onClick = { navController.navigate("login") },
         isFirst = true
     )
     if (isLoggedIn) {
         PreferenceEntry(
             title = { Text(stringResource(R.string.action_logout)) },
-            icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
+            icon = { Icon(Icons.AutoMirrored.Outlined.Logout, null) },
             onClick = {
                 forgetAccount(context)
             },
@@ -103,7 +103,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
                 Text(stringResource(R.string.token_hidden))
             }
         },
-        icon = { Icon(Icons.Rounded.VpnKey, null) },
+        icon = { Icon(Icons.Outlined.Key, null) },
         onClick = {
             if (!showToken) {
                 showToken = true
@@ -116,7 +116,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
     SwitchPreference(
         title = { Text(stringResource(R.string.use_login_for_browse)) },
         description = stringResource(R.string.use_login_for_browse_desc),
-        icon = { Icon(Icons.Rounded.Person, null) },
+        icon = { Icon(Icons.Outlined.Person, null) },
         checked = useLoginForBrowse,
         onCheckedChange = {
             YouTube.useLoginForBrowse = it

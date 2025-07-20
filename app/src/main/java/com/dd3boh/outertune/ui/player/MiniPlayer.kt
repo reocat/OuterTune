@@ -9,6 +9,7 @@
 
 package com.dd3boh.outertune.ui.player
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -37,11 +38,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.OndemandVideo
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.OndemandVideo
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -51,6 +53,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -113,7 +116,7 @@ fun MiniPlayer(
     val layoutDirection = LocalLayoutDirection.current
 
     val offsetXAnimatable = remember { Animatable(0f) }
-    var dragStartTime by remember { mutableStateOf(0L) }
+    var dragStartTime by remember { mutableLongStateOf(0L) }
     var totalDragDistance by remember { mutableFloatStateOf(0f) }
 
     val animationSpec = spring<Float>(
@@ -251,7 +254,7 @@ fun MiniPlayer(
                 }
             ) {
                 Icon(
-                    imageVector = if (playbackState == Player.STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    imageVector = if (playbackState == Player.STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                     contentDescription = null
                 )
             }
@@ -261,7 +264,7 @@ fun MiniPlayer(
                 onClick = playerConnection.player::seekToNext
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.skip_next),
+                    imageVector = Icons.Outlined.SkipNext,
                     contentDescription = null
                 )
             }
@@ -275,10 +278,12 @@ fun MiniPlayer(
             ) {
                 Icon(
                     painter = painterResource(
-                        if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next                    ),
+                        if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next
+                    ),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary.copy(
-                        alpha = (offsetXAnimatable.value.absoluteValue / autoSwipeThreshold).coerceIn(0f, 1f)                    ),
+                        alpha = (offsetXAnimatable.value.absoluteValue / autoSwipeThreshold).coerceIn(0f, 1f)
+                    ),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -286,6 +291,7 @@ fun MiniPlayer(
     }
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun MiniMediaInfo(
     mediaMetadata: MediaMetadata,
@@ -335,25 +341,24 @@ fun MiniMediaInfo(
             }
 
             if (isRectangularImage) {
-                val radial = Brush.radialGradient(
-                    0.0f to Color.Black.copy(alpha = 0.5f),
-                    0.8f to Color.Black.copy(alpha = 0.05f),
-                    1.0f to Color.Transparent,
-                )
-
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .size((maxHeight / 3) + 6.dp)
-                        .offset(x = -maxHeight / 25)
-                        .background(brush = radial, shape = CircleShape)
+                        .padding(bottom = 2.dp, end = 2.dp)
+                        .size(18.dp)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent)
+                            ),
+                            shape = CircleShape
+                        )
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.OndemandVideo,
+                        imageVector = Icons.Outlined.OndemandVideo,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.padding(3.dp)
+                        modifier = Modifier.size(10.dp)
                     )
                 }
             }
@@ -380,7 +385,7 @@ fun MiniMediaInfo(
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Rounded.Info,
+                            imageVector = Icons.Outlined.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier

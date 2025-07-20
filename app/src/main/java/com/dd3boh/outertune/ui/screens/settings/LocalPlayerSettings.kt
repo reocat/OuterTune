@@ -12,15 +12,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Autorenew
-import androidx.compose.material.icons.rounded.SdCard
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.outlined.SdCard
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -89,7 +88,7 @@ fun LocalPlayerSettings(
         SwitchPreference(
             title = { Text(stringResource(R.string.local_library_enable_title)) },
             description = stringResource(R.string.local_library_enable_description),
-            icon = { Icon(Icons.Rounded.SdCard, null) },
+            icon = { Icon(Icons.Outlined.SdCard, null) },
             checked = localLibEnable,
             onCheckedChange = {
                 if (localLibEnable) {
@@ -108,7 +107,7 @@ fun LocalPlayerSettings(
                 SwitchPreference(
                     title = { Text(stringResource(R.string.auto_scanner_title)) },
                     description = stringResource(R.string.auto_scanner_description),
-                    icon = { Icon(Icons.Rounded.Autorenew, null) },
+                    icon = { Icon(Icons.Outlined.Autorenew, null) },
                     checked = autoScan,
                     onCheckedChange = onAutoScanChange,
                 )
@@ -175,7 +174,7 @@ fun LocalPlayerSettings(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }

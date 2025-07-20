@@ -11,16 +11,15 @@ package com.dd3boh.outertune.ui.screens.settings
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.NoCell
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.NoCell
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -99,7 +98,7 @@ fun PlayerSettings(
             SwitchPreference(
                 title = { Text(stringResource(R.string.persistent_queue)) },
                 description = stringResource(R.string.persistent_queue_desc_ot),
-                icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
+                icon = { Icon(Icons.AutoMirrored.Outlined.QueueMusic, null) },
                 checked = persistentQueue,
                 onCheckedChange = onPersistentQueueChange
             )
@@ -108,7 +107,7 @@ fun PlayerSettings(
             SwitchPreference(
                 title = { Text(stringResource(R.string.audio_offload)) },
                 description = stringResource(R.string.audio_offload_description),
-                icon = { Icon(Icons.Rounded.Bolt, null) },
+                icon = { Icon(Icons.Outlined.Bolt, null) },
                 checked = audioOffload,
                 onCheckedChange = onAudioOffloadChange,
                 isFirst = true
@@ -116,7 +115,7 @@ fun PlayerSettings(
             SwitchPreference(
                 title = { Text(stringResource(R.string.keep_alive_title)) },
                 description = stringResource(R.string.keep_alive_description),
-                icon = { Icon(Icons.Rounded.NoCell, null) },
+                icon = { Icon(Icons.Outlined.NoCell, null) },
                 checked = keepAlive,
                 onCheckedChange = onKeepAliveChange,
                 isLast = true
@@ -134,7 +133,7 @@ fun PlayerSettings(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }

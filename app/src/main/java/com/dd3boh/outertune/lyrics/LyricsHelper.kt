@@ -2,7 +2,9 @@ package com.dd3boh.outertune.lyrics
 
 import android.content.Context
 import android.util.LruCache
-import com.dd3boh.outertune.constants.*
+import com.dd3boh.outertune.constants.LyricSourcePrefKey
+import com.dd3boh.outertune.constants.LyricTrimKey
+import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND

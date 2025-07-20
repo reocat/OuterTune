@@ -16,22 +16,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.Backup
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Downloading
-import androidx.compose.material.icons.rounded.FolderCopy
-import androidx.compose.material.icons.rounded.Restore
-import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Downloading
+import androidx.compose.material.icons.outlined.FolderCopy
+import androidx.compose.material.icons.outlined.Restore
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,11 +47,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
-import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -73,7 +69,6 @@ import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.InfoLabel
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
-import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SettingsClickToReveal
 import com.dd3boh.outertune.utils.formatFileSize
 import com.dd3boh.outertune.utils.rememberPreference
@@ -106,7 +101,7 @@ fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.action_backup)) },
-        icon = { Icon(Icons.Rounded.Backup, null) },
+        icon = { Icon(Icons.Outlined.Backup, null) },
         onClick = {
             val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
             backupLauncher.launch(
@@ -114,31 +109,59 @@ fun ColumnScope.BackupAndRestoreFrag(viewModel: BackupRestoreViewModel) {
                     LocalDateTime.now().format(formatter)
                 }.backup"
             )
-        }
+        },
+        isFirst = true
     )
-    Spacer(modifier = Modifier.height(12.dp))
     PreferenceEntry(
         title = { Text(stringResource(R.string.action_restore)) },
-        icon = { Icon(Icons.Rounded.Restore, null) },
+        icon = { Icon(Icons.Outlined.Restore, null) },
         onClick = {
             restoreLauncher.launch(arrayOf("application/octet-stream"))
-        }
+        },
+        isLast = true
     )
+}
+
+@Composable
+private fun StorageUsageRow(label: String, size: Long, isLoading: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(
+                text = formatFileSize(size.coerceIn(0, Long.MAX_VALUE)),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
 }
 
 @Composable
 fun ColumnScope.DownloadsFrag() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val database = LocalDatabase.current
-    val downloadCache = LocalPlayerConnection.current?.service?.downloadCache ?: return
     val downloadUtil = LocalDownloadUtil.current
+    val downloadCache = downloadUtil.downloadCache
 
     val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
-    val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
+    val (scanPaths) = rememberPreference(ScanPathsKey, defaultValue = "")
 
-    // size stats
-    var downloadCacheSize by remember {
+    var internalCacheSize by remember {
         mutableLongStateOf(tryOrNull { downloadCache.cacheSpace } ?: 0)
     }
     var downloadMainPathSize by remember {
@@ -148,18 +171,13 @@ fun ColumnScope.DownloadsFrag() {
         mutableLongStateOf(-2L)
     }
 
-    // downloads dialogs
     var showDlPathDialog: Boolean by remember {
         mutableStateOf(false)
     }
     var showClearConfirmDialog by remember {
         mutableStateOf(false)
     }
-    var showDlInfoDialog by remember {
-        mutableStateOf(false)
-    }
 
-    // advanced
     val (dlPathExtra, onDlPathExtraChange) = rememberPreference(DownloadExtraPathKey, "")
     val isLoading by downloadUtil.isProcessingDownloads.collectAsState()
     var showMigrationDialog by rememberSaveable {
@@ -175,104 +193,85 @@ fun ColumnScope.DownloadsFrag() {
     LaunchedEffect(downloadCache) {
         while (isActive) {
             delay(2000)
-            downloadCacheSize = tryOrNull { downloadCache.cacheSpace } ?: 0
+            internalCacheSize = tryOrNull { downloadCache.cacheSpace } ?: 0
         }
     }
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.dl_main_path_title)) },
+        description = absoluteFilePathFromUri(context, downloadPath.toUri()) ?: stringResource(R.string.not_set),
         onClick = {
             showDlPathDialog = true
         },
+        isFirst = true,
+        isLast = true
     )
 
-    Text(
-        text = stringResource(R.string.dl_size_used_cache, formatFileSize(downloadCacheSize)),
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-    )
+    Spacer(modifier = Modifier.height(12.dp))
 
-    if (downloadMainPathSize == -2L && downloadExtraPathSize == -2L) {
-        PreferenceEntry(
-            title = {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.dl_calculate_size))
-                    ResizableIconButton(
-                        icon = Icons.Outlined.Info,
-                        onClick = { showDlInfoDialog = true },
-                    )
-                }
-            },
-            onClick = {
-                downloadMainPathSize = -1
-                downloadCacheSize = -1
-                coroutineScope.launch(Dispatchers.IO) {
-                    downloadMainPathSize = downloadUtil.localMgr.getMainDlStorageUsage()
-                    downloadExtraPathSize = downloadUtil.localMgr.getExtraDlStorageUsage()
-                }
-            },
-        )
-    } else {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = stringResource(
-                    R.string.dl_size_used_main,
-                    formatFileSize(downloadMainPathSize.coerceIn(0, Long.MAX_VALUE))
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                text = stringResource(R.string.storage_usage),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-            if (downloadMainPathSize < 0L) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            }
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(
-                    R.string.dl_size_used_extra,
-                    formatFileSize(downloadExtraPathSize.coerceIn(0, Long.MAX_VALUE))
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            StorageUsageRow(
+                label = stringResource(R.string.internal_storage),
+                size = internalCacheSize,
+                isLoading = false
             )
-            if (downloadExtraPathSize < 0L) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
+            StorageUsageRow(
+                label = stringResource(R.string.dl_main_path_title),
+                size = downloadMainPathSize,
+                isLoading = downloadMainPathSize < -1L
+            )
+            StorageUsageRow(
+                label = stringResource(R.string.dl_extra_path_title),
+                size = downloadExtraPathSize,
+                isLoading = downloadExtraPathSize < -1L
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = {
+                    downloadMainPathSize = -1
+                    downloadExtraPathSize = -1
+                    coroutineScope.launch(Dispatchers.IO) {
+                        downloadMainPathSize = downloadUtil.localMgr.getMainDlStorageUsage()
+                        downloadExtraPathSize = downloadUtil.localMgr.getExtraDlStorageUsage()
+                    }
+                }) {
+                    Text(stringResource(R.string.dl_recalculate_size))
+                }
             }
         }
     }
+
+    Spacer(modifier = Modifier.height(12.dp))
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_all_downloads)) },
         onClick = {
             showClearConfirmDialog = true
         },
+        isFirst = true,
+        isLast = true
     )
+
+    Spacer(modifier = Modifier.height(12.dp))
 
     SettingsClickToReveal(stringResource(R.string.advanced)) {
         PreferenceEntry(
             title = { Text(stringResource(R.string.dl_extra_path_title)) },
             description = stringResource(R.string.dl_extra_path_description),
-            icon = { Icon(Icons.Rounded.FolderCopy, null) },
+            icon = { Icon(Icons.Outlined.FolderCopy, null) },
             onClick = {
                 showPathsDialog = true
             },
-            isEnabled = !isLoading
+            isEnabled = !isLoading,
+            isFirst = true
         )
 
         PreferenceEntry(
@@ -286,13 +285,14 @@ fun ColumnScope.DownloadsFrag() {
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     )
                 } else {
-                    Icon(Icons.Rounded.Sync, null)
+                    Icon(Icons.Outlined.Sync, null)
                 }
             },
             onClick = {
                 showImportDialog = true
             },
-            isEnabled = !isLoading && !(downloadPath.isEmpty() && dlPathExtra.isEmpty())
+            isEnabled = !isLoading && !(downloadPath.isEmpty() && dlPathExtra.isEmpty()),
+            isMiddle = true
         )
 
         PreferenceEntry(
@@ -306,13 +306,14 @@ fun ColumnScope.DownloadsFrag() {
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     )
                 } else {
-                    Icon(Icons.Rounded.Downloading, null)
+                    Icon(Icons.Outlined.Downloading, null)
                 }
             },
             onClick = {
                 showMigrationDialog = true
             },
-            isEnabled = !isLoading && !downloadPath.isEmpty()
+            isEnabled = !isLoading && !downloadPath.isEmpty(),
+            isLast = true
         )
     }
 
@@ -361,7 +362,6 @@ fun ColumnScope.DownloadsFrag() {
                 tempFilePath = null
             },
             isInputValid = uriListFromString(scanPaths).none {
-                // download path cannot a scan path, or a subdir of a scan path
                 tempFilePath.toString().length <= it.toString().length && tempFilePath.toString()
                     .contains(it.toString())
             }
@@ -372,7 +372,6 @@ fun ColumnScope.DownloadsFrag() {
             ) { uri ->
                 if (tempFilePath.toString() == uri.toString()) return@rememberLauncherForActivityResult
                 if (uri?.path != null) {
-                    // Take persistable URI permission
                     val contentResolver = context.contentResolver
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     contentResolver.takePersistableUriPermission(uri, takeFlags)
@@ -382,7 +381,6 @@ fun ColumnScope.DownloadsFrag() {
             }
 
             val valid = uriListFromString(scanPaths).none {
-                // download path cannot a scan path, or a subdir of a scan path
                 tempFilePath.toString().length <= it.toString().length && tempFilePath.toString()
                     .contains(it.toString())
             }
@@ -405,16 +403,13 @@ fun ColumnScope.DownloadsFrag() {
                     )
                     .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
             ) {
-                tempFilePath?.let {
-                    Text(
-                        text = absoluteFilePathFromUri(context, it) ?: it.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+                Text(
+                    text = tempFilePath?.let { absoluteFilePathFromUri(context, it) } ?: stringResource(R.string.not_set),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
 
-            // add folder button
             Column {
                 Button(onClick = { dirPickerLauncher.launch(null) }) {
                     Text(stringResource(R.string.scan_paths_add_folder))
@@ -457,50 +452,12 @@ fun ColumnScope.DownloadsFrag() {
                     onClick = {
                         showClearConfirmDialog = false
                         coroutineScope.launch(Dispatchers.IO) {
-                            // clear internal downloads
                             downloadCache.keys.forEach { key ->
                                 downloadCache.removeResource(key)
                             }
-
-                            // TODO: Delete external downloads. Rememebr to exclude extra paths
-                            // clear external downloads
-//                            database.downloadSongs(SongSortType.NAME, true).collect { songs ->
-//                                songs.forEach { song ->
-//                                    downloadUtil.delete(song)
-//                                }
-//                            }
-
                             downloadMainPathSize = downloadUtil.localMgr.getMainDlStorageUsage()
                             downloadExtraPathSize = downloadUtil.localMgr.getExtraDlStorageUsage()
                         }
-                    }
-                ) {
-                    Text(text = stringResource(android.R.string.ok))
-                }
-            }
-        )
-    }
-
-    if (showDlInfoDialog) {
-        DefaultDialog(
-            onDismiss = { showDlInfoDialog = false },
-            content = {
-                Column(
-                    modifier = Modifier
-                        .weight(1f, false)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = stringResource(R.string.dl_storage_tooltip),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 18.dp)
-                    )
-                }
-            },
-            buttons = {
-                TextButton(
-                    onClick = {
-                        showDlInfoDialog = false
                     }
                 ) {
                     Text(text = stringResource(android.R.string.ok))
@@ -542,7 +499,6 @@ fun ColumnScope.DownloadsFrag() {
                 tempScanPaths.clear()
             },
             onReset = {
-                // reset to whitespace so not empty
                 tempScanPaths.clear()
             },
             onCancel = {
@@ -550,7 +506,6 @@ fun ColumnScope.DownloadsFrag() {
                 tempScanPaths.clear()
             },
             isInputValid = uriListFromString(scanPaths).toList().none { scanPath ->
-                // scan path cannot be contain any dl extras path
                 tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
             }
         ) {
@@ -565,7 +520,6 @@ fun ColumnScope.DownloadsFrag() {
                 tempScanPaths.add(uri)
             }
 
-            // folders list
             Column(
                 modifier = Modifier
                     .padding(vertical = 12.dp)
@@ -583,7 +537,8 @@ fun ColumnScope.DownloadsFrag() {
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .background(if (valid) Color.Transparent else MaterialTheme.colorScheme.errorContainer)
-                            .clickable { }) {
+                            .clickable { }
+                    ) {
                         Text(
                             text = absoluteFilePathFromUri(context, tmpPath) ?: tmpPath.toString(),
                             style = MaterialTheme.typography.bodySmall,
@@ -597,7 +552,7 @@ fun ColumnScope.DownloadsFrag() {
                             },
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Close,
+                                imageVector = Icons.Outlined.Close,
                                 contentDescription = null,
                             )
                         }
@@ -605,7 +560,6 @@ fun ColumnScope.DownloadsFrag() {
                 }
             }
 
-            // add folder button
             Column {
                 Button(onClick = { dirPickerLauncher.launch(null) }) {
                     Text(stringResource(R.string.scan_paths_add_folder))
@@ -617,7 +571,6 @@ fun ColumnScope.DownloadsFrag() {
                 )
 
                 if (uriListFromString(scanPaths).toList().any { scanPath ->
-                        // scan path cannot be contain any dl extras path
                         tempScanPaths.toList().any { it.toString().contains(scanPath.toString()) }
                     }) {
                     InfoLabel(
@@ -686,7 +639,6 @@ fun ColumnScope.DownloadsFrag() {
                 TextButton(
                     onClick = {
                         showMigrationDialog = false
-
                         downloadUtil.migrateDownloads()
                     }
                 ) {
@@ -720,33 +672,6 @@ fun ColumnScope.SongCacheFrag() {
         mutableStateOf(false)
     }
 
-    if (maxSongCacheSize != 0) {
-        Spacer(modifier = Modifier.height(12.dp))
-        if (maxSongCacheSize == -1) {
-            Text(
-                text = stringResource(R.string.size_used, formatFileSize(playerCacheSize)),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-            )
-        } else {
-            LinearProgressIndicator(
-                progress = { (playerCacheSize.toFloat() / (maxSongCacheSize * 1024 * 1024L)).coerceIn(0f, 1f) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
-            )
-
-            Text(
-                text = stringResource(
-                    R.string.size_used,
-                    "${formatFileSize(playerCacheSize)} / ${formatFileSize(maxSongCacheSize * 1024 * 1024L)}"
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-            )
-        }
-    }
-
     ListPreference(
         title = { Text(stringResource(R.string.max_cache_size)) },
         selectedValue = maxSongCacheSize,
@@ -758,23 +683,28 @@ fun ColumnScope.SongCacheFrag() {
                 else -> formatFileSize(it * 1024 * 1024L)
             }
         },
-        onValueSelected = onMaxSongCacheSizeChange
+        onValueSelected = onMaxSongCacheSizeChange,
+        isFirst = true
     )
-    InfoLabel(stringResource(R.string.restart_to_apply_changes))
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_song_cache)) },
+        description = if (maxSongCacheSize > 0) {
+            if (maxSongCacheSize == -1) stringResource(R.string.size_used, formatFileSize(playerCacheSize))
+            else stringResource(
+                R.string.size_used,
+                "${formatFileSize(playerCacheSize)} / ${formatFileSize(maxSongCacheSize * 1024 * 1024L)}"
+            )
+        } else null,
         onClick = {
             showClearConfirmDialog = true
         },
+        isLast = true
     )
 
+    InfoLabel(stringResource(R.string.restart_to_apply_changes))
 
-    /**
-     * ---------------------------
-     * Dialogs
-     * ---------------------------
-     */
+
     if (showClearConfirmDialog) {
         DefaultDialog(
             onDismiss = { showClearConfirmDialog = false },
@@ -832,7 +762,6 @@ fun ColumnScope.ImageCacheFrag() {
         }
     }
 
-    // clear caches when turning off
     LaunchedEffect(maxImageCacheSize) {
         if (maxImageCacheSize == 0) {
             coroutineScope.launch(Dispatchers.IO) {
@@ -845,25 +774,6 @@ fun ColumnScope.ImageCacheFrag() {
         mutableStateOf(false)
     }
 
-    if (maxImageCacheSize > 0) {
-        Spacer(modifier = Modifier.height(12.dp))
-        LinearProgressIndicator(
-            progress = { (imageCacheSize.toFloat() / imageDiskCache.maxSize).coerceIn(0f, 1f) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp)
-        )
-
-        Text(
-            text = stringResource(
-                R.string.size_used,
-                "${formatFileSize(imageCacheSize)} / ${formatFileSize(imageDiskCache.maxSize)}"
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-        )
-    }
-
     ListPreference(
         title = { Text(stringResource(R.string.max_cache_size)) },
         selectedValue = maxImageCacheSize,
@@ -874,24 +784,25 @@ fun ColumnScope.ImageCacheFrag() {
                 else -> formatFileSize(it * 1024 * 1024L)
             }
         },
-        onValueSelected = onMaxImageCacheSizeChange
+        onValueSelected = onMaxImageCacheSizeChange,
+        isFirst = true
     )
-    InfoLabel(stringResource(R.string.restart_to_apply_changes))
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_image_cache)) },
+        description = if (maxImageCacheSize > 0) stringResource(
+            R.string.size_used,
+            "${formatFileSize(imageCacheSize)} / ${formatFileSize(imageDiskCache.maxSize)}"
+        ) else null,
         onClick = {
             showClearConfirmDialog = true
         },
+        isLast = true
     )
-    Spacer(modifier = Modifier.height(12.dp))
+
+    InfoLabel(stringResource(R.string.restart_to_apply_changes))
 
 
-    /**
-     * ---------------------------
-     * Dialogs
-     * ---------------------------
-     */
     if (showClearConfirmDialog) {
         DefaultDialog(
             onDismiss = { showClearConfirmDialog = false },

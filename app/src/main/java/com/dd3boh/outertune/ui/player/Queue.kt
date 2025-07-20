@@ -44,24 +44,24 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.ExpandLess
-import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.LockOpen
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Repeat
-import androidx.compose.material.icons.rounded.RepeatOne
-import androidx.compose.material.icons.rounded.Replay
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.outlined.RepeatOne
+import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -122,7 +122,6 @@ import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.LockQueueKey
 import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
-import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.tabMode
@@ -177,7 +176,7 @@ fun QueueSheet(
                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                 }) {
                     Icon(
-                        imageVector = Icons.Rounded.ExpandLess,
+                        imageVector = Icons.Outlined.ExpandLess,
                         tint = onBackgroundColor,
                         contentDescription = null,
                     )
@@ -450,7 +449,7 @@ fun BoxScope.QueueContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ResizableIconButton(
-                    icon = if (lockQueue) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                    icon = if (lockQueue) Icons.Outlined.Lock else Icons.Outlined.LockOpen,
                     onClick = {
                         lockQueue = !lockQueue
                     },
@@ -458,7 +457,7 @@ fun BoxScope.QueueContent(
 
                 if (!landscape) {
                     ResizableIconButton(
-                        icon = Icons.Rounded.Close,
+                        icon = Icons.Outlined.Close,
                         onClick = {
                             mqExpand = false
                         },
@@ -533,7 +532,7 @@ fun BoxScope.QueueContent(
                             ) {
                                 if (!lockQueue) {
                                     ResizableIconButton(
-                                        icon = Icons.Rounded.Close,
+                                        icon = Icons.Outlined.Close,
                                         onClick = {
                                             val remainingQueues =
                                                 qb.deleteQueue(mq)
@@ -557,7 +556,7 @@ fun BoxScope.QueueContent(
 
                             if (!lockQueue) {
                                 Icon(
-                                    imageVector = Icons.Rounded.DragHandle,
+                                    imageVector = Icons.Outlined.DragHandle,
                                     contentDescription = null,
                                     modifier = Modifier.draggableHandle()
                                 )
@@ -590,7 +589,7 @@ fun BoxScope.QueueContent(
             // play the detached queue
             if (detachedHead) {
                 ResizableIconButton(
-                    icon = Icons.Rounded.PlayArrow,
+                    icon = Icons.Outlined.PlayArrow,
                     onClick = {
                         coroutineScope.launch(Dispatchers.Main) {
                             // change to this queue, seek to the item clicked on
@@ -602,7 +601,7 @@ fun BoxScope.QueueContent(
                 )
             } else if (!isSearching) {
                 ResizableIconButton(
-                    icon = Icons.Rounded.Search,
+                    icon = Icons.Outlined.Search,
                     onClick = {
                         isSearching = true
                     }
@@ -620,7 +619,7 @@ fun BoxScope.QueueContent(
             if ((if (isSearching) filteredSongs else mutableSongs).isEmpty()) {
                 item {
                     EmptyPlaceholder(
-                        icon = Icons.Rounded.MusicNote,
+                        icon = Icons.Outlined.MusicNote,
                         text = stringResource(if (isSearching) R.string.no_results_found else R.string.queues_empty),
                         modifier = Modifier.animateItem()
                     )
@@ -685,7 +684,7 @@ fun BoxScope.QueueContent(
                                         }
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Rounded.MoreVert,
+                                            imageVector = Icons.Outlined.MoreVert,
                                             contentDescription = null
                                         )
                                     }
@@ -695,7 +694,7 @@ fun BoxScope.QueueContent(
                                             modifier = Modifier.draggableHandle()
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.DragHandle,
+                                                imageVector = Icons.Outlined.DragHandle,
                                                 contentDescription = null
                                             )
                                         }
@@ -766,7 +765,7 @@ fun BoxScope.QueueContent(
                 modifier = Modifier.padding(start = 16.dp)
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }
@@ -854,7 +853,7 @@ fun BoxScope.QueueContent(
                                 .padding(horizontal = 8.dp)
                         )
                         ResizableIconButton(
-                            icon = if (mqExpand) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                            icon = if (mqExpand) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                             enabled = !landscape,
                             onClick = {
                                 mqExpand = !mqExpand
@@ -908,7 +907,7 @@ fun BoxScope.QueueContent(
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         ResizableIconButton(
-                            icon = Icons.Rounded.Shuffle,
+                            icon = Icons.Outlined.Shuffle,
                             modifier = Modifier
                                 .size(32.dp)
                                 .padding(4.dp)
@@ -924,7 +923,7 @@ fun BoxScope.QueueContent(
 
                     Box(modifier = Modifier.weight(1f)) {
                         ResizableIconButton(
-                            icon = Icons.Rounded.SkipPrevious,
+                            icon = Icons.Outlined.SkipPrevious,
                             enabled = canSkipPrevious,
                             modifier = Modifier
                                 .size(32.dp)
@@ -941,7 +940,7 @@ fun BoxScope.QueueContent(
 
                     Box(modifier = Modifier.weight(1f)) {
                         ResizableIconButton(
-                            icon = if (playbackState == STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                            icon = if (playbackState == STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                             modifier = Modifier
                                 .size(36.dp)
                                 .align(Alignment.Center),
@@ -963,7 +962,7 @@ fun BoxScope.QueueContent(
 
                     Box(modifier = Modifier.weight(1f)) {
                         ResizableIconButton(
-                            icon = Icons.Rounded.SkipNext,
+                            icon = Icons.Outlined.SkipNext,
                             enabled = canSkipNext,
                             modifier = Modifier
                                 .size(32.dp)
@@ -979,8 +978,8 @@ fun BoxScope.QueueContent(
                     Box(modifier = Modifier.weight(1f)) {
                         ResizableIconButton(
                             icon = when (repeatMode) {
-                                REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Rounded.Repeat
-                                REPEAT_MODE_ONE -> Icons.Rounded.RepeatOne
+                                REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Outlined.Repeat
+                                REPEAT_MODE_ONE -> Icons.Outlined.RepeatOne
                                 else -> throw IllegalStateException()
                             },
                             modifier = Modifier

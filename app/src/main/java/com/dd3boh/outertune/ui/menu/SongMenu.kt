@@ -15,18 +15,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.LibraryAdd
-import androidx.compose.material.icons.rounded.LibraryAddCheck
-import androidx.compose.material.icons.rounded.PlaylistRemove
-import androidx.compose.material.icons.rounded.Radio
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LibraryAdd
+import androidx.compose.material.icons.outlined.LibraryAddCheck
+import androidx.compose.material.icons.outlined.PlaylistRemove
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -45,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
@@ -90,7 +91,6 @@ import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.zionhuang.innertube.YouTube
-import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -130,7 +130,7 @@ fun SongMenu(
 
     if (showEditDialog) {
         TextFieldDialog(
-            icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Outlined.Edit, contentDescription = null) },
             title = { Text(text = stringResource(R.string.edit_song)) },
             onDismiss = { showEditDialog = false },
             initialTextFieldValue = TextFieldValue(song.song.title, TextRange(song.song.title.length)),
@@ -282,7 +282,7 @@ fun SongMenu(
                 }
             ) {
                 Icon(
-                    painter = painterResource(if (song.song.liked) R.drawable.favorite else R.drawable.favorite_border),
+                    imageVector = if (song.song.liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     tint = if (song.song.liked) MaterialTheme.colorScheme.error else LocalContentColor.current,
                     contentDescription = null
                 )
@@ -302,33 +302,33 @@ fun SongMenu(
     ) {
         if (!song.song.isLocal)
             GridMenuItem(
-                icon = Icons.Rounded.Radio,
+                icon = Icons.Outlined.Radio,
                 title = R.string.start_radio
             ) {
                 onDismiss()
                 playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()), isRadio = true)
             }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
+            icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
             title = R.string.play_next
         ) {
             onDismiss()
             playerConnection.enqueueNext(song.toMediaItem())
         }
         GridMenuItem(
-            icon = Icons.Rounded.Edit,
+            icon = Icons.Outlined.Edit,
             title = R.string.edit
         ) {
             showEditDialog = true
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.QueueMusic,
+            icon = Icons.AutoMirrored.Outlined.QueueMusic,
             title = R.string.add_to_queue
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
             title = R.string.add_to_playlist
         ) {
             showChoosePlaylistDialog = true
@@ -337,7 +337,7 @@ fun SongMenu(
         if (playlistSong != null && (playlist?.playlist?.isLocal == true
                     || (playlistSong.song.song.isLocal || syncMode == SyncMode.RW))) {
             GridMenuItem(
-                icon = Icons.Rounded.PlaylistRemove,
+                icon = Icons.Outlined.PlaylistRemove,
                 title = R.string.remove_from_playlist
             ) {
                 database.transaction {
@@ -392,7 +392,7 @@ fun SongMenu(
             }
         }
         GridMenuItem(
-            icon = Icons.Rounded.Album,
+            icon = Icons.Outlined.Album,
             title = R.string.view_album,
             enabled = song.song.albumId != null && !song.song.isLocal
         ) {
@@ -400,7 +400,7 @@ fun SongMenu(
             navController.navigate("album/${song.song.albumId}")
         }
         GridMenuItem(
-            icon = Icons.Rounded.Share,
+            icon = Icons.Outlined.Share,
             title = R.string.share,
             enabled = !song.song.isLocal
         ) {
@@ -413,14 +413,14 @@ fun SongMenu(
             context.startActivity(Intent.createChooser(intent, null))
             }
         GridMenuItem(
-            icon = Icons.Rounded.Info,
+            icon = Icons.Outlined.Info,
             title = R.string.details
         ) {
             showDetailsDialog = true
         }
         if (song.song.inLibrary == null) {
             GridMenuItem(
-                icon = Icons.Rounded.LibraryAdd,
+                icon = Icons.Outlined.LibraryAdd,
                 title = R.string.add_to_library,
                 enabled = !song.song.isLocal
             ) {
@@ -430,7 +430,7 @@ fun SongMenu(
             }
         } else {
             GridMenuItem(
-                icon = Icons.Rounded.LibraryAddCheck,
+                icon = Icons.Outlined.LibraryAddCheck,
                 title = R.string.remove_from_library,
                 enabled = !song.song.isLocal
             ) {
@@ -441,7 +441,7 @@ fun SongMenu(
         }
         if (event != null) {
             GridMenuItem(
-                icon = Icons.Rounded.Delete,
+                icon = Icons.Outlined.Delete,
                 title = R.string.remove_from_history
             ) {
                 onDismiss()

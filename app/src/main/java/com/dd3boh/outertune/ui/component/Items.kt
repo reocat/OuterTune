@@ -34,28 +34,28 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Album
-import androidx.compose.material.icons.rounded.CloudOff
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.EditOff
-import androidx.compose.material.icons.rounded.Explicit
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.FolderCopy
-import androidx.compose.material.icons.rounded.LibraryAddCheck
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.OfflinePin
-import androidx.compose.material.icons.rounded.OndemandVideo
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.EditOff
+import androidx.compose.material.icons.outlined.Explicit
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FolderCopy
+import androidx.compose.material.icons.outlined.LibraryAddCheck
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.OfflinePin
+import androidx.compose.material.icons.outlined.OndemandVideo
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -88,7 +88,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -201,7 +200,7 @@ inline fun ListItem(
                         )
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.CloudOff,
+                        imageVector = Icons.Outlined.CloudOff,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier
@@ -420,7 +419,7 @@ fun SongListItem(
             },
             thumbnailContent = {
                 ItemThumbnail(
-                    thumbnailUrl = if (song.song.isLocal) song.song.localPath else song.song.thumbnailUrl,
+                    thumbnailUrl = song.song.localPath ?: song.song.thumbnailUrl,
                     albumIndex = albumIndex,
                     isActive = isActive,
                     isPlaying = isPlaying,
@@ -453,7 +452,7 @@ fun SongListItem(
                         }
                     ) {
                         Icon(
-                            Icons.Rounded.MoreVert,
+                            Icons.Outlined.MoreVert,
                             contentDescription = null
                         )
                     }
@@ -465,7 +464,7 @@ fun SongListItem(
                         modifier = dragHandleModifier
                     ) {
                         Icon(
-                            Icons.Rounded.DragHandle,
+                            Icons.Outlined.DragHandle,
                             contentDescription = null
                         )
                     }
@@ -516,7 +515,7 @@ fun SongFolderItem(
 ) = ListItem(
     title = folderTitle, thumbnailContent = {
         Icon(
-            Icons.Rounded.Folder,
+            Icons.Filled.Folder,
             contentDescription = null,
             modifier = modifier.size(48.dp)
         )
@@ -534,7 +533,7 @@ fun SongFolderItem(
     subtitle = subtitle,
     thumbnailContent = {
         Icon(
-            Icons.Rounded.Folder,
+            Icons.Filled.Folder,
             contentDescription = null,
             modifier = modifier.size(48.dp)
         )
@@ -569,7 +568,7 @@ fun SongFolderItem(
         subtitle = subtitle ?: pluralStringResource(R.plurals.n_song, subDirSongCount, subDirSongCount),
         thumbnailContent = {
             Icon(
-                Icons.Rounded.Folder,
+                Icons.Filled.Folder,
                 contentDescription = null,
                 modifier = modifier.size(48.dp)
             )
@@ -589,7 +588,7 @@ fun SongFolderItem(
                 }
             ) {
                 Icon(
-                    Icons.Rounded.MoreVert,
+                    Icons.Outlined.MoreVert,
                     contentDescription = null
                 )
             }
@@ -608,7 +607,7 @@ fun SongGridItem(
     badges: @Composable RowScope.() -> Unit = {
         if (showLikedIcon && song.song.liked) {
             Icon(
-                painter = painterResource(R.drawable.favorite),
+                imageVector = Icons.Outlined.Favorite,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier
@@ -618,7 +617,7 @@ fun SongGridItem(
         }
         if (showInLibraryIcon && song.song.inLibrary != null) {
             Icon(
-                painter = painterResource(R.drawable.library_add_check),
+                imageVector = Icons.Outlined.LibraryAddCheck,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -629,7 +628,7 @@ fun SongGridItem(
             val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
             when (download?.state) {
                 STATE_COMPLETED -> Icon(
-                    imageVector = Icons.Rounded.OfflinePin,
+                    imageVector = Icons.Outlined.OfflinePin,
                     contentDescription = null,
                     modifier = Modifier
                         .size(18.dp)
@@ -707,7 +706,7 @@ fun ArtistListItem(
         // assume if they have a non local artist ID, they are not local
         if (artist.artist.isLocal) {
             Icon(
-                Icons.Rounded.CloudOff,
+                Icons.Outlined.CloudOff,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
@@ -718,7 +717,7 @@ fun ArtistListItem(
 
         if (artist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -756,7 +755,7 @@ fun ArtistGridItem(
         // assume if they have a non local artist ID, they are not local
         if (artist.artist.isLocal) {
             Icon(
-                Icons.Rounded.CloudOff,
+                Icons.Outlined.CloudOff,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
@@ -767,7 +766,7 @@ fun ArtistGridItem(
 
         if (artist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -830,7 +829,7 @@ fun AlbumListItem(
                         )
                     } -> STATE_DOWNLOADING
 
-                    else -> Download.STATE_STOPPED
+                    else -> STATE_STOPPED
                 }
             }
         }
@@ -887,7 +886,7 @@ fun AlbumGridItem(
         }
 
         var downloadState by remember {
-            mutableIntStateOf(Download.STATE_STOPPED)
+            mutableIntStateOf(STATE_STOPPED)
         }
 
         LaunchedEffect(songs) {
@@ -904,7 +903,7 @@ fun AlbumGridItem(
                         )
                     } -> STATE_DOWNLOADING
 
-                    else -> Download.STATE_STOPPED
+                    else -> STATE_STOPPED
                 }
             }
         }
@@ -1035,7 +1034,7 @@ fun PlaylistListItem(
             getNSongsString(playlist.songCount, playlist.downloadCount),
     badges = {
         Icon(
-            imageVector = if (playlist.playlist.isEditable) Icons.Rounded.Edit else Icons.Rounded.EditOff,
+            imageVector = if (playlist.playlist.isEditable) Icons.Outlined.Edit else Icons.Outlined.EditOff,
             contentDescription = null,
             modifier = Modifier
                 .size(18.dp)
@@ -1044,7 +1043,7 @@ fun PlaylistListItem(
 
         if (playlist.playlist.isLocal) {
             Icon(
-                imageVector = Icons.Rounded.CloudOff,
+                imageVector = Icons.Outlined.CloudOff,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -1054,7 +1053,7 @@ fun PlaylistListItem(
 
         if (playlist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -1068,7 +1067,7 @@ fun PlaylistListItem(
             size = ListThumbnailSize,
             placeHolder = {
                 Icon(
-                    painter = painterResource(R.drawable.queue_music),
+                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
                     contentDescription = null,
                     modifier = Modifier.size(ListThumbnailSize)
                 )
@@ -1095,7 +1094,7 @@ fun PlaylistGridItem(
     badges = {
         if (playlist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -1110,7 +1109,7 @@ fun PlaylistGridItem(
             size = width,
             placeHolder = {
                 Icon(
-                    painter = painterResource(R.drawable.queue_music),
+                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
                     contentDescription = null,
                     tint = LocalContentColor.current.copy(alpha = 0.8f),
                     modifier = Modifier
@@ -1141,7 +1140,7 @@ fun MediaMetadataListItem(
     ),
     thumbnailContent = {
         ItemThumbnail(
-            thumbnailUrl = if (mediaMetadata.isLocal) mediaMetadata.localPath else mediaMetadata.thumbnailUrl,
+            thumbnailUrl = mediaMetadata.localPath ?: mediaMetadata.thumbnailUrl,
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
@@ -1172,7 +1171,7 @@ fun QueueListItem(
     ),
     thumbnailContent = {
         Icon(
-            Icons.AutoMirrored.Rounded.QueueMusic,
+            Icons.AutoMirrored.Outlined.QueueMusic,
             contentDescription = null,
             modifier = Modifier.size(48.dp)
         )
@@ -1449,7 +1448,7 @@ fun YouTubeCardItem(
 @Composable
 fun ItemThumbnail(
     thumbnailUrl: String?,
-    placeholderIcon: ImageVector = Icons.Rounded.MusicNote,
+    placeholderIcon: ImageVector = Icons.Outlined.MusicNote,
     isActive: Boolean,
     isPlaying: Boolean,
     shape: Shape,
@@ -1531,25 +1530,24 @@ fun ItemThumbnail(
         }
 
         if (isRectangularImage) {
-            val radial = Brush.radialGradient(
-                0.0f to Color.Black.copy(alpha = 0.5f),
-                0.8f to Color.Black.copy(alpha = 0.05f),
-                1.0f to Color.Transparent,
-            )
-
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .size((maxHeight / 3) + 6.dp)
-                    .offset(x = -maxHeight / 25)
-                    .background(brush = radial, shape = CircleShape)
+                    .padding(bottom = 2.dp, end = 2.dp)
+                    .size(18.dp)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent)
+                        ),
+                        shape = CircleShape
+                    )
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.OndemandVideo,
+                    imageVector = Icons.Outlined.OndemandVideo,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.padding(3.dp)
+                    modifier = Modifier.size(10.dp)
                 )
             }
         }
@@ -1660,7 +1658,7 @@ fun BoxScope.AlbumPlayButton(
                 .clickable(onClick = onClick)
         ) {
             Icon(
-                painter = painterResource(R.drawable.play),
+                imageVector = Icons.Outlined.PlayArrow,
                 contentDescription = null,
                 tint = Color.White
             )
@@ -1672,7 +1670,7 @@ private object Icon {
     @Composable
     fun Favorite() {
         Icon(
-            imageVector = Icons.Rounded.Favorite,
+            imageVector = Icons.Outlined.Favorite,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.error,
             modifier = Modifier
@@ -1684,7 +1682,7 @@ private object Icon {
     @Composable
     fun FolderCopy() {
         Icon(
-            imageVector = Icons.Rounded.FolderCopy,
+            imageVector = Icons.Outlined.FolderCopy,
             contentDescription = null,
             modifier = Modifier
                 .size(18.dp)
@@ -1695,7 +1693,7 @@ private object Icon {
     @Composable
     fun Library() {
         Icon(
-            imageVector = Icons.Rounded.LibraryAddCheck,
+            imageVector = Icons.Outlined.LibraryAddCheck,
             contentDescription = null,
             modifier = Modifier
                 .size(18.dp)
@@ -1707,7 +1705,7 @@ private object Icon {
     fun Download(state: Int?) {
         when (state) {
             STATE_COMPLETED -> Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier
                     .size(18.dp)
@@ -1728,7 +1726,7 @@ private object Icon {
     @Composable
     fun Explicit() {
         Icon(
-            imageVector = Icons.Rounded.Explicit,
+            imageVector = Icons.Outlined.Explicit,
             contentDescription = null,
             modifier = Modifier
                 .size(18.dp)

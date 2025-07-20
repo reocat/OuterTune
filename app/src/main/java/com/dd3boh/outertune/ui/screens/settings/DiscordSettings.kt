@@ -27,9 +27,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,7 +41,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,7 +70,6 @@ import com.dd3boh.outertune.constants.DiscordNameKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.DiscordUsernameKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
-import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
@@ -118,7 +116,7 @@ fun DiscordSettings(
                         onLongClick = navController::backToMain
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = stringResource(R.string.action_back)
                         )
                     }
@@ -224,7 +222,7 @@ private fun DiscordInfoBanner(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Info,
+                        imageVector = Icons.Outlined.Info,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp)
                     )
@@ -293,7 +291,7 @@ private fun AccountPreferenceItem(
                 )
                 if (isLoggedIn) {
                     Icon(
-                        imageVector = Icons.Rounded.CheckCircle,
+                        imageVector = Icons.Outlined.CheckCircle,
                         contentDescription = "Connected",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)

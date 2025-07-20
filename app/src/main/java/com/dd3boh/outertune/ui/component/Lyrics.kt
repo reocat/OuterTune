@@ -45,9 +45,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.MoreHoriz
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -110,23 +110,23 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
-import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricFontSizeKey
+import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricUpdateSpeed
+import com.dd3boh.outertune.constants.LyricsPosition
+import com.dd3boh.outertune.constants.LyricsScrollKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.ShowLyricsKey
-import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
-import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
-import com.dd3boh.outertune.ui.menu.LyricsMenu
-import com.dd3boh.outertune.constants.LyricsPosition
-import com.dd3boh.outertune.constants.LyricsScrollKey
 import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.uninitializedLyric
 import com.dd3boh.outertune.extensions.isPowerSaver
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
+import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
+import com.dd3boh.outertune.ui.menu.LyricsMenu
 import com.dd3boh.outertune.ui.utils.fadingEdge
 import com.dd3boh.outertune.utils.ComposeToImage
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -547,7 +547,7 @@ fun Lyrics(
                         enabled = selectedIndices.isNotEmpty()
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Share,
+                            imageVector = Icons.Outlined.Share,
                             contentDescription = stringResource(R.string.share),
                             tint = textColor.copy(alpha = if (selectedIndices.isNotEmpty()) 1f else 0.5f)
                         )
@@ -559,7 +559,7 @@ fun Lyrics(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Close,
+                            imageVector = Icons.Outlined.Close,
                             contentDescription = stringResource(R.string.cancel),
                             tint = textColor
                         )
@@ -569,7 +569,7 @@ fun Lyrics(
                         onClick = { showLyrics = false }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Close,
+                            imageVector = Icons.Outlined.Close,
                             contentDescription = null,
                             tint = textColor
                         )
@@ -597,7 +597,7 @@ fun Lyrics(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.MoreHoriz,
+                            imageVector = Icons.Outlined.MoreHoriz,
                             contentDescription = null,
                             tint = textColor
                         )
@@ -652,7 +652,7 @@ fun Lyrics(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Share,
+                            imageVector = Icons.Outlined.Share,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -668,7 +668,7 @@ fun Lyrics(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Share,
+                            imageVector = Icons.Outlined.Share,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )

@@ -21,14 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
-import com.materialkolor.score.Score
 
 val DefaultThemeColor = Color(0xFFED5564)
 
@@ -41,24 +40,22 @@ fun OuterTuneTheme(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    // Determine if system dynamic colors should be used (Android S+ and default theme color)
     val useSystemDynamicColor = (themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
 
-    // Select the appropriate color scheme generation method
     val baseColorScheme = if (useSystemDynamicColor) {
-        // Use standard Material 3 dynamic color functions for system wallpaper colors
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else {
-        // Use materialKolor only when a specific seed color is provided
+        val isGrayscale = themeColor.isGrayscale()
+        val paletteStyle = if (isGrayscale) PaletteStyle.Neutral else PaletteStyle.Vibrant
+
         rememberDynamicColorScheme(
-            seedColor = themeColor, // themeColor is guaranteed non-default here
+            seedColor = themeColor,
             isDark = darkTheme,
             specVersion = ColorSpec.SpecVersion.SPEC_2025,
-            style = PaletteStyle.TonalSpot // Keep existing style
+            style = paletteStyle
         )
     }
 
-    // Apply pureBlack modification if needed, similar to original logic
     val colorScheme = remember(baseColorScheme, pureBlack, darkTheme) {
         if (darkTheme && pureBlack) {
             baseColorScheme.pureBlack(true)
@@ -78,29 +75,105 @@ fun OuterTuneTheme(
 }
 
 fun Bitmap.extractThemeColor(): Color {
-    val colorsToPopulation = Palette.from(this)
-        .maximumColorCount(8)
+    val palette = Palette.from(this)
+        .maximumColorCount(24)
         .generate()
-        .swatches
-        .associate { it.rgb to it.population }
-    val rankedColors = Score.score(colorsToPopulation)
-    return Color(rankedColors.first())
+
+    val swatch = palette.vibrantSwatch
+        ?: palette.mutedSwatch
+        ?: palette.dominantSwatch
+        ?: return DefaultThemeColor
+
+    val hsl = swatch.hsl
+    val saturation = hsl[1]
+    val lightness = hsl[2]
+
+    val isGrayscale = when {
+        lightness < 0.2f -> saturation < 0.03f
+        lightness > 0.8f -> saturation < 0.03f
+        else -> saturation < 0.08f
+    }
+
+    if (isGrayscale) {
+        val adjustedLightness = lightness.coerceIn(0.3f, 0.7f)
+        val newHsl = floatArrayOf(0f, 0f, adjustedLightness)
+        return Color(ColorUtils.HSLToColor(newHsl))
+    }
+    return Color(swatch.rgb)
 }
 
+fun Color.isGrayscale(saturationThreshold: Float = 0.08f, lightnessRange: Float = 0.15f): Boolean {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(this.toArgb(), hsl)
+
+    val saturation = hsl[1]
+    val lightness = hsl[2]
+
+    if (saturation > saturationThreshold) return false
+
+    return when {
+        lightness < 0.2f -> saturation < 0.03f
+        lightness > 0.8f -> saturation < 0.03f
+        else -> saturation < saturationThreshold
+    }
+}
+
+data class ThemeColorInfo(
+    val color: Color,
+    val isGrayscale: Boolean,
+    val suggestedPaletteStyle: PaletteStyle
+)
+
 fun Bitmap.extractGradientColors(): List<Color> {
-    val extractedColors = Palette.from(this)
-        .maximumColorCount(64)
-        .generate()
-        .swatches
-        .associate { it.rgb to it.population }
+    val palette = Palette.from(this).maximumColorCount(32).generate()
 
-    val orderedColors = Score.score(extractedColors, 2, 0xff4285f4.toInt(), true)
-        .sortedByDescending { Color(it).luminance() }
+    val dominantSwatch = palette.dominantSwatch
+    val hsl = dominantSwatch?.hsl
+    val isGrayscale = hsl != null && hsl[1] < 0.1f
 
-    return if (orderedColors.size >= 2)
-        listOf(Color(orderedColors[0]), Color(orderedColors[1]))
-    else
-        listOf(Color(0xFF595959), Color(0xFF0D0D0D))
+    if (isGrayscale) {
+        val baseLightness = dominantSwatch?.hsl?.get(2) ?: 0.5f
+        val topColor = Color(ColorUtils.HSLToColor(floatArrayOf(0f, 0f, (baseLightness + 0.2f).coerceAtMost(0.9f))))
+        val middleColor = Color(ColorUtils.HSLToColor(floatArrayOf(0f, 0f, baseLightness.coerceIn(0.2f, 0.8f))))
+        val bottomColor = Color(ColorUtils.HSLToColor(floatArrayOf(0f, 0f, (baseLightness - 0.2f).coerceAtLeast(0.1f))))
+        return listOf(topColor, middleColor, bottomColor)
+    }
+
+    val vibrant = palette.vibrantSwatch?.rgb?.let { Color(it) }
+    val darkVibrant = palette.darkVibrantSwatch?.rgb?.let { Color(it) }
+    val lightVibrant = palette.lightVibrantSwatch?.rgb?.let { Color(it) }
+    val dominant = palette.dominantSwatch?.rgb?.let { Color(it) }
+
+    val colors = mutableListOf<Color>()
+
+    val topColor = vibrant ?: lightVibrant ?: dominant ?: Color(0xFF8B7ED8)
+    colors.add(topColor)
+
+    val bottomColor = darkVibrant ?: dominant?.darken(0.4f) ?: topColor.darken(0.5f)
+    colors.add(bottomColor)
+
+    val middleColor = palette.mutedSwatch?.rgb?.let { Color(it) } ?: topColor.darken(0.2f)
+    colors.add(1, middleColor)
+
+    while(colors.size < 3) {
+        colors.add(colors.last().darken(0.2f))
+    }
+
+    return colors.distinct().take(3)
+}
+
+fun Color.darken(factor: Float): Color {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(this.toArgb(), hsv)
+    hsv[2] *= (1f - factor)
+    return Color(android.graphics.Color.HSVToColor(hsv))
+}
+
+fun Color.lighten(factor: Float): Color {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(this.toArgb(), hsv)
+    hsv[2] = (hsv[2] + factor).coerceIn(0f, 1f)
+    return Color(android.graphics.Color.HSVToColor(hsv))
 }
 
 fun ColorScheme.pureBlack(apply: Boolean) =

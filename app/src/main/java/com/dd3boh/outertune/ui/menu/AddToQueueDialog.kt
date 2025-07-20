@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -61,7 +61,7 @@ fun AddToQueueDialog(
                     title = stringResource(R.string.create_queue),
                     thumbnailContent = {
                         Image(
-                            imageVector = Icons.Rounded.Add,
+                            imageVector = Icons.Outlined.Add,
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
                             modifier = Modifier.size(ListThumbnailSize)
@@ -90,7 +90,7 @@ fun AddToQueueDialog(
 
     if (showCreateQueueDialog) {
         TextFieldDialog(
-            icon = { Icon(imageVector = Icons.Rounded.Add, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Outlined.Add, contentDescription = null) },
             title = { Text(text = stringResource(R.string.create_queue)) },
             initialTextFieldValue = TextFieldValue(initialTextFieldValue ?: ""),
             onDismiss = { showCreateQueueDialog = false },

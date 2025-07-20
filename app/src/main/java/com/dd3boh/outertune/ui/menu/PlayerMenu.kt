@@ -24,21 +24,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.automirrored.rounded.VolumeUp
-import androidx.compose.material.icons.rounded.AddCircleOutline
-import androidx.compose.material.icons.rounded.Equalizer
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.LibraryAdd
-import androidx.compose.material.icons.rounded.LibraryAddCheck
-import androidx.compose.material.icons.rounded.MoreTime
-import androidx.compose.material.icons.rounded.Radio
-import androidx.compose.material.icons.rounded.RemoveCircleOutline
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.SlowMotionVideo
-import androidx.compose.material.icons.rounded.Timer
-import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Equalizer
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LibraryAdd
+import androidx.compose.material.icons.outlined.LibraryAddCheck
+import androidx.compose.material.icons.outlined.MoreTime
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.SlowMotionVideo
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -278,7 +281,7 @@ fun PlayerMenu(
                 .padding(16.dp),
             properties = DialogProperties(usePlatformDefaultWidth = false),
             onDismissRequest = { showSleepTimerDialog = false },
-            icon = { Icon(imageVector = Icons.Rounded.Timer, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Outlined.Timer, contentDescription = null) },
             title = { Text(stringResource(R.string.sleep_timer)) },
             confirmButton = {
                 TextButton(
@@ -368,7 +371,7 @@ fun PlayerMenu(
                             onValueChange = onTextFieldValueChange,
                             placeholder = { pluralString },
                             singleLine = true,
-                            leadingIcon = { Icon(Icons.Rounded.MoreTime, null) },
+                            leadingIcon = { Icon(Icons.Outlined.MoreTime, null) },
                             colors = OutlinedTextFieldDefaults.colors(),
                             keyboardOptions = KeyboardOptions(
                                 imeAction = ImeAction.Done,
@@ -470,7 +473,7 @@ fun PlayerMenu(
             .padding(top = 24.dp, bottom = 6.dp)
     ) {
         Icon(
-            imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
+            imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
             contentDescription = null,
             modifier = Modifier.size(28.dp)
         )
@@ -492,20 +495,20 @@ fun PlayerMenu(
     ) {
         if (!mediaMetadata.isLocal)
             GridMenuItem(
-                icon = Icons.Rounded.Radio,
+                icon = Icons.Outlined.Radio,
                 title = R.string.start_radio
             ) {
                 playerConnection.playQueue(YouTubeQueue.radio(mediaMetadata), isRadio = true)
                 onDismiss()
             }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.QueueMusic,
+            icon = Icons.AutoMirrored.Outlined.QueueMusic,
             title = R.string.add_to_queue
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
             title = R.string.add_to_playlist
         ) {
             showChoosePlaylistDialog = true
@@ -530,7 +533,7 @@ fun PlayerMenu(
             )
         if (librarySong?.song?.inLibrary != null && !librarySong!!.song.isLocal) {
             GridMenuItem(
-                icon = Icons.Rounded.LibraryAddCheck,
+                icon = Icons.Outlined.LibraryAddCheck,
                 title = R.string.remove_from_library,
             ) {
                 database.query {
@@ -539,7 +542,7 @@ fun PlayerMenu(
             }
         } else if (!mediaMetadata.isLocal) {
             GridMenuItem(
-                icon = Icons.Rounded.LibraryAdd,
+                icon = Icons.Outlined.LibraryAdd,
                 title = R.string.add_to_library,
             ) {
                 database.transaction {
@@ -549,7 +552,7 @@ fun PlayerMenu(
             }
         }
         GridMenuItem(
-            icon = R.drawable.artist,
+            icon = Icons.Outlined.Person,
             title = R.string.view_artist
         ) {
             if (mediaMetadata.artists.size == 1) {
@@ -562,7 +565,7 @@ fun PlayerMenu(
         }
         if (mediaMetadata.album != null && !mediaMetadata.isLocal) {
             GridMenuItem(
-                icon = R.drawable.album,
+                icon = Icons.Outlined.Album,
                 title = R.string.view_album
             ) {
                 navController.navigate("album/${mediaMetadata.album.id}")
@@ -573,7 +576,7 @@ fun PlayerMenu(
 
         if (!mediaMetadata.isLocal)
             GridMenuItem(
-                icon = Icons.Rounded.Share,
+                icon = Icons.Outlined.Share,
                 title = R.string.share
             ) {
                 val intent = Intent().apply {
@@ -586,7 +589,7 @@ fun PlayerMenu(
             }
 
         GridMenuItem(
-            icon = Icons.Rounded.Info,
+            icon = Icons.Outlined.Info,
             title = R.string.details
         ) {
             showDetailsDialog = true
@@ -601,7 +604,7 @@ fun PlayerMenu(
         }
 
         GridMenuItem(
-            icon = Icons.Rounded.Equalizer,
+            icon = Icons.Outlined.Equalizer,
             title = R.string.equalizer
         ) {
             val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -615,7 +618,7 @@ fun PlayerMenu(
             onDismiss()
         }
         GridMenuItem(
-            icon = Icons.Rounded.Tune,
+            icon = Icons.Outlined.Tune,
             title = R.string.advanced
         ) {
             showPitchTempoDialog = true
@@ -662,7 +665,7 @@ fun PitchTempoDialog(
         text = {
             Column {
                 ValueAdjuster(
-                    icon = Icons.Rounded.SlowMotionVideo,
+                    icon = Icons.Outlined.SlowMotionVideo,
                     currentValue = tempo,
                     values = (0..35).map { round((0.25f + it * 0.05f) * 100) / 100 },
                     onValueUpdate = {
@@ -673,7 +676,7 @@ fun PitchTempoDialog(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 ValueAdjuster(
-                    icon = Icons.Rounded.Tune,
+                    icon = Icons.Outlined.Tune,
                     currentValue = transposeValue,
                     values = (-12..12).toList(),
                     onValueUpdate = {
@@ -714,7 +717,7 @@ fun <T> ValueAdjuster(
             }
         ) {
             Icon(
-                imageVector = Icons.Rounded.RemoveCircleOutline,
+                imageVector = Icons.Outlined.RemoveCircleOutline,
                 contentDescription = null
             )
         }
@@ -733,7 +736,7 @@ fun <T> ValueAdjuster(
             }
         ) {
             Icon(
-                imageVector = Icons.Rounded.AddCircleOutline,
+                imageVector = Icons.Outlined.AddCircleOutline,
                 contentDescription = null
             )
         }

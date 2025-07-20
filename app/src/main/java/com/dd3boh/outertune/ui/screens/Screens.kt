@@ -11,17 +11,16 @@ package com.dd3boh.outertune.ui.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.LibraryMusic
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.dd3boh.outertune.R
-import kotlin.collections.forEach
 
 @Immutable
 sealed class Screens(
@@ -29,13 +28,13 @@ sealed class Screens(
     val icon: ImageVector,
     val route: String,
 ) {
-    data object Home : Screens(R.string.home, Icons.Rounded.Home, "home")
-    data object Songs : Screens(R.string.songs, Icons.Rounded.MusicNote, "songs")
-    data object Folders : Screens(R.string.folders, Icons.Rounded.Folder, "folders")
-    data object Artists : Screens(R.string.artists, Icons.Rounded.Person, "artists")
-    data object Albums : Screens(R.string.albums, Icons.Rounded.Album, "albums")
-    data object Playlists : Screens(R.string.playlists, Icons.AutoMirrored.Rounded.QueueMusic, "playlists")
-    data object Library : Screens(R.string.library, Icons.Rounded.LibraryMusic, "library")
+    data object Home : Screens(R.string.home, Icons.Outlined.Home, "home")
+    data object Songs : Screens(R.string.songs, Icons.Outlined.MusicNote, "songs")
+    data object Folders : Screens(R.string.folders, Icons.Outlined.Folder, "folders")
+    data object Artists : Screens(R.string.artists, Icons.Outlined.Person, "artists")
+    data object Albums : Screens(R.string.albums, Icons.Outlined.Album, "albums")
+    data object Playlists : Screens(R.string.playlists, Icons.AutoMirrored.Outlined.QueueMusic, "playlists")
+    data object Library : Screens(R.string.library, Icons.Outlined.LibraryMusic, "library")
 
     enum class LibraryFilter {
         ALL, ALBUMS, ARTISTS, PLAYLISTS, SONGS, FOLDERS

@@ -2,9 +2,9 @@ package com.dd3boh.outertune.viewmodels
 
 import android.content.Context
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -39,9 +39,9 @@ class AutoPlaylistViewModel @Inject constructor(
 
     val thumbnail: StateFlow<ImageVector> = MutableStateFlow(
         when (playlistId) {
-            "liked" -> Icons.Rounded.Favorite
-            "downloaded" -> Icons.Rounded.CloudDownload
-            else -> Icons.AutoMirrored.Rounded.QueueMusic
+            "liked" -> Icons.Outlined.Favorite
+            "downloaded" -> Icons.Outlined.CloudDownload
+            else -> Icons.AutoMirrored.Outlined.QueueMusic
         }
     ).asStateFlow()
 
