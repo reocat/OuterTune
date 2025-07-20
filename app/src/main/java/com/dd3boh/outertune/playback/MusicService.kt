@@ -124,6 +124,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -134,6 +135,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -144,6 +146,7 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.time.Duration.Companion.seconds
 
 const val MAX_CONSECUTIVE_ERR = 3
 
@@ -450,6 +453,30 @@ class MusicService : MediaLibraryService(),
                     setSmallIcon(R.drawable.small_icon)
                 }
         )
+
+        if (dataStore.get(PersistentQueueKey, true)) {
+            initQueue()
+            queueBoard.getCurrentQueue()?.let { lastQueue ->
+                if (lastQueue.queue.isNotEmpty()) {
+                    val lastPosition = dataStore.get(LastPosKey, 0L)
+                    queueBoard.setCurrQueue(lastQueue, autoSeek = true)
+                    player.prepare()
+                    player.seekTo(lastPosition)
+                    Timber.tag(TAG).d("Restored queue '${lastQueue.title}' with ${lastQueue.getSize()} songs, seeking to position $lastPosition")
+                }
+            }
+        }
+
+        scope.launch {
+            while (isActive) {
+                delay(15.seconds)
+                if (player.isPlaying) {
+                    if (dataStore.get(PersistentQueueKey, true)) {
+                        saveQueueToDisk()
+                    }
+                }
+            }
+        }
     }
 
     fun waitOnNetworkError() {
@@ -619,7 +646,7 @@ class MusicService : MediaLibraryService(),
     fun playQueue(
         queue: Queue,
         playWhenReady: Boolean = true,
-        replace: Boolean = false,
+        replace: Boolean = true,
         isRadio: Boolean = false,
         title: String? = null
     ) {
