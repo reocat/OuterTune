@@ -12,10 +12,10 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.BlurOn
-import androidx.compose.material.icons.rounded.Contrast
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.outlined.BlurOn
+import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +42,7 @@ fun ColumnScope.ThemeAppFrag() {
 
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_dynamic_theme)) },
-        icon = { Icon(Icons.Rounded.Palette, null) },
+        icon = { Icon(Icons.Outlined.Palette, null) },
         checked = dynamicTheme,
         onCheckedChange = onDynamicThemeChange,
         isFirst = true
@@ -50,7 +50,7 @@ fun ColumnScope.ThemeAppFrag() {
 
     EnumListPreference(
         title = { Text(stringResource(R.string.dark_theme)) },
-        icon = { Icon(Icons.Rounded.DarkMode, null) },
+        icon = { Icon(Icons.Outlined.DarkMode, null) },
         selectedValue = darkMode,
         onValueSelected = onDarkModeChange,
         valueText = {
@@ -68,7 +68,7 @@ fun ColumnScope.ThemeAppFrag() {
             Text(stringResource(R.string.pure_black))
         },
         description = if (isDarkModeEnabled) null else stringResource(R.string.pure_black_unavailable),
-        icon = { Icon(Icons.Rounded.Contrast, null) },
+        icon = { Icon(Icons.Outlined.Contrast, null) },
         checked = pureBlack && isDarkModeEnabled,
         onCheckedChange = {
             if (isDarkModeEnabled) { onPureBlackChange(it) }
@@ -90,7 +90,7 @@ fun ColumnScope.ThemePlayerFrag() {
 
     EnumListPreference(
         title = { Text(stringResource(R.string.player_background_style)) },
-        icon = { Icon(Icons.Rounded.BlurOn, null) },
+        icon = { Icon(Icons.Outlined.BlurOn, null) },
         selectedValue = playerBackground,
         onValueSelected = onPlayerBackgroundChange,
         valueText = {

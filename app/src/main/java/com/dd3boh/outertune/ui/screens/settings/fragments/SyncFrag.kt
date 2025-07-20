@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.SyncLock
-import androidx.compose.material.icons.rounded.SyncProblem
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.SyncLock
+import androidx.compose.material.icons.outlined.SyncProblem
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -73,7 +73,7 @@ fun ColumnScope.SyncAutoFrag() {
 
     SwitchPreference(
         title = { Text(stringResource(R.string.ytm_sync)) },
-        icon = { Icon(Icons.Rounded.Sync, null) },
+        icon = { Icon(Icons.Outlined.Sync, null) },
         checked = ytmSync,
         onCheckedChange = onYtmSyncChange,
         isEnabled = isLoggedIn
@@ -107,7 +107,7 @@ fun ColumnScope.SyncManualFrag() {
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.scanner_manual_btn)) },
-        icon = { Icon(Icons.Rounded.Sync, null) },
+        icon = { Icon(Icons.Outlined.Sync, null) },
         onClick = {
             coroutineScope.launch(Dispatchers.Main) {
                 snackbarHostState.showSnackbar(
@@ -193,7 +193,7 @@ fun ColumnScope.SyncParamsFrag() {
 
     EnumListPreference(
         title = { Text(stringResource(R.string.sync_mode)) },
-        icon = { Icon(Icons.Rounded.SyncLock, null) },
+        icon = { Icon(Icons.Outlined.SyncLock, null) },
         selectedValue = syncMode,
         onValueSelected = onSyncModeChange,
         valueText = {
@@ -206,7 +206,7 @@ fun ColumnScope.SyncParamsFrag() {
     )
     EnumListPreference(
         title = { Text(stringResource(R.string.sync_conflict_title)) },
-        icon = { Icon(Icons.Rounded.SyncProblem, null) },
+        icon = { Icon(Icons.Outlined.SyncProblem, null) },
         selectedValue = syncConflict,
         onValueSelected = onSyncConflictChange,
         valueText = {
@@ -233,7 +233,7 @@ fun ColumnScope.SyncExtrasFrag() {
 
     ListPreference(
         title = { Text(stringResource(R.string.like_autodownload)) },
-        icon = { Icon(Icons.Rounded.Favorite, null) },
+        icon = { Icon(Icons.Outlined.Favorite, null) },
         values = listOf(LikedAutodownloadMode.OFF, LikedAutodownloadMode.ON, LikedAutodownloadMode.WIFI_ONLY),
         selectedValue = likedAutoDownload,
         valueText = {

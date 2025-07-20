@@ -35,7 +35,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -495,7 +494,7 @@ fun DetailsDialog(
         onDismissRequest = { setVisibility(false) },
         icon = {
             Icon(
-                imageVector = Icons.Rounded.Info,
+                imageVector = Icons.Outlined.Info,
                 contentDescription = null
             )
         },

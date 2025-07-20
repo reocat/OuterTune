@@ -1,7 +1,6 @@
 package com.dd3boh.outertune.ui.screens.library
 
 import android.content.pm.PackageManager
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +19,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -176,8 +175,8 @@ fun LibraryAlbumsScreen(
                     Icon(
                         imageVector =
                             when (albumViewType) {
-                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Outlined.List
+                                LibraryViewType.GRID -> Icons.Outlined.GridView
                             },
                         contentDescription = null
                     )
@@ -256,7 +255,7 @@ fun LibraryAlbumsScreen(
                         if (albums.isEmpty()) {
                             item {
                                 EmptyPlaceholder(
-                                    icon = Icons.Rounded.Album,
+                                    icon = Icons.Outlined.Album,
                                     text = stringResource(R.string.library_album_empty),
                                     modifier = Modifier.animateItem()
                                 )
@@ -310,7 +309,7 @@ fun LibraryAlbumsScreen(
                         if (albums.isEmpty()) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
                                 EmptyPlaceholder(
-                                    icon = Icons.Rounded.Album,
+                                    icon = Icons.Outlined.Album,
                                     text = stringResource(R.string.library_album_empty),
                                     modifier = Modifier.animateItem()
                                 )

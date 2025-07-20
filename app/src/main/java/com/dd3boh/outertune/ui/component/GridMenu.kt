@@ -24,9 +24,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bedtime
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.OfflinePin
+import androidx.compose.material.icons.outlined.Bedtime
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.OfflinePin
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -151,7 +151,7 @@ fun LazyGridScope.DownloadGridMenu(
     when (state) {
         Download.STATE_COMPLETED -> {
             GridMenuItem(
-                icon = Icons.Rounded.OfflinePin,
+                icon = Icons.Outlined.OfflinePin,
                 title = R.string.remove_download,
                 onClick = onRemoveDownload
             )
@@ -172,7 +172,7 @@ fun LazyGridScope.DownloadGridMenu(
 
         else -> {
             GridMenuItem(
-                icon = Icons.Rounded.Download,
+                icon = Icons.Outlined.Download,
                 title = R.string.action_download,
                 onClick = onDownload
             )
@@ -203,7 +203,7 @@ fun LazyGridScope.SleepTimerGridMenu(
                 contentAlignment = Alignment.Center,
                 content = {
                     Icon(
-                        imageVector = Icons.Rounded.Bedtime,
+                        imageVector = Icons.Outlined.Bedtime,
                         contentDescription = null,
                         modifier = Modifier.alpha(if (enabled) 1f else 0.5f)
                     )

@@ -16,17 +16,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -268,7 +267,7 @@ fun LibrarySongsScreen(
                 if (songs.isEmpty()) {
                     item {
                         EmptyPlaceholder(
-                            icon = Icons.Rounded.MusicNote,
+                            icon = Icons.Outlined.MusicNote,
                             text = stringResource(R.string.library_song_empty),
                             modifier = Modifier.animateItem()
                         )
@@ -314,7 +313,7 @@ fun LibrarySongsScreen(
         HideOnScrollFAB(
             visible = !songs.isNullOrEmpty(),
             lazyListState = lazyListState,
-            icon = Icons.Rounded.Shuffle,
+            icon = Icons.Outlined.Shuffle,
             onClick = {
                 playerConnection.playQueue(
                     ListQueue(

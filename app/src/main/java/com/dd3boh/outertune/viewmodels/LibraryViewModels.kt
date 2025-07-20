@@ -13,7 +13,6 @@ package com.dd3boh.outertune.viewmodels
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -60,7 +59,6 @@ import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.refreshLocal
-import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.zionhuang.innertube.YouTube
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

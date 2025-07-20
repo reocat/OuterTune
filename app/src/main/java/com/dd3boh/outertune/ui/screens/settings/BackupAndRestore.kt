@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -78,7 +78,7 @@ fun BackupAndRestore(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }

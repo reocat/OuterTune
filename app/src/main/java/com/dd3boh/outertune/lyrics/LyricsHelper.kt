@@ -2,11 +2,14 @@ package com.dd3boh.outertune.lyrics
 
 import android.content.Context
 import android.util.LruCache
-import com.dd3boh.outertune.constants.*
+import com.dd3boh.outertune.constants.LyricSourcePrefKey
+import com.dd3boh.outertune.constants.LyricTrimKey
+import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.models.LyricsData
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
@@ -41,9 +44,9 @@ class LyricsHelper @Inject constructor(
     private val lyricsProviders by lazy {
         listOf(musixmatch, lrcLib, youTube, youTubeSubtitle, kuGou)
     }
-    private val cache = LruCache<String, SemanticLyrics>(MAX_CACHE_SIZE)
+    private val cache = LruCache<String, LyricsData>(MAX_CACHE_SIZE)
 
-    suspend fun getLyrics(mediaMetadata: MediaMetadata): SemanticLyrics? {
+    suspend fun getLyrics(mediaMetadata: MediaMetadata): LyricsData? {
         Timber.d("nya~ Starting lyrics search for '${mediaMetadata.title}' (ID: ${mediaMetadata.id})")
         val trim = context.dataStore.get(LyricTrimKey, defaultValue = false)
         val multiline = context.dataStore.get(MultilineLrcKey, defaultValue = true)
@@ -70,8 +73,9 @@ class LyricsHelper @Inject constructor(
 
         if (dbLyrics != null && !prefLocal) {
             Timber.i("Found and returning database lyrics for '${mediaMetadata.title}' as user doesn't prefer local first. ^w^")
-            cache.put(mediaMetadata.id, dbLyrics)
-            return dbLyrics
+            val data = LyricsData(dbLyrics, "Database")
+            cache.put(mediaMetadata.id, data)
+            return data
         }
 
         val localLyrics = getLocalLyrics(mediaMetadata, LrcUtils.LrcParserOptions(trim, multiline, "Unable to parse lyrics"))
@@ -80,21 +84,24 @@ class LyricsHelper @Inject constructor(
             Timber.d("User prefers local lyrics, so we check them first!")
             if (localLyrics != null) {
                 Timber.i("Found local lyrics for '${mediaMetadata.title}'. Returning these! :3")
-                cache.put(mediaMetadata.id, localLyrics)
-                return localLyrics
+                val data = LyricsData(localLyrics, "Local")
+                cache.put(mediaMetadata.id, data)
+                return data
             }
             if (dbLyrics != null) {
                 Timber.i("No local lyrics, but found some in the database! Returning those, nya~")
-                cache.put(mediaMetadata.id, dbLyrics)
-                return dbLyrics
+                val data = LyricsData(dbLyrics, "Database")
+                cache.put(mediaMetadata.id, data)
+                return data
             }
         }
 
         Timber.i("No local or database lyrics found (or not preferred yet). Let's ask the remote providers! OwO")
-        val remoteLyrics = getRemoteLyrics(mediaMetadata)
-        if (remoteLyrics != null) {
+        val remoteLyricsPair = getRemoteLyrics(mediaMetadata)
+        if (remoteLyricsPair != null) {
             Timber.i("Got remote lyrics! Saving to cache and database. uwu")
-            cache.put(mediaMetadata.id, remoteLyrics)
+            cache.put(mediaMetadata.id, remoteLyricsPair)
+            val remoteLyrics = remoteLyricsPair.lyrics
             val lrcString = when (remoteLyrics) {
                 is SemanticLyrics.SyncedLyrics -> {
                     Timber.d("Lyrics are synced! Formatting to LRC string.")
@@ -109,14 +116,15 @@ class LyricsHelper @Inject constructor(
             database.query {
                 upsert(LyricsEntity(id = mediaMetadata.id, lyrics = lrcString))
             }
-            return remoteLyrics
+            return remoteLyricsPair
         }
 
         if (!prefLocal) {
             if (localLyrics != null) {
                 Timber.i("No remote lyrics found, but we found local lyrics earlier! Returning those. :3")
-                cache.put(mediaMetadata.id, localLyrics)
-                return localLyrics
+                val data = LyricsData(localLyrics, "Local")
+                cache.put(mediaMetadata.id, data)
+                return data
             }
         }
 
@@ -124,10 +132,14 @@ class LyricsHelper @Inject constructor(
         database.query {
             upsert(LyricsEntity(id = mediaMetadata.id, lyrics = LYRICS_NOT_FOUND))
         }
-        return null
+
+        return LyricsData(
+            lyrics = LyricsEntity.uninitializedLyric,
+            providerName = "None"
+        )
     }
 
-    private suspend fun getRemoteLyrics(mediaMetadata: MediaMetadata): SemanticLyrics? {
+    private suspend fun getRemoteLyrics(mediaMetadata: MediaMetadata): LyricsData? {
         Timber.d("Iterating through ${lyricsProviders.size} remote providers...")
         for (provider in lyricsProviders) {
             if (provider.isEnabled(context)) {
@@ -140,7 +152,7 @@ class LyricsHelper @Inject constructor(
                 ).onSuccess { lyrics ->
                     Timber.d("Success! Found lyrics for '${mediaMetadata.title}' with ${provider.name}. uwu")
                     Timber.v("Retrieved lyrics snippet: ${lyrics.unsyncedText.firstOrNull()?.first ?: "..."}")
-                    return lyrics
+                    return LyricsData(lyrics, provider.name)
                 }.onFailure {
                     Timber.w("Provider ${provider.name} failed or found no lyrics. ono. Reason: ${it.message}")
                     reportException(it)

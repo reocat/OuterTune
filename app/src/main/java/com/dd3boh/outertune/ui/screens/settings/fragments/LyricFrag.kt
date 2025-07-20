@@ -10,11 +10,11 @@ package com.dd3boh.outertune.ui.screens.settings.fragments
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.rounded.ContentCut
-import androidx.compose.material.icons.rounded.Lyrics
-import androidx.compose.material.icons.rounded.SwapVert
-import androidx.compose.material.icons.rounded.TextFields
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.ContentCut
+import androidx.compose.material.icons.outlined.Lyrics
+import androidx.compose.material.icons.outlined.SwapVert
+import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -52,7 +52,7 @@ import com.dd3boh.outertune.utils.rememberPreference
 fun ColumnScope.LyricFormatFrag() {
     val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(
         LyricsTextPositionKey,
-        defaultValue = LyricsPosition.CENTER
+        defaultValue = LyricsPosition.LEFT
     )
 
     val (lyricFontSize, onLyricFontSizeChange) = rememberPreference(LyricFontSizeKey, defaultValue = 20)
@@ -65,7 +65,7 @@ fun ColumnScope.LyricFormatFrag() {
 
     EnumListPreference(
         title = { Text(stringResource(R.string.lyrics_text_position)) },
-        icon = { Icon(Icons.Rounded.Lyrics, null) },
+        icon = { Icon(Icons.Outlined.Lyrics, null) },
         selectedValue = lyricsPosition,
         onValueSelected = onLyricsPositionChange,
         valueText = {
@@ -80,14 +80,14 @@ fun ColumnScope.LyricFormatFrag() {
     PreferenceEntry(
         title = { Text(stringResource(R.string.lyrics_font_Size)) },
         description = "$lyricFontSize sp",
-        icon = { Icon(Icons.Rounded.TextFields, null) },
+        icon = { Icon(Icons.Outlined.TextFields, null) },
         onClick = { showFontSizeDialog = true },
         isMiddle = true
     )
 
     SwitchPreference(
         title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
-        icon = { Icon(Icons.Rounded.SwapVert, "Auto scroll icon") },
+        icon = { Icon(Icons.Outlined.SwapVert, "Auto scroll icon") },
         checked = lyricsScroll,
         onCheckedChange = onLyricsScrollChange,
         isLast = true
@@ -105,7 +105,7 @@ fun ColumnScope.LyricFormatFrag() {
         SliderDialog(
             title = stringResource(R.string.lyrics_font_Size),
             initialValue = lyricFontSize,
-            defaultValue = 20,
+            defaultValue = 18,
             valueRange = 8f..32f,
             steps = 23,
             valueSuffix = " sp",
@@ -123,7 +123,7 @@ fun ColumnScope.LyricFormatFrag() {
                 showFontSizeDialog = false
             },
             onReset = {
-                onLyricFontSizeChange(20)
+                onLyricFontSizeChange(18)
             }
         )
     }
@@ -139,7 +139,7 @@ fun ColumnScope.LyricParserFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.lyrics_multiline_title)) },
         description = stringResource(R.string.lyrics_multiline_description),
-        icon = { Icon(Icons.AutoMirrored.Rounded.Sort, null) },
+        icon = { Icon(Icons.AutoMirrored.Outlined.Sort, null) },
         checked = multilineLrc,
         onCheckedChange = onMultilineLrcChange,
         isFirst = true
@@ -148,7 +148,7 @@ fun ColumnScope.LyricParserFrag() {
     // trim (remove spaces around) lyrics
     SwitchPreference(
         title = { Text(stringResource(R.string.lyrics_trim_title)) },
-        icon = { Icon(Icons.Rounded.ContentCut, null) },
+        icon = { Icon(Icons.Outlined.ContentCut, null) },
         checked = lyricTrim,
         onCheckedChange = onLyricTrimChange,
         isLast = true
@@ -164,14 +164,14 @@ fun ColumnScope.LyricSourceFrag(navController: NavController) {
 
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_lrclib)) },
-        icon = { Icon(Icons.Rounded.Lyrics, null) },
+        icon = { Icon(Icons.Outlined.Lyrics, null) },
         checked = enableLrcLib,
         onCheckedChange = onEnableLrcLibChange,
         isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_kugou)) },
-        icon = { Icon(Icons.Rounded.Lyrics, null) },
+        icon = { Icon(Icons.Outlined.Lyrics, null) },
         checked = enableKugou,
         onCheckedChange = onEnableKugouChange,
         isMiddle = true
@@ -195,7 +195,7 @@ fun ColumnScope.LyricSourceFrag(navController: NavController) {
     SwitchPreference(
         title = { Text(stringResource(R.string.lyrics_prefer_local)) },
         description = stringResource(R.string.lyrics_prefer_local_description),
-        icon = { Icon(Icons.Rounded.ContentCut, null) },
+        icon = { Icon(Icons.Outlined.ContentCut, null) },
         checked = preferLocalLyric,
         onCheckedChange = onPreferLocalLyric,
         isLast = true

@@ -37,26 +37,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.automirrored.rounded.Logout
-import androidx.compose.material.icons.automirrored.rounded.NavigateBefore
-import androidx.compose.material.icons.automirrored.rounded.NavigateNext
-import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.Autorenew
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Contrast
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Language
-import androidx.compose.material.icons.rounded.LibraryMusic
-import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.Lyrics
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.SdCard
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.VpnKey
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.automirrored.outlined.NavigateBefore
+import androidx.compose.material.icons.automirrored.outlined.NavigateNext
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Lyrics
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.SdCard
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.VpnKey
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
@@ -121,7 +121,6 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.TokenEditorDialog
-import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
@@ -209,7 +208,7 @@ fun SetupWizard(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.NavigateBefore,
+                    imageVector = Icons.AutoMirrored.Outlined.NavigateBefore,
                     contentDescription = null
                 )
             }
@@ -239,7 +238,7 @@ fun SetupWizard(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.NavigateNext,
+                    imageVector = Icons.AutoMirrored.Outlined.NavigateNext,
                     contentDescription = null
                 )
             }
@@ -369,7 +368,7 @@ fun SetupWizard(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                         contentDescription = null
                     )
                 }
@@ -388,22 +387,22 @@ private fun WelcomePage(
         Feature(
             title = stringResource(R.string.oobe_ytm_integration),
             description = stringResource(R.string.oobe_ytm_integration_description),
-            icon = Icons.Rounded.MusicNote
+            icon = Icons.Outlined.MusicNote
         ),
         Feature(
             title = stringResource(R.string.oobe_ad_free_exp),
             description = stringResource(R.string.oobe_ad_free_exp_description),
-            icon = Icons.Rounded.Block
+            icon = Icons.Outlined.Block
         ),
         Feature(
             title = stringResource(R.string.oobe_local_music_support),
             description = stringResource(R.string.oobe_local_music_support_description),
-            icon = Icons.Rounded.SdCard
+            icon = Icons.Outlined.SdCard
         ),
         Feature(
             title = stringResource(R.string.oobe_cross_platform_sync),
             description = stringResource(R.string.oobe_cross_platform_sync_description),
-            icon = Icons.Rounded.Sync
+            icon = Icons.Outlined.Sync
         )
     )
 
@@ -538,7 +537,7 @@ private fun InterfacePage(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Rounded.DarkMode,
+            imageVector = Icons.Outlined.DarkMode,
             contentDescription = null,
             modifier = Modifier
                 .size(80.dp)
@@ -567,7 +566,7 @@ private fun InterfacePage(
         ) {
             EnumListPreference(
                 title = { Text(stringResource(R.string.dark_theme)) },
-                icon = { Icon(Icons.Rounded.DarkMode, null) },
+                icon = { Icon(Icons.Outlined.DarkMode, null) },
                 selectedValue = darkMode,
                 onValueSelected = onDarkModeChange,
                 valueText = {
@@ -581,7 +580,7 @@ private fun InterfacePage(
 
             SwitchPreference(
                 title = { Text(stringResource(R.string.pure_black)) },
-                icon = { Icon(Icons.Rounded.Contrast, null) },
+                icon = { Icon(Icons.Outlined.Contrast, null) },
                 checked = pureBlack,
                 onCheckedChange = onPureBlackChange
             )
@@ -594,7 +593,7 @@ private fun InterfacePage(
         ) {
             ListPreference(
                 title = { Text(stringResource(R.string.content_language)) },
-                icon = { Icon(Icons.Rounded.Language, null) },
+                icon = { Icon(Icons.Outlined.Language, null) },
                 selectedValue = contentLanguage,
                 values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
                 valueText = {
@@ -619,7 +618,7 @@ private fun InterfacePage(
 
             ListPreference(
                 title = { Text(stringResource(R.string.content_country)) },
-                icon = { Icon(Icons.Rounded.LocationOn, null) },
+                icon = { Icon(Icons.Outlined.LocationOn, null) },
                 selectedValue = contentCountry,
                 values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
                 valueText = {
@@ -672,7 +671,7 @@ private fun AccountPage(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Rounded.AccountCircle,
+            imageVector = Icons.Outlined.AccountCircle,
             contentDescription = null,
             modifier = Modifier
                 .size(80.dp)
@@ -705,7 +704,7 @@ private fun AccountPage(
                     accountEmail.takeIf { it.isNotEmpty() }
                         ?: accountChannelHandle.takeIf { it.isNotEmpty() }
                 } else null,
-                icon = { Icon(Icons.Rounded.Person, null) },
+                icon = { Icon(Icons.Outlined.Person, null) },
                 onClick = { navController.navigate("login") }
             )
         }
@@ -718,7 +717,7 @@ private fun AccountPage(
             ) {
                 PreferenceEntry(
                     title = { Text(stringResource(R.string.logout)) },
-                    icon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
+                    icon = { Icon(Icons.AutoMirrored.Outlined.Logout, null) },
                     onClick = { onInnerTubeCookieChange("") }
                 )
             }
@@ -752,7 +751,7 @@ private fun AccountPage(
                     }
                 },
                 icon = {
-                    Icon(Icons.Rounded.VpnKey, null)
+                    Icon(Icons.Outlined.VpnKey, null)
                 }
             )
         }
@@ -764,7 +763,7 @@ private fun AccountPage(
         ) {
             SwitchPreference(
                 title = { Text(stringResource(R.string.ytm_sync)) },
-                icon = { Icon(Icons.Rounded.Lyrics, null) },
+                icon = { Icon(Icons.Outlined.Lyrics, null) },
                 checked = ytmSync,
                 onCheckedChange = onYtmSyncChange,
                 isEnabled = isLoggedIn
@@ -810,7 +809,7 @@ private fun LocalMediaPage(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Rounded.LibraryMusic,
+            imageVector = Icons.Outlined.LibraryMusic,
             contentDescription = null,
             modifier = Modifier
                 .size(80.dp)
@@ -840,7 +839,7 @@ private fun LocalMediaPage(
             SwitchPreference(
                 title = { Text(stringResource(R.string.local_library_enable_title)) },
                 description = stringResource(R.string.local_library_enable_description),
-                icon = { Icon(Icons.Rounded.SdCard, null) },
+                icon = { Icon(Icons.Outlined.SdCard, null) },
                 checked = localLibEnable,
                 onCheckedChange = onLocalLibEnableChange
             )
@@ -854,7 +853,7 @@ private fun LocalMediaPage(
             SwitchPreference(
                 title = { Text(stringResource(R.string.auto_scanner_title)) },
                 description = stringResource(R.string.auto_scanner_description),
-                icon = { Icon(Icons.Rounded.Autorenew, null) },
+                icon = { Icon(Icons.Outlined.Autorenew, null) },
                 checked = autoScan,
                 onCheckedChange = onAutoScanChange,
                 isEnabled = localLibEnable
@@ -872,7 +871,7 @@ private fun LocalMediaPage(
                 shape = RoundedCornerShape(24.dp)
             ) {
                 Icon(
-                    Icons.Rounded.Search,
+                    Icons.Outlined.Search,
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp)
                 )
@@ -892,7 +891,7 @@ private fun FinalPage(
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            imageVector = Icons.Rounded.Check,
+            imageVector = Icons.Outlined.Check,
             contentDescription = null,
             modifier = Modifier
                 .size(80.dp)

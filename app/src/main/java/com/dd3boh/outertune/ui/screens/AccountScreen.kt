@@ -12,8 +12,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -39,7 +39,6 @@ import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.TopBarInsets
-import com.dd3boh.outertune.extensions.isInternetConnected
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.YouTubeGridItem
@@ -194,7 +193,7 @@ fun AccountScreen(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Settings,
+                            imageVector = Icons.Outlined.Settings,
                             contentDescription = null
                         )
                     }
@@ -207,7 +206,7 @@ fun AccountScreen(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }

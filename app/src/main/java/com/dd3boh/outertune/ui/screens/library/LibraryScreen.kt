@@ -27,10 +27,10 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -67,6 +67,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.CONTENT_TYPE_LIST
 import com.dd3boh.outertune.constants.CONTENT_TYPE_PLAYLIST
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_FILTERS
 import com.dd3boh.outertune.constants.EnabledFiltersKey
 import com.dd3boh.outertune.constants.GridCellSize
 import com.dd3boh.outertune.constants.GridCellSizeKey
@@ -87,6 +88,7 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsLazyRow
+import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.LibraryAlbumGridItem
 import com.dd3boh.outertune.ui.component.LibraryAlbumListItem
 import com.dd3boh.outertune.ui.component.LibraryArtistGridItem
@@ -95,8 +97,6 @@ import com.dd3boh.outertune.ui.component.LibraryPlaylistGridItem
 import com.dd3boh.outertune.ui.component.LibraryPlaylistListItem
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.screens.Screens
-import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.constants.DEFAULT_ENABLED_FILTERS
 import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -250,8 +250,8 @@ fun LibraryScreen(
                         Icon(
                             imageVector =
                                 when (viewType) {
-                                    LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                                    LibraryViewType.GRID -> Icons.Rounded.GridView
+                                    LibraryViewType.LIST -> Icons.AutoMirrored.Outlined.List
+                                    LibraryViewType.GRID -> Icons.Outlined.GridView
                                 },
                             contentDescription = null
                         )
@@ -366,7 +366,7 @@ fun LibraryScreen(
                                 ) {
                                     AutoPlaylistListItem(
                                         playlist = likedPlaylist,
-                                        thumbnail = Icons.Rounded.Favorite,
+                                        thumbnail = Icons.Outlined.Favorite,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
@@ -382,7 +382,7 @@ fun LibraryScreen(
                                 ) {
                                     AutoPlaylistListItem(
                                         playlist = downloadedPlaylist,
-                                        thumbnail = Icons.Rounded.CloudDownload,
+                                        thumbnail = Icons.Outlined.CloudDownload,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
@@ -470,7 +470,7 @@ fun LibraryScreen(
                                 ) {
                                     AutoPlaylistGridItem(
                                         playlist = likedPlaylist,
-                                        thumbnail = Icons.Rounded.Favorite,
+                                        thumbnail = Icons.Outlined.Favorite,
                                         fillMaxWidth = true,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -487,7 +487,7 @@ fun LibraryScreen(
                                 ) {
                                     AutoPlaylistGridItem(
                                         playlist = downloadedPlaylist,
-                                        thumbnail = Icons.Rounded.CloudDownload,
+                                        thumbnail = Icons.Outlined.CloudDownload,
                                         fillMaxWidth = true,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -596,7 +596,7 @@ fun LibraryEmptyState(
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.List,
+                    imageVector = Icons.AutoMirrored.Outlined.List,
                     contentDescription = null,
                     modifier = Modifier.size(96.dp),
                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)

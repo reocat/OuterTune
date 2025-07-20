@@ -3,9 +3,9 @@ package com.dd3boh.outertune.ui.screens.settings.fragments
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ManageSearch
-import androidx.compose.material.icons.rounded.ClearAll
-import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.automirrored.outlined.ManageSearch
+import androidx.compose.material.icons.outlined.ClearAll
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,7 +28,6 @@ import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.utils.parseCookieString
-import kotlin.collections.contains
 
 @Composable
 fun ColumnScope.ListenHistoryFrag() {
@@ -50,7 +49,7 @@ fun ColumnScope.ListenHistoryFrag() {
 
     SwitchPreference(
         title = { Text(stringResource(R.string.pause_listen_history)) },
-        icon = { Icon(Icons.Rounded.History, null) },
+        icon = { Icon(Icons.Outlined.History, null) },
         checked = pauseListenHistory,
         onCheckedChange = onPauseListenHistoryChange,
         isFirst = true
@@ -58,7 +57,7 @@ fun ColumnScope.ListenHistoryFrag() {
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_listen_history)) },
-        icon = { Icon(Icons.Rounded.ClearAll, null) },
+        icon = { Icon(Icons.Outlined.ClearAll, null) },
         onClick = { showClearListenHistoryDialog = true },
         isLast = true
     )
@@ -115,14 +114,14 @@ fun ColumnScope.SearchHistoryFrag() {
 
     SwitchPreference(
         title = { Text(stringResource(R.string.pause_search_history)) },
-        icon = { Icon(Icons.AutoMirrored.Rounded.ManageSearch, null) },
+        icon = { Icon(Icons.AutoMirrored.Outlined.ManageSearch, null) },
         checked = pauseSearchHistory,
         onCheckedChange = onPauseSearchHistoryChange,
         isFirst = true
     )
     PreferenceEntry(
         title = { Text(stringResource(R.string.clear_search_history)) },
-        icon = { Icon(Icons.Rounded.ClearAll, null) },
+        icon = { Icon(Icons.Outlined.ClearAll, null) },
         onClick = { showClearSearchHistoryDialog = true },
         isLast = true
     )

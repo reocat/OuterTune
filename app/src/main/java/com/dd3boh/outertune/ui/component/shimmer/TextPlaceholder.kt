@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,7 +23,11 @@ fun TextPlaceholder(
         modifier =
             modifier
                 .padding(vertical = 4.dp)
-                .background(MaterialTheme.colorScheme.onSurface)
+                .background(
+                    MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = if (isSystemInDarkTheme()) 0.7f else 0.6f
+                    )
+                )
                 .fillMaxWidth(remember { 0.25f + Random.nextFloat() * 0.5f })
                 .height(height),
     )

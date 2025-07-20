@@ -1,12 +1,13 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.VolumeUp
-import androidx.compose.material.icons.rounded.Autorenew
-import androidx.compose.material.icons.rounded.ClearAll
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.GraphicEq
-import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.outlined.ClearAll
+import androidx.compose.material.icons.outlined.FastForward
+import androidx.compose.material.icons.outlined.GraphicEq
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AudioNormalizationKey
@@ -39,7 +39,7 @@ fun PlayerGeneralFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.auto_load_more)) },
         description = stringResource(R.string.auto_load_more_desc),
-        icon = { Icon(Icons.Rounded.Autorenew, null) },
+        icon = { Icon(Icons.Outlined.Autorenew, null) },
         checked = autoLoadMore,
         onCheckedChange = onAutoLoadMoreChange
     )
@@ -59,7 +59,7 @@ fun AudioQualityFrag() {
 
     EnumListPreference(
         title = { Text(stringResource(R.string.audio_quality)) },
-        icon = { Icon(Icons.Rounded.GraphicEq, null) },
+        icon = { Icon(Icons.Outlined.GraphicEq, null) },
         selectedValue = audioQuality,
         onValueSelected = onAudioQualityChange,
         valueText = {
@@ -84,14 +84,14 @@ fun AudioEffectsFrag() {
 
     SwitchPreference(
         title = { Text(stringResource(R.string.audio_normalization)) },
-        icon = { Icon(Icons.AutoMirrored.Rounded.VolumeUp, null) },
+        icon = { Icon(Icons.AutoMirrored.Outlined.VolumeUp, null) },
         checked = audioNormalization,
         onCheckedChange = onAudioNormalizationChange,
         isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.skip_silence)) },
-        icon = { Icon(painterResource(R.drawable.skip_next), null) },
+        icon = { Icon(Icons.Outlined.SkipNext, null) },
         checked = skipSilence,
         onCheckedChange = onSkipSilenceChange,
         isLast = true
@@ -114,21 +114,21 @@ fun PlaybackBehaviourFrag() {
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.min_playback_duration)) },
-        icon = { Icon(Icons.Rounded.Sync, null) },
+        icon = { Icon(Icons.Outlined.Sync, null) },
         onClick = { showMinPlaybackDur = true },
         isFirst = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.auto_skip_next_on_error)) },
         description = stringResource(R.string.auto_skip_next_on_error_desc),
-        icon = { Icon(Icons.Rounded.FastForward, null) },
+        icon = { Icon(Icons.Outlined.FastForward, null) },
         checked = skipOnErrorKey,
         onCheckedChange = onSkipOnErrorChange,
         isMiddle = true
     )
     SwitchPreference(
         title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
-        icon = { Icon(Icons.Rounded.ClearAll, null) },
+        icon = { Icon(Icons.Outlined.ClearAll, null) },
         checked = stopMusicOnTaskClear,
         onCheckedChange = onStopMusicOnTaskClearChange,
         isLast = true

@@ -26,13 +26,16 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.OfflinePin
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.OfflinePin
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -43,7 +46,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -381,9 +383,7 @@ fun OnlinePlaylistScreen(
                                                     }
                                                 ) {
                                                     Icon(
-                                                        painter = painterResource(
-                                                            if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border
-                                                        ),
+                                                        imageVector = if (dbPlaylist?.playlist?.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                                                         contentDescription = null,
                                                         tint = if (dbPlaylist?.playlist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
                                                     )
@@ -399,7 +399,7 @@ fun OnlinePlaylistScreen(
                                                             }
                                                         ) {
                                                             Icon(
-                                                                Icons.Rounded.OfflinePin,
+                                                                Icons.Outlined.OfflinePin,
                                                                 contentDescription = null
                                                             )
                                                         }
@@ -436,7 +436,7 @@ fun OnlinePlaylistScreen(
                                                             }
                                                         ) {
                                                             Icon(
-                                                                Icons.Rounded.Download,
+                                                                Icons.Outlined.Download,
                                                                 contentDescription = null
                                                             )
                                                         }
@@ -452,7 +452,7 @@ fun OnlinePlaylistScreen(
                                                 }
                                             ) {
                                                 Icon(
-                                                    painter = painterResource(R.drawable.queue_music),
+                                                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
                                                     contentDescription = null
                                                 )
                                             }
@@ -471,7 +471,7 @@ fun OnlinePlaylistScreen(
                                                 }
                                             ) {
                                                 Icon(
-                                                    Icons.Rounded.MoreVert,
+                                                    Icons.Outlined.MoreVert,
                                                     contentDescription = null
                                                 )
                                             }
@@ -497,7 +497,7 @@ fun OnlinePlaylistScreen(
                                             modifier = Modifier.weight(1f)
                                         ) {
                                             Icon(
-                                                Icons.Rounded.PlayArrow,
+                                                Icons.Outlined.PlayArrow,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(ButtonDefaults.IconSize)
                                             )
@@ -522,7 +522,7 @@ fun OnlinePlaylistScreen(
                                             modifier = Modifier.weight(1f)
                                         ) {
                                             Icon(
-                                                Icons.Rounded.Shuffle,
+                                                Icons.Outlined.Shuffle,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(ButtonDefaults.IconSize)
                                             )
@@ -574,7 +574,7 @@ fun OnlinePlaylistScreen(
                                                 }
                                             ) {
                                                 Icon(
-                                                    Icons.Rounded.MoreVert,
+                                                    Icons.Outlined.MoreVert,
                                                     contentDescription = null
                                                 )
                                             }
@@ -703,7 +703,7 @@ fun OnlinePlaylistScreen(
                     }
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = null
                     )
                 }
@@ -714,7 +714,7 @@ fun OnlinePlaylistScreen(
                         onClick = { isSearching = true }
                     ) {
                         Icon(
-                            Icons.Rounded.Search,
+                            Icons.Outlined.Search,
                             contentDescription = null
                         )
                     }

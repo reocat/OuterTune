@@ -23,11 +23,12 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Input
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.automirrored.outlined.Input
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -77,10 +78,10 @@ import com.dd3boh.outertune.constants.ShowLikedAndDownloadedPlaylist
 import com.dd3boh.outertune.constants.SmallGridThumbnailHeight
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.ui.component.ActionDropdown
-import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
 import com.dd3boh.outertune.ui.component.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.AutoPlaylistListItem
 import com.dd3boh.outertune.ui.component.ChipsRow
+import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
 import com.dd3boh.outertune.ui.component.DropdownItem
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.HideOnScrollFAB
@@ -231,7 +232,7 @@ fun LibraryPlaylistsScreen(
                     actions = listOf(
                         DropdownItem(
                             title = stringResource(R.string.import_playlist),
-                            leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
+                            leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Input, null) },
                             action = { showImportM3uDialog = true }
                         )
                     ),
@@ -278,7 +279,7 @@ fun LibraryPlaylistsScreen(
                         ) {
                             AutoPlaylistListItem(
                                 playlist = likedPlaylist,
-                                thumbnail = Icons.Rounded.Favorite,
+                                thumbnail = Icons.Outlined.Favorite,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
@@ -294,7 +295,7 @@ fun LibraryPlaylistsScreen(
                         ) {
                             AutoPlaylistListItem(
                                 playlist = downloadedPlaylist,
-                                thumbnail = Icons.Rounded.CloudDownload,
+                                thumbnail = Icons.Outlined.CloudDownload,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
@@ -309,7 +310,7 @@ fun LibraryPlaylistsScreen(
                         if (playlists.isEmpty() && !showLikedAndDownloadedPlaylist) {
                             item {
                                 EmptyPlaceholder(
-                                    icon = Icons.AutoMirrored.Rounded.QueueMusic,
+                                    icon = Icons.AutoMirrored.Outlined.QueueMusic,
                                     text = stringResource(R.string.library_playlist_empty),
                                     modifier = Modifier.animateItem()
                                 )
@@ -333,7 +334,7 @@ fun LibraryPlaylistsScreen(
 
                 HideOnScrollFAB(
                     lazyListState = lazyListState,
-                    icon = Icons.Rounded.Add,
+                    icon = Icons.Outlined.Add,
                     onClick = {
                         showCreatePlaylistDialog = true
                     }
@@ -374,7 +375,7 @@ fun LibraryPlaylistsScreen(
                         ) {
                             AutoPlaylistGridItem(
                                 playlist = likedPlaylist,
-                                thumbnail = Icons.Rounded.Favorite,
+                                thumbnail = Icons.Outlined.Favorite,
                                 fillMaxWidth = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -391,7 +392,7 @@ fun LibraryPlaylistsScreen(
                         ) {
                             AutoPlaylistGridItem(
                                 playlist = downloadedPlaylist,
-                                thumbnail = Icons.Rounded.CloudDownload,
+                                thumbnail = Icons.Outlined.CloudDownload,
                                 fillMaxWidth = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -407,7 +408,7 @@ fun LibraryPlaylistsScreen(
                         if (playlists.isEmpty() && !showLikedAndDownloadedPlaylist) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
                                 EmptyPlaceholder(
-                                    icon = R.drawable.queue_music,
+                                    icon = Icons.AutoMirrored.Outlined.QueueMusic,
                                     text = stringResource(R.string.library_playlist_empty),
                                     modifier = Modifier.animateItem()
                                 )
@@ -431,7 +432,7 @@ fun LibraryPlaylistsScreen(
 
                 HideOnScrollFAB(
                     lazyListState = lazyGridState,
-                    icon = Icons.Rounded.Add,
+                    icon = Icons.Outlined.Add,
                     onClick = {
                         showCreatePlaylistDialog = true
                     }

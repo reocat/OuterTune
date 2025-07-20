@@ -32,11 +32,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material.icons.rounded.ExpandLess
-import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.BottomAppBar
@@ -146,7 +146,7 @@ fun ImportFromSpotifyScreen(
                         onLongClick = navController::backToMain
                     ) {
                         Icon(
-                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = null
                         )
                     }
@@ -280,7 +280,7 @@ fun ImportFromSpotifyScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Rounded.Favorite,
+                                            imageVector = Icons.Outlined.Favorite,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.onPrimary
                                         )
@@ -422,7 +422,7 @@ fun ImportFromSpotifyScreen(
                         }) {
                             Icon(
                                 contentDescription = null,
-                                imageVector = if (isInstructionExpanded.value) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore
+                                imageVector = if (isInstructionExpanded.value) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore
                             )
                         }
                     }
@@ -577,7 +577,7 @@ fun ImportFromSpotifyScreen(
                                             }
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.ContentCopy,
+                                                imageVector = Icons.Outlined.ContentCopy,
                                                 contentDescription = null
                                             )
                                         }
@@ -587,7 +587,7 @@ fun ImportFromSpotifyScreen(
                                 isStackTraceVisible.value = !isStackTraceVisible.value
                             }) {
                                 Icon(
-                                    imageVector = if (isStackTraceVisible.value) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                                    imageVector = if (isStackTraceVisible.value) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                                     contentDescription = null
                                 )
                             }

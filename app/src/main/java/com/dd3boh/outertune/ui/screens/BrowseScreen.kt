@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -139,7 +139,7 @@ fun BrowseScreen(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }
