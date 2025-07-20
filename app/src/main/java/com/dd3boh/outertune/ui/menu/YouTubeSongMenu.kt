@@ -14,14 +14,16 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Radio
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -40,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -227,7 +228,7 @@ fun YouTubeSongMenu(
                 }
             ) {
                 Icon(
-                    painter = painterResource(if (librarySong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border),
+                    imageVector = if (librarySong?.song?.liked == true) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     tint = if (librarySong?.song?.liked == true) MaterialTheme.colorScheme.error else LocalContentColor.current,
                     contentDescription = null
                 )
@@ -246,14 +247,14 @@ fun YouTubeSongMenu(
         )
     ) {
         GridMenuItem(
-            icon = Icons.Rounded.Radio,
+            icon = Icons.Outlined.Radio,
             title = R.string.start_radio
         ) {
             playerConnection.playQueue(YouTubeQueue.radio(song.toMediaMetadata()))
             onDismiss()
         }
         GridMenuItem(
-            icon = Icons.Rounded.PlayArrow,
+            icon = Icons.Outlined.PlayArrow,
             title = R.string.play
         ) {
             playerConnection.playQueue(
@@ -265,20 +266,20 @@ fun YouTubeSongMenu(
             onDismiss()
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistPlay,
+            icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
             title = R.string.play_next
         ) {
             playerConnection.enqueueNext(song.toMediaItem())
             onDismiss()
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.QueueMusic,
+            icon = Icons.AutoMirrored.Outlined.QueueMusic,
             title = R.string.add_to_queue
         ) {
             showChooseQueueDialog = true
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
             title = R.string.add_to_playlist
         ) {
             showChoosePlaylistDialog = true
@@ -301,7 +302,7 @@ fun YouTubeSongMenu(
             }
         )
         GridMenuItem(
-            icon = Icons.Rounded.Person,
+            icon = Icons.Outlined.Person,
             title = R.string.view_artist,
             enabled = song.artists.isNotEmpty()
         ) {
@@ -313,7 +314,7 @@ fun YouTubeSongMenu(
             }
         }
         GridMenuItem(
-            icon = Icons.Rounded.Album,
+            icon = Icons.Outlined.Album,
             title = R.string.view_album,
             enabled = song.album?.id != null
         ) {
@@ -321,7 +322,7 @@ fun YouTubeSongMenu(
             onDismiss()
         }
         GridMenuItem(
-            icon = Icons.Rounded.Share,
+            icon = Icons.Outlined.Share,
             title = R.string.share
         ) {
             val intent = Intent().apply {

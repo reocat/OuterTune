@@ -20,8 +20,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -176,8 +177,8 @@ fun LibraryArtistsScreen(
                     Icon(
                         imageVector =
                             when (artistViewType) {
-                                LibraryViewType.LIST -> Icons.AutoMirrored.Rounded.List
-                                LibraryViewType.GRID -> Icons.Rounded.GridView
+                                LibraryViewType.LIST -> Icons.AutoMirrored.Outlined.List
+                                LibraryViewType.GRID -> Icons.Outlined.GridView
                             },
                         contentDescription = null
                     )

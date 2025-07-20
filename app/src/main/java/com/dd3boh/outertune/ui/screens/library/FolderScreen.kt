@@ -20,19 +20,18 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.rounded.AccountTree
-import androidx.compose.material.icons.rounded.SdCard
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.AccountTree
+import androidx.compose.material.icons.outlined.SdCard
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -113,7 +112,6 @@ import com.dd3boh.outertune.viewmodels.LibraryFoldersViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
@@ -314,7 +312,7 @@ fun FolderScreen(
                                 }
                             ) {
                                 Icon(
-                                    Icons.Rounded.Search,
+                                    Icons.Outlined.Search,
                                     contentDescription = null
                                 )
                             }
@@ -348,7 +346,7 @@ fun FolderScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 ) {
-                                    IconTextButton(R.string.scanner_local_title, Icons.Rounded.SdCard) {
+                                    IconTextButton(R.string.scanner_local_title, Icons.Outlined.SdCard) {
                                         navController.navigate("settings/local")
                                     }
                                 }
@@ -358,7 +356,7 @@ fun FolderScreen(
                             if (!isSearching) {
                                 // tree/list view
                                 ResizableIconButton(
-                                    icon = if (flatSubfolders) Icons.AutoMirrored.Rounded.List else Icons.Rounded.AccountTree,
+                                    icon = if (flatSubfolders) Icons.AutoMirrored.Outlined.List else Icons.Outlined.AccountTree,
                                     onClick = {
                                         onFlatSubfoldersChange(!flatSubfolders)
                                     }
@@ -505,7 +503,7 @@ fun FolderScreen(
         HideOnScrollFAB(
             visible = currDir.toList().isNotEmpty(),
             lazyListState = lazyListState,
-            icon = Icons.Rounded.Shuffle,
+            icon = Icons.Outlined.Shuffle,
             onClick = {
                 coroutineScope.launch {
                     val songs = runBlocking(Dispatchers.IO) { database.localSongsInDirDeep(currDir.getFullPath()) }
@@ -566,7 +564,7 @@ fun FolderScreen(
                 },
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }

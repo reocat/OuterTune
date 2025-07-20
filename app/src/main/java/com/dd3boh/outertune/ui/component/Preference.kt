@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,11 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -38,6 +38,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Surface
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import com.dd3boh.outertune.ui.screens.settings.IconType
+import com.dd3boh.outertune.ui.screens.settings.SettingsItem
 
 @Composable
 fun PreferenceItem(
@@ -53,10 +62,10 @@ fun PreferenceItem(
     isMiddle: Boolean = false
 ) {
     val cardShape = when {
-        isFirst -> RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 2.dp, bottomEnd = 2.dp)
-        isLast -> RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
-        isMiddle -> RoundedCornerShape(2.dp)
-        else -> RoundedCornerShape(12.dp)
+        isFirst -> RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
+        isLast -> RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
+        isMiddle -> RoundedCornerShape(0.dp)
+        else -> RoundedCornerShape(16.dp)
     }
 
     Column {
@@ -107,9 +116,43 @@ fun PreferenceItem(
             }
         }
 
-        // Add spacer between cards if not the last item
         if (!isLast && (isFirst || isMiddle)) {
             Spacer(modifier = Modifier.height(1.dp))
+        }
+    }
+}
+
+@Composable
+fun SettingsScreenSection(
+    section: com.dd3boh.outertune.ui.screens.settings.SettingsSection,
+    navController: androidx.navigation.NavController,
+    showBadge: Boolean = false,
+    onUpdateClick: (() -> Unit)? = null
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        section.items.forEachIndexed { index, item ->
+            val isSingle = section.items.size == 1
+            val isFirst = index == 0 && !isSingle
+            val isLast = index == section.items.lastIndex && !isSingle
+            
+
+            SettingsScreenItem(
+                item = item,
+                onClick = {
+                    if (onUpdateClick != null && item.route.isEmpty()) {
+                        onUpdateClick()
+                    } else {
+                        navController.navigate(item.route)
+                    }
+                },
+                showBadge = showBadge && item.icon is IconType.Vector && item.icon.imageVector == Icons.Outlined.Update,
+                isFirst = isFirst,
+                isLast = isLast,
+                isSingle = isSingle
+            )
         }
     }
 }
@@ -261,7 +304,7 @@ fun SwitchPreference(
                 enabled = isEnabled,
                 thumbContent = {
                     Icon(
-                        imageVector = if (checked) Icons.Filled.Check else Icons.Filled.Close,
+                        imageVector = if (checked) Icons.Outlined.Check else Icons.Outlined.Close,
                         contentDescription = null,
                         modifier = Modifier.size(SwitchDefaults.IconSize)
                     )
@@ -325,5 +368,78 @@ fun PreferenceGroupTitle(
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier.padding(16.dp)
+    )
+}
+
+@Composable
+fun SettingsScreenItem(
+    item: SettingsItem,
+    onClick: () -> Unit,
+    showBadge: Boolean = false,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isSingle: Boolean = false
+) {
+    val cardShape = when {
+        isSingle -> RoundedCornerShape(16.dp)
+        isFirst -> RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
+        isLast -> RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
+        else -> RoundedCornerShape(8.dp)
+    }
+
+    PreferenceItem(
+        modifier = Modifier.fillMaxWidth(),
+        title = {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        description = item.description.takeIf { it.isNotEmpty() },
+        icon = {
+            BadgedBox(
+                badge = {
+                    if (showBadge) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                            modifier = Modifier.size(8.dp)
+                        )
+                    }
+                }
+            ) {
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    color = item.iconColor.copy(alpha = 0.12f)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        when (val icon = item.icon) {
+                            is IconType.Vector -> Icon(
+                                imageVector = icon.imageVector,
+                                contentDescription = null,
+                                tint = item.iconColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            is IconType.Resource -> Icon(
+                                painter = painterResource(icon.resId),
+                                contentDescription = null,
+                                tint = item.iconColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        onClick = onClick,
+        isFirst = isFirst,
+        isLast = isLast,
+        isMiddle = !isFirst && !isLast && !isSingle
     )
 }

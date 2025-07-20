@@ -28,8 +28,8 @@ import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.SongEntity
-import com.dd3boh.outertune.extensions.isInternetConnected
 import com.dd3boh.outertune.extensions.isAutoSyncEnabled
+import com.dd3boh.outertune.extensions.isInternetConnected
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.DownloadUtil
@@ -50,7 +50,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.joinAll

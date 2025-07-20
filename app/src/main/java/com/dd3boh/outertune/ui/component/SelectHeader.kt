@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Deselect
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.SelectAll
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Deselect
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -68,7 +68,7 @@ fun RowScope.SelectHeader(
             }
         ) {
             Icon(
-                Icons.Rounded.MoreVert,
+                Icons.Outlined.MoreVert,
                 contentDescription = null,
                 tint = LocalContentColor.current
             )
@@ -81,7 +81,7 @@ fun RowScope.SelectHeader(
             onClick = if (allSelected) onSelectAll else onDeselectAll
         ) {
             Icon(
-                imageVector = if (allSelected) Icons.Rounded.SelectAll else Icons.Rounded.Deselect,
+                imageVector = if (allSelected) Icons.Outlined.SelectAll else Icons.Outlined.Deselect,
                 contentDescription = null,
                 tint = LocalContentColor.current
             )
@@ -92,7 +92,7 @@ fun RowScope.SelectHeader(
             onClick = onDismiss,
         ) {
             Icon(
-                Icons.Rounded.Close,
+                Icons.Outlined.Close,
                 contentDescription = null
             )
         }

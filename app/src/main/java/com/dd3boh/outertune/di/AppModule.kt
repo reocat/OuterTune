@@ -62,7 +62,7 @@ object AppModule {
         val constructor = {
             SimpleCache(
                 context.filesDir.resolve("exoplayer"),
-                when (val cacheSize = context.dataStore[MaxSongCacheSizeKey] ?: 0) {
+                when (val cacheSize = context.dataStore[MaxSongCacheSizeKey] ?: 1024) {
                     -1 -> NoOpCacheEvictor()
                     else -> LeastRecentlyUsedCacheEvictor(cacheSize * 1024 * 1024L)
                 },

@@ -21,14 +21,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.ExpandLess
-import androidx.compose.material.icons.rounded.ExpandMore
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.SyncAlt
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -96,7 +96,7 @@ fun LyricsMenu(
     if (showEditDialog) {
         TextFieldDialog(
             onDismiss = { showEditDialog = false },
-            icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Outlined.Edit, contentDescription = null) },
             title = { Text(text = mediaMetadataProvider().title) },
             initialTextFieldValue = TextFieldValue(lyricsProvider()?.lyrics.orEmpty()),
             singleLine = false,
@@ -143,7 +143,7 @@ fun LyricsMenu(
         DefaultDialog(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             onDismiss = { showSearchDialog = false },
-            icon = { Icon(imageVector = Icons.Rounded.Search, contentDescription = null) },
+            icon = { Icon(imageVector = Icons.Outlined.Search, contentDescription = null) },
             title = { Text(stringResource(R.string.search_lyrics)) },
             buttons = {
                 TextButton(
@@ -261,7 +261,7 @@ fun LyricsMenu(
                             )
                             if (result.isSynced) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Sync,
+                                    imageVector = Icons.Outlined.Sync,
                                     // FIX: stringResource now finds the new string
                                     contentDescription = stringResource(R.string.synced_lyrics),
                                     tint = MaterialTheme.colorScheme.secondary,
@@ -279,7 +279,7 @@ fun LyricsMenu(
                         }
                     ) {
                         Icon(
-                            imageVector = if (index == expandedItemIndex) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                            imageVector = if (index == expandedItemIndex) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                             contentDescription = null
                         )
                     }
@@ -409,27 +409,27 @@ fun LyricsMenu(
         )
     ) {
         GridMenuItem(
-            icon = Icons.Rounded.Edit,
+            icon = Icons.Outlined.Edit,
             title = R.string.edit
         ) {
             showEditDialog = true
         }
         GridMenuItem(
-            icon = Icons.Rounded.SyncAlt,
+            icon = Icons.Outlined.SyncAlt,
             title = R.string.refetch
         ) {
             onDismiss()
             viewModel.refetchLyrics(mediaMetadataProvider()) { onRefreshRequest(it) }
         }
         GridMenuItem(
-            icon = Icons.Rounded.Search,
+            icon = Icons.Outlined.Search,
             title = R.string.search,
         ) {
             showSearchDialog = true
         }
         if (lyricsProvider() != null) {
             GridMenuItem(
-                icon = Icons.Rounded.Delete,
+                icon = Icons.Outlined.Delete,
                 title = R.string.delete,
             ) {
                 showDeleteLyric = true
@@ -437,7 +437,7 @@ fun LyricsMenu(
         }
 
         GridMenuItem(
-            icon = Icons.Rounded.Settings,
+            icon = Icons.Outlined.Settings,
             title = R.string.settings,
         ) {
             showSettings = true

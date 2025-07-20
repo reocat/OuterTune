@@ -9,7 +9,6 @@
 
 package com.dd3boh.outertune.playback
 
-import androidx.datastore.dataStore
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -20,9 +19,6 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Timeline
 import com.dd3boh.outertune.db.MusicDatabase
-import com.dd3boh.outertune.db.entities.LyricsEntity
-import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
-import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.uninitializedLyric
 import com.dd3boh.outertune.extensions.currentMetadata
 import com.dd3boh.outertune.extensions.getCurrentQueueIndex
 import com.dd3boh.outertune.extensions.getQueueWindows
@@ -41,8 +37,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
-import org.akanework.gramophone.logic.utils.SemanticLyrics
-import org.akanework.gramophone.logic.utils.parseLrc
+import com.dd3boh.outertune.models.LyricsData
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerConnection(
@@ -63,11 +58,11 @@ class PlayerConnection(
     val currentSong = mediaMetadata.flatMapLatest {
         database.song(it?.id)
     }
-    val currentLyrics: Flow<SemanticLyrics> = mediaMetadata.flatMapLatest { mediaMetadata ->
+    val currentLyrics: Flow<LyricsData?> = mediaMetadata.flatMapLatest { mediaMetadata ->
         if (mediaMetadata != null) {
-            return@flatMapLatest flowOf(service.lyricsHelper.getLyrics(mediaMetadata)?: uninitializedLyric)
+            return@flatMapLatest flowOf(service.lyricsHelper.getLyrics(mediaMetadata))
         } else {
-            return@flatMapLatest flowOf()
+            return@flatMapLatest flowOf(null)
         }
     }
     val currentFormat = mediaMetadata.flatMapLatest { mediaMetadata ->

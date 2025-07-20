@@ -35,12 +35,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.TrendingUp
-import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.rounded.Casino
-import androidx.compose.material.icons.rounded.History
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.SdCard
+import androidx.compose.material.icons.automirrored.outlined.TrendingUp
+import androidx.compose.material.icons.outlined.Casino
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.SdCard
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -469,14 +469,14 @@ fun HomeScreen(
                         ) {
                             NavigationTile(
                                 title = stringResource(R.string.history),
-                                icon = Icons.Rounded.History,
+                                icon = Icons.Outlined.History,
                                 onClick = { navController.navigate("history") },
                                 modifier = Modifier.weight(1f)
                             )
 
                             NavigationTile(
                                 title = stringResource(R.string.stats),
-                                icon = Icons.AutoMirrored.Rounded.TrendingUp,
+                                icon = Icons.AutoMirrored.Outlined.TrendingUp,
                                 onClick = { navController.navigate("stats") },
                                 modifier = Modifier.weight(1f)
                             )
@@ -484,7 +484,7 @@ fun HomeScreen(
                             if (localLibEnable) {
                                 NavigationTile(
                                     title = stringResource(R.string.scanner_local_title),
-                                    icon = Icons.Rounded.SdCard,
+                                    icon = Icons.Outlined.SdCard,
                                     onClick = {
                                         navController.navigate("settings/local")
                                     },
@@ -495,7 +495,7 @@ fun HomeScreen(
                             if (isLoggedIn) {
                                 NavigationTile(
                                     title = stringResource(R.string.account),
-                                    icon = Icons.Rounded.Person,
+                                    icon = Icons.Outlined.Person,
                                     onClick = { navController.navigate("account") },
                                     modifier = Modifier.weight(1f)
                                 )
@@ -900,7 +900,7 @@ fun HomeScreen(
             HideOnScrollFAB(
                 visible = allLocalItems.isNotEmpty() || allYtItems.isNotEmpty(),
                 lazyListState = lazylistState,
-                icon = Icons.Rounded.Casino,
+                icon = Icons.Outlined.Casino,
                 onClick = {
                     val local = when {
                         allLocalItems.isNotEmpty() && allYtItems.isNotEmpty() -> Random.nextFloat() < 0.5
@@ -978,7 +978,7 @@ fun OfflineScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.CloudOff,
+            imageVector = Icons.Outlined.CloudOff,
             contentDescription = null,
             modifier = Modifier
                 .size(150.dp)

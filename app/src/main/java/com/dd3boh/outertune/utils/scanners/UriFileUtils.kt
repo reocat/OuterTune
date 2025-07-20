@@ -12,12 +12,30 @@ import java.io.File
 
 fun documentFileFromUri(context: Context, uris: List<Uri>): List<DocumentFile> {
     return uris
-        .mapNotNull { DocumentFile.fromTreeUri(context, it) }
-        .filter { it.isDirectory }
+        .mapNotNull { uri ->
+            try {
+                if (uri.toString().isNotBlank() && DocumentsContract.isTreeUri(uri)) {
+                    DocumentFile.fromTreeUri(context, uri)
+                } else {
+                    null
+                }
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
 }
 
 fun documentFileFromUri(context: Context, uri: Uri): DocumentFile? {
-    return DocumentFile.fromTreeUri(context, uri)
+    if (uri.toString().isBlank()) return null
+    return try {
+        if (DocumentsContract.isTreeUri(uri)) {
+            DocumentFile.fromTreeUri(context, uri)
+        } else {
+            null
+        }
+    } catch (e: IllegalArgumentException) {
+        null
+    }
 }
 
 fun stringFromUriList(uris: List<Uri>): String {
@@ -30,27 +48,33 @@ fun uriListFromString(str: String): List<Uri> {
 }
 
 fun fileFromUri(context: Context, uri: Uri): File? {
+    if (uri.toString().isBlank()) return null
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (!DocumentsContract.isTreeUri(uri)) return null
+        if (!DocumentsContract.isDocumentUri(context, uri)) return null
         if (uri.authority != "com.android.externalstorage.documents") return null
 
-        val treeDocId = DocumentsContract.getDocumentId(uri)
+        val docId = try {
+            DocumentsContract.getDocumentId(uri)
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
         val rootId: String
         val relativePath: String
 
-        if (treeDocId.contains(":")) {
-            val parts = treeDocId.split(":", limit = 2)
+        if (docId.contains(":")) {
+            val parts = docId.split(":", limit = 2)
             rootId = parts[0]
             relativePath = parts[1]
         } else {
-            rootId = treeDocId
+            rootId = docId
             relativePath = ""
         }
 
         val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
         val rootDir = if (rootId.equals("primary", ignoreCase = true)) {
-            storageManager.primaryStorageVolume.directory
+            storageManager.primaryStorageVolume?.directory
         } else {
             storageManager.storageVolumes.firstOrNull {
                 it.uuid != null && it.uuid.equals(rootId, ignoreCase = true)
@@ -86,6 +110,7 @@ fun fileFromUri(context: Context, uri: Uri): File? {
 }
 
 fun absoluteFilePathFromUri(context: Context, uri: Uri): String? {
+    if (uri.toString().isBlank()) return null
     val dfUri = documentFileFromUri(context, uri)?.uri
     if (dfUri == null) return null
     return fileFromUri(context, dfUri)?.absolutePath

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -24,15 +23,15 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.GridView
-import androidx.compose.material.icons.rounded.Language
-import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.Reorder
-import androidx.compose.material.icons.rounded.Swipe
-import androidx.compose.material.icons.rounded.Tab
-import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Reorder
+import androidx.compose.material.icons.outlined.Swipe
+import androidx.compose.material.icons.outlined.Tab
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.R
@@ -86,13 +84,13 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SliderDialog
+import com.dd3boh.outertune.ui.component.SquigglySlider
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.screens.Screens
 import com.dd3boh.outertune.ui.screens.Screens.LibraryFilter
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
-import com.dd3boh.outertune.ui.component.SquigglySlider
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.util.Locale
@@ -103,7 +101,7 @@ fun GridCellsSizeFrag() {
     val (gridCellSize, onGridCellSizeChange) = rememberEnumPreference(GridCellSizeKey, defaultValue = GridCellSize.SMALL)
     EnumListPreference(
         title = { Text(stringResource(R.string.grid_cell_size)) },
-        icon = { Icon(Icons.Rounded.GridView,null) },
+        icon = { Icon(Icons.Outlined.GridView,null) },
         selectedValue = gridCellSize,
         onValueSelected = onGridCellSizeChange,
         valueText = {
@@ -223,7 +221,7 @@ fun ColumnScope.TabArrangementFrag() {
 
     PreferenceEntry(
         title = { Text(stringResource(R.string.tab_arrangement)) },
-        icon = { Icon(Icons.Rounded.Reorder, null) },
+        icon = { Icon(Icons.Outlined.Reorder, null) },
         onClick = {
             showTabArrangement = true
         },
@@ -231,7 +229,7 @@ fun ColumnScope.TabArrangementFrag() {
     )
     PreferenceEntry(
         title = { Text(stringResource(R.string.filter_arrangement)) },
-        icon = { Icon(Icons.Rounded.Reorder, null) },
+        icon = { Icon(Icons.Outlined.Reorder, null) },
         onClick = {
             showFilterArrangement = true
         },
@@ -320,7 +318,7 @@ fun ColumnScope.TabArrangementFrag() {
                                     MaterialTheme.colorScheme.onSurface
                             )
                             Icon(
-                                imageVector = Icons.Rounded.DragHandle,
+                                imageVector = Icons.Outlined.DragHandle,
                                 contentDescription = null,
                                 modifier = Modifier.draggableHandle()
                             )
@@ -397,7 +395,7 @@ fun ColumnScope.TabArrangementFrag() {
                                 modifier = Modifier.weight(1f)
                             )
                             Icon(
-                                imageVector = Icons.Rounded.DragHandle,
+                                imageVector = Icons.Outlined.DragHandle,
                                 contentDescription = null,
                                 modifier = Modifier.draggableHandle()
                             )
@@ -416,7 +414,7 @@ fun ColumnScope.TabExtrasFrag() {
 
     ListPreference(
         title = { Text(stringResource(R.string.default_open_tab)) },
-        icon = { Icon(Icons.Rounded.Tab, null) },
+        icon = { Icon(Icons.Outlined.Tab, null) },
         selectedValue = Screens.getAllScreens().find { it.route == defaultOpenTab } ?: Screens.Home,
         onValueSelected = { screen ->
             onDefaultOpenTabChange(screen.route)
@@ -438,7 +436,7 @@ fun ColumnScope.SwipeGesturesFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.swipe2Queue)) },
         description = stringResource(R.string.swipe2Queue_description),
-        icon = { Icon(Icons.AutoMirrored.Rounded.PlaylistAdd, null) },
+        icon = { Icon(Icons.AutoMirrored.Outlined.PlaylistAdd, null) },
         checked = swipe2Queue,
         onCheckedChange = onSwipe2QueueChange,
         isFirst = true
@@ -447,7 +445,7 @@ fun ColumnScope.SwipeGesturesFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.swipe_to_skip_title)) },
         description = stringResource(R.string.swipe_to_skip_description),
-        icon = { Icon(Icons.Rounded.Swipe, null) },
+        icon = { Icon(Icons.Outlined.Swipe, null) },
         checked = swipeToSkip,
         onCheckedChange = onSwipeToSkipChange,
         isMiddle = swipeToSkip,
@@ -478,7 +476,7 @@ fun ColumnScope.SwipeGesturesFrag() {
             PreferenceEntry(
                 title = { Text(stringResource(R.string.swipe_sensitivity)) },
                 description = stringResource(R.string.sensitivity_percentage, (swipeSensitivity * 100).roundToInt()),
-                icon = { Icon(Icons.Rounded.Tune, null) },
+                icon = { Icon(Icons.Outlined.Tune, null) },
                 onClick = { showSensitivityDialog = true },
                 isLast = true
             )
@@ -496,7 +494,7 @@ fun ColumnScope.LocalizationFrag() {
 
     ListPreference(
         title = { Text(stringResource(R.string.content_language)) },
-        icon = { Icon(Icons.Rounded.Language, null) },
+        icon = { Icon(Icons.Outlined.Language, null) },
         selectedValue = contentLanguage,
         values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
         valueText = {
@@ -520,7 +518,7 @@ fun ColumnScope.LocalizationFrag() {
     )
     ListPreference(
         title = { Text(stringResource(R.string.content_country)) },
-        icon = { Icon(Icons.Rounded.LocationOn, null) },
+        icon = { Icon(Icons.Outlined.LocationOn, null) },
         selectedValue = contentCountry,
         values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
         valueText = {
@@ -557,7 +555,7 @@ fun SliderStyleFrag() {
             SliderStyle.SQUIGGLY -> stringResource(R.string.squiggly)
             SliderStyle.SLIM -> stringResource(R.string.slim)
         },
-        icon = { Icon(painterResource(R.drawable.sliders), null) },
+        icon = { Icon(Icons.Outlined.Tune, null) },
         onClick = {
             showSliderOptionDialog = true
         }

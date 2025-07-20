@@ -13,7 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -55,7 +55,7 @@ fun LibraryArtistListItem(
             }
         ) {
             Icon(
-                Icons.Rounded.MoreVert,
+                Icons.Outlined.MoreVert,
                 contentDescription = null
             )
         }
@@ -122,7 +122,7 @@ fun LibraryAlbumListItem(
             }
         ) {
             Icon(
-                Icons.Rounded.MoreVert,
+                Icons.Outlined.MoreVert,
                 contentDescription = null
             )
         }
@@ -224,7 +224,7 @@ fun LibraryPlaylistListItem(
             }
         ) {
             Icon(
-                Icons.Rounded.MoreVert,
+                Icons.Outlined.MoreVert,
                 contentDescription = null
             )
         }

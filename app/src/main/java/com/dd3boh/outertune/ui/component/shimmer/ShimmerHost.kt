@@ -52,8 +52,8 @@ val ShimmerTheme = defaultShimmerTheme.copy(
         repeatMode = RepeatMode.Restart
     ),
     shaderColors = listOf(
-        Color.White.copy(alpha = 0.25f),
-        Color.White.copy(alpha = 0.50f),
-        Color.White.copy(alpha = 0.25f),
+        Color.White.copy(alpha = 0.5f),
+        Color.White.copy(alpha = 0.9f),
+        Color.White.copy(alpha = 0.5f),
     ),
 )
