@@ -9,6 +9,9 @@
 package com.dd3boh.outertune.utils.scanners
 
 import android.os.ParcelFileDescriptor
+import com.dd3boh.outertune.constants.DEBUG_SAVE_OUTPUT
+import com.dd3boh.outertune.constants.EXTRACTOR_DEBUG
+import com.dd3boh.outertune.constants.SCANNER_DEBUG
 import com.dd3boh.outertune.db.entities.AlbumEntity
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.FormatEntity
@@ -17,10 +20,7 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
-import com.dd3boh.outertune.constants.DEBUG_SAVE_OUTPUT
-import com.dd3boh.outertune.constants.EXTRACTOR_DEBUG
 import com.dd3boh.outertune.ui.utils.EXTRACTOR_TAG
-import com.dd3boh.outertune.constants.SCANNER_DEBUG
 import com.kyant.taglib.TagLib
 import timber.log.Timber
 import java.io.File

@@ -64,15 +64,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Repeat
-import androidx.compose.material.icons.rounded.RepeatOne
-import androidx.compose.material.icons.rounded.Replay
-import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.outlined.RepeatOne
+import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
@@ -96,6 +98,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -122,7 +125,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
-import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
@@ -134,6 +136,7 @@ import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SwipeToSkip
+import com.dd3boh.outertune.extensions.isPowerSaver
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.tabMode
 import com.dd3boh.outertune.extensions.togglePlayPause
@@ -158,6 +161,7 @@ import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
 
@@ -290,25 +294,25 @@ fun BottomSheetPlayer(
 
     // gradient colours
     LaunchedEffect(mediaMetadata) {
-        if (playerBackground != PlayerBackgroundStyle.GRADIENT || powerManager.isPowerSaveMode) return@LaunchedEffect
+        if (playerBackground != PlayerBackgroundStyle.GRADIENT || powerManager.isPowerSaveMode) {
+            gradientColors = emptyList()
+            return@LaunchedEffect
+        }
 
         withContext(Dispatchers.IO) {
-            if (mediaMetadata?.isLocal == true) {
-                imageCache.getLocalThumbnail(mediaMetadata?.localPath)?.extractGradientColors()?.let {
-                    gradientColors = it
-                }
+            val bitmap = if (mediaMetadata?.isLocal == true) {
+                imageCache.getLocalThumbnail(mediaMetadata?.localPath, false)
             } else {
                 val result = (ImageLoader(context).execute(
                     ImageRequest.Builder(context)
                         .data(mediaMetadata?.thumbnailUrl)
                         .allowHardware(false)
                         .build()
-                ).drawable as? BitmapDrawable)?.bitmap?.extractGradientColors()
-
-                result?.let {
-                    gradientColors = it
-                }
+                ).drawable as? BitmapDrawable)?.bitmap
+                result
             }
+
+            gradientColors = bitmap?.extractGradientColors() ?: emptyList()
         }
     }
 
@@ -361,7 +365,7 @@ fun BottomSheetPlayer(
                     .size(36.dp)
             ) {
                 ResizableIconButton(
-                    icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
+                    icon = if (currentSong?.song?.liked == true) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else onBackgroundColor,
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -380,7 +384,7 @@ fun BottomSheetPlayer(
                     .background(MaterialTheme.colorScheme.primary)
             ) {
                 ResizableIconButton(
-                    icon = Icons.Rounded.MoreVert,
+                    icon = Icons.Outlined.MoreVert,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .size(24.dp)
@@ -590,7 +594,7 @@ fun BottomSheetPlayer(
 
                 Box(modifier = Modifier.weight(1f)) {
                     ResizableIconButton(
-                        icon = Icons.Rounded.Shuffle,
+                        icon = Icons.Outlined.Shuffle,
                         modifier = Modifier
                             .size(32.dp)
                             .padding(4.dp)
@@ -606,7 +610,7 @@ fun BottomSheetPlayer(
 
                 Box(modifier = Modifier.weight(1f)) {
                     ResizableIconButton(
-                        icon = Icons.Rounded.SkipPrevious,
+                        icon = Icons.Outlined.SkipPrevious,
                         enabled = canSkipPrevious,
                         modifier = Modifier
                             .size(32.dp)
@@ -638,7 +642,7 @@ fun BottomSheetPlayer(
                         }
                 ) {
                     Image(
-                        imageVector = if (playbackState == STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        imageVector = if (playbackState == STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
                         modifier = Modifier
@@ -651,7 +655,7 @@ fun BottomSheetPlayer(
 
                 Box(modifier = Modifier.weight(1f)) {
                     ResizableIconButton(
-                        icon = Icons.Rounded.SkipNext,
+                        icon = Icons.Outlined.SkipNext,
                         enabled = canSkipNext,
                         modifier = Modifier
                             .size(32.dp)
@@ -667,8 +671,8 @@ fun BottomSheetPlayer(
                 Box(modifier = Modifier.weight(1f)) {
                     ResizableIconButton(
                         icon = when (repeatMode) {
-                            REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Rounded.Repeat
-                            REPEAT_MODE_ONE -> Icons.Rounded.RepeatOne
+                            REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Outlined.Repeat
+                            REPEAT_MODE_ONE -> Icons.Outlined.RepeatOne
                             else -> throw IllegalStateException()
                         },
                         modifier = Modifier
@@ -686,100 +690,96 @@ fun BottomSheetPlayer(
             }
         }
 
-        AnimatedVisibility(
-            visible = !powerManager.isPowerSaveMode && state.isExpanded,
-            enter = fadeIn(tween(500)),
-            exit = fadeOut(tween(500))
-        ) {
-            AnimatedContent(
-                targetState = mediaMetadata,
-                transitionSpec = {
-                    fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
-                },
-                label = "playerBackground"
-            ) { metadata ->
-                if (playerBackground == PlayerBackgroundStyle.BLUR) {
-                    if (metadata?.isLocal == true) {
-                        metadata.let {
+        Box(modifier = modifier.fillMaxSize()) {
+            AnimatedVisibility(
+                visible = !powerManager.isPowerSaveMode && state.isExpanded,
+                enter = fadeIn(tween(500)),
+                exit = fadeOut(tween(500))
+            ) {
+                AnimatedContent(
+                    targetState = mediaMetadata,
+                    transitionSpec = {
+                        fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+                    },
+                    label = "playerBackground"
+                ) { metadata ->
+                    if (playerBackground == PlayerBackgroundStyle.GRADIENT || playerBackground == PlayerBackgroundStyle.BLUR) {
+                        val scrimColorFilter = if (playerBackground == PlayerBackgroundStyle.BLUR) {
+                            ColorFilter.tint(Color.Black.copy(alpha = 0.3f), BlendMode.SrcOver)
+                        } else {
+                            null
+                        }
+
+                        if (metadata?.isLocal == true) {
                             AsyncImageLocal(
-                                image = { imageCache.getLocalThumbnail(it.localPath) },
+                                image = { imageCache.getLocalThumbnail(metadata.localPath, false) },
                                 contentScale = ContentScale.FillBounds,
+                                colorFilter = scrimColorFilter,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .blur(200.dp)
+                                    .alpha(if (playerBackground == PlayerBackgroundStyle.BLUR) 1f else 0.8f)
+                            )
+                        } else {
+                            AsyncImage(
+                                model = metadata?.thumbnailUrl,
+                                contentDescription = "Blurred Album Art",
+                                contentScale = ContentScale.FillBounds,
+                                colorFilter = scrimColorFilter,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .blur(200.dp)
+                                    .alpha(if (playerBackground == PlayerBackgroundStyle.BLUR) 1f else 0.8f)
                             )
                         }
-                    } else {
-                        AsyncImage(
-                            model = metadata?.thumbnailUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
+                    }
+                }
+
+                AnimatedContent(
+                    targetState = gradientColors,
+                    transitionSpec = {
+                        fadeIn(tween(1000)) togetherWith fadeOut(tween(1000))
+                    },
+                    label = "playerGradient"
+                ) { colors ->
+                    if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
+                        val gradientBrush = remember(colors, useDarkTheme) {
+                            val topColor = colors[0]
+                            val bottomColor = colors.last()
+
+                            val finalTopColor = if (useDarkTheme) topColor.darken(0.2f) else topColor.lighten(0.1f)
+                            val finalBottomColor = if (useDarkTheme) bottomColor.darken(0.4f) else bottomColor.darken(0.2f)
+
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    finalTopColor.copy(alpha = 0.85f),
+                                    Color.Transparent,
+                                    finalBottomColor.copy(alpha = 0.95f)
+                                )
+                            )
+                        }
+                        Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .blur(200.dp)
+                                .background(gradientBrush)
                         )
                     }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f))
-                    )
                 }
-            }
 
-            AnimatedContent(
-                targetState = gradientColors,
-                transitionSpec = {
-                    fadeIn(tween(1000)) togetherWith fadeOut(tween(1000))
-                },
-                label = "playerGradient"
-            ) { colors ->
-                if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
-                    val gradientBrush = remember(colors, useDarkTheme) {
-                        val topColor = colors[0]
-                        val middleColor = if (colors.size >= 3) colors[1] else colors[0].darken(0.2f)
-                        val bottomColor = colors.last()
-
-                        val finalTopColor = if (useDarkTheme) topColor.lighten(0.1f) else topColor.lighten(0.1f)
-                        val finalMiddleColor = if (useDarkTheme) middleColor else middleColor
-                        val finalBottomColor = if (useDarkTheme) bottomColor.lighten(0.2f) else bottomColor.darken(0.1f)
-
-                        Brush.radialGradient(
-                            colors = listOf(
-                                finalTopColor.copy(alpha = if (useDarkTheme) 1.0f else 0.9f),
-                                finalMiddleColor.copy(alpha = if (useDarkTheme) 0.95f else 0.85f),
-                                finalBottomColor.copy(alpha = if (useDarkTheme) 0.9f else 0.95f),
-                                Color.Black.copy(alpha = if (useDarkTheme) 0.3f else 0.3f)
-                            ),
-                            radius = if (useDarkTheme) 1000f else 1200f,
-                            center = Offset(0.3f, 0.2f)
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(gradientBrush)
-                    )
-                }
-            }
-
-            // Optional shimmer effect
-            AnimatedVisibility(
-                visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying,
-                enter = fadeIn(tween(1000)),
-                exit = fadeOut(tween(1000))
-            ) {
-                if (playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.size >= 2) {
+                AnimatedVisibility(
+                    visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying && playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.isNotEmpty(),
+                    enter = fadeIn(tween(1000)),
+                    exit = fadeOut(tween(1000))
+                ) {
                     val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
-                    val shimmerOffset by infiniteTransition.animateFloat(
+                    val shimmerTranslate by infiniteTransition.animateFloat(
                         initialValue = -1f,
-                        targetValue = 1f,
+                        targetValue = 2f,
                         animationSpec = infiniteRepeatable(
-                            animation = tween(3000, easing = LinearEasing),
-                            repeatMode = RepeatMode.Reverse
+                            animation = tween(4000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Restart
                         ),
-                        label = "shimmerOffset"
+                        label = "shimmerTranslate"
                     )
 
                     Box(
@@ -789,145 +789,145 @@ fun BottomSheetPlayer(
                                 Brush.linearGradient(
                                     colors = listOf(
                                         Color.Transparent,
-                                        Color.White.copy(alpha = 0.05f),
-                                        Color.Transparent
+                                        Color.White.copy(alpha = 0.1f),
+                                        Color.Transparent,
                                     ),
-                                    start = Offset(shimmerOffset * 1000f, shimmerOffset * 1000f),
-                                    end = Offset((shimmerOffset + 0.5f) * 1000f, (shimmerOffset + 0.5f) * 1000f)
+                                    start = Offset(0f, (shimmerTranslate - 0.5f) * 2000),
+                                    end = Offset(2000f, shimmerTranslate * 2000)
                                 )
                             )
                     )
                 }
+
+                if (playerBackground != PlayerBackgroundStyle.FOLLOW_THEME && showLyrics) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f))
+                    )
+                }
             }
 
-            if (playerBackground != PlayerBackgroundStyle.FOLLOW_THEME && showLyrics) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f))
+            if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
+                val vPadding = max(
+                    WindowInsets.safeDrawing.getTop(LocalDensity.current),
+                    WindowInsets.safeDrawing.getBottom(LocalDensity.current)
                 )
-            }
-        }
-
-        if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
-            val vPadding = max(
-                WindowInsets.safeDrawing.getTop(LocalDensity.current),
-                WindowInsets.safeDrawing.getBottom(LocalDensity.current)
-            )
-            val vPaddingDp = with(LocalDensity.current) { vPadding.toDp() }
-            val verticalInsets = WindowInsets(left = 0.dp, top = vPaddingDp, right = 0.dp, bottom = vPaddingDp)
-            Row(
-                modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).add(verticalInsets))
-                    .fillMaxSize()
-            ) {
-                BoxWithConstraints(
-                    contentAlignment = Alignment.Center,
+                val vPaddingDp = with(LocalDensity.current) { vPadding.toDp() }
+                val verticalInsets = WindowInsets(left = 0.dp, top = vPaddingDp, right = 0.dp, bottom = vPaddingDp)
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).add(verticalInsets))
+                        .fillMaxSize()
                 ) {
-                    val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
-
-                    LazyHorizontalGrid(
-                        state = thumbnailLazyGridState,
-                        rows = GridCells.Fixed(1),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
-                        userScrollEnabled = state.isExpanded && swipeToSkip
+                    BoxWithConstraints(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .nestedScroll(state.preUpPostDownNestedScrollConnection)
                     ) {
-                        items(
-                            items = mediaItems,
-                            key = { it.id }
+                        val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+
+                        LazyHorizontalGrid(
+                            state = thumbnailLazyGridState,
+                            rows = GridCells.Fixed(1),
+                            contentPadding = PaddingValues(vertical = 16.dp),
+                            flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                            userScrollEnabled = state.isExpanded && swipeToSkip
                         ) {
-                            Thumbnail(
-                                sliderPositionProvider = { sliderPosition },
-                                modifier = Modifier
-                                    .width(horizontalLazyGridItemWidth)
-                                    .animateContentSize(),
-                                contentScale = ContentScale.Crop,
-                                showLyricsOnClick = true,
-                                customMediaMetadata = it
-                            )
+                            items(
+                                items = mediaItems,
+                                key = { it.id }
+                            ) {
+                                Thumbnail(
+                                    sliderPositionProvider = { sliderPosition },
+                                    modifier = Modifier
+                                        .width(horizontalLazyGridItemWidth)
+                                        .animateContentSize(),
+                                    contentScale = ContentScale.Crop,
+                                    showLyricsOnClick = true,
+                                    customMediaMetadata = it
+                                )
+                            }
                         }
                     }
-                }
 
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            // "percentage to half width", not "percentage of width"
+                            .weight(if (showLyrics) 0.65f else 1f, false)
+                            .animateContentSize()
+                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                    ) {
+                        Spacer(Modifier.weight(1f))
+
+                        mediaMetadata?.let {
+                            controlsContent(it)
+                        }
+
+                        Spacer(Modifier.weight(1f))
+                    }
+                }
+            } else {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        // "percentage to half width", not "percentage of width"
-                        .weight(if (showLyrics) 0.65f else 1f, false)
-                        .animateContentSize()
-                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                        .padding(bottom = queueSheetState.collapsedBound)
                 ) {
-                    Spacer(Modifier.weight(1f))
+                    BoxWithConstraints(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                    ) {
+                        val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+
+                        LazyHorizontalGrid(
+                            state = thumbnailLazyGridState,
+                            rows = GridCells.Fixed(1),
+                            flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                            userScrollEnabled = swipeToSkip && state.isExpanded
+                        ) {
+                            items(
+                                items = mediaItems,
+                                key = { it.id }
+                            ) {
+                                Thumbnail(
+                                    modifier = Modifier
+                                        .width(horizontalLazyGridItemWidth)
+                                        .animateContentSize(),
+                                    contentScale = ContentScale.Crop,
+                                    sliderPositionProvider = { sliderPosition },
+                                    showLyricsOnClick = true,
+                                    customMediaMetadata = it
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
 
                     mediaMetadata?.let {
                         controlsContent(it)
                     }
 
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(24.dp))
                 }
             }
-        } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                    .padding(bottom = queueSheetState.collapsedBound)
-            ) {
-                BoxWithConstraints(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .nestedScroll(state.preUpPostDownNestedScrollConnection)
-                ) {
-                    val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
 
-                    LazyHorizontalGrid(
-                        state = thumbnailLazyGridState,
-                        rows = GridCells.Fixed(1),
-                        flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
-                        userScrollEnabled = swipeToSkip && state.isExpanded
-                    ) {
-                        items(
-                            items = mediaItems,
-                            key = { it.id }
-                        ) {
-                            Thumbnail(
-                                modifier = Modifier
-                                    .width(horizontalLazyGridItemWidth)
-                                    .animateContentSize(),
-                                contentScale = ContentScale.Crop,
-                                sliderPositionProvider = { sliderPosition },
-                                showLyricsOnClick = true,
-                                customMediaMetadata = it
-                            )
-                        }
-                    }
-                }
 
-                Spacer(Modifier.height(8.dp))
-
-                mediaMetadata?.let {
-                    controlsContent(it)
-                }
-
-                Spacer(Modifier.height(24.dp))
-            }
+            QueueSheet(
+                state = queueSheetState,
+                playerBottomSheetState = state,
+                onTerminate = {
+                    state.dismiss()
+                    playerConnection.service.queueBoard.detachedHead = false
+                },
+                onBackgroundColor = onBackgroundColor,
+                navController = navController
+            )
         }
-
-
-        QueueSheet(
-            state = queueSheetState,
-            playerBottomSheetState = state,
-            onTerminate = {
-                state.dismiss()
-                playerConnection.service.queueBoard.detachedHead = false
-            },
-            onBackgroundColor = onBackgroundColor,
-            navController = navController
-        )
     }
 }

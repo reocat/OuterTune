@@ -10,17 +10,14 @@
 package com.dd3boh.outertune.ui.screens.settings
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -59,35 +56,20 @@ fun StorageSettings(
         PreferenceGroupTitle(
             title = stringResource(R.string.downloaded_songs)
         )
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth().animateContentSize()
-        ) {
-            DownloadsFrag()
-        }
+        DownloadsFrag()
         Spacer(modifier = Modifier.height(12.dp))
 
 
         PreferenceGroupTitle(
             title = stringResource(R.string.song_cache)
         )
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SongCacheFrag()
-        }
+        SongCacheFrag()
         Spacer(modifier = Modifier.height(12.dp))
 
         PreferenceGroupTitle(
             title = stringResource(R.string.image_cache)
         )
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ImageCacheFrag()
-        }
+        ImageCacheFrag()
     }
 
     TopAppBar(
@@ -98,7 +80,7 @@ fun StorageSettings(
                 onLongClick = navController::backToMain
             ) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    Icons.AutoMirrored.Outlined.ArrowBack,
                     contentDescription = null
                 )
             }

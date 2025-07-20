@@ -2,18 +2,21 @@ package com.dd3boh.outertune.utils
 
 import android.net.ConnectivityManager
 import androidx.media3.common.PlaybackException
+import com.dd3boh.outertune.constants.AudioQuality
+import com.dd3boh.outertune.utils.YTPlayerUtils.MAIN_CLIENT
+import com.dd3boh.outertune.utils.YTPlayerUtils.STREAM_FALLBACK_CLIENTS
+import com.dd3boh.outertune.utils.YTPlayerUtils.validateStatus
 import com.zionhuang.innertube.NewPipeUtils
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeClient
-import com.zionhuang.innertube.models.YouTubeClient.Companion.IOS
-import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5_SIMPLY_EMBEDDED_PLAYER
-import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
-import com.zionhuang.innertube.models.response.PlayerResponse
-import com.dd3boh.outertune.constants.AudioQuality
 import com.zionhuang.innertube.models.YouTubeClient.Companion.ANDROID_VR_NO_AUTH
+import com.zionhuang.innertube.models.YouTubeClient.Companion.IOS
 import com.zionhuang.innertube.models.YouTubeClient.Companion.MOBILE
+import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5_SIMPLY_EMBEDDED_PLAYER
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_CREATOR
+import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
+import com.zionhuang.innertube.models.response.PlayerResponse
 import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
 import timber.log.Timber

@@ -3,7 +3,6 @@ package com.dd3boh.outertune.ui.menu
 
 import android.content.Context
 import android.net.Uri
-import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,8 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Input
-import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.automirrored.outlined.Input
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,7 +47,6 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
-import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.constants.ScannerM3uMatchCriteria
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.ArtistEntity
@@ -61,13 +59,10 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.compareM3uSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.io.InputStream
-import kotlin.text.startsWith
 
 @Composable
 fun ImportM3uDialog(
@@ -122,12 +117,12 @@ fun ImportM3uDialog(
 
     DefaultDialog(
         onDismiss = onDismiss,
-        icon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
+        icon = { Icon(Icons.AutoMirrored.Outlined.Input, null) },
         title = { Text(stringResource(R.string.import_playlist)) },
     ) {
         EnumListPreference(
             title = { Text(stringResource(R.string.scanner_sensitivity_title)) },
-            icon = { Icon(Icons.Rounded.GraphicEq, null) },
+            icon = { Icon(Icons.Outlined.GraphicEq, null) },
             selectedValue = scannerSensitivity,
             onValueSelected = { scannerSensitivity = it },
             valueText = {

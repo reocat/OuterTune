@@ -22,19 +22,18 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.QueueMusic
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.LockOpen
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.OfflinePin
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.OfflinePin
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -449,7 +448,7 @@ fun LocalPlaylistScreen(
                                     modifier = Modifier.padding(horizontal = 6.dp)
                                 ) {
                                     Icon(
-                                        imageVector = if (locked) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                                        imageVector = if (locked) Icons.Outlined.Lock else Icons.Outlined.LockOpen,
                                         contentDescription = null
                                     )
                                 }
@@ -461,7 +460,7 @@ fun LocalPlaylistScreen(
                 if (playlist.songCount == 0) {
                     item {
                         EmptyPlaceholder(
-                            icon = Icons.Rounded.MusicNote,
+                            icon = Icons.Outlined.MusicNote,
                             text = stringResource(R.string.playlist_is_empty),
                             modifier = Modifier.animateItem()
                         )
@@ -553,7 +552,7 @@ fun LocalPlaylistScreen(
                         }
                     ) {
                         Icon(
-                            Icons.Rounded.Search,
+                            Icons.Outlined.Search,
                             contentDescription = null
                         )
                     }
@@ -576,7 +575,7 @@ fun LocalPlaylistScreen(
                     }
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = null
                     )
                 }
@@ -739,7 +738,7 @@ fun LocalPlaylistHeader(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (playlist.downloadCount > 0) {
                         Icon(
-                            imageVector = Icons.Rounded.OfflinePin,
+                            imageVector = Icons.Outlined.OfflinePin,
                             contentDescription = null,
                             modifier = Modifier
                                 .size(18.dp)
@@ -765,7 +764,7 @@ fun LocalPlaylistHeader(
                         onClick = onShowEditDialog
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Edit,
+                            imageVector = Icons.Outlined.Edit,
                             contentDescription = null
                         )
                     }
@@ -783,7 +782,7 @@ fun LocalPlaylistHeader(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Sync,
+                                imageVector = Icons.Outlined.Sync,
                                 contentDescription = null
                             )
                         }
@@ -795,7 +794,7 @@ fun LocalPlaylistHeader(
                                 onClick = onShowRemoveDownloadDialog
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.OfflinePin,
+                                    imageVector = Icons.Outlined.OfflinePin,
                                     contentDescription = null
                                 )
                             }
@@ -828,7 +827,7 @@ fun LocalPlaylistHeader(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Download,
+                                    imageVector = Icons.Outlined.Download,
                                     contentDescription = null
                                 )
                             }
@@ -843,7 +842,7 @@ fun LocalPlaylistHeader(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.QueueMusic,
+                            imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
                             contentDescription = null
                         )
                     }
@@ -869,7 +868,7 @@ fun LocalPlaylistHeader(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.PlayArrow,
+                    imageVector = Icons.Outlined.PlayArrow,
                     contentDescription = null,
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
@@ -891,7 +890,7 @@ fun LocalPlaylistHeader(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Shuffle,
+                    imageVector = Icons.Outlined.Shuffle,
                     contentDescription = null,
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )

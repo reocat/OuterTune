@@ -24,15 +24,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.Language
-import androidx.compose.material.icons.rounded.LibraryMusic
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Radio
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,7 +41,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -227,7 +226,7 @@ fun ArtistScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Shuffle,
+                            imageVector = Icons.Outlined.Shuffle,
                             contentDescription = null,
                             modifier = Modifier.size(ButtonDefaults.IconSize)
                         )
@@ -251,7 +250,7 @@ fun ArtistScreen(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Radio,
+                                    imageVector = Icons.Outlined.Radio,
                                     contentDescription = null,
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
@@ -412,7 +411,7 @@ fun ArtistScreen(
                                                 }
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Rounded.MoreVert,
+                                                    imageVector = Icons.Outlined.MoreVert,
                                                     contentDescription = null
                                                 )
                                             }
@@ -533,7 +532,7 @@ fun ArtistScreen(
         HideOnScrollFAB(
             visible = librarySongs.isNotEmpty() && libraryArtist?.artist?.isLocal != true,
             lazyListState = lazyListState,
-            icon = if (showLocal) Icons.Rounded.LibraryMusic else Icons.Rounded.Language,
+            icon = if (showLocal) Icons.Outlined.LibraryMusic else Icons.Outlined.Language,
             onClick = {
                 if (isNetworkConnected) {
                     showLocal = showLocal.not()
@@ -551,7 +550,7 @@ fun ArtistScreen(
                     onLongClick = navController::backToMain
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = null
                     )
                 }
@@ -579,7 +578,7 @@ fun ArtistScreen(
                     }
                 ) {
                     Icon(
-                        imageVector = if (libraryArtist?.artist?.bookmarkedAt != null) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        imageVector = if (libraryArtist?.artist?.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                         tint = if (libraryArtist?.artist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current,
                         contentDescription = null
                     )
@@ -598,7 +597,7 @@ fun ArtistScreen(
                     }
                 ) {
                     Icon(
-                        Icons.Rounded.Share,
+                        Icons.Outlined.Share,
                         contentDescription = null
                     )
                 }

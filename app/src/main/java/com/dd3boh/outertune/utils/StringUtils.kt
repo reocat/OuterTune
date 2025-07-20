@@ -1,9 +1,7 @@
 package com.dd3boh.outertune.utils
 
 import android.net.Uri
-import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.AlbumEntity
-import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import java.math.BigInteger
 import java.security.MessageDigest

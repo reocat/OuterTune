@@ -10,8 +10,8 @@ package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreHoriz
-import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +30,7 @@ fun ColumnScope.AppearanceMiscFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.slim_hs_tiles)) },
         description = stringResource(R.string.slim_hs_tiles_description),
-        icon = { Icon(Icons.Rounded.Tune, null) },
+        icon = { Icon(Icons.Outlined.Tune, null) },
         checked = slimHSTiles,
         onCheckedChange = onSlimHSTilesChange,
         isFirst = true
@@ -39,7 +39,7 @@ fun ColumnScope.AppearanceMiscFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.slim_navbar_title)) },
         description = stringResource(R.string.slim_navbar_description),
-        icon = { Icon(Icons.Rounded.MoreHoriz, null) },
+        icon = { Icon(Icons.Outlined.MoreHoriz, null) },
         checked = slimNav,
         onCheckedChange = onSlimNavChange,
         isLast = true

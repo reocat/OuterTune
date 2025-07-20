@@ -87,6 +87,20 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="grp_proxy">Proxy</string>
     <string name="grp_sync">Sync</string>
 
+    <!-- Settings screen descriptions -->
+    <string name="settings_account_sync_description">Log in and manage YouTube Music sync options</string>
+    <string name="settings_library_content_description">Manage your music, local files, and history</string>
+    <string name="settings_appearance_description">Customize the look and feel, including theme and colors</string>
+    <string name="settings_interface_description">Adjust the layout, navigation, and interaction gestures</string>
+    <string name="settings_player_audio_description">Control playback behavior, audio quality, and effects</string>
+    <string name="settings_storage_description">View storage usage, manage cache and downloads</string>
+    <string name="settings_backup_restore_description">Save or load your app data and settings</string>
+    <string name="settings_discord_description">Show your listening activity as your Discord status</string>
+    <string name="settings_experimental_description">Try out new features and advanced settings</string>
+    <string name="settings_about_description">View app information, credits, and find help</string>
+    <string name="settings_check_for_update_description">Check for new app versions and updates</string>
+    <string name="new_version_available_description">Version %1$s is available</string>
+
     <!-- About settings -->
     <string name="attrib_zhuang">Zion Huang for InnerTune</string>
     <string name="check_for_update">Check for updates</string>
@@ -182,14 +196,14 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="scanner_warning">By default, the scanner will NOT reload any metadata of existing songs unless you specify otherwise above. Depending on the size of your library, it make take a while.</string>
 
     <!-- Scanner progress strings-->
-	<string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
+    <string name="scanner_missing_ffmpeg">FFmpeg extractor not detected</string>
     <string name="scanner_missing_storage_perm">The local media scanner requires storage permissions to function</string>
 
     <string name="scanner_btn_idle">Scan</string>
     <string name="scanner_progress_complete">Scan complete</string>
     <string name="scanner_progress_discovering">Discovering…</string>
     <string name="scanner_progress_processing">Processing…</string>
-	<string name="scanner_progress_scanning">Scanning…</string>
+    <string name="scanner_progress_scanning">Scanning…</string>
     <string name="scanner_progress_syncing">Syncing…</string>
     <string name="scanner_scan_fail">Scanner failed</string>
 
@@ -237,7 +251,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="dl_oobe_tooltip">Songs are download to the app\'s private internal storage. To download songs to the external storage, you need to choose a folder first. You can add, change or remove folders, or migrate Internal Downloads to External Downloads later in Settings.</string>
     <string name="dl_rescan_title">Rescan download folders…</string>
     <string name="dl_rescan_description">Update the database and refresh the download registry if any files or folders have changed</string>
-	<string name="dl_rescan_confirm">Rescan all download folders now? This can take a few minutes depending on the size of your library.</string>
+    <string name="dl_rescan_confirm">Rescan all download folders now? This can take a few minutes depending on the size of your library.</string>
     <string name="dl_size_used_cache">Internal: %s used</string>
     <string name="dl_size_used_main">External: %s used</string>
     <string name="dl_size_used_extra">Extra imports: %s used</string>
@@ -248,6 +262,9 @@ while also allowing users to translate our app as well. New, specific strings to
         \n\nRescan download folders: Song downloads in the External Downloads and Extra Imports folders are NOT updated automatically. If you manually add, remove, or change files using a file explorer, you may need to rescan the download folders to update the app’s database. This option is available in the advanced section.
     </string>
     <string name="restart_to_apply_changes">An app restart is required for changes to take effect</string>
+    <string name="storage_usage">Storage Usage</string>
+    <string name="internal_storage">Internal (Cache)</string>
+    <string name="dl_recalculate_size">Recalculate Size</string>
 
     <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Pause sharing listen history with YouTube Music</string>
@@ -320,6 +337,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="speed_very_fast">Very fast</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
+    <string name="not_set">Not set</string>
 
     <!-- Discord Integration -->
     <string name="discord_integration">Discord Integration</string>

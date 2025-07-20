@@ -12,7 +12,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -29,10 +28,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.GraphicEq
-import androidx.compose.material.icons.rounded.TextFields
-import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.GraphicEq
+import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -100,7 +99,6 @@ import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -408,7 +406,7 @@ fun ColumnScope.LocalScannerFrag() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            Icons.Rounded.WarningAmber,
+            Icons.Outlined.WarningAmber,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.error,
         )
@@ -539,7 +537,7 @@ fun ColumnScope.LocalScannerFrag() {
                             },
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Close,
+                                imageVector = Icons.Outlined.Close,
                                 contentDescription = null,
                             )
                         }
@@ -590,7 +588,7 @@ fun ColumnScope.LocalScannerExtraFrag() {
     // scanner sensitivity
     EnumListPreference(
         title = { Text(stringResource(R.string.scanner_sensitivity_title)) },
-        icon = { Icon(Icons.Rounded.GraphicEq, null) },
+        icon = { Icon(Icons.Outlined.GraphicEq, null) },
         selectedValue = scannerSensitivity,
         onValueSelected = onScannerSensitivityChange,
         valueText = {
@@ -606,7 +604,7 @@ fun ColumnScope.LocalScannerExtraFrag() {
     SwitchPreference(
         title = { Text(stringResource(R.string.scanner_strict_file_name_title)) },
         description = stringResource(R.string.scanner_strict_file_name_description),
-        icon = { Icon(Icons.Rounded.TextFields, null) },
+        icon = { Icon(Icons.Outlined.TextFields, null) },
         checked = strictExtensions,
         onCheckedChange = onStrictExtensionsChange,
         isLast = true

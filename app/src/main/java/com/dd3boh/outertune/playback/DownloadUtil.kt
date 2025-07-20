@@ -37,7 +37,6 @@ import com.dd3boh.outertune.playback.downloadManager.DownloadManagerOt
 import com.dd3boh.outertune.utils.YTPlayerUtils
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.enumPreference
-import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.InvalidAudioFileException
 import com.dd3boh.outertune.utils.scanners.fileFromUri

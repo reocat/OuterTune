@@ -20,13 +20,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material.icons.rounded.OfflinePin
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.QueueMusic
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.OfflinePin
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,7 +36,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -328,7 +327,7 @@ fun AutoPlaylistScreen(
 
                                 if (playlistType == PlaylistType.LIKE && downloadCount > 0) {
                                     Icon(
-                                        imageVector = Icons.Rounded.OfflinePin,
+                                        imageVector = Icons.Outlined.OfflinePin,
                                         contentDescription = null,
                                         modifier = Modifier
                                             .size(18.dp)
@@ -362,7 +361,7 @@ fun AutoPlaylistScreen(
                                                 }
                                             ) {
                                                 Icon(
-                                                    Icons.Rounded.OfflinePin,
+                                                    Icons.Outlined.OfflinePin,
                                                     contentDescription = null
                                                 )
                                             }
@@ -395,7 +394,7 @@ fun AutoPlaylistScreen(
                                                 }
                                             ) {
                                                 Icon(
-                                                    Icons.Rounded.Download,
+                                                    Icons.Outlined.Download,
                                                     contentDescription = null
                                                 )
                                             }
@@ -410,7 +409,7 @@ fun AutoPlaylistScreen(
                                         }
                                     ) {
                                         Icon(
-                                            Icons.AutoMirrored.Rounded.QueueMusic,
+                                            Icons.AutoMirrored.Outlined.QueueMusic,
                                             contentDescription = null
                                         )
                                     }
@@ -435,7 +434,7 @@ fun AutoPlaylistScreen(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.PlayArrow,
+                                    imageVector = Icons.Outlined.PlayArrow,
                                     contentDescription = null,
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
@@ -458,7 +457,7 @@ fun AutoPlaylistScreen(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Icon(
-                                    Icons.Rounded.Shuffle,
+                                    Icons.Outlined.Shuffle,
                                     contentDescription = null,
                                     modifier = Modifier.size(ButtonDefaults.IconSize)
                                 )
@@ -489,7 +488,7 @@ fun AutoPlaylistScreen(
             } else {
                 item {
                     EmptyPlaceholder(
-                        icon = Icons.Rounded.MusicNote,
+                        icon = Icons.Outlined.MusicNote,
                         text = stringResource(R.string.playlist_is_empty)
                     )
                 }
@@ -542,7 +541,7 @@ fun AutoPlaylistScreen(
                     onClick = navController::navigateUp
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = null
                     )
                 }

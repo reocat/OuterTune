@@ -1,7 +1,5 @@
 package com.dd3boh.outertune.constants
 
-import android.os.Environment
-
 /*
 ---------------------------
 Appearance & interface

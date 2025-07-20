@@ -1,8 +1,8 @@
 package com.dd3boh.outertune.lyrics
 
-import com.maxrave.lyricsproviders.models.lyrics.Lyrics as ClientLyrics
 import org.akanework.gramophone.logic.utils.SemanticLyrics
 import timber.log.Timber
+import com.maxrave.lyricsproviders.models.lyrics.Lyrics as ClientLyrics
 
 fun convertToSemanticLyrics(lyrics: ClientLyrics?): SemanticLyrics? {
     Timber.d("Trying to convert ClientLyrics to SemanticLyrics, nya~")
