@@ -165,6 +165,7 @@ import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.ENABLE_UPDATE_CHECKER
 import com.dd3boh.outertune.constants.EnabledTabsKey
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
+import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LastVersionKey
 import com.dd3boh.outertune.constants.LibraryFilterKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
@@ -300,6 +301,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -492,6 +495,10 @@ class MainActivity : ComponentActivity() {
             val (strictExtensions) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
             val (lookupYtmArtists) = rememberPreference(LookupYtmArtistsKey, defaultValue = false)
             val (autoScan) = rememberPreference(AutomaticScannerKey, defaultValue = false)
+            val (lastLocalScan, onLastLocalScanChange) = rememberPreference(
+                LastLocalScanKey,
+                LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
+            )
 
             // updater
             val (updateAvailable, onUpdateAvailableChange) = rememberPreference(
@@ -548,6 +555,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             // post scan actions
+                            onLastLocalScanChange(LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())
                             clearDtCache()
                             imageCache.purgeCache()
                             playerConnection?.service?.initQueue()
