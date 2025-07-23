@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.ColumnWithContentPadding
 import com.dd3boh.outertune.ui.component.IconButton
+import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.screens.settings.fragments.AppearanceMiscFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.ThemeAppFrag
@@ -66,6 +68,14 @@ fun AppearanceSettings(
         AppearanceMiscFrag()
 
         Spacer(modifier = Modifier.height(12.dp))
+
+        PreferenceEntry(
+            title = { Text("Monet Settings") },
+            icon = { Icon(Icons.Outlined.Palette, null) },
+            onClick = {
+                navController.navigate("settings/monet")
+            }
+        )
     }
 
     TopAppBar(

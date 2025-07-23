@@ -129,6 +129,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="filter_arrangement">Arrange filters</string>
     <string name="pure_black_unavailable">Not applicable in light theme. Enable dark theme first</string>
 
+    <string name="color_source">Color Source</string>
+    <string name="theme_style">Theme Style</string>
+
     <!-- Content settings -->
     <string name="like_autodownload">Automatically download your liked songs</string>
     <string name="token_adv_login_description">This is an ADVANCED login method. As an alternative to the web portal, you may directly enter or update your login token here. For example, this can speed up logging in on multiple devices. Please note that any invalid token formats the app fails to parse will not be accepted</string>
