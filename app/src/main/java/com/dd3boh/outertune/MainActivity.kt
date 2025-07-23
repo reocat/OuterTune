@@ -120,6 +120,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -170,6 +171,14 @@ import com.dd3boh.outertune.constants.LibraryFilterKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.LookupYtmArtistsKey
 import com.dd3boh.outertune.constants.MiniPlayerHeight
+import com.dd3boh.outertune.constants.MonetAccentColorKey
+import com.dd3boh.outertune.constants.MonetChromaFactorKey
+import com.dd3boh.outertune.constants.MonetCustomColorEnabledKey
+import com.dd3boh.outertune.constants.MonetGrayscaleKey
+import com.dd3boh.outertune.constants.MonetLuminanceFactorKey
+import com.dd3boh.outertune.constants.MonetStyle
+import com.dd3boh.outertune.constants.MonetThemeStyleKey
+import com.dd3boh.outertune.constants.MonetTintBackgroundKey
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
 import com.dd3boh.outertune.constants.NavigationBarHeight
 import com.dd3boh.outertune.constants.OOBE_VERSION
@@ -192,6 +201,7 @@ import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.constants.UpdateAvailableKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.SearchHistory
+import com.dd3boh.outertune.di.ImageCache
 import com.dd3boh.outertune.extensions.tabMode
 import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.MusicService
@@ -234,8 +244,8 @@ import com.dd3boh.outertune.ui.screens.playlist.AutoPlaylistScreen
 import com.dd3boh.outertune.ui.screens.playlist.LocalPlaylistScreen
 import com.dd3boh.outertune.ui.screens.playlist.OnlinePlaylistScreen
 import com.dd3boh.outertune.ui.screens.search.LocalSearchScreen
-import com.dd3boh.outertune.ui.screens.search.OnlineSearchResult
 import com.dd3boh.outertune.ui.screens.search.OnlineSearchScreen
+import com.dd3boh.outertune.ui.screens.search.OnlineSearchResult
 import com.dd3boh.outertune.ui.screens.settings.AboutScreen
 import com.dd3boh.outertune.ui.screens.settings.AccountSyncSettings
 import com.dd3boh.outertune.ui.screens.settings.AppearanceSettings
@@ -248,6 +258,9 @@ import com.dd3boh.outertune.ui.screens.settings.LibrarySettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
 import com.dd3boh.outertune.ui.screens.settings.MonetSettings
+import com.dd3boh.outertune.constants.MonetStyle
+import com.dd3boh.outertune.constants.MonetThemeStyleKey
+import com.dd3boh.outertune.constants.MonetTintBackgroundKey
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
@@ -292,6 +305,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
+import androidx.core.graphics.toColorInt
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -415,28 +429,52 @@ class MainActivity : ComponentActivity() {
             var themeColor by rememberSaveable(stateSaver = ColorSaver) {
                 mutableStateOf(DefaultThemeColor)
             }
+            val monetStyle by rememberEnumPreference(MonetThemeStyleKey, MonetStyle.TONAL_SPOT)
+            val monetLuminance by rememberPreference(MonetLuminanceFactorKey, 0f)
+            val monetChroma by rememberPreference(MonetChromaFactorKey, 0f)
+            val monetGrayscale by rememberPreference(MonetGrayscaleKey, false)
+            val monetCustomColorEnabled by rememberPreference(MonetCustomColorEnabledKey, false)
+            val monetAccentColor by rememberPreference(
+                MonetAccentColorKey,
+                defaultValue = String.format("#%06X", (0xFFFFFF and DefaultThemeColor.toArgb()))
+            )
+            val monetTintBackground by rememberPreference(MonetTintBackgroundKey, true)
 
             val playerBackground by rememberEnumPreference(
                 key = PlayerBackgroundStyleKey,
                 defaultValue = DEFAULT_PLAYER_BACKGROUND
             )
 
-            LaunchedEffect(playerConnection, enableDynamicTheme, isSystemInDarkTheme) {
-                val playerConnection = playerConnection
-                if (!enableDynamicTheme || playerConnection == null) {
-                    themeColor = DefaultThemeColor
-                    return@LaunchedEffect
-                }
-                playerConnection.service.currentMediaMetadata.collectLatest { song ->
-                    themeColor = if (song != null) {
-                        withContext(Dispatchers.IO) {
-                            val uri = (if (song.isLocal) song.localPath else song.thumbnailUrl)?.toUri()
-                            if (uri == null) return@withContext DefaultThemeColor
-                            bitmapLoader.loadBitmapOrNull(uri).get()?.extractThemeColor() ?: DefaultThemeColor
+            val currentSong by playerConnection?.service?.currentMediaMetadata?.collectAsState() ?: remember { mutableStateOf(null) }
+
+            LaunchedEffect(currentSong, enableDynamicTheme, monetCustomColorEnabled, monetAccentColor, monetLuminance, monetChroma, monetGrayscale) {
+                val baseColor = if (monetCustomColorEnabled) {
+                    try {
+                        Color(monetAccentColor.toColorInt())
+                    } catch (e: Exception) {
+                        DefaultThemeColor
+                    }
+                } else if (enableDynamicTheme && currentSong != null) {
+                    withContext(Dispatchers.IO) {
+                        val song = currentSong!!
+                        val uri = (if (song.isLocal) song.localPath else song.thumbnailUrl)?.toUri()
+                        if (uri == null) {
+                            DefaultThemeColor
+                        } else {
+                            bitmapLoader.loadBitmapOrNull(uri).get()?.extractThemeColor(monetGrayscale) ?: DefaultThemeColor
                         }
-                    } else DefaultThemeColor
+                    }
+                } else {
+                    DefaultThemeColor
                 }
+
+                val hsl = FloatArray(3)
+                ColorUtils.colorToHSL(baseColor.toArgb(), hsl)
+                hsl[1] = (hsl[1] + (monetChroma * 1.5f)).coerceIn(0f, 1f)
+                hsl[2] = (hsl[2] + (monetLuminance * 1.5f)).coerceIn(0f, 1f)
+                themeColor = Color(ColorUtils.HSLToColor(hsl))
             }
+
 
             val (oobeStatus) = rememberPreference(OobeStatusKey, defaultValue = 0)
             val (localLibEnable) = rememberPreference(LocalLibraryEnableKey, defaultValue = true)
@@ -541,7 +579,9 @@ class MainActivity : ComponentActivity() {
             OuterTuneTheme(
                 darkTheme = useDarkTheme,
                 pureBlack = pureBlack,
-                themeColor = themeColor
+                themeColor = themeColor,
+                monetStyle = monetStyle,
+                monetTintBackground = monetTintBackground
             ) {
                 BoxWithConstraints(
                     modifier = Modifier
@@ -877,6 +917,7 @@ class MainActivity : ComponentActivity() {
                         LocalSyncUtils provides syncUtils,
                         LocalNetworkConnected provides isNetworkConnected,
                         LocalSnackbarHostState provides snackbarHostState,
+                        LocalImageCache provides imageCache
                     ) {
                         Box(
                             modifier = Modifier
@@ -1127,6 +1168,9 @@ class MainActivity : ComponentActivity() {
                                     }
                                     composable("settings/appearance") {
                                         AppearanceSettings(navController, scrollBehavior)
+                                    }
+                                    composable("settings/monet") {
+                                        MonetSettings(navController, scrollBehavior)
                                     }
                                     composable("settings/interface") {
                                         InterfaceSettings(navController, scrollBehavior)

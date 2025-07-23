@@ -38,6 +38,28 @@ enum class SliderStyle {
     DEFAULT, SQUIGGLY, SLIM
 }
 
+val MonetThemeStyleKey = stringPreferencesKey("monetThemeStyle")
+
+val MonetLuminanceFactorKey = floatPreferencesKey("monetLuminanceFactor")
+
+val MonetChromaFactorKey = floatPreferencesKey("monetChromaFactor")
+
+val MonetGrayscaleKey = booleanPreferencesKey("monetGrayscale")
+
+val MonetAccentColorKey = stringPreferencesKey("monetAccentColor")
+
+val MonetCustomColorEnabledKey = booleanPreferencesKey("monetCustomColorEnabled")
+
+val MonetTintBackgroundKey = booleanPreferencesKey("monetTintBackground")
+
+enum class MonetStyle {
+    TONAL_SPOT,
+    VIBRANT,
+    EXPRESSIVE,
+    RAINBOW,
+    FRUIT_SALAD,
+    MONOCHROMATIC,
+}
 /**
  * Content
  */

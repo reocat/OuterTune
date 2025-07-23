@@ -13,7 +13,7 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
@@ -25,8 +25,9 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
+import com.dd3boh.outertune.constants.MonetStyle
+import com.dd3boh.outertune.ui.screens.settings.toMaterialKolorPaletteStyle
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 
 val DefaultThemeColor = Color(0xFFED5564)
@@ -37,6 +38,8 @@ fun OuterTuneTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     pureBlack: Boolean = false,
     themeColor: Color = DefaultThemeColor,
+    monetStyle: MonetStyle = MonetStyle.TONAL_SPOT,
+    monetTintBackground: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -46,40 +49,83 @@ fun OuterTuneTheme(
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else {
         val isGrayscale = themeColor.isGrayscale()
-        val paletteStyle = if (isGrayscale) PaletteStyle.Neutral else PaletteStyle.Vibrant
+        val paletteStyle = if (isGrayscale) PaletteStyle.Neutral else monetStyle.toMaterialKolorPaletteStyle()
 
         rememberDynamicColorScheme(
             seedColor = themeColor,
             isDark = darkTheme,
-            specVersion = ColorSpec.SpecVersion.SPEC_2025,
             style = paletteStyle
         )
     }
 
-    val colorScheme = remember(baseColorScheme, pureBlack, darkTheme) {
-        if (darkTheme && pureBlack) {
+    val colorScheme = remember(baseColorScheme, pureBlack, darkTheme, monetTintBackground, themeColor) {
+        var scheme = if (darkTheme && pureBlack) {
             baseColorScheme.pureBlack(true)
         } else {
             baseColorScheme
         }
+        if (monetTintBackground && !themeColor.isGrayscale()) {
+            scheme = scheme.copy(
+                background = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.05f).toArgb(),
+                    scheme.background.toArgb()
+                ).let { Color(it) },
+                surface = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.05f).toArgb(),
+                    scheme.surface.toArgb()
+                ).let { Color(it) },
+                surfaceVariant = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.08f).toArgb(),
+                    scheme.surfaceVariant.toArgb()
+                ).let { Color(it) },
+                surfaceContainerLowest = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.03f).toArgb(),
+                    scheme.surfaceContainerLowest.toArgb()
+                ).let { Color(it) },
+                surfaceContainerLow = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.05f).toArgb(),
+                    scheme.surfaceContainerLow.toArgb()
+                ).let { Color(it) },
+                surfaceContainer = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.06f).toArgb(),
+                    scheme.surfaceContainer.toArgb()
+                ).let { Color(it) },
+                surfaceContainerHigh = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.09f).toArgb(),
+                    scheme.surfaceContainerHigh.toArgb()
+                ).let { Color(it) },
+                surfaceContainerHighest = ColorUtils.compositeColors(
+                    themeColor.copy(alpha = 0.12f).toArgb(),
+                    scheme.surfaceContainerHighest.toArgb()
+                ).let { Color(it) }
+            )
+        }
+        scheme
     }
 
-    // Use the defined M3 Expressive Typography
-    // TODO: Define M3 Expressive Shapes instance if needed
-    MaterialExpressiveTheme(
+    MaterialTheme(
         colorScheme = colorScheme,
-        typography = AppTypography, // Use the defined AppTypography
-        // shapes = MaterialTheme.shapes, // Placeholder - Needs update (Shapes not used in original)
+        typography = AppTypography,
         content = content
     )
 }
 
-fun Bitmap.extractThemeColor(): Color {
+fun Bitmap.extractThemeColor(useVibrantForGrayscale: Boolean = false): Color {
     val palette = Palette.from(this)
         .maximumColorCount(24)
         .generate()
 
-    val swatch = palette.vibrantSwatch
+    val bestSwatch = palette.swatches
+        .filter {
+            val hsl = it.hsl
+            val saturation = hsl[1]
+            val lightness = hsl[2]
+            saturation >= 0.1f && lightness >= 0.25f && lightness <= 0.75f
+        }
+        .maxByOrNull { it.population }
+
+    val swatch = bestSwatch
+        ?: palette.vibrantSwatch
         ?: palette.mutedSwatch
         ?: palette.dominantSwatch
         ?: return DefaultThemeColor
@@ -95,6 +141,8 @@ fun Bitmap.extractThemeColor(): Color {
     }
 
     if (isGrayscale) {
+        if(useVibrantForGrayscale) return DefaultThemeColor
+
         val adjustedLightness = lightness.coerceIn(0.3f, 0.7f)
         val newHsl = floatArrayOf(0f, 0f, adjustedLightness)
         return Color(ColorUtils.HSLToColor(newHsl))
@@ -117,12 +165,6 @@ fun Color.isGrayscale(saturationThreshold: Float = 0.08f, lightnessRange: Float 
         else -> saturation < saturationThreshold
     }
 }
-
-data class ThemeColorInfo(
-    val color: Color,
-    val isGrayscale: Boolean,
-    val suggestedPaletteStyle: PaletteStyle
-)
 
 fun Bitmap.extractGradientColors(): List<Color> {
     val palette = Palette.from(this).maximumColorCount(32).generate()
