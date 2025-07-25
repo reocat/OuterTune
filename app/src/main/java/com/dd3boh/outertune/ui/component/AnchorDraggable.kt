@@ -3,6 +3,7 @@ package com.dd3boh.outertune.ui.component
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -25,6 +26,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -45,15 +47,127 @@ import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.constants.SwipeToQueueKey
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-private sealed class SwipeAction(val threshold: Float, val color: Color, val icon: ImageVector) {
-    data class QueueNext(val t: Float, val c: Color, val i: ImageVector) : SwipeAction(t, c, i)
-    data class QueueEnd(val t: Float, val c: Color, val i: ImageVector) : SwipeAction(t, c, i)
-    object None : SwipeAction(0f, Color.Transparent, Icons.AutoMirrored.Outlined.PlaylistPlay)
+/**
+ * Swipe to perform an action. This supports one or two actions
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SwipeActionBox(
+    firstAction: Pair<ImageVector, () -> Unit>,
+    modifier: Modifier = Modifier,
+    secondAction: Pair<ImageVector, () -> Unit>? = null,
+    enabled: Boolean = true,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val haptic = LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
+
+    val swipeOffset = remember { mutableFloatStateOf(0f) }
+    val progress = remember { mutableIntStateOf(0) } // swipeOffset but to track haptics and opacity
+    
+    val actionQueueNext = with(density) { 80.dp.toPx() }
+    val actionQueueEnd = with(density) { 160.dp.toPx() }
+    
+    val firstThreshold = actionQueueNext
+    val secondThreshold = actionQueueEnd
+    
+    val currentAction = remember {
+        derivedStateOf {
+            when {
+                swipeOffset.floatValue >= secondThreshold -> 2
+                swipeOffset.floatValue >= firstThreshold -> 1
+                else -> 0
+            }
+        }
+    }
+    
+    LaunchedEffect(currentAction.value) {
+        if (currentAction.value != 0) {
+            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+        }
+        progress.intValue = currentAction.value
+    }
+
+    val backgroundAlpha by remember {
+        derivedStateOf {
+            when (currentAction.value) {
+                0 -> 0f
+                1 -> (swipeOffset.floatValue / firstThreshold).coerceIn(0f, 0.6f)
+                else -> (swipeOffset.floatValue / secondThreshold).coerceIn(0f, 0.7f)
+            }
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .draggable(
+                orientation = Orientation.Horizontal,
+                state = rememberDraggableState { delta ->
+                    swipeOffset.floatValue = (swipeOffset.floatValue + delta).coerceAtLeast(0f)
+                },
+                onDragStopped = {
+                    when {
+                        swipeOffset.floatValue >= secondThreshold -> {
+                            if (secondAction == null) {
+                                firstAction.second.invoke()
+                            } else {
+                                secondAction.second.invoke()
+                            }
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            resetDrag(coroutineScope, swipeOffset)
+                        }
+                        swipeOffset.floatValue >= firstThreshold -> {
+                            firstAction.second.invoke()
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            resetDrag(coroutineScope, swipeOffset)
+                        }
+                        else -> resetDrag(coroutineScope, swipeOffset)
+                    }
+                }
+            )
+    ) {
+        // Background with action indicators
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    color = when (currentAction.value) {
+                        1 -> MaterialTheme.colorScheme.primary.copy(alpha = backgroundAlpha)
+                        2 -> MaterialTheme.colorScheme.secondary.copy(alpha = backgroundAlpha)
+                        else -> Color.Transparent
+                    }
+                )
+                .padding(horizontal = 24.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            val iconScale by animateFloatAsState(
+                targetValue = if (currentAction.value != 0) 1.2f else 1f,
+                label = "iconPop"
+            )
+
+            if (currentAction.value > 0) {
+                Icon(
+                    imageVector = if (currentAction.value == 2 && secondAction != null) secondAction.first else firstAction.first,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.scale(iconScale)
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(swipeOffset.floatValue.roundToInt(), 0) }
+                .fillMaxWidth(),
+            content = content
+        )
+    }
 }
 
 @Composable
@@ -65,12 +179,8 @@ fun SwipeToQueueBox(
     enabled: Boolean = true
 ) {
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current
     val coroutineScope = rememberCoroutineScope()
-    val density = LocalDensity.current
-
-    val swipeOffset = remember { mutableFloatStateOf(0f) }
     val swipeToQueueEnabled by rememberPreference(SwipeToQueueKey, true)
 
     if (!enabled || !swipeToQueueEnabled) {
@@ -78,124 +188,38 @@ fun SwipeToQueueBox(
         return
     }
 
-    val actionQueueNext = SwipeAction.QueueNext(
-        t = with(density) { 80.dp.toPx() },
-        c = MaterialTheme.colorScheme.primary.copy(
-            alpha = 1f,
-            red = (MaterialTheme.colorScheme.primary.red + 0.3f).coerceAtMost(1f),
-            green = (MaterialTheme.colorScheme.primary.green + 0.3f).coerceAtMost(1f),
-            blue = (MaterialTheme.colorScheme.primary.blue + 0.3f).coerceAtMost(1f)
-        ),
-        i = Icons.AutoMirrored.Outlined.PlaylistPlay
-    )
-    val actionQueueEnd = SwipeAction.QueueEnd(
-        t = with(density) { 160.dp.toPx() },
-        c = MaterialTheme.colorScheme.secondary.copy(
-            alpha = 1f,
-            red = (MaterialTheme.colorScheme.secondary.red + 0.3f).coerceAtMost(1f),
-            green = (MaterialTheme.colorScheme.secondary.green + 0.3f).coerceAtMost(1f),
-            blue = (MaterialTheme.colorScheme.secondary.blue + 0.3f).coerceAtMost(1f)
-        ),
-        i = Icons.AutoMirrored.Outlined.PlaylistAdd
-    )
-
-    val currentAction by remember {
-        derivedStateOf {
-            when {
-                swipeOffset.floatValue >= actionQueueEnd.threshold -> actionQueueEnd
-                swipeOffset.floatValue >= actionQueueNext.threshold -> actionQueueNext
-                else -> SwipeAction.None
-            }
-        }
-    }
-
-    val draggableState = rememberDraggableState { delta ->
-        swipeOffset.floatValue = (swipeOffset.floatValue + delta).coerceAtLeast(0f)
-    }
-
-    LaunchedEffect(currentAction) {
-        if (currentAction != SwipeAction.None) {
-            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-        }
-    }
-
-    val backgroundAlpha by remember {
-        derivedStateOf {
-            when (currentAction) {
-                SwipeAction.None -> 0f
-                is SwipeAction.QueueNext -> (swipeOffset.floatValue / actionQueueNext.threshold).coerceIn(0f, 0.6f)
-                is SwipeAction.QueueEnd -> (swipeOffset.floatValue / actionQueueEnd.threshold).coerceIn(0f, 0.7f)
-            }
-        }
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .draggable(
-                orientation = Orientation.Horizontal,
-                state = draggableState,
-                onDragStopped = {
-                    when (currentAction) {
-                        is SwipeAction.QueueEnd -> {
-                            playerConnection?.enqueueEnd(item)
-                            coroutineScope.launch {
-                                snackbarHostState?.showSnackbar(
-                                    message = context.getString(R.string.song_added_to_queue_end, item.mediaMetadata.title),
-                                    withDismissAction = true,
-                                    duration = SnackbarDuration.Indefinite
-                                )
-                                delay(SNACKBAR_VERY_SHORT)
-                                this.coroutineContext[Job]?.cancel()
-                            }
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                        }
-                        is SwipeAction.QueueNext -> {
-                            playerConnection?.enqueueNext(item)
-                            coroutineScope.launch {
-                                snackbarHostState?.showSnackbar(
-                                    message = context.getString(R.string.song_added_to_queue, item.mediaMetadata.title),
-                                    withDismissAction = true,
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                        }
-                        SwipeAction.None -> {}
-                    }
-                    resetDrag(coroutineScope, swipeOffset)
-                }
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    color = currentAction.color.copy(alpha = backgroundAlpha)
+    SwipeActionBox(
+        firstAction = Pair(Icons.AutoMirrored.Outlined.PlaylistPlay, {
+            playerConnection?.enqueueNext(item)
+            coroutineScope.launch {
+                snackbarHostState?.showSnackbar(
+                    message = context.getString(R.string.song_added_to_queue, item.mediaMetadata.title),
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short
                 )
-                .padding(horizontal = 24.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            val iconScale by animateFloatAsState(
-                targetValue = if (currentAction != SwipeAction.None) 1.2f else 1f,
-                label = "iconPop"
-            )
-
-            Icon(
-                imageVector = currentAction.icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.scale(iconScale)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(swipeOffset.floatValue.roundToInt(), 0) }
-                .fillMaxWidth(),
-            content = content
-        )
-    }
+            }
+        }),
+        secondAction = Pair(Icons.AutoMirrored.Outlined.PlaylistAdd, {
+            playerConnection?.enqueueEnd(item)
+            coroutineScope.launch {
+                val job = launch {
+                    snackbarHostState?.showSnackbar(
+                        message = context.getString(
+                            R.string.song_added_to_queue_end,
+                            item.mediaMetadata.title
+                        ),
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Indefinite
+                    )
+                }
+                delay(SNACKBAR_VERY_SHORT)
+                job.cancel()
+            }
+        }),
+        enabled = enabled,
+        modifier = modifier,
+        content = content
+    )
 }
 
 
