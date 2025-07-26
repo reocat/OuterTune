@@ -58,7 +58,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
@@ -357,8 +357,8 @@ fun Thumbnail(
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds,
                             onSuccess = { success ->
-                                val width = success.result.drawable.intrinsicWidth
-                                val height = success.result.drawable.intrinsicHeight
+                                val width = success.result.image.width
+                                val height = success.result.image.height
                                 isRectangularImage = width.toFloat() / height != 1f
                             },
                             modifier = Modifier

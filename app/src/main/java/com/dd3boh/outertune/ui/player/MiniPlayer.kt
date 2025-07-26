@@ -76,7 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -330,8 +330,8 @@ fun MiniMediaInfo(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     onSuccess = { success ->
-                        val width = success.result.drawable.intrinsicWidth
-                        val height = success.result.drawable.intrinsicHeight
+                        val width = success.result.image.width
+                        val height = success.result.image.height
 
                         isRectangularImage = width.toFloat() / height != 1f
                     },

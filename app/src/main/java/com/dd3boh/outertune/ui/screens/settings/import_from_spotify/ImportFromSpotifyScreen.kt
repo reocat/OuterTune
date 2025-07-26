@@ -83,7 +83,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.model.Playlist
 import com.dd3boh.outertune.ui.utils.backToMain
