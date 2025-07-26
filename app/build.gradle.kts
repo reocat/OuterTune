@@ -169,6 +169,7 @@ dependencies {
 
     // Image Loading & Effects
     implementation(libs.coil)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.shimmer)
 
     // Media & Audio

@@ -13,13 +13,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.core.content.ContextCompat
-import coil.imageLoader
-import coil.request.ErrorResult
-import coil.request.ImageRequest
+import coil3.imageLoader
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.di.ImageCache
 import com.google.common.util.concurrent.ListenableFuture
@@ -64,7 +65,7 @@ class CoilBitmapLoader @Inject constructor(
                 return@future imageCache.placeholderImage
             }
             try {
-                (result.drawable as BitmapDrawable).bitmap
+                result.image!!.toBitmap()
             } catch (e: Exception) {
                 reportException(ExecutionException(e))
                 return@future imageCache.placeholderImage
@@ -88,7 +89,7 @@ class CoilBitmapLoader @Inject constructor(
                 return@future null
             }
             try {
-                (result.drawable as BitmapDrawable).bitmap
+                result.image!!.toBitmap()
             } catch (e: Exception) {
                 reportException(ExecutionException(e))
                 return@future null

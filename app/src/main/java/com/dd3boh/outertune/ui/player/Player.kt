@@ -120,10 +120,13 @@ import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_READY
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
-import coil.compose.AsyncImage
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.size.Size
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.size.Size
+import coil3.toBitmap
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -872,7 +875,7 @@ private suspend fun fetchAndExtractGradientColors(
             .build()
 
         val bitmap = withContext(Dispatchers.IO) {
-            val drawable = context.imageLoader.execute(request).drawable
+            val drawable = context.imageLoader.execute(request).image
             when (drawable) {
                 is BitmapDrawable -> drawable.bitmap
                 else -> drawable?.toBitmap()
