@@ -55,6 +55,7 @@
 -keep class com.my.kizzy.gateway.entities.** { <fields>; }
 
 ## Rules for NewPipeExtractor
+-keep class org.schabi.newpipe.extractor.services.youtube.protos.** { *; }
 -keep class org.schabi.newpipe.extractor.timeago.patterns.** { *; }
 -keep class org.mozilla.javascript.** { *; }
 -dontwarn org.mozilla.javascript.JavaToJSONConverters
