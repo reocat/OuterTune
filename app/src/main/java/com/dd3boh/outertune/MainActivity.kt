@@ -259,10 +259,8 @@ import com.dd3boh.outertune.ui.screens.settings.LibrarySettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.LyricsSettings
 import com.dd3boh.outertune.ui.screens.settings.MonetSettings
-import com.dd3boh.outertune.constants.MonetStyle
 import com.dd3boh.outertune.constants.MonetThemeStyleKey
 import com.dd3boh.outertune.constants.MonetTintBackgroundKey
-import com.dd3boh.outertune.di.ImageCache
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
