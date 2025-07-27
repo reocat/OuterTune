@@ -123,6 +123,10 @@ import androidx.navigation.NavController
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.imageLoader
+import coil.size.Size
+import androidx.core.graphics.drawable.toBitmap
+import androidx.palette.graphics.Palette
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -288,30 +292,67 @@ fun BottomSheetPlayer(
         mutableStateOf<List<Color>>(emptyList())
     }
 
+    // Cache for gradient colors to prevent re-extraction for the same song
+    val gradientColorsCache = remember { mutableMapOf<String, List<Color>>() }
+
+    // Default gradient colors for fallback
+    val defaultGradientColors = listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
+
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
 
 
     // gradient colours
-    LaunchedEffect(mediaMetadata) {
-        if (playerBackground != PlayerBackgroundStyle.GRADIENT || powerManager.isPowerSaveMode) {
-            gradientColors = emptyList()
-            return@LaunchedEffect
-        }
+    LaunchedEffect(mediaMetadata?.id, playerBackground) {
+        if (useDarkTheme && playerBackground != PlayerBackgroundStyle.BLUR) {
+            gradientColors = listOf(Color.Black, Color.Black)
+        } else if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+            val currentMetadata = mediaMetadata
+            if (currentMetadata != null && currentMetadata.thumbnailUrl != null) {
+                // Check cache first
+                val cachedColors = gradientColorsCache[currentMetadata.id]
+                if (cachedColors != null) {
+                    gradientColors = cachedColors
+                } else {
+                    try {
+                        val request = ImageRequest.Builder(context)
+                            .data(currentMetadata.thumbnailUrl)
+                            .size(Size(200, 200)) // Larger size for better color extraction
+                            .allowHardware(false)
+                            .build()
 
-        withContext(Dispatchers.IO) {
-            val bitmap = if (mediaMetadata?.isLocal == true) {
-                imageCache.getLocalThumbnail(mediaMetadata?.localPath, false)
+                        val drawable = context.imageLoader.execute(request).drawable
+                        val bitmap = when (drawable) {
+                            is BitmapDrawable -> drawable.bitmap
+                            else -> drawable?.toBitmap()
+                        }
+
+                        if (bitmap != null) {
+                            val palette = Palette.from(bitmap).maximumColorCount(16).generate()
+
+                            val dominantColor = palette.dominantSwatch?.rgb?.let { Color(it) }
+                            val mutedColor = palette.mutedSwatch?.rgb?.let { Color(it) }
+                            val lightMutedColor = palette.lightMutedSwatch?.rgb?.let { Color(it) }
+
+                            val colors = buildList<Color> {
+                                dominantColor?.let { add(it) }
+                                mutedColor?.let { add(it) }
+                                lightMutedColor?.let { add(it) }
+                            }.takeIf { it.isNotEmpty() } ?: defaultGradientColors
+
+                            gradientColors = colors
+                            gradientColorsCache[currentMetadata.id] = colors
+                        } else {
+                            gradientColors = defaultGradientColors
+                        }
+                    } catch (e: Exception) {
+                        gradientColors = defaultGradientColors
+                    }
+                }
             } else {
-                val result = (ImageLoader(context).execute(
-                    ImageRequest.Builder(context)
-                        .data(mediaMetadata?.thumbnailUrl)
-                        .allowHardware(false)
-                        .build()
-                ).drawable as? BitmapDrawable)?.bitmap
-                result
+                gradientColors = emptyList()
             }
-
-            gradientColors = bitmap?.extractGradientColors() ?: emptyList()
+        } else {
+            gradientColors = emptyList()
         }
     }
 
