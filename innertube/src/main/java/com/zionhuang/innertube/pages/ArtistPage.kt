@@ -37,23 +37,31 @@ data class ArtistPage(
         }
 
         private fun fromMusicShelfRenderer(renderer: MusicShelfRenderer): ArtistSection? {
+            val items = renderer.contents?.getItems()?.mapNotNull {
+                fromMusicResponsiveListItemRenderer(it)
+            }?.ifEmpty { null } ?: return null
+
+            val sortedItems = sortAlbumsByYearIfNeeded(items)
+
             return ArtistSection(
                 title = renderer.title?.runs?.firstOrNull()?.text ?: "",
-                items = renderer.contents?.getItems()?.mapNotNull {
-                    fromMusicResponsiveListItemRenderer(it)
-                }?.ifEmpty { null } ?: return null,
+                items = sortedItems,
                 moreEndpoint = renderer.title?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint
             )
         }
 
         private fun fromMusicCarouselShelfRenderer(renderer: MusicCarouselShelfRenderer): ArtistSection? {
+            val items = renderer.contents.mapNotNull {
+                it.musicTwoRowItemRenderer?.let { renderer ->
+                    fromMusicTwoRowItemRenderer(renderer)
+                }
+            }.ifEmpty { null } ?: return null
+
+            val sortedItems = sortAlbumsByYearIfNeeded(items)
+
             return ArtistSection(
                 title = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.text ?: return null,
-                items = renderer.contents.mapNotNull {
-                    it.musicTwoRowItemRenderer?.let { renderer ->
-                        fromMusicTwoRowItemRenderer(renderer)
-                    }
-                }.ifEmpty { null } ?: return null,
+                items = sortedItems,
                 moreEndpoint = renderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.browseEndpoint
             )
         }
@@ -168,6 +176,18 @@ data class ArtistPage(
 
                 else -> null
             }
+        }
+
+        /**
+         * Sorts album-like lists by release year descending. Returns the original list if
+         *   – the list is empty, contains non-album items, or years are all null.
+         */
+        private fun sortAlbumsByYearIfNeeded(items: List<YTItem>): List<YTItem> {
+            return if (items.isNotEmpty() && items.all { it is AlbumItem }) {
+                items.sortedWith(compareByDescending<YTItem> {
+                    (it as AlbumItem).year ?: Int.MIN_VALUE
+                })
+            } else items
         }
     }
 }
