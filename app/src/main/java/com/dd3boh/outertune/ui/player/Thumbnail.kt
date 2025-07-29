@@ -325,7 +325,7 @@ fun Thumbnail(
                         .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                        .clip(RoundedCornerShape(ThumbnailCornerRadius * 3))
                 ) {
                     if (mediaMetadata?.isLocal == true) {
                         AsyncImageLocal(
@@ -417,7 +417,7 @@ fun Thumbnail(
                             }
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 3))
                     ) {
                         AsyncImage(
                             model = nextUrl,
@@ -453,7 +453,7 @@ fun Thumbnail(
                             }
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 3))
                     ) {
                         AsyncImage(
                             model = it,

@@ -356,14 +356,19 @@ fun Lyrics(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(
-                        top = statusBarPadding + 8.dp,
-                        end = 12.dp
+                        top = 4.dp,
+                        end = 16.dp
                     )
                     .background(
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                        shape = RoundedCornerShape(12.dp)
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f),
+                        shape = RoundedCornerShape(16.dp)
                     )
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
         LazyColumn(
