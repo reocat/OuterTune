@@ -80,6 +80,7 @@ import com.dd3boh.outertune.constants.DialogCornerRadius
 import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.utils.CurrentClientHolder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -515,7 +516,8 @@ fun DetailsDialog(
                     stringResource(R.string.song_title) to mediaMetadata.title,
                     stringResource(R.string.song_artists) to mediaMetadata.artists?.joinToString { it.name },
                     stringResource(R.string.media_id) to mediaMetadata.id,
-                    stringResource(R.string.play_count) to currentPlayCount.toString()
+                    stringResource(R.string.play_count) to currentPlayCount.toString(),
+                    stringResource(R.string.client) to CurrentClientHolder.currentClient?.clientName
                 )
 
                 if (!mediaMetadata.isLocal) {

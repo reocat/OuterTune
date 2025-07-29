@@ -16,6 +16,7 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5_SIMPLY_EMB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_CREATOR
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
+import com.dd3boh.outertune.utils.CurrentClientHolder
 import com.zionhuang.innertube.models.response.PlayerResponse
 import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
@@ -178,6 +179,7 @@ object YTPlayerUtils {
                     if (clientIndex == STREAM_FALLBACK_CLIENTS.size - 1) {
                         /** skip [validateStatus] for last client */
                         Timber.tag(logTag).d("Using last fallback client without validation: ${STREAM_FALLBACK_CLIENTS[clientIndex].clientName}")
+                        CurrentClientHolder.currentClient = client
                         streamFound = true
                         break
                     }
@@ -185,6 +187,7 @@ object YTPlayerUtils {
                     if (validateStatus(streamUrl)) {
                         // working stream found
                         Timber.tag(logTag).d("Stream validated successfully with client: ${if (clientIndex == -1) MAIN_CLIENT.clientName else STREAM_FALLBACK_CLIENTS[clientIndex].clientName} (attempt ${retryCount + 1}/${MAX_RETRY})")
+                        CurrentClientHolder.currentClient = client
                         streamFound = true
                         break
                     } else {
@@ -333,4 +336,15 @@ object YTPlayerUtils {
             }
             .getOrNull()
     }
+}
+
+/**
+ * Holds reference to the Innertube client that was actually used for the
+ * currently playing stream.  This is updated by [YTPlayerUtils] once a working
+ * stream is found so that the UI (e.g. Details dialog) can display which
+ * client is being used.
+ */
+object CurrentClientHolder {
+    @Volatile
+    var currentClient: YouTubeClient? = null
 }
