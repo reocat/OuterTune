@@ -492,13 +492,9 @@ fun Thumbnail(
             visible = error != null,
             enter = fadeIn(),
             exit = fadeOut(),
-            modifier = Modifier
-                .padding(32.dp)
-                .align(Alignment.Center)
-                .fillMaxSize()
         ) {
             error?.let { error ->
-                PlaybackError(
+                ThumbnailPlaybackError(
                     error = error,
                     retry = playerConnection.player::prepare
                 )

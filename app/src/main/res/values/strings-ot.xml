@@ -41,9 +41,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="like_all">Like all</string>
     <string name="more_settings">More settings</string>
     <string name="delete_lyric_confirm">Do you really want to delete the stored lyrics for \"%s\"?</string>
+    <string name="tap_show_more">Tap to show more information</string>
 
     <!-- Player -->
-    <string name="err_general" translatable="false">plr</string>
     <string name="err_invalid_ytm_song">Failed to play song. Only content accessible on YouTube Music can be played</string>
     <string name="err_play_next_on_error">Error occurred. Playing next</string>
     <string name="err_stop_on_error">Error occurred. Playback stopped</string>
