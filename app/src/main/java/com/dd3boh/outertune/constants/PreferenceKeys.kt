@@ -11,6 +11,11 @@ import androidx.datastore.preferences.core.stringPreferencesKey
  */
 val DynamicThemeKey = booleanPreferencesKey("dynamicTheme")
 val PlayerBackgroundStyleKey = stringPreferencesKey("playerBackgroundStyle")
+val PlayerButtonsStyleKey = stringPreferencesKey("player_buttons_style")
+enum class PlayerButtonsStyle {
+    DEFAULT,
+    SECONDARY,
+}
 val DarkModeKey = stringPreferencesKey("darkMode")
 val PureBlackKey = booleanPreferencesKey("pureBlack")
 val ShowLikedAndDownloadedPlaylist = booleanPreferencesKey("showLikedAndDownloadedPlaylist")

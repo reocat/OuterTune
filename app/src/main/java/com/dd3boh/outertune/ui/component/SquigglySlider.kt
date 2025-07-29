@@ -62,6 +62,7 @@ fun SquigglySlider(
     onValueChangeFinished: (() -> Unit)? = null,
     squigglesSpec: SquigglySlider.SquigglesSpec = SquigglySlider.SquigglesSpec(),
     squigglesAnimator: SquigglySlider.SquigglesAnimator = SquigglySlider.rememberSquigglesAnimator(),
+    colors: SquigglySliderColors = SquigglySliderDefaults.colors(),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     var isDragging by remember { mutableFloatStateOf(0f) }
@@ -117,6 +118,7 @@ fun SquigglySlider(
             enabled = enabled,
             isDragging = isDragging > 0f,
             hasValidRange = hasValidRange,
+            colors = colors,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(sliderHeight)
@@ -128,6 +130,7 @@ fun SquigglySlider(
             thumbSize = thumbSize,
             enabled = enabled,
             hasValidRange = hasValidRange,
+            colors = colors,
             modifier = Modifier.align(Alignment.CenterStart)
         )
     }
@@ -142,6 +145,7 @@ private fun SquigglySliderTrack(
     enabled: Boolean,
     isDragging: Boolean,
     hasValidRange: Boolean,
+    colors: SquigglySliderColors,
     modifier: Modifier = Modifier
 ) {
     val isDraggedState by interactionSource.collectIsDraggedAsState()
@@ -159,17 +163,9 @@ private fun SquigglySliderTrack(
         label = "Squiggles amplitude"
     )
 
-    val activeColor = if (enabled) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-    }
+    val activeColor = if (enabled) colors.activeTrackColor else colors.disabledActiveTrackColor
+    val inactiveColor = if (enabled) colors.inactiveTrackColor else colors.disabledInactiveTrackColor
 
-    val inactiveColor = if (enabled) {
-        MaterialTheme.colorScheme.surfaceVariant
-    } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-    }
 
     Canvas(modifier = modifier) {
         val strokeWidth = squigglesSpec.strokeWidth.toPx()
@@ -221,13 +217,10 @@ private fun SquigglySliderThumb(
     thumbSize: DpSize,
     enabled: Boolean,
     hasValidRange: Boolean,
+    colors: SquigglySliderColors,
     modifier: Modifier = Modifier
 ) {
-    val thumbColor = if (enabled) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-    }
+    val thumbColor = if (enabled) colors.thumbColor else colors.disabledThumbColor
 
     Canvas(
         modifier = modifier
@@ -315,6 +308,35 @@ private fun DrawScope.drawSquigglyLine(
             join = StrokeJoin.Round,
             pathEffect = PathEffect.cornerPathEffect(radius = wavelength * 0.125f)
         )
+    )
+}
+
+@Immutable
+data class SquigglySliderColors(
+    val thumbColor: Color,
+    val activeTrackColor: Color,
+    val inactiveTrackColor: Color,
+    val disabledThumbColor: Color,
+    val disabledActiveTrackColor: Color,
+    val disabledInactiveTrackColor: Color
+)
+
+object SquigglySliderDefaults {
+    @Composable
+    fun colors(
+        thumbColor: Color = MaterialTheme.colorScheme.primary,
+        activeTrackColor: Color = MaterialTheme.colorScheme.primary,
+        inactiveTrackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+        disabledThumbColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        disabledActiveTrackColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        disabledInactiveTrackColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    ): SquigglySliderColors = SquigglySliderColors(
+        thumbColor = thumbColor,
+        activeTrackColor = activeTrackColor,
+        inactiveTrackColor = inactiveTrackColor,
+        disabledThumbColor = disabledThumbColor,
+        disabledActiveTrackColor = disabledActiveTrackColor,
+        disabledInactiveTrackColor = disabledInactiveTrackColor
     )
 }
 

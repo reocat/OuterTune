@@ -113,6 +113,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.C
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
@@ -120,13 +121,11 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_READY
 import androidx.navigation.NavController
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import coil.imageLoader
-import coil.size.Size
-import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
+import coil.compose.AsyncImage
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.size.Size
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -135,6 +134,8 @@ import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
+import com.dd3boh.outertune.constants.PlayerButtonsStyle
+import com.dd3boh.outertune.constants.PlayerButtonsStyleKey
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.QueuePeekHeight
 import com.dd3boh.outertune.constants.ShowLyricsKey
@@ -152,19 +153,17 @@ import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
 import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SquigglySlider
+import com.dd3boh.outertune.ui.component.SquigglySliderDefaults
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState
 import com.dd3boh.outertune.ui.menu.PlayerMenu
 import com.dd3boh.outertune.ui.theme.darken
-import com.dd3boh.outertune.ui.theme.extractGradientColors
 import com.dd3boh.outertune.ui.theme.lighten
 import com.dd3boh.outertune.ui.utils.SnapLayoutInfoProvider
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import kotlin.math.max
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -267,13 +266,37 @@ fun BottomSheetPlayer(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    val onBackgroundColor = when (playerBackground) {
-        PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
-        else ->
-            if (useDarkTheme)
-                MaterialTheme.colorScheme.onSurface
-            else
-                MaterialTheme.colorScheme.onPrimary
+    val playerButtonsStyle by rememberEnumPreference(PlayerButtonsStyleKey, PlayerButtonsStyle.DEFAULT)
+
+    val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onBackgroundColor = MaterialTheme.colorScheme.onBackground
+    val surfaceColor = MaterialTheme.colorScheme.surface
+
+    val (textColor, controlIconColor, accentStyledColor, iconOnAccentColor) = remember(
+        playerButtonsStyle,
+        playerBackground,
+        useDarkTheme,
+        primaryContainerColor,
+        primaryColor,
+        onBackgroundColor,
+        surfaceColor
+    ) {
+        val accentValue = if (useDarkTheme) primaryContainerColor else primaryColor
+
+        if (playerButtonsStyle == PlayerButtonsStyle.SECONDARY) {
+            listOf(Color.White, Color.White, accentValue, Color.White)
+        } else {
+            val defaultText = when (playerBackground) {
+                PlayerBackgroundStyle.FOLLOW_THEME -> onBackgroundColor
+                else -> Color.White
+            }
+            val defaultIconOnButton = when (playerBackground) {
+                PlayerBackgroundStyle.FOLLOW_THEME -> surfaceColor
+                else -> Color.Black
+            }
+            listOf(defaultText, defaultText, defaultText, defaultIconOnButton)
+        }
     }
 
     val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
@@ -406,7 +429,7 @@ fun BottomSheetPlayer(
             ) {
                 ResizableIconButton(
                     icon = if (currentSong?.song?.liked == true) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                    color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else onBackgroundColor,
+                    color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else controlIconColor,
                     modifier = Modifier
                         .align(Alignment.Center)
                         .size(24.dp),
@@ -421,11 +444,11 @@ fun BottomSheetPlayer(
                     .offset(y = 5.dp)
                     .size(36.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .background(accentStyledColor)
             ) {
                 ResizableIconButton(
                     icon = Icons.Outlined.MoreVert,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = iconOnAccentColor,
                     modifier = Modifier
                         .size(24.dp)
                         .align(Alignment.Center),
@@ -477,7 +500,7 @@ fun BottomSheetPlayer(
                         Text(
                             text = mediaMetadata.title,
                             style = MaterialTheme.typography.titleLarge,
-                            color = onBackgroundColor,
+                            color = textColor,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -497,7 +520,7 @@ fun BottomSheetPlayer(
                                 Text(
                                     text = artist.name,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = onBackgroundColor,
+                                    color = textColor,
                                     maxLines = 1,
                                     modifier = Modifier
                                         .basicMarquee(
@@ -514,7 +537,7 @@ fun BottomSheetPlayer(
                                     Text(
                                         text = ", ",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = onBackgroundColor
+                                        color = textColor
                                     )
                                 }
                             }
@@ -545,6 +568,11 @@ fun BottomSheetPlayer(
                             }
                             sliderPosition = null
                         },
+                        colors = SliderDefaults.colors(
+                            thumbColor = accentStyledColor,
+                            activeTrackColor = accentStyledColor,
+                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                        ),
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding),
                     )
                 }
@@ -563,6 +591,11 @@ fun BottomSheetPlayer(
                             sliderPosition = null
                             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         },
+                        colors = SquigglySliderDefaults.colors(
+                            thumbColor = accentStyledColor,
+                            activeTrackColor = accentStyledColor,
+                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                        ),
                         squigglesSpec = SquigglySlider.SquigglesSpec(
                             amplitude = if (isPlaying) 2.dp else 0.dp,
                             strokeWidth = 4.dp,
@@ -588,7 +621,10 @@ fun BottomSheetPlayer(
                         track = { sliderState ->
                             PlayerSliderTrack(
                                 sliderState = sliderState,
-                                colors = SliderDefaults.colors()
+                                colors = SliderDefaults.colors(
+                                    activeTrackColor = accentStyledColor,
+                                    inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                                )
                             )
                         },
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
@@ -608,7 +644,7 @@ fun BottomSheetPlayer(
                 Text(
                     text = makeTimeString(sliderPosition ?: position),
                     style = MaterialTheme.typography.labelMedium,
-                    color = onBackgroundColor,
+                    color = textColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -616,7 +652,7 @@ fun BottomSheetPlayer(
                 Text(
                     text = if (duration != C.TIME_UNSET) makeTimeString(duration) else "",
                     style = MaterialTheme.typography.labelMedium,
-                    color = onBackgroundColor,
+                    color = textColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -640,7 +676,7 @@ fun BottomSheetPlayer(
                             .padding(4.dp)
                             .align(Alignment.Center)
                             .alpha(if (shuffleModeEnabled) 1f else 0.5f),
-                        color = onBackgroundColor,
+                        color = controlIconColor,
                         onClick = {
                             playerConnection.triggerShuffle()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -655,7 +691,7 @@ fun BottomSheetPlayer(
                         modifier = Modifier
                             .size(32.dp)
                             .align(Alignment.Center),
-                        color = onBackgroundColor,
+                        color = controlIconColor,
                         onClick = {
                             playerConnection.player.seekToPrevious()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -670,7 +706,7 @@ fun BottomSheetPlayer(
                         .size(if (showLyrics) 56.dp else 72.dp)
                         .animateContentSize()
                         .clip(RoundedCornerShape(playPauseRoundness))
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(accentStyledColor)
                         .clickable {
                             if (playbackState == STATE_ENDED) {
                                 playerConnection.player.seekTo(0, 0)
@@ -684,7 +720,7 @@ fun BottomSheetPlayer(
                     Image(
                         imageVector = if (playbackState == STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                        colorFilter = ColorFilter.tint(iconOnAccentColor),
                         modifier = Modifier
                             .align(Alignment.Center)
                             .size(36.dp)
@@ -700,7 +736,7 @@ fun BottomSheetPlayer(
                         modifier = Modifier
                             .size(32.dp)
                             .align(Alignment.Center),
-                        color = onBackgroundColor,
+                        color = controlIconColor,
                         onClick = {
                             playerConnection.player.seekToNext()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -720,7 +756,7 @@ fun BottomSheetPlayer(
                             .padding(4.dp)
                             .align(Alignment.Center)
                             .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.5f else 1f),
-                        color = onBackgroundColor,
+                        color = controlIconColor,
                         onClick = {
                             playerConnection.player.toggleRepeatMode()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -961,7 +997,7 @@ fun BottomSheetPlayer(
                     state.dismiss()
                     playerConnection.service.queueBoard.detachedHead = false
                 },
-                onBackgroundColor = onBackgroundColor,
+                onBackgroundColor = textColor,
                 navController = navController
             )
         }
