@@ -151,7 +151,7 @@ import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
-import com.dd3boh.outertune.ui.component.ResizableIconButton
+import com.dd3boh.outertune.ui.component.PlayerIconButton
 import com.dd3boh.outertune.ui.component.SquigglySlider
 import com.dd3boh.outertune.ui.component.SquigglySliderDefaults
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState
@@ -403,7 +403,7 @@ fun BottomSheetPlayer(
         modifier = modifier,
         backgroundColor = if (useDarkTheme || playerBackground == PlayerBackgroundStyle.FOLLOW_THEME) {
             MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation)
-        } else MaterialTheme.colorScheme.onSurfaceVariant,
+        } else MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
         collapsedBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
         onDismiss = {
             playerConnection.player.stop()
@@ -427,7 +427,7 @@ fun BottomSheetPlayer(
                     .offset(y = 5.dp)
                     .size(36.dp)
             ) {
-                ResizableIconButton(
+                PlayerIconButton(style = playerButtonsStyle,
                     icon = if (currentSong?.song?.liked == true) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else controlIconColor,
                     modifier = Modifier
@@ -446,7 +446,7 @@ fun BottomSheetPlayer(
                     .clip(RoundedCornerShape(24.dp))
                     .background(accentStyledColor)
             ) {
-                ResizableIconButton(
+                PlayerIconButton(style = playerButtonsStyle,
                     icon = Icons.Outlined.MoreVert,
                     color = iconOnAccentColor,
                     modifier = Modifier
@@ -499,7 +499,7 @@ fun BottomSheetPlayer(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = mediaMetadata.title,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.headlineSmall,
                             color = textColor,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
@@ -669,7 +669,7 @@ fun BottomSheetPlayer(
                 val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
 
                 Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
+                    PlayerIconButton(style = playerButtonsStyle,
                         icon = Icons.Outlined.Shuffle,
                         modifier = Modifier
                             .size(32.dp)
@@ -685,7 +685,7 @@ fun BottomSheetPlayer(
                 }
 
                 Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
+                    PlayerIconButton(style = playerButtonsStyle,
                         icon = Icons.Outlined.SkipPrevious,
                         enabled = canSkipPrevious,
                         modifier = Modifier
@@ -730,7 +730,7 @@ fun BottomSheetPlayer(
                 Spacer(Modifier.width(8.dp))
 
                 Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
+                    PlayerIconButton(style = playerButtonsStyle,
                         icon = Icons.Outlined.SkipNext,
                         enabled = canSkipNext,
                         modifier = Modifier
@@ -745,7 +745,7 @@ fun BottomSheetPlayer(
                 }
 
                 Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
+                    PlayerIconButton(style = playerButtonsStyle,
                         icon = when (repeatMode) {
                             REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Outlined.Repeat
                             REPEAT_MODE_ONE -> Icons.Outlined.RepeatOne

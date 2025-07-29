@@ -44,20 +44,18 @@ fun ResizableIconButton(
     indication: Indication? = null,
     onClick: () -> Unit = {},
 ) {
-    Image(
-        painter = painterResource(icon),
-        contentDescription = null,
-        colorFilter = ColorFilter.tint(color),
-        modifier = Modifier
-            .clickable(
-                indication = indication ?: ripple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = enabled,
-                onClick = onClick
-            )
-            .alpha(if (enabled) 1f else 0.5f)
-            .then(modifier)
-    )
+    androidx.compose.material3.IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        colors = IconButtonDefaults.iconButtonColors(contentColor = color)
+    ) {
+        Image(
+            painter = painterResource(icon),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(color)
+        )
+    }
 }
 
 @Composable
@@ -69,20 +67,18 @@ fun ResizableIconButton(
     indication: Indication? = null,
     onClick: () -> Unit = {},
 ) {
-    Image(
-        imageVector = icon,
-        contentDescription = null,
-        colorFilter = ColorFilter.tint(color),
-        modifier = Modifier
-            .clickable(
-                indication = indication ?: ripple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = enabled,
-                onClick = onClick
-            )
-            .alpha(if (enabled) 1f else 0.5f)
-            .then(modifier)
-    )
+    androidx.compose.material3.IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        colors = IconButtonDefaults.iconButtonColors(contentColor = color)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color
+        )
+    }
 }
 
 @Composable
