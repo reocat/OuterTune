@@ -51,7 +51,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceContainerLow
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -97,7 +97,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.ui.graphics.isSystemInDarkTheme
 
 @Composable
 fun ExpressiveMiniPlayerBackground(
@@ -116,122 +115,6 @@ fun ExpressiveMiniPlayerBackground(
         shape = RoundedCornerShape(24.dp),
         modifier = modifier
     ) {}
-}
-
-@Composable
-fun MiniPlayer(
-    position: Long,
-    duration: Long,
-    modifier: Modifier = Modifier,
-) {
-    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
-    val playerConnection = LocalPlayerConnection.current ?: return
-    val isPlaying by playerConnection.isPlaying.collectAsState()
-    val playbackState by playerConnection.playbackState.collectAsState()
-    val error by playerConnection.error.collectAsState()
-    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
-    val canSkipNext by playerConnection.canSkipNext.collectAsState()
-
-    val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
-    val currentView = LocalView.current
-    val coroutineScope = rememberCoroutineScope()
-    val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
-    val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
-    val layoutDirection = LocalLayoutDirection.current
-
-    val offsetXAnimatable = remember { Animatable(0f) }
-    var dragStartTime by remember { mutableLongStateOf(0L) }
-    var totalDragDistance by remember { mutableFloatStateOf(0f) }
-
-    val animationSpec = spring<Float>(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessLow
-    )
-
-    /**
-     * Calculates the auto-swipe threshold based on swipe sensitivity.
-     * The formula uses a sigmoid function to determine the threshold dynamically.
-     * Constants:
-     * - -11.44748: Controls the steepness of the sigmoid curve.
-     * - 9.04945: Adjusts the midpoint of the curve.
-     * - 600: Base threshold value in pixels.
-     *
-     * @param swipeSensitivity The sensitivity value (typically between 0 and 1).
-     * @return The calculated auto-swipe threshold in pixels.
-     */
-    fun calculateAutoSwipeThreshold(swipeSensitivity: Float): Int {
-        return (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()
-    }
-    val autoSwipeThreshold = calculateAutoSwipeThreshold(swipeSensitivity)
-
-    val useBW = false // TODO: connect to global state or player toggle if needed
-    val useDarkTheme = isSystemInDarkTheme()
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        ExpressiveMiniPlayerBackground(
-            useBW = useBW,
-            useDarkTheme = useDarkTheme,
-            modifier = Modifier.matchParentSize()
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            // Album art
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                mediaMetadata?.let {
-                    MiniMediaInfo(
-                        mediaMetadata = it,
-                        error = error,
-                        pureBlack = pureBlack,
-                        modifier = Modifier.padding(horizontal = 6.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            // Song info
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = "Song Title", // TODO: bind to actual title
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "Artist", // TODO: bind to actual artist
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            // Play/Pause button
-            FilledIconButton(
-                onClick = { /* TODO: play/pause */ },
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.PlayArrow, // TODO: dynamic icon
-                    contentDescription = "Play/Pause"
-                )
-            }
-        }
-    }
 }
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
