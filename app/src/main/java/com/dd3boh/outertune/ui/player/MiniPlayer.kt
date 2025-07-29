@@ -246,3 +246,95 @@ fun MiniMediaInfo(
         }
     }
 }
+
+@Composable
+fun MiniPlayer(
+    position: Long,
+    duration: Long,
+    modifier: Modifier = Modifier
+) {
+    // Use expressive Material 3 mini player design
+    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val isPlaying by playerConnection.isPlaying.collectAsState()
+    val playbackState by playerConnection.playbackState.collectAsState()
+    val error by playerConnection.error.collectAsState()
+    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    val canSkipNext by playerConnection.canSkipNext.collectAsState()
+    val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
+    val useBW = false // TODO: connect to global state or player toggle if needed
+    val useDarkTheme = isSystemInDarkTheme()
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        ExpressiveMiniPlayerBackground(
+            useBW = useBW,
+            useDarkTheme = useDarkTheme,
+            modifier = Modifier.matchParentSize()
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Album art
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                mediaMetadata?.let {
+                    MiniMediaInfo(
+                        mediaMetadata = it,
+                        error = error,
+                        pureBlack = pureBlack,
+                        modifier = Modifier.padding(horizontal = 6.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            // Song info
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = mediaMetadata?.title ?: "Song Title",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = mediaMetadata?.artists?.joinToString(", ") { it.name } ?: "Artist",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            // Play/Pause button
+            FilledIconButton(
+                onClick = {
+                    if (playbackState == Player.STATE_ENDED) {
+                        playerConnection.player.seekTo(0, 0)
+                        playerConnection.player.playWhenReady = true
+                    } else {
+                        playerConnection.player.togglePlayPause()
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = if (playbackState == Player.STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    contentDescription = "Play/Pause"
+                )
+            }
+        }
+    }
+}
