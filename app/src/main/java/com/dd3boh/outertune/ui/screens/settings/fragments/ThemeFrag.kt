@@ -27,6 +27,8 @@ import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
+import com.dd3boh.outertune.constants.PlayerButtonsStyle
+import com.dd3boh.outertune.constants.PlayerButtonsStyleKey
 import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.SwitchPreference
@@ -88,6 +90,10 @@ fun ColumnScope.ThemePlayerFrag() {
     val availableBackgroundStyles = PlayerBackgroundStyle.entries.filter {
         it != PlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
+    val (playerButtonsStyle, onPlayerButtonsStyleChange) = rememberEnumPreference(
+        PlayerButtonsStyleKey,
+        defaultValue = PlayerButtonsStyle.DEFAULT
+    )
 
     EnumListPreference(
         title = { Text(stringResource(R.string.player_background_style)) },
@@ -101,6 +107,21 @@ fun ColumnScope.ThemePlayerFrag() {
                 PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
             }
         },
-        values = availableBackgroundStyles
+        values = availableBackgroundStyles,
+        isFirst = true
+    )
+
+    EnumListPreference(
+        title = { Text(stringResource(R.string.player_buttons_style)) },
+        icon = { Icon(Icons.Outlined.Palette, null) },
+        selectedValue = playerButtonsStyle,
+        onValueSelected = onPlayerButtonsStyleChange,
+        valueText = {
+            when (it) {
+                PlayerButtonsStyle.DEFAULT -> stringResource(R.string.default_style)
+                PlayerButtonsStyle.SECONDARY -> stringResource(R.string.secondary_color_style)
+            }
+        },
+        isLast = true
     )
 }
