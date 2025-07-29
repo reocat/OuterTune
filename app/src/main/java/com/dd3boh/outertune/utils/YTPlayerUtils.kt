@@ -51,7 +51,9 @@ object YTPlayerUtils {
     )
 
     private const val MAX_RETRY = 5
-    private const val INITIAL_RETRY_DELAY = 500L
+    private const val INITIAL_RETRY_DELAY = 300L
+    private const val MAX_RETRY_DELAY = 4000L
+    private const val JITTER_RANGE = 150L
 
     data class PlaybackData(
         val audioConfig: PlayerResponse.PlayerConfig.AudioConfig?,
@@ -141,7 +143,9 @@ object YTPlayerUtils {
                 while (retryCount < MAX_RETRY && !streamFound) {
                     if (retryCount > 0) {
                         Timber.tag(logTag).d("Retry attempt ${retryCount}/${MAX_RETRY} for client: ${if (clientIndex == -1) MAIN_CLIENT.clientName else STREAM_FALLBACK_CLIENTS[clientIndex].clientName}")
-                        val delayTime = INITIAL_RETRY_DELAY * (1 shl (retryCount - 1))
+                        var delayTime = INITIAL_RETRY_DELAY * (1 shl (retryCount - 1))
+                        delayTime = delayTime.coerceAtMost(MAX_RETRY_DELAY)
+                        delayTime += kotlin.random.Random.nextLong(0, JITTER_RANGE)
                         Timber.tag(logTag).d("Waiting ${delayTime}ms before retry")
                         delay(delayTime)
                     }
