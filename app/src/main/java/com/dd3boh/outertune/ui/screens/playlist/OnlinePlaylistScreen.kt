@@ -64,6 +64,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -128,9 +129,12 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.viewmodels.OnlinePlaylistViewModel
 import com.zionhuang.innertube.models.SongItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun OnlinePlaylistScreen(
     navController: NavController,
@@ -276,6 +280,16 @@ fun OnlinePlaylistScreen(
                 }
             }
         )
+    }
+
+    // dynamically load playlist
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }.debounce { 100L }
+            .collectLatest { lastVisibleIndex ->
+                if (lastVisibleIndex != null && lastVisibleIndex >= songs.size - 5) {
+                    viewModel.loadMoreSongs()
+                }
+            }
     }
 
     Box(
@@ -612,6 +626,16 @@ fun OnlinePlaylistScreen(
                             },
                             snackbarHostState = snackbarHostState
                         )
+                    }
+
+                    if (viewModel.continuation != null && songs.isNotEmpty()) {
+                        item {
+                            ShimmerHost {
+                                repeat(2) {
+                                    ListItemPlaceHolder()
+                                }
+                            }
+                        }
                     }
                 } else {
                     item {
