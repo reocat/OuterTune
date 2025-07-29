@@ -458,17 +458,26 @@ fun OnlinePlaylistScreen(
                                                 }
                                             }
 
+                                            // Allow the user to load the entire playlist
+                                            // Actions such as play, menu, etc will not fetch the entire playlist. By
+                                            // design, this will be at the user's discretion
                                             IconButton(
                                                 onClick = {
-                                                    playerConnection.enqueueEnd(
-                                                        items = songs.map { it.toMediaItem() }
+                                                    viewModel.loadRemainingSongs()
+                                                },
+                                                enabled = !isLoading,
+                                            ) {
+                                                if (isLoading) {
+                                                    CircularProgressIndicator(
+                                                        modifier = Modifier.size(16.dp),
+                                                        strokeWidth = 2.dp
+                                                    )
+                                                } else {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Sync,
+                                                        contentDescription = null
                                                     )
                                                 }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
-                                                    contentDescription = null
-                                                )
                                             }
 
                                             IconButton(

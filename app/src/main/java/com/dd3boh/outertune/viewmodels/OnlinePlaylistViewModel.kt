@@ -8,7 +8,6 @@ import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
-import com.zionhuang.innertube.utils.completed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,8 +29,11 @@ class OnlinePlaylistViewModel @Inject constructor(
     val dbPlaylist = database.playlistByBrowseId(playlistId)
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
+    val isLoading = MutableStateFlow(false)
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
+            isLoading.value = true
             YouTube.playlist(playlistId)
                 .onSuccess { playlistPage ->
                     playlist.value = playlistPage.playlist
@@ -40,14 +42,27 @@ class OnlinePlaylistViewModel @Inject constructor(
                 }.onFailure {
                     reportException(it)
                 }
+            isLoading.value = false
         }
     }
 
     fun loadMoreSongs() {
         continuation?.let {
+            isLoading.value = true
             viewModelScope.launch(Dispatchers.IO) {
-               getContinuation(it)
+                getContinuation(it)
             }
+            isLoading.value = false
+        }
+    }
+
+    fun loadRemainingSongs() {
+        viewModelScope.launch(Dispatchers.IO) {
+            isLoading.value = true
+            while (continuation != null) {
+                getContinuation(continuation!!)
+            }
+            isLoading.value = false
         }
     }
 
