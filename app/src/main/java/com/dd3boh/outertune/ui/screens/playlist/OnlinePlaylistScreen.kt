@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.OfflinePin
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -152,6 +153,7 @@ fun OnlinePlaylistScreen(
     val playlist by viewModel.playlist.collectAsState()
     val songs by viewModel.playlistSongs.collectAsState()
     val mutableSongs = remember { mutableStateListOf<SongItem>() }
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // multiselect
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
@@ -458,17 +460,26 @@ fun OnlinePlaylistScreen(
                                                 }
                                             }
 
+                                            // Allow the user to load the entire playlist
+                                            // Actions such as play, menu, etc will not fetch the entire playlist. By
+                                            // design, this will be at the user's discretion
                                             IconButton(
                                                 onClick = {
-                                                    playerConnection.enqueueEnd(
-                                                        items = songs.map { it.toMediaItem() }
+                                                    viewModel.loadRemainingSongs()
+                                                },
+                                                enabled = !isLoading,
+                                            ) {
+                                                if (isLoading) {
+                                                    CircularProgressIndicator(
+                                                        modifier = Modifier.size(16.dp),
+                                                        strokeWidth = 2.dp
+                                                    )
+                                                } else {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Sync,
+                                                        contentDescription = null
                                                     )
                                                 }
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
-                                                    contentDescription = null
-                                                )
                                             }
 
                                             IconButton(
