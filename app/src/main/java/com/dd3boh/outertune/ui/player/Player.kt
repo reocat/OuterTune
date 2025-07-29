@@ -9,6 +9,8 @@
 
 package com.dd3boh.outertune.ui.player
 
+import android.R.attr.scaleX
+import android.R.attr.scaleY
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
@@ -21,6 +23,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -75,6 +78,8 @@ import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
@@ -102,6 +107,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -268,24 +274,30 @@ fun BottomSheetPlayer(
 
     val playerButtonsStyle by rememberEnumPreference(PlayerButtonsStyleKey, PlayerButtonsStyle.DEFAULT)
 
+    // Enhanced Material 3 Expressive colors
     val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
     val primaryColor = MaterialTheme.colorScheme.primary
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
     val surfaceColor = MaterialTheme.colorScheme.surface
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val tertiaryContainerColor = MaterialTheme.colorScheme.tertiaryContainer
 
-    val (textColor, controlIconColor, accentStyledColor, iconOnAccentColor) = remember(
+    val (textColor, controlIconColor, accentStyledColor, iconOnAccentColor, secondaryAccentColor) = remember(
         playerButtonsStyle,
         playerBackground,
         useDarkTheme,
         primaryContainerColor,
         primaryColor,
         onBackgroundColor,
-        surfaceColor
+        surfaceColor,
+        tertiaryColor,
+        tertiaryContainerColor
     ) {
         val accentValue = if (useDarkTheme) primaryContainerColor else primaryColor
+        val secondaryAccent = if (useDarkTheme) tertiaryContainerColor else tertiaryColor
 
         if (playerButtonsStyle == PlayerButtonsStyle.SECONDARY) {
-            listOf(Color.White, Color.White, accentValue, Color.White)
+            listOf(Color.White, Color.White, accentValue, Color.White, secondaryAccent)
         } else {
             val defaultText = when (playerBackground) {
                 PlayerBackgroundStyle.FOLLOW_THEME -> onBackgroundColor
@@ -295,7 +307,7 @@ fun BottomSheetPlayer(
                 PlayerBackgroundStyle.FOLLOW_THEME -> surfaceColor
                 else -> Color.Black
             }
-            listOf(defaultText, defaultText, defaultText, defaultIconOnButton)
+            listOf(defaultText, defaultText, defaultText, defaultIconOnButton, secondaryAccent)
         }
     }
 
@@ -315,23 +327,17 @@ fun BottomSheetPlayer(
         mutableStateOf<List<Color>>(emptyList())
     }
 
-    // Cache for gradient colors to prevent re-extraction for the same song
     val gradientColorsCache = remember { mutableMapOf<String, List<Color>>() }
-
-    // Default gradient colors for fallback
     val defaultGradientColors = listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
-
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
 
-
-    // gradient colours
+    // Enhanced gradient colors with more sophisticated extraction
     LaunchedEffect(mediaMetadata?.id, playerBackground) {
         if (useDarkTheme && playerBackground != PlayerBackgroundStyle.BLUR) {
             gradientColors = listOf(Color.Black, Color.Black)
         } else if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
             val currentMetadata = mediaMetadata
             if (currentMetadata != null && currentMetadata.thumbnailUrl != null) {
-                // Check cache first
                 val cachedColors = gradientColorsCache[currentMetadata.id]
                 if (cachedColors != null) {
                     gradientColors = cachedColors
@@ -339,7 +345,7 @@ fun BottomSheetPlayer(
                     try {
                         val request = ImageRequest.Builder(context)
                             .data(currentMetadata.thumbnailUrl)
-                            .size(Size(200, 200)) // Larger size for better color extraction
+                            .size(Size(300, 300))
                             .allowHardware(false)
                             .build()
 
@@ -350,16 +356,20 @@ fun BottomSheetPlayer(
                         }
 
                         if (bitmap != null) {
-                            val palette = Palette.from(bitmap).maximumColorCount(16).generate()
+                            val palette = Palette.from(bitmap).maximumColorCount(24).generate()
 
+                            val vibrantColor = palette.vibrantSwatch?.rgb?.let { Color(it) }
                             val dominantColor = palette.dominantSwatch?.rgb?.let { Color(it) }
                             val mutedColor = palette.mutedSwatch?.rgb?.let { Color(it) }
-                            val lightMutedColor = palette.lightMutedSwatch?.rgb?.let { Color(it) }
+                            val darkVibrantColor = palette.darkVibrantSwatch?.rgb?.let { Color(it) }
+                            val lightVibrantColor = palette.lightVibrantSwatch?.rgb?.let { Color(it) }
 
                             val colors = buildList<Color> {
+                                vibrantColor?.let { add(it) }
                                 dominantColor?.let { add(it) }
+                                lightVibrantColor?.let { add(it) }
                                 mutedColor?.let { add(it) }
-                                lightMutedColor?.let { add(it) }
+                                darkVibrantColor?.let { add(it) }
                             }.takeIf { it.isNotEmpty() } ?: defaultGradientColors
 
                             gradientColors = colors
@@ -397,7 +407,6 @@ fun BottomSheetPlayer(
         initialAnchor = 1
     )
 
-
     BottomSheet(
         state = state,
         modifier = modifier,
@@ -419,40 +428,67 @@ fun BottomSheetPlayer(
     ) {
         val tabMode = context.tabMode()
 
+        // Enhanced action buttons with better visual hierarchy
         val actionButtons: @Composable RowScope.() -> Unit = {
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
+            // Enhanced favorite button with pulse animation
             Box(
                 modifier = Modifier
-                    .offset(y = 5.dp)
-                    .size(36.dp)
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(
+                        if (currentSong?.song?.liked == true)
+                            MaterialTheme.colorScheme.errorContainer
+                        else
+                            secondaryAccentColor.copy(alpha = 0.12f)
+                    )
+                    .clickable { playerConnection?.toggleLike() }
             ) {
+                val infiniteTransition = rememberInfiniteTransition(label = "heartPulse")
+                val heartScale by infiniteTransition.animateFloat(
+                    initialValue = if (currentSong?.song?.liked == true) 0.9f else 1f,
+                    targetValue = if (currentSong?.song?.liked == true) 1.1f else 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1200, easing = LinearEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "heartScale"
+                )
+
                 ResizableIconButton(
                     icon = if (currentSong?.song?.liked == true) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                    color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else controlIconColor,
+                    color = if (currentSong?.song?.liked == true)
+                        MaterialTheme.colorScheme.error
+                    else
+                        controlIconColor,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .size(24.dp),
-                    onClick = playerConnection::toggleLike
+                        .size(24.dp)
+                        .graphicsLayer {
+                            scaleX = if (currentSong?.song?.liked == true) heartScale else 1f
+                            scaleY = if (currentSong?.song?.liked == true) heartScale else 1f
+                        },
+                    onClick = { /* handled by parent clickable */ }
                 )
             }
 
-            Spacer(modifier = Modifier.width(7.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
+            // Enhanced menu button with modern styling
             Box(
                 modifier = Modifier
-                    .offset(y = 5.dp)
-                    .size(36.dp)
+                    .size(48.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(accentStyledColor)
-            ) {
-                ResizableIconButton(
-                    icon = Icons.Outlined.MoreVert,
-                    color = iconOnAccentColor,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.Center),
-                    onClick = {
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                accentStyledColor,
+                                accentStyledColor.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .clickable {
                         menuState.show {
                             PlayerMenu(
                                 mediaMetadata = mediaMetadata,
@@ -462,17 +498,32 @@ fun BottomSheetPlayer(
                             )
                         }
                     }
+            ) {
+                ResizableIconButton(
+                    icon = Icons.Outlined.MoreVert,
+                    color = iconOnAccentColor,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.Center),
+                    onClick = { /* handled by parent clickable */ }
                 )
             }
         }
+
         val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
+            // Enhanced play/pause button animation
+            val playPauseScale by animateFloatAsState(
+                targetValue = if (isPlaying) 1.05f else 1f,
+                animationSpec = tween(durationMillis = 200, easing = LinearEasing),
+                label = "playPauseScale"
+            )
             val playPauseRoundness by animateDpAsState(
-                targetValue = if (isPlaying) 24.dp else 36.dp,
-                animationSpec = tween(durationMillis = 100, easing = LinearEasing),
+                targetValue = if (isPlaying) 28.dp else 40.dp,
+                animationSpec = tween(durationMillis = 300, easing = LinearEasing),
                 label = "playPauseRoundness"
             )
 
-            // action buttons for landscape (above title)
+            // Action buttons for landscape
             if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
                 Row(
                     horizontalArrangement = Arrangement.End,
@@ -482,27 +533,35 @@ fun BottomSheetPlayer(
                         .padding(
                             start = PlayerHorizontalPadding,
                             end = PlayerHorizontalPadding,
-                            bottom = 16.dp
+                            bottom = 20.dp
                         )
                 ) {
                     actionButtons()
                 }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.Start,
+            // Enhanced title and artist section with better typography
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = PlayerHorizontalPadding)
+                    .padding(horizontal = PlayerHorizontalPadding),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent
+                )
             ) {
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = mediaMetadata.title,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.headlineSmall,
                             color = textColor,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 1,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .basicMarquee(
@@ -515,12 +574,14 @@ fun BottomSheetPlayer(
                                 }
                         )
 
+                        Spacer(modifier = Modifier.height(4.dp))
+
                         Row {
                             mediaMetadata.artists.fastForEachIndexed { index, artist ->
                                 Text(
                                     text = artist.name,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = textColor,
+                                    color = textColor.copy(alpha = 0.8f),
                                     maxLines = 1,
                                     modifier = Modifier
                                         .basicMarquee(
@@ -537,250 +598,322 @@ fun BottomSheetPlayer(
                                     Text(
                                         text = ", ",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = textColor
+                                        color = textColor.copy(alpha = 0.8f)
                                     )
                                 }
                             }
                         }
                     }
 
-                    // action buttons for portrait (inline with title)
+                    // Action buttons for portrait
                     if (LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
                         actionButtons()
                     }
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(24.dp))
 
-            when (sliderStyle) {
-                SliderStyle.DEFAULT -> {
-                    Slider(
-                        value = (sliderPosition ?: position).toFloat(),
-                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                        onValueChange = {
-                            sliderPosition = it.toLong()
-                        },
-                        onValueChangeFinished = {
-                            sliderPosition?.let {
-                                playerConnection.player.seekTo(it)
-                                position = it
-                            }
-                            sliderPosition = null
-                        },
-                        colors = SliderDefaults.colors(
-                            thumbColor = accentStyledColor,
-                            activeTrackColor = accentStyledColor,
-                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
-                        ),
-                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding),
-                    )
-                }
-                SliderStyle.SQUIGGLY -> {
-                    SquigglySlider(
-                        value = (sliderPosition ?: position).toFloat(),
-                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                        onValueChange = {
-                            sliderPosition = it.toLong()
-                        },
-                        onValueChangeFinished = {
-                            sliderPosition?.let {
-                                playerConnection.player.seekTo(it)
-                                position = it
-                            }
-                            sliderPosition = null
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                        },
-                        colors = SquigglySliderDefaults.colors(
-                            thumbColor = accentStyledColor,
-                            activeTrackColor = accentStyledColor,
-                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
-                        ),
-                        squigglesSpec = SquigglySlider.SquigglesSpec(
-                            amplitude = if (isPlaying) 2.dp else 0.dp,
-                            strokeWidth = 4.dp,
-                        ),
-                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
-                    )
-                }
-                SliderStyle.SLIM -> {
-                    Slider(
-                        value = (sliderPosition ?: position).toFloat(),
-                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                        onValueChange = {
-                            sliderPosition = it.toLong()
-                        },
-                        onValueChangeFinished = {
-                            sliderPosition?.let {
-                                playerConnection.player.seekTo(it)
-                                position = it
-                            }
-                            sliderPosition = null
-                        },
-                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
-                        track = { sliderState ->
-                            PlayerSliderTrack(
-                                sliderState = sliderState,
+            // Enhanced slider with better visual feedback
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PlayerHorizontalPadding),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    when (sliderStyle) {
+                        SliderStyle.DEFAULT -> {
+                            Slider(
+                                value = (sliderPosition ?: position).toFloat(),
+                                valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                                onValueChange = {
+                                    sliderPosition = it.toLong()
+                                },
+                                onValueChangeFinished = {
+                                    sliderPosition?.let {
+                                        playerConnection.player.seekTo(it)
+                                        position = it
+                                    }
+                                    sliderPosition = null
+                                },
                                 colors = SliderDefaults.colors(
+                                    thumbColor = accentStyledColor,
                                     activeTrackColor = accentStyledColor,
-                                    inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                                    inactiveTrackColor = accentStyledColor.copy(alpha = 0.3f)
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        SliderStyle.SQUIGGLY -> {
+                            SquigglySlider(
+                                value = (sliderPosition ?: position).toFloat(),
+                                valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                                onValueChange = {
+                                    sliderPosition = it.toLong()
+                                },
+                                onValueChangeFinished = {
+                                    sliderPosition?.let {
+                                        playerConnection.player.seekTo(it)
+                                        position = it
+                                    }
+                                    sliderPosition = null
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                },
+                                colors = SquigglySliderDefaults.colors(
+                                    thumbColor = accentStyledColor,
+                                    activeTrackColor = accentStyledColor,
+                                    inactiveTrackColor = accentStyledColor.copy(alpha = 0.3f)
+                                ),
+                                squigglesSpec = SquigglySlider.SquigglesSpec(
+                                    amplitude = if (isPlaying) 3.dp else 0.dp,
+                                    strokeWidth = 5.dp,
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        SliderStyle.SLIM -> {
+                            Slider(
+                                value = (sliderPosition ?: position).toFloat(),
+                                valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                                onValueChange = {
+                                    sliderPosition = it.toLong()
+                                },
+                                onValueChangeFinished = {
+                                    sliderPosition?.let {
+                                        playerConnection.player.seekTo(it)
+                                        position = it
+                                    }
+                                    sliderPosition = null
+                                },
+                                thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                                track = { sliderState ->
+                                    PlayerSliderTrack(
+                                        sliderState = sliderState,
+                                        colors = SliderDefaults.colors(
+                                            activeTrackColor = accentStyledColor,
+                                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.3f)
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = makeTimeString(sliderPosition ?: position),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = textColor.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+
+                        Text(
+                            text = if (duration != C.TIME_UNSET) makeTimeString(duration) else "",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = textColor.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            // Enhanced control buttons with modern Material 3 styling
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PlayerHorizontalPadding),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp, horizontal = 8.dp)
+                ) {
+                    val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
+
+                    // Shuffle button with enhanced styling
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(26.dp))
+                            .background(
+                                if (shuffleModeEnabled)
+                                    secondaryAccentColor.copy(alpha = 0.2f)
+                                else
+                                    Color.Transparent
+                            )
+                            .clickable {
+                                playerConnection.triggerShuffle()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
+                    ) {
+                        ResizableIconButton(
+                            icon = Icons.Outlined.Shuffle,
+                            modifier = Modifier
+                                .size(28.dp)
+                                .align(Alignment.Center)
+                                .alpha(if (shuffleModeEnabled) 1f else 0.6f),
+                            color = if (shuffleModeEnabled) secondaryAccentColor else controlIconColor,
+                            onClick = { /* handled by parent clickable */ }
+                        )
+                    }
+
+                    // Previous button
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(26.dp))
+                            .background(Color.Transparent)
+                            .clickable(enabled = canSkipPrevious) {
+                                playerConnection.player.seekToPrevious()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
+                    ) {
+                        ResizableIconButton(
+                            icon = Icons.Outlined.SkipPrevious,
+                            enabled = canSkipPrevious,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .align(Alignment.Center),
+                            color = if (canSkipPrevious) controlIconColor else controlIconColor.copy(alpha = 0.4f),
+                            onClick = { /* handled by parent clickable */ }
+                        )
+                    }
+
+                    // Enhanced play/pause button
+                    Box(
+                        modifier = Modifier
+                            .size(if (showLyrics) 64.dp else 80.dp)
+                            .animateContentSize()
+                            .graphicsLayer {
+                                scaleX = playPauseScale
+                                scaleY = playPauseScale
+                            }
+                            .clip(RoundedCornerShape(playPauseRoundness))
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        accentStyledColor,
+                                        accentStyledColor.copy(alpha = 0.9f)
+                                    )
                                 )
                             )
-                        },
-                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(4.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = PlayerHorizontalPadding + 4.dp)
-            ) {
-                Text(
-                    text = makeTimeString(sliderPosition ?: position),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = textColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-
-                Text(
-                    text = if (duration != C.TIME_UNSET) makeTimeString(duration) else "",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = textColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = PlayerHorizontalPadding)
-            ) {
-                val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
-
-                Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
-                        icon = Icons.Outlined.Shuffle,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .padding(4.dp)
-                            .align(Alignment.Center)
-                            .alpha(if (shuffleModeEnabled) 1f else 0.5f),
-                        color = controlIconColor,
-                        onClick = {
-                            playerConnection.triggerShuffle()
-                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                        }
-                    )
-                }
-
-                Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
-                        icon = Icons.Outlined.SkipPrevious,
-                        enabled = canSkipPrevious,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .align(Alignment.Center),
-                        color = controlIconColor,
-                        onClick = {
-                            playerConnection.player.seekToPrevious()
-                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                        }
-                    )
-                }
-
-                Spacer(Modifier.width(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(if (showLyrics) 56.dp else 72.dp)
-                        .animateContentSize()
-                        .clip(RoundedCornerShape(playPauseRoundness))
-                        .background(accentStyledColor)
-                        .clickable {
-                            if (playbackState == STATE_ENDED) {
-                                playerConnection.player.seekTo(0, 0)
-                                playerConnection.player.playWhenReady = true
-                            } else {
-                                playerConnection.player.togglePlayPause()
+                            .clickable {
+                                if (playbackState == STATE_ENDED) {
+                                    playerConnection.player.seekTo(0, 0)
+                                    playerConnection.player.playWhenReady = true
+                                } else {
+                                    playerConnection.player.togglePlayPause()
+                                }
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             }
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                        }
-                ) {
-                    Image(
-                        imageVector = if (playbackState == STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(iconOnAccentColor),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(36.dp)
-                    )
-                }
+                    ) {
+                        Image(
+                            imageVector = if (playbackState == STATE_ENDED) Icons.Outlined.Replay
+                            else if (isPlaying) Icons.Outlined.Pause
+                            else Icons.Outlined.PlayArrow,
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(iconOnAccentColor),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(if (showLyrics) 32.dp else 40.dp)
+                        )
+                    }
 
-                Spacer(Modifier.width(8.dp))
-
-                Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
-                        icon = Icons.Outlined.SkipNext,
-                        enabled = canSkipNext,
+                    // Next button
+                    Box(
                         modifier = Modifier
-                            .size(32.dp)
-                            .align(Alignment.Center),
-                        color = controlIconColor,
-                        onClick = {
-                            playerConnection.player.seekToNext()
-                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                        }
-                    )
-                }
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(26.dp))
+                            .background(Color.Transparent)
+                            .clickable(enabled = canSkipNext) {
+                                playerConnection.player.seekToNext()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
+                    ) {
+                        ResizableIconButton(
+                            icon = Icons.Outlined.SkipNext,
+                            enabled = canSkipNext,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .align(Alignment.Center),
+                            color = if (canSkipNext) controlIconColor else controlIconColor.copy(alpha = 0.4f),
+                            onClick = { /* handled by parent clickable */ }
+                        )
+                    }
 
-                Box(modifier = Modifier.weight(1f)) {
-                    ResizableIconButton(
-                        icon = when (repeatMode) {
-                            REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Outlined.Repeat
-                            REPEAT_MODE_ONE -> Icons.Outlined.RepeatOne
-                            else -> throw IllegalStateException()
-                        },
+                    // Repeat button with enhanced styling
+                    Box(
                         modifier = Modifier
-                            .size(32.dp)
-                            .padding(4.dp)
-                            .align(Alignment.Center)
-                            .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.5f else 1f),
-                        color = controlIconColor,
-                        onClick = {
-                            playerConnection.player.toggleRepeatMode()
-                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                        }
-                    )
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(26.dp))
+                            .background(
+                                if (repeatMode != REPEAT_MODE_OFF)
+                                    secondaryAccentColor.copy(alpha = 0.2f)
+                                else
+                                    Color.Transparent
+                            )
+                            .clickable {
+                                playerConnection.player.toggleRepeatMode()
+                                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            }
+                    ) {
+                        ResizableIconButton(
+                            icon = when (repeatMode) {
+                                REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Outlined.Repeat
+                                REPEAT_MODE_ONE -> Icons.Outlined.RepeatOne
+                                else -> throw IllegalStateException()
+                            },
+                            modifier = Modifier
+                                .size(28.dp)
+                                .align(Alignment.Center)
+                                .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.6f else 1f),
+                            color = if (repeatMode != REPEAT_MODE_OFF) secondaryAccentColor else controlIconColor,
+                            onClick = { /* handled by parent clickable */ }
+                        )
+                    }
                 }
             }
         }
 
         Box(modifier = modifier.fillMaxSize()) {
+            // Enhanced background animations
             AnimatedVisibility(
                 visible = !powerManager.isPowerSaveMode && state.isExpanded,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500))
+                enter = fadeIn(tween(800)),
+                exit = fadeOut(tween(800))
             ) {
                 AnimatedContent(
                     targetState = mediaMetadata,
                     transitionSpec = {
-                        fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+                        fadeIn(tween(1200)).togetherWith(fadeOut(tween(1200)))
                     },
                     label = "playerBackground"
                 ) { metadata ->
                     if (playerBackground == PlayerBackgroundStyle.BLUR) {
-                        val scrimColorFilter = ColorFilter.tint(Color.Black.copy(alpha = 0.3f), BlendMode.SrcOver)
+                        val scrimColorFilter = ColorFilter.tint(Color.Black.copy(alpha = 0.25f), BlendMode.SrcOver)
 
                         if (metadata?.isLocal == true) {
                             AsyncImageLocal(
@@ -789,8 +922,8 @@ fun BottomSheetPlayer(
                                 colorFilter = scrimColorFilter,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .blur(200.dp)
-                                    .alpha(1f)
+                                    .blur(250.dp)
+                                    .alpha(0.9f)
                             )
                         } else {
                             AsyncImage(
@@ -800,17 +933,18 @@ fun BottomSheetPlayer(
                                 colorFilter = scrimColorFilter,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .blur(200.dp)
-                                    .alpha(1f)
+                                    .blur(250.dp)
+                                    .alpha(0.9f)
                             )
                         }
                     }
                 }
 
+                // Enhanced gradient background with multiple layers
                 AnimatedContent(
                     targetState = gradientColors,
                     transitionSpec = {
-                        fadeIn(tween(1000)) togetherWith fadeOut(tween(1000))
+                        fadeIn(tween(1200)) togetherWith fadeOut(tween(1200))
                     },
                     label = "playerGradient"
                 ) { colors ->
@@ -818,16 +952,22 @@ fun BottomSheetPlayer(
                         val gradientBrush = remember(colors, useDarkTheme) {
                             val topColor = colors[0]
                             val bottomColor = colors.last()
+                            val midColor = if (colors.size > 2) colors[1] else topColor
 
-                            val finalTopColor = if (useDarkTheme) topColor.darken(0.2f) else topColor.lighten(0.1f)
-                            val finalBottomColor = if (useDarkTheme) bottomColor.darken(0.4f) else bottomColor.darken(0.2f)
+                            val finalTopColor = if (useDarkTheme) topColor.darken(0.3f) else topColor.lighten(0.2f)
+                            val finalMidColor = if (useDarkTheme) midColor.darken(0.2f) else midColor.lighten(0.1f)
+                            val finalBottomColor = if (useDarkTheme) bottomColor.darken(0.5f) else bottomColor.darken(0.3f)
 
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    finalTopColor.copy(alpha = 0.85f),
+                                    finalTopColor.copy(alpha = 0.9f),
+                                    finalMidColor.copy(alpha = 0.6f),
                                     Color.Transparent,
+                                    finalBottomColor.copy(alpha = 0.8f),
                                     finalBottomColor.copy(alpha = 0.95f)
-                                )
+                                ),
+                                startY = 0f,
+                                endY = Float.POSITIVE_INFINITY
                             )
                         }
                         Box(
@@ -835,23 +975,50 @@ fun BottomSheetPlayer(
                                 .fillMaxSize()
                                 .background(gradientBrush)
                         )
+
+                        // Add subtle overlay pattern
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.Black.copy(alpha = 0.1f)
+                                        ),
+                                        radius = 800f
+                                    )
+                                )
+                        )
                     }
                 }
 
+                // Enhanced shimmer effect for playing state
                 AnimatedVisibility(
-                    visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying && playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.isNotEmpty(),
+                    visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying &&
+                            playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.isNotEmpty(),
                     enter = fadeIn(tween(1000)),
                     exit = fadeOut(tween(1000))
                 ) {
-                    val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
+                    val infiniteTransition = rememberInfiniteTransition(label = "enhancedShimmer")
                     val shimmerTranslate by infiniteTransition.animateFloat(
-                        initialValue = -1f,
-                        targetValue = 2f,
+                        initialValue = -1.5f,
+                        targetValue = 2.5f,
                         animationSpec = infiniteRepeatable(
-                            animation = tween(4000, easing = LinearEasing),
+                            animation = tween(5000, easing = LinearEasing),
                             repeatMode = RepeatMode.Restart
                         ),
                         label = "shimmerTranslate"
+                    )
+
+                    val shimmerAlpha by infiniteTransition.animateFloat(
+                        initialValue = 0.3f,
+                        targetValue = 0.8f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(3000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "shimmerAlpha"
                     )
 
                     Box(
@@ -861,25 +1028,35 @@ fun BottomSheetPlayer(
                                 Brush.linearGradient(
                                     colors = listOf(
                                         Color.Transparent,
-                                        Color.White.copy(alpha = 0.1f),
+                                        Color.White.copy(alpha = shimmerAlpha * 0.15f),
+                                        Color.White.copy(alpha = shimmerAlpha * 0.08f),
                                         Color.Transparent,
                                     ),
-                                    start = Offset(0f, (shimmerTranslate - 0.5f) * 2000),
-                                    end = Offset(2000f, shimmerTranslate * 2000)
+                                    start = Offset(0f, (shimmerTranslate - 1f) * 1500),
+                                    end = Offset(1500f, shimmerTranslate * 1500)
                                 )
                             )
                     )
                 }
 
+                // Enhanced overlay for lyrics mode
                 if (playerBackground != PlayerBackgroundStyle.FOLLOW_THEME && showLyrics) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f))
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Black.copy(alpha = 0.4f),
+                                        Color.Black.copy(alpha = 0.6f)
+                                    )
+                                )
+                            )
                     )
                 }
             }
 
+            // Main content with enhanced layout
             if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
                 val vPadding = max(
                     WindowInsets.safeDrawing.getTop(LocalDensity.current),
@@ -887,11 +1064,13 @@ fun BottomSheetPlayer(
                 )
                 val vPaddingDp = with(LocalDensity.current) { vPadding.toDp() }
                 val verticalInsets = WindowInsets(left = 0.dp, top = vPaddingDp, right = 0.dp, bottom = vPaddingDp)
+
                 Row(
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).add(verticalInsets))
                         .fillMaxSize()
                 ) {
+                    // Enhanced thumbnail section
                     BoxWithConstraints(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -903,7 +1082,7 @@ fun BottomSheetPlayer(
                         LazyHorizontalGrid(
                             state = thumbnailLazyGridState,
                             rows = GridCells.Fixed(1),
-                            contentPadding = PaddingValues(vertical = 16.dp),
+                            contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
                             flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
                             userScrollEnabled = state.isExpanded && swipeToSkip
                         ) {
@@ -911,26 +1090,35 @@ fun BottomSheetPlayer(
                                 items = mediaItems,
                                 key = { it.id }
                             ) {
-                                Thumbnail(
-                                    sliderPositionProvider = { sliderPosition },
+                                Card(
                                     modifier = Modifier
                                         .width(horizontalLazyGridItemWidth)
                                         .animateContentSize(),
-                                    contentScale = ContentScale.Crop,
-                                    showLyricsOnClick = true,
-                                    customMediaMetadata = it
-                                )
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                                ) {
+                                    Thumbnail(
+                                        sliderPositionProvider = { sliderPosition },
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(16.dp)),
+                                        contentScale = ContentScale.Crop,
+                                        showLyricsOnClick = true,
+                                        customMediaMetadata = it
+                                    )
+                                }
                             }
                         }
                     }
 
+                    // Enhanced controls section
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            // "percentage to half width", not "percentage of width"
                             .weight(if (showLyrics) 0.65f else 1f, false)
                             .animateContentSize()
                             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                            .padding(horizontal = 16.dp)
                     ) {
                         Spacer(Modifier.weight(1f))
 
@@ -942,23 +1130,30 @@ fun BottomSheetPlayer(
                     }
                 }
             } else {
+                // Portrait layout with enhanced spacing
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
                         .padding(bottom = queueSheetState.collapsedBound)
+                        .fillMaxSize()
                 ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Enhanced thumbnail section for portrait
                     BoxWithConstraints(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .weight(1f)
                             .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                            .padding(horizontal = 16.dp)
                     ) {
                         val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
 
                         LazyHorizontalGrid(
                             state = thumbnailLazyGridState,
                             rows = GridCells.Fixed(1),
+                            contentPadding = PaddingValues(vertical = 16.dp),
                             flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
                             userScrollEnabled = swipeToSkip && state.isExpanded
                         ) {
@@ -966,30 +1161,39 @@ fun BottomSheetPlayer(
                                 items = mediaItems,
                                 key = { it.id }
                             ) {
-                                Thumbnail(
+                                Card(
                                     modifier = Modifier
                                         .width(horizontalLazyGridItemWidth)
                                         .animateContentSize(),
-                                    contentScale = ContentScale.Crop,
-                                    sliderPositionProvider = { sliderPosition },
-                                    showLyricsOnClick = true,
-                                    customMediaMetadata = it
-                                )
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                                ) {
+                                    Thumbnail(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(20.dp)),
+                                        contentScale = ContentScale.Crop,
+                                        sliderPositionProvider = { sliderPosition },
+                                        showLyricsOnClick = true,
+                                        customMediaMetadata = it
+                                    )
+                                }
                             }
                         }
                     }
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(16.dp))
 
+                    // Controls section
                     mediaMetadata?.let {
                         controlsContent(it)
                     }
 
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(32.dp))
                 }
             }
 
-
+            // Queue sheet
             QueueSheet(
                 state = queueSheetState,
                 playerBottomSheetState = state,
