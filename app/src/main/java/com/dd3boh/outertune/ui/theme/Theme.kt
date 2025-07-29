@@ -233,7 +233,6 @@ fun ColorScheme.pureBlack(apply: Boolean) =
         surfaceContainer = Color.Black,
         surfaceContainerLow = Color.Black,
         surfaceContainerLowest = Color.Black,
-        surfaceContainerLowMedium = Color.Black,
         surfaceContainerHigh = Color.Black,
         surfaceContainerHighest = Color.Black
     ) else this
