@@ -41,7 +41,9 @@ fun ColumnScope.ThemeAppFrag() {
     val (dynamicTheme, onDynamicThemeChange) = rememberPreference(DynamicThemeKey, defaultValue = true)
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
 
+
     val isDarkModeEnabled = darkMode == DarkMode.ON || darkMode == DarkMode.AUTO && isSystemInDarkTheme()
+
 
     SwitchPreference(
         title = { Text(stringResource(R.string.enable_dynamic_theme)) },
@@ -63,22 +65,21 @@ fun ColumnScope.ThemeAppFrag() {
                 DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
             }
         },
-        isMiddle = true
+        isMiddle = isDarkModeEnabled,
+        isLast = !isDarkModeEnabled
     )
 
-    SwitchPreference(
-        title = {
-            Text(stringResource(R.string.pure_black))
-        },
-        description = if (isDarkModeEnabled) null else stringResource(R.string.pure_black_unavailable),
-        icon = { Icon(Icons.Outlined.Contrast, null) },
-        checked = pureBlack && isDarkModeEnabled,
-        onCheckedChange = {
-            if (isDarkModeEnabled) { onPureBlackChange(it) }
-        },
-        isEnabled = isDarkModeEnabled,
-        isLast = true
-    )
+    if (isDarkModeEnabled) {
+        SwitchPreference(
+            title = {
+                Text(stringResource(R.string.pure_black))
+            },
+            icon = { Icon(Icons.Outlined.Contrast, null) },
+            checked = pureBlack,
+            onCheckedChange = onPureBlackChange,
+            isLast = true
+        )
+    }
 }
 
 @Composable

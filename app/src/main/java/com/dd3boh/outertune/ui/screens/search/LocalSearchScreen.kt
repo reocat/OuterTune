@@ -53,6 +53,7 @@ import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
 import com.dd3boh.outertune.ui.component.PlaylistListItem
 import com.dd3boh.outertune.ui.component.SongListItem
+import com.dd3boh.outertune.ui.theme.isPureBlackEnabled
 import com.dd3boh.outertune.viewmodels.LocalFilter
 import com.dd3boh.outertune.viewmodels.LocalSearchViewModel
 import kotlinx.coroutines.flow.drop
@@ -62,7 +63,6 @@ fun LocalSearchScreen(
     query: String,
     navController: NavController,
     onDismiss: () -> Unit,
-    pureBlack: Boolean,
     viewModel: LocalSearchViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -92,7 +92,7 @@ fun LocalSearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer)
+            .background(if (isPureBlackEnabled()) Color.Black else MaterialTheme.colorScheme.surfaceContainer)
     ) {
         ChipsRow(
             chips = listOf(

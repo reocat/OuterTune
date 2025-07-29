@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
@@ -25,8 +26,13 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
+import com.dd3boh.outertune.constants.DarkMode
+import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.MonetStyle
+import com.dd3boh.outertune.constants.PureBlackKey
 import com.dd3boh.outertune.ui.screens.settings.toMaterialKolorPaletteStyle
+import com.dd3boh.outertune.utils.rememberEnumPreference
+import com.dd3boh.outertune.utils.rememberPreference
 import com.materialkolor.PaletteStyle
 import com.materialkolor.rememberDynamicColorScheme
 
@@ -221,10 +227,31 @@ fun Color.lighten(factor: Float): Color {
 fun ColorScheme.pureBlack(apply: Boolean) =
     if (apply) copy(
         surface = Color.Black,
-        background = Color.Black
+        background = Color.Black,
+        surfaceVariant = Color.Black,
+        surfaceTint = Color.Black,
+        surfaceContainer = Color.Black,
+        surfaceContainerLow = Color.Black,
+        surfaceContainerLowest = Color.Black,
+        surfaceContainerLowMedium = Color.Black,
+        surfaceContainerHigh = Color.Black,
+        surfaceContainerHighest = Color.Black
     ) else this
 
 val ColorSaver = object : Saver<Color, Int> {
     override fun restore(value: Int): Color = Color(value)
     override fun SaverScope.save(value: Color): Int = value.toArgb()
+}
+
+@Composable
+fun isPureBlackEnabled(): Boolean {
+    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
+    val darkMode by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
+
+    val darkTheme = when (darkMode) {
+        DarkMode.ON -> true
+        DarkMode.OFF -> false
+        DarkMode.AUTO -> isSystemInDarkTheme()
+    }
+    return pureBlack && darkTheme
 }

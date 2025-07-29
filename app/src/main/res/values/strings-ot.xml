@@ -127,7 +127,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="tablet_ui_title">Force tablet UI</string>
     <string name="tablet_ui_title_description">Enable a landscape interface that is optimized for larger screens regardless of the current screen size</string>
     <string name="filter_arrangement">Arrange filters</string>
-    <string name="pure_black_unavailable">Not applicable in light theme. Enable dark theme first</string>
+
 
     <string name="color_source">Color Source</string>
     <string name="theme_style">Theme Style</string>

@@ -81,7 +81,7 @@ import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.MiniPlayerHeight
-import com.dd3boh.outertune.constants.PureBlackKey
+import com.dd3boh.outertune.ui.theme.isPureBlackEnabled
 import com.dd3boh.outertune.constants.SwipeSensitivityKey
 import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
@@ -100,7 +100,7 @@ fun MiniPlayer(
     duration: Long,
     modifier: Modifier = Modifier,
 ) {
-    val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
+    val pureBlack = isPureBlackEnabled()
     val playerConnection = LocalPlayerConnection.current ?: return
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val playbackState by playerConnection.playbackState.collectAsState()

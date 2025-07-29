@@ -187,7 +187,7 @@ import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
-import com.dd3boh.outertune.constants.PureBlackKey
+import com.dd3boh.outertune.ui.theme.isPureBlackEnabled
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
 import com.dd3boh.outertune.constants.ScannerImpl
@@ -424,7 +424,7 @@ class MainActivity : ComponentActivity() {
 
             val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
             val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
-            val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
+            val pureBlack = isPureBlackEnabled()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
                 if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
@@ -589,7 +589,7 @@ class MainActivity : ComponentActivity() {
 
             OuterTuneTheme(
                 darkTheme = useDarkTheme,
-                pureBlack = pureBlack,
+                pureBlack = pureBlack && useDarkTheme,
                 themeColor = themeColor,
                 monetStyle = monetStyle,
                 monetTintBackground = monetTintBackground
@@ -1373,8 +1373,7 @@ class MainActivity : ComponentActivity() {
                                                 SearchSource.LOCAL -> LocalSearchScreen(
                                                     query = query.text,
                                                     navController = navController,
-                                                    onDismiss = { onSearchActiveChange(false) },
-                                                    pureBlack = pureBlack
+                                                    onDismiss = { onSearchActiveChange(false) }
                                                 )
 
                                                 SearchSource.ONLINE -> OnlineSearchScreen(
@@ -1404,6 +1403,8 @@ class MainActivity : ComponentActivity() {
                             @Composable
                             fun navRail(alignment: Alignment = Alignment.BottomStart) {
                                 if (useRail && shouldShowNavigationRail) {
+        // Read the preference that indicates if the user enabled pure-black theme
+        val pureBlack = isPureBlackEnabled()
                                     Column(
                                         verticalArrangement = Arrangement.Bottom,
                                         modifier = Modifier
@@ -1418,7 +1419,7 @@ class MainActivity : ComponentActivity() {
                                             )
                                     ) {
                                         NavigationRail(
-                                            containerColor = Color.Transparent,
+                                            containerColor = if (pureBlack) Color.Black else Color.Transparent,
                                             header = {
                                                 Spacer(Modifier.height(8.dp))
                                                 Image(
