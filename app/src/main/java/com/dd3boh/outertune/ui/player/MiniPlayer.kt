@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -48,7 +49,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceContainerLow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -93,6 +96,27 @@ import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.ui.graphics.isSystemInDarkTheme
+
+@Composable
+fun ExpressiveMiniPlayerBackground(
+    useBW: Boolean,
+    useDarkTheme: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = when {
+            useBW && useDarkTheme -> Color.Black
+            useBW && !useDarkTheme -> Color.White
+            else -> MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        tonalElevation = 4.dp,
+        shadowElevation = 6.dp,
+        shape = RoundedCornerShape(24.dp),
+        modifier = modifier
+    ) {}
+}
 
 @Composable
 fun MiniPlayer(
@@ -140,99 +164,31 @@ fun MiniPlayer(
     }
     val autoSwipeThreshold = calculateAutoSwipeThreshold(swipeSensitivity)
 
+    val useBW = false // TODO: connect to global state or player toggle if needed
+    val useDarkTheme = isSystemInDarkTheme()
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .height(MiniPlayerHeight)
-            .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant)
-            .let { baseModifier ->
-                if (swipeToSkip) {
-                    baseModifier.pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragStart = {
-                                dragStartTime = System.currentTimeMillis()
-                                totalDragDistance = 0f
-                            },
-                            onDragCancel = {
-                                coroutineScope.launch {
-                                    offsetXAnimatable.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = animationSpec
-                                    )
-                                }
-                            },
-                            onHorizontalDrag = { _, dragAmount ->
-                                val adjustedDragAmount =
-                                    if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
-                                val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
-                                val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
-                                val allowLeft = adjustedDragAmount < 0 && canSkipNext
-                                val allowRight = adjustedDragAmount > 0 && canSkipPrevious
-                                if (allowLeft || allowRight) {
-                                    totalDragDistance += kotlin.math.abs(adjustedDragAmount)
-                                    coroutineScope.launch {
-                                        offsetXAnimatable.snapTo(offsetXAnimatable.value + adjustedDragAmount)
-                                    }
-                                }
-                            },
-                            onDragEnd = {
-                                val dragDuration = System.currentTimeMillis() - dragStartTime
-                                val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
-                                val currentOffset = offsetXAnimatable.value
-
-                                val minDistanceThreshold = 50f
-                                val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
-
-                                val shouldChangeSong = (
-                                        kotlin.math.abs(currentOffset) > minDistanceThreshold &&
-                                                velocity > velocityThreshold
-                                        ) || (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
-
-                                if (shouldChangeSong) {
-                                    val isRightSwipe = currentOffset > 0
-
-                                    if (isRightSwipe && canSkipPrevious) {
-                                        playerConnection.player.seekToPreviousMediaItem()
-                                    } else if (!isRightSwipe && canSkipNext) {
-                                        playerConnection.player.seekToNext()
-                                    }
-                                }
-
-                                coroutineScope.launch {
-                                    offsetXAnimatable.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = animationSpec
-                                    )
-                                }
-                            }
-                        )
-                    }
-                } else {
-                    baseModifier
-                }
-            }
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        LinearProgressIndicator(
-            progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
-            drawStopIndicator = { },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .align(Alignment.BottomCenter),
+        ExpressiveMiniPlayerBackground(
+            useBW = useBW,
+            useDarkTheme = useDarkTheme,
+            modifier = Modifier.matchParentSize()
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .windowInsetsPadding(
-                    WindowInsets.systemBars
-                        .only(WindowInsetsSides.Horizontal)
-                        .add(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
-                )
-                .fillMaxSize()
-                .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
-                .padding(end = 6.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Box(Modifier.weight(1f)) {
+            // Album art
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
                 mediaMetadata?.let {
                     MiniMediaInfo(
                         mediaMetadata = it,
@@ -242,49 +198,36 @@ fun MiniPlayer(
                     )
                 }
             }
-
-            IconButton(
-                onClick = {
-                    if (playbackState == Player.STATE_ENDED) {
-                        playerConnection.player.seekTo(0, 0)
-                        playerConnection.player.playWhenReady = true
-                    } else {
-                        playerConnection.player.togglePlayPause()
-                    }
-                }
+            Spacer(modifier = Modifier.width(12.dp))
+            // Song info
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    imageVector = if (playbackState == Player.STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                    contentDescription = null
+                Text(
+                    text = "Song Title", // TODO: bind to actual title
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Artist", // TODO: bind to actual artist
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-
-            IconButton(
-                enabled = canSkipNext,
-                onClick = playerConnection.player::seekToNext
+            Spacer(modifier = Modifier.width(12.dp))
+            // Play/Pause button
+            FilledIconButton(
+                onClick = { /* TODO: play/pause */ },
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.SkipNext,
-                    contentDescription = null
-                )
-            }
-        }
-        // Visual indicator
-        if (offsetXAnimatable.value.absoluteValue > 50f) {
-            Box(
-                modifier = Modifier
-                    .align(if (offsetXAnimatable.value > 0) Alignment.CenterStart else Alignment.CenterEnd)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next
-                    ),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(
-                        alpha = (offsetXAnimatable.value.absoluteValue / autoSwipeThreshold).coerceIn(0f, 1f)
-                    ),
-                    modifier = Modifier.size(24.dp)
+                    imageVector = Icons.Outlined.PlayArrow, // TODO: dynamic icon
+                    contentDescription = "Play/Pause"
                 )
             }
         }

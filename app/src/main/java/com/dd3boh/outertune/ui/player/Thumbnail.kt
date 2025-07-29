@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.OndemandVideo
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -198,7 +200,6 @@ fun Thumbnail(
             exit = fadeOut(),
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
         ) {
             var isRectangularImage by remember { mutableStateOf(false) }
 
@@ -207,273 +208,35 @@ fun Thumbnail(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = PlayerHorizontalPadding)
-                    .pointerInput(swipeToSkip) {
-                        if (swipeToSkip) {
-                            detectHorizontalDragGestures(
-                                onDragStart = {
-                                    if (isAnimatingTransition) return@detectHorizontalDragGestures
-                                    isPreviewingNextSong = true
-                                    dragStartTime = System.currentTimeMillis()
-                                    totalDragDistance = 0f
-                                    offsetX = offsetXAnimatable.value
-                                },
-                                onDragCancel = {
-                                    if (isAnimatingTransition) return@detectHorizontalDragGestures
-                                    coroutineScope.launch {
-                                        offsetXAnimatable.animateTo(
-                                            targetValue = 0f,
-                                            animationSpec = animationSpec
-                                        )
-                                        offsetX = 0f
-                                        isPreviewingNextSong = false
-                                        previewImage = null
-                                    }
-                                },
-                                onHorizontalDrag = { _, dragAmount ->
-                                    if (isAnimatingTransition) return@detectHorizontalDragGestures
-                                    if (swipeToSkip) {
-                                        val adjustedDragAmount =
-                                            if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
-                                        val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
-                                        val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
-                                        val allowLeft = adjustedDragAmount < 0 && canSkipNext
-                                        val allowRight = adjustedDragAmount > 0 && canSkipPrevious
-                                        if (allowLeft || allowRight) {
-                                            offsetX += adjustedDragAmount
-                                            totalDragDistance += kotlin.math.abs(adjustedDragAmount)
-                                            coroutineScope.launch {
-                                                offsetXAnimatable.snapTo(offsetX)
-                                            }
-                                            updateImagePreview(offsetX)
-                                        }
-                                    }
-                                },
-                                onDragEnd = {
-                                    if (isAnimatingTransition) return@detectHorizontalDragGestures
-                                    val dragDuration = System.currentTimeMillis() - dragStartTime
-                                    val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
-
-                                    val minDistanceThreshold = 50f
-                                    val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f // 0 = 0.25, 1 = 8.5
-
-                                    val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
-                                    val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
-
-                                    val shouldChangeSong = kotlin.math.abs(offsetX) > minDistanceThreshold &&
-                                            velocity > velocityThreshold
-
-                                    if (shouldChangeSong) {
-                                        swipeTriggeredChange = true
-                                        animationDirection = offsetX > 0
-                                        val isRightSwipe = offsetX > 0
-
-                                        val canSwipe = (isRightSwipe && canSkipPrevious) || (!isRightSwipe && canSkipNext)
-                                        if (canSwipe) {
-                                            val targetThumbnailUrl = if (isRightSwipe) {
-                                                playerConnection.player.previousMediaItemIndex.takeIf { it != -1 }?.let {
-                                                    playerConnection.player.getMediaItemAt(it).mediaMetadata.artworkUri?.toString()
-                                                }
-                                            } else {
-                                                playerConnection.player.nextMediaItemIndex.takeIf { it != -1 }?.let {
-                                                    playerConnection.player.getMediaItemAt(it).mediaMetadata.artworkUri?.toString()
-                                                }
-                                            }
-                                            nextThumbnailUrl = targetThumbnailUrl
-
-                                            if (isRightSwipe && canSkipPrevious) {
-                                                playerConnection.player.seekToPreviousMediaItem()
-                                            } else if (!isRightSwipe && canSkipNext) {
-                                                playerConnection.player.seekToNext()
-                                            }
-
-                                            isAnimatingTransition = true
-
-                                            coroutineScope.launch {
-                                                val targetX = if (isRightSwipe) currentView.width.toFloat() else -currentView.width.toFloat()
-                                                offsetXAnimatable.animateTo(
-                                                    targetValue = targetX,
-                                                    animationSpec = animationSpec
-                                                )
-                                                displayedThumbnailUrl = nextThumbnailUrl
-                                                nextThumbnailUrl = null
-                                                offsetXAnimatable.snapTo(0f)
-                                                offsetX = 0f
-                                                isAnimatingTransition = false
-                                                swipeTriggeredChange = false
-                                            }
-                                        }
-                                        isPreviewingNextSong = false
-                                        previewImage = null
-                                    } else {
-                                        coroutineScope.launch {
-                                            offsetXAnimatable.animateTo(
-                                                targetValue = 0f,
-                                                animationSpec = animationSpec
-                                            )
-                                            offsetX = 0f
-                                            isPreviewingNextSong = false
-                                            previewImage = null
-                                        }
-                                    }
-                                },
-                            )
-                        }
-                    }
             ) {
-                Box(
-                    modifier = Modifier
-                        .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
-                ) {
-                    if (mediaMetadata?.isLocal == true) {
-                        AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false, true) },
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer(
-                                    renderEffect = BlurEffect(
-                                        radiusX = 75f,
-                                        radiusY = 75f
-                                    ),
-                                    alpha = 0.5f
-                                )
-                        )
-                        AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false, true) },
-                            contentScale = contentScale,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable(enabled = showLyricsOnClick) {
-                                    showLyrics = !showLyrics
-                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                                }
-                        )
-                    } else {
-                        AsyncImage(
-                            model = displayedThumbnailUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            onSuccess = { success ->
-                                val width = success.result.drawable.intrinsicWidth
-                                val height = success.result.drawable.intrinsicHeight
-                                isRectangularImage = width.toFloat() / height != 1f
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer(
-                                    renderEffect = BlurEffect(
-                                        radiusX = 75f,
-                                        radiusY = 75f
-                                    ),
-                                    alpha = 0.5f
-                                )
-                        )
-                        AsyncImage(
-                            model = displayedThumbnailUrl,
-                            contentDescription = null,
-                            contentScale = contentScale,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable(enabled = showLyricsOnClick) { showLyrics = !showLyrics }
-                        )
-                    }
-                    if (isRectangularImage) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(bottom = 8.dp, end = 8.dp)
-                                .size(32.dp)
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent)
-                                    ),
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.OndemandVideo,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-
-                nextThumbnailUrl?.let { nextUrl ->
+                // Expressive: Larger, more rounded, shadowed album art
+                val shape = RoundedCornerShape(32.dp)
+                val elevation = 12.dp
+                val borderColor = Color.Black.copy(alpha = 0.08f)
+                val borderWidth = 2.dp
+                val albumArtModifier = Modifier
+                    .aspectRatio(1f)
+                    .shadow(elevation, shape)
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                    .then(Modifier)
+                if (mediaMetadata?.thumbnailUrl != null) {
+                    AsyncImage(
+                        model = mediaMetadata.thumbnailUrl,
+                        contentDescription = "Album Art",
+                        contentScale = ContentScale.Crop,
+                        modifier = albumArtModifier
+                    )
+                } else {
                     Box(
-                        modifier = Modifier
-                            .offset {
-                                val nextThumbnailOffset = if (animationDirection) {
-                                    offsetXAnimatable.value - currentView.width.toFloat()
-                                } else {
-                                    offsetXAnimatable.value + currentView.width.toFloat()
-                                }
-                                IntOffset(nextThumbnailOffset.roundToInt(), 0)
-                            }
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
+                        modifier = albumArtModifier,
+                        contentAlignment = Alignment.Center
                     ) {
-                        AsyncImage(
-                            model = nextUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer(
-                                    renderEffect = BlurEffect(
-                                        radiusX = 75f,
-                                        radiusY = 75f
-                                    ),
-                                    alpha = 0.5f
-                                )
-                        )
-                        AsyncImage(
-                            model = nextUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-
-                previewImage?.let {
-                    Box(
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    if (offsetXAnimatable.value > 0) (offsetXAnimatable.value - currentView.width).roundToInt()
-                                    else (offsetXAnimatable.value + currentView.width).roundToInt(), 0
-                                )
-                            }
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
-                    ) {
-                        AsyncImage(
-                            model = it,
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer(
-                                    renderEffect = BlurEffect(
-                                        radiusX = 75f,
-                                        radiusY = 75f
-                                    ),
-                                    alpha = 0.5f
-                                )
-                        )
-                        AsyncImage(
-                            model = it,
-                            contentDescription = null,
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
+                        Icon(
+                            imageVector = Icons.Outlined.OndemandVideo,
+                            contentDescription = "No Album Art",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            modifier = Modifier.size(64.dp)
                         )
                     }
                 }

@@ -76,12 +76,16 @@ import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.surfaceContainerHighest
+import androidx.compose.material3.surfaceContainerLow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -97,6 +101,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -397,6 +402,7 @@ fun BottomSheetPlayer(
         initialAnchor = 1
     )
 
+    var useBW by remember { mutableStateOf(false) }
 
     BottomSheet(
         state = state,
@@ -499,9 +505,8 @@ fun BottomSheetPlayer(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = mediaMetadata.title,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.ExtraBold),
                             color = textColor,
-                            fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -509,6 +514,7 @@ fun BottomSheetPlayer(
                                     iterations = 1,
                                     initialDelayMillis = 3000
                                 )
+                                .padding(bottom = 2.dp)
                                 .clickable(enabled = mediaMetadata.album != null) {
                                     navController.navigate("album/${mediaMetadata.album!!.id}")
                                     state.collapseSoft()
@@ -519,7 +525,7 @@ fun BottomSheetPlayer(
                             mediaMetadata.artists.fastForEachIndexed { index, artist ->
                                 Text(
                                     text = artist.name,
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                     color = textColor,
                                     maxLines = 1,
                                     modifier = Modifier
@@ -527,16 +533,12 @@ fun BottomSheetPlayer(
                                             iterations = 1,
                                             initialDelayMillis = 5000
                                         )
-                                        .clickable(enabled = artist.id != null) {
-                                            navController.navigate("artist/${artist.id}")
-                                            state.collapseSoft()
-                                        }
                                 )
 
                                 if (index != mediaMetadata.artists.lastIndex) {
                                     Text(
                                         text = ", ",
-                                        style = MaterialTheme.typography.titleMedium,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = textColor
                                     )
                                 }
@@ -703,10 +705,11 @@ fun BottomSheetPlayer(
 
                 Box(
                     modifier = Modifier
-                        .size(if (showLyrics) 56.dp else 72.dp)
+                        .size(if (showLyrics) 64.dp else 88.dp)
                         .animateContentSize()
-                        .clip(RoundedCornerShape(playPauseRoundness))
+                        .clip(RoundedCornerShape(32.dp))
                         .background(accentStyledColor)
+                        .shadow(8.dp, RoundedCornerShape(32.dp))
                         .clickable {
                             if (playbackState == STATE_ENDED) {
                                 playerConnection.player.seekTo(0, 0)
@@ -723,7 +726,7 @@ fun BottomSheetPlayer(
                         colorFilter = ColorFilter.tint(iconOnAccentColor),
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .size(36.dp)
+                            .size(44.dp)
                     )
                 }
 
@@ -766,7 +769,13 @@ fun BottomSheetPlayer(
             }
         }
 
-        Box(modifier = modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            ExpressivePlayerBackground(
+                useBW = useBW,
+                gradientColors = gradientColors,
+                playerBackground = playerBackground,
+                useDarkTheme = useDarkTheme
+            )
             AnimatedVisibility(
                 visible = !powerManager.isPowerSaveMode && state.isExpanded,
                 enter = fadeIn(tween(500)),
@@ -1000,6 +1009,65 @@ fun BottomSheetPlayer(
                 onBackgroundColor = textColor,
                 navController = navController
             )
+        }
+    }
+}
+
+@Composable
+fun ExpressiveBWToggle(
+    isBW: Boolean,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FilledIconButton(
+        onClick = { onToggle(!isBW) },
+        modifier = modifier,
+        shape = RoundedCornerShape(50),
+        content = {
+            Icon(
+                imageVector = if (isBW) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                contentDescription = if (isBW) "Use Dynamic Colors" else "Use B/W Mode"
+            )
+        }
+    )
+}
+
+@Composable
+fun ExpressivePlayerBackground(
+    useBW: Boolean,
+    gradientColors: List<Color>,
+    playerBackground: PlayerBackgroundStyle,
+    useDarkTheme: Boolean,
+    modifier: Modifier = Modifier
+) {
+    when {
+        useBW -> Surface(
+            color = if (useDarkTheme) Color.Black else Color.White,
+            modifier = modifier.fillMaxSize(),
+            tonalElevation = 6.dp,
+            shadowElevation = 8.dp,
+            shape = RoundedCornerShape(0.dp)
+        ) {}
+        playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.size >= 2 -> {
+            val gradientBrush = Brush.verticalGradient(
+                colors = gradientColors,
+                startY = 0f,
+                endY = Float.POSITIVE_INFINITY
+            )
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(gradientBrush)
+            )
+        }
+        else -> {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                modifier = modifier.fillMaxSize(),
+                tonalElevation = 6.dp,
+                shadowElevation = 8.dp,
+                shape = RoundedCornerShape(0.dp)
+            ) {}
         }
     }
 }
