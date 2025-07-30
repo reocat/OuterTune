@@ -217,4 +217,12 @@
     <string name="err_invalid_ytm_song">Falha ao reproduzir a música. Somente conteúdo acessível pelo YouTube Music pode ser reproduzido</string>
     <string name="err_restore_incompatible_database">Não foi possível restaurar banco de dados incompatível</string>
     <string name="m3u_import_failed">Nenhuma música encontrada. Arquivo M3U inválido, ou nenhuma correspondência das músicas foi encontrada</string>
+    <string name="tap_show_more">Toque para mostrar mais informações</string>
+    <string name="all_contributors">Mostrar todos os colaboradores</string>
+    <string name="att_contributor">Colaborador</string>
+    <string name="att_lead_developer">Desenvolvedor principal</string>
+    <string name="att_maintainer">Mantenedor</string>
+    <string name="att_project_support">Suporte ao projeto</string>
+    <string name="att_translator">Tradutor (%s)</string>
+    <string name="lyrics_synced_clickable">Letras clicáveis</string>
 </resources>
