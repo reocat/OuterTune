@@ -217,4 +217,12 @@
     <string name="err_invalid_ytm_song">Impossible de lire le titre. Seul le contenu accessible sur YouTube Music peut être lu.</string>
     <string name="err_restore_incompatible_database">Impossible de restaurer une base de données incompatible</string>
     <string name="m3u_import_failed">Aucun titre trouvé. Fichier M3U invalide ou aucun titre correspondant trouvé.</string>
+    <string name="tap_show_more">Appuyez pour afficher plus d\'informations</string>
+    <string name="all_contributors">Afficher tous les contributeurs</string>
+    <string name="att_contributor">Contributeur</string>
+    <string name="att_lead_developer">Développeur principal</string>
+    <string name="att_maintainer">Mainteneur</string>
+    <string name="att_project_support">Accompagnement de projet</string>
+    <string name="att_translator">Traducteur (%s)</string>
+    <string name="lyrics_synced_clickable">Paroles cliquables</string>
 </resources>
