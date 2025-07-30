@@ -103,17 +103,21 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastAny
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
-import coil.ImageLoader
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
+import com.dd3boh.outertune.constants.LyricClickable
 import com.dd3boh.outertune.constants.LyricFontSizeKey
 import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricUpdateSpeed
+import com.dd3boh.outertune.constants.LyricClickable
 import com.dd3boh.outertune.constants.LyricsPosition
 import com.dd3boh.outertune.constants.LyricsScrollKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
@@ -165,7 +169,7 @@ fun Lyrics(
     val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.LEFT)
     val scrollLyrics by rememberPreference(LyricsScrollKey, true)
     val lyricsFontSize by rememberPreference(LyricFontSizeKey, 20)
-
+    val lyricsClickable by rememberPreference(LyricClickable, true)
     val lyricsFancy by rememberPreference(LyricKaraokeEnable, false)
     val lyricsUpdateSpeed by rememberEnumPreference(LyricUpdateSpeed, Speed.MEDIUM)
     var lyricRefreshRate = lyricsUpdateSpeed.toLrcRefreshMillis()
@@ -212,7 +216,7 @@ fun Lyrics(
                 val loader = ImageLoader(context)
                 val req = ImageRequest.Builder(context).data(coverUrl).allowHardware(false).build()
                 val result = loader.execute(req)
-                val bmp = result.drawable?.toBitmap() ?: return@withContext
+                val bmp = result.image?.toBitmap() ?: return@withContext
                 val palette = Palette.from(bmp).generate()
                 val swatches = palette.swatches.sortedByDescending { it.population }
                 val colors = swatches.map { Color(it.rgb) }
@@ -468,7 +472,9 @@ fun Lyrics(
                                                     .show()
                                             }
                                         }
-                                    } else if (isSynced && item.isClickable) {
+                                    } else if (isSynced && lyricsClickable) {
+                                        currentLineIndex = index
+                                        currentPos = item.start.toLong()
                                         playerConnection.player.seekTo(item.start.toLong())
                                         lastPreviewTime = 0L
                                         haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -991,7 +997,7 @@ fun splitTextToLines(
 
 fun findCurrentLineIndex(lines: List<LyricLine>, position: Long): Int {
     for (index in lines.indices) {
-        if (lines[index].start >= (position).toUInt()) {
+        if (lines[index].start > position.toUInt()) {
             return index - 1
         }
     }
