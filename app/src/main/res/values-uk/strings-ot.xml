@@ -219,4 +219,12 @@
     <string name="err_invalid_ytm_song">Не вдалося відтворити пісню. Можна відтворити лише контент, доступний у YouTube Music</string>
     <string name="err_restore_incompatible_database">Не вдалося відновити несумісну базу даних</string>
     <string name="m3u_import_failed">Пісні не знайдено. Недійсний файл M3U або відповідні пісні не знайдено</string>
+    <string name="tap_show_more">Натисніть, щоб показати більше інформації</string>
+    <string name="all_contributors">Показати всіх учасників</string>
+    <string name="att_contributor">Автор</string>
+    <string name="att_lead_developer">Провідний розробник</string>
+    <string name="att_maintainer">Супровідник</string>
+    <string name="att_project_support">Підтримка проекту</string>
+    <string name="att_translator">Перекладач (%s)</string>
+    <string name="lyrics_synced_clickable">Клікувальні тексти пісень</string>
 </resources>
