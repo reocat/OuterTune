@@ -141,7 +141,6 @@ import com.dd3boh.outertune.ui.menu.QueueMenu
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -389,8 +388,7 @@ fun BoxScope.QueueContent(
                 addAll(detachedQueue!!.getCurrentQueueShuffled())
             }
             detachedQueue?.let {
-                delay(300)
-                lazySongsListState.animateScrollToItem(it.getQueuePosShuffled())
+                lazySongsListState.scrollToItem(it.getQueuePosShuffled())
             }
             return@LaunchedEffect
         }
@@ -401,8 +399,7 @@ fun BoxScope.QueueContent(
         }
 
         if (currentWindowIndex != -1 && !isSearching) {
-            delay(300)
-            lazySongsListState.animateScrollToItem(currentWindowIndex)
+            lazySongsListState.scrollToItem(currentWindowIndex)
         }
 
         selectedItems.clear()
@@ -412,8 +409,7 @@ fun BoxScope.QueueContent(
         if (mqExpand) {
             lazyQueuesListState.animateScrollToItem(playingQueue)
             if (currentWindowIndex != -1) {
-                delay(300)
-                lazySongsListState.animateScrollToItem(currentWindowIndex)
+                lazySongsListState.scrollToItem(currentWindowIndex)
             }
         }
     }
