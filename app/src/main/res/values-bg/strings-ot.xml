@@ -215,4 +215,12 @@
     <string name="err_invalid_ytm_song">Неуспешно изпълнение на песен. Може да се възпроизвежда само съдържание, достъпно в YouTube Music</string>
     <string name="m3u_import_failed">Няма намерени песни. Невалиден M3U файл или не са намерени съвпадения на песни</string>
     <string name="err_restore_incompatible_database">Несъвместимата база данни не можа да бъде възстановена</string>
+    <string name="tap_show_more">Докоснете, за да покажете повече информация</string>
+    <string name="all_contributors">Показване на всички сътрудници</string>
+    <string name="att_contributor">Сътрудник</string>
+    <string name="att_lead_developer">Водещ разработчик</string>
+    <string name="att_maintainer">Поддържащ</string>
+    <string name="att_project_support">Подкрепа на проекта</string>
+    <string name="att_translator">Преводач (%s)</string>
+    <string name="lyrics_synced_clickable">Текстове на песни, на които може да се кликва</string>
 </resources>
