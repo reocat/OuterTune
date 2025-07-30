@@ -124,7 +124,7 @@ val minPlaybackDurKey = intPreferencesKey("minPlaybackDur")
  * Lyrics
  */
 val ShowLyricsKey = booleanPreferencesKey("showLyrics")
-val LyricsClickKey = booleanPreferencesKey("lyricsClick")
+val LyricClickable = booleanPreferencesKey("lyricClickable")
 val LyricsScrollKey = booleanPreferencesKey("lyricsScrollKey")
 val LyricsTextPositionKey = stringPreferencesKey("lyricsTextPosition")
 val MultilineLrcKey = booleanPreferencesKey("multilineLrc")

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +59,7 @@ fun ColumnScope.LyricFormatFrag() {
     val (lyricFontSize, onLyricFontSizeChange) = rememberPreference(LyricFontSizeKey, defaultValue = 20)
 
     val (lyricsScroll, onLyricsScrollChange) = rememberPreference(LyricsScrollKey, true)
+    val (lyricsClickable, onLyricsClickableChange) = rememberPreference(LyricClickable, true)
 
     var showFontSizeDialog by remember {
         mutableStateOf(false)
@@ -89,10 +91,16 @@ fun ColumnScope.LyricFormatFrag() {
         title = { Text(stringResource(R.string.lyrics_auto_scroll)) },
         icon = { Icon(Icons.Outlined.SwapVert, "Auto scroll icon") },
         checked = lyricsScroll,
-        onCheckedChange = onLyricsScrollChange,
-        isLast = true
+        onCheckedChange = onLyricsScrollChange
     )
 
+    SwitchPreference(
+        title = { Text(stringResource(R.string.lyrics_synced_clickable)) },
+        icon = { Icon(Icons.Outlined.TouchApp, null) },
+        checked = lyricsClickable,
+        onCheckedChange = onLyricsClickableChange,
+        isLast = true
+    )
 
     /**
      * ---------------------------
