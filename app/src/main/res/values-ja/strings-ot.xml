@@ -213,4 +213,12 @@
     <string name="err_invalid_ytm_song">曲の再生に失敗。YouTube Musicで利用可能なコンテンツのみ再生できます</string>
     <string name="err_restore_incompatible_database">互換性のないデータベースを復元できませんでした</string>
     <string name="m3u_import_failed">曲が見つかりません。無効なM3Uファイルか、一致する曲が見つかりませんでした</string>
+    <string name="tap_show_more">タップで詳細を表示</string>
+    <string name="all_contributors">すべての貢献者を表示</string>
+    <string name="att_contributor">貢献者</string>
+    <string name="att_lead_developer">主要開発者</string>
+    <string name="att_maintainer">保守担当者</string>
+    <string name="att_project_support">プロジェクト支援</string>
+    <string name="att_translator">翻訳者 (%s)</string>
+    <string name="lyrics_synced_clickable">歌詞をクリック可能に</string>
 </resources>
