@@ -329,7 +329,7 @@ fun Thumbnail(
                 ) {
                     if (mediaMetadata?.isLocal == true) {
                         AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false, true) },
+                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false) },
                             contentScale = ContentScale.FillBounds,
                             modifier = Modifier
                                 .fillMaxSize()
@@ -342,7 +342,7 @@ fun Thumbnail(
                                 )
                         )
                         AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false, true) },
+                            image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, false) },
                             contentScale = contentScale,
                             modifier = Modifier
                                 .fillMaxSize()
