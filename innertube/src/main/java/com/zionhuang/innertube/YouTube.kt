@@ -675,6 +675,9 @@ object YouTube {
         )
     }
 
+    suspend fun renamePlaylist(playlistId: String, name: String) = runCatching {
+        innerTube.renamePlaylist(WEB_REMIX, playlistId, name)
+    }
     suspend fun deletePlaylist(playlistId: String) = runCatching {
         innerTube.deletePlaylist(WEB_REMIX, playlistId)
     }

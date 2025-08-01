@@ -30,10 +30,8 @@ import com.dd3boh.outertune.ui.component.ListItem
 import com.dd3boh.outertune.ui.component.QueueListItem
 import com.dd3boh.outertune.ui.component.TextFieldDialog
 
-
 @Composable
 fun AddToQueueDialog(
-    isVisible: Boolean,
     initialTextFieldValue: String? = null,
     onAdd: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -51,42 +49,41 @@ fun AddToQueueDialog(
         queues = playerConnection?.service?.queueBoard?.getAllQueues()?.reversed() ?: emptyList()
     }
 
-    if (isVisible) {
-        ListDialog(
-            onDismiss = onDismiss,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
-        ) {
-            item {
-                ListItem(
-                    title = stringResource(R.string.create_queue),
-                    thumbnailContent = {
-                        Image(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
-                            modifier = Modifier.size(ListThumbnailSize)
-                        )
-                    },
-                    modifier = Modifier.clickable {
-                        showCreateQueueDialog = true
-                    }
-                )
-            }
+    ListDialog(
+        onDismiss = onDismiss,
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+    ) {
+        item {
+            ListItem(
+                title = stringResource(R.string.create_queue),
+                thumbnailContent = {
+                    Image(
+                        imageVector = Icons.Outlined.Add,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
+                        modifier = Modifier.size(ListThumbnailSize)
+                    )
+                },
+                modifier = Modifier.clickable {
+                    showCreateQueueDialog = true
+                }
+            )
+        }
 
-            var index = queues.size
-            // add queue
-            items(queues) { queue ->
-                QueueListItem(
-                    queue = queue,
-                    number = index--,
-                    modifier = Modifier.clickable {
-                        onAdd(queue.title)
-                        onDismiss()
-                    }
-                )
-            }
+        var index = queues.size
+        // add queue
+        items(queues) { queue ->
+            QueueListItem(
+                queue = queue,
+                number = index--,
+                modifier = Modifier.clickable {
+                    onAdd(queue.title)
+                    onDismiss()
+                }
+            )
         }
     }
+
 
     if (showCreateQueueDialog) {
         TextFieldDialog(

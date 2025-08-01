@@ -258,13 +258,14 @@ fun ImportM3uDialog(
 
 
     /**
-     * Dialog
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
      */
 
     if (showChoosePlaylistDialog) {
         AddToPlaylistDialog(
             navController = navController,
-            isVisible = true,
             allowSyncing = false,
             initialTextFieldValue = importedTitle,
             songs = importedSongs,
@@ -341,7 +342,7 @@ fun loadM3u(
                             val onlineResult = runBlocking(Dispatchers.IO) {
                                 LocalMediaScanner.youtubeSongLookup("$title ${artists.joinToString(" ")}", source)
                             }
-                            onlineResult.forEach {
+                            onlineResult.forEach { it ->
                                 val result = Song(
                                     song = it.toSongEntity(),
                                     artists = it.artists.map {

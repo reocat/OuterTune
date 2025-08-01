@@ -80,31 +80,6 @@ fun FolderMenu(
         mutableStateOf(false)
     }
 
-    AddToQueueDialog(
-        isVisible = showChooseQueueDialog,
-        onAdd = { queueName ->
-            if (allFolderSongs.isEmpty()) return@AddToQueueDialog
-            playerConnection.service.queueBoard.addQueue(
-                queueName, allFolderSongs.map { it.toMediaMetadata() },
-                forceInsert = true, delta = false
-            )
-            playerConnection.service.queueBoard.setCurrQueue()
-        },
-        onDismiss = {
-            showChooseQueueDialog = false
-        }
-    )
-
-    AddToPlaylistDialog(
-        navController = navController,
-        isVisible = showChoosePlaylistDialog,
-        onGetSong = {
-            if (allFolderSongs.isEmpty()) return@AddToPlaylistDialog emptyList()
-            allFolderSongs.map { it.id }
-        },
-        onDismiss = { showChoosePlaylistDialog = false }
-    )
-
     // folder info
     SongFolderItem(
         folderTitle = folder.getSquashedDir(),
@@ -167,5 +142,37 @@ fun FolderMenu(
             showChoosePlaylistDialog = true
             fetchAllSongsRecursive()
         }
+    }
+    /**
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
+     */
+
+    if (showChooseQueueDialog) {
+        AddToQueueDialog(
+            onAdd = { queueName ->
+                if (allFolderSongs.isEmpty()) return@AddToQueueDialog
+                playerConnection.service.queueBoard.addQueue(
+                    queueName, allFolderSongs.map { it.toMediaMetadata() },
+                    forceInsert = true, delta = false
+                )
+                playerConnection.service.queueBoard.setCurrQueue()
+            },
+            onDismiss = {
+                showChooseQueueDialog = false
+            }
+        )
+    }
+
+    if (showChoosePlaylistDialog) {
+        AddToPlaylistDialog(
+            navController = navController,
+            onGetSong = {
+                if (allFolderSongs.isEmpty()) return@AddToPlaylistDialog emptyList()
+                allFolderSongs.map { it.id }
+            },
+            onDismiss = { showChoosePlaylistDialog = false }
+        )
     }
 }

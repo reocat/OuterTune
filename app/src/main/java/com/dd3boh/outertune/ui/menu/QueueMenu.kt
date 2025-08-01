@@ -43,33 +43,6 @@ fun QueueMenu(
         mutableStateOf(false)
     }
 
-    // dialogs
-    AddToPlaylistDialog(
-        navController = navController,
-        isVisible = showChoosePlaylistDialog,
-        onGetSong = { songs.map { it.id } },
-        onDismiss = {
-            showChoosePlaylistDialog = false
-        }
-    )
-
-    AddToQueueDialog(
-        isVisible = showChooseQueueDialog,
-        onAdd = { queueName ->
-            playerConnection.service.queueBoard.addQueue(
-                queueName,
-                songs,
-                forceInsert = true,
-                delta = false
-            )
-            playerConnection.service.queueBoard.setCurrQueue()
-        },
-        onDismiss = {
-            showChooseQueueDialog = false
-            onDismiss() // here we dismiss since we switch to the queue anyways
-        }
-    )
-
     // queue item
     QueueListItem(queue = mq)
 
@@ -96,5 +69,38 @@ fun QueueMenu(
         ) {
             showChoosePlaylistDialog = true
         }
+    }
+
+    /**
+     * ---------------------------
+     * Dialogs
+     * ---------------------------
+     */
+    if (showChoosePlaylistDialog) {
+        AddToPlaylistDialog(
+            navController = navController,
+            onGetSong = { songs.map { it.id } },
+            onDismiss = {
+                showChoosePlaylistDialog = false
+            }
+        )
+    }
+
+    if (showChooseQueueDialog) {
+        AddToQueueDialog(
+            onAdd = { queueName ->
+                playerConnection.service.queueBoard.addQueue(
+                    queueName,
+                    songs,
+                    forceInsert = true,
+                    delta = false
+                )
+                playerConnection.service.queueBoard.setCurrQueue()
+            },
+            onDismiss = {
+                showChooseQueueDialog = false
+                onDismiss() // here we dismiss since we switch to the queue anyways
+            }
+        )
     }
 }
