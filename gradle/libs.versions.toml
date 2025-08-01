@@ -2,7 +2,7 @@
 adaptive = "1.2.0-alpha09"
 androidGradlePlugin = "8.13.0-alpha03"
 json = "20250517"
-kotlin = "2.2.20-Beta1"
+kotlin = "2.2.20-Beta2"
 coil = "3.3.0"
 compose = "1.9.0-beta03"
 lifecycle = "2.9.2"
