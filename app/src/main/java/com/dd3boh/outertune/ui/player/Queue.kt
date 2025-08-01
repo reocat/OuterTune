@@ -548,7 +548,7 @@ fun BoxScope.QueueContent(
                                 Text(
                                     text = "${index + 1}. ${mq.title}",
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
+                                    overflow = TextOverflow.MiddleEllipsis,
                                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 0.dp)
                                 )
                             }

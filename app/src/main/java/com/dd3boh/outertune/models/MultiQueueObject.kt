@@ -10,7 +10,7 @@ import androidx.compose.ui.util.fastSumBy
  */
 data class MultiQueueObject(
     val id: Long,
-    val title: String,
+    var title: String,
     /**
      * The order of songs are dynamic. This should not be accessed form outside QueueBoard.
      */

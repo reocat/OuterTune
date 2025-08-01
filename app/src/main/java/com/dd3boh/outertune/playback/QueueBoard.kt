@@ -238,36 +238,20 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                 return match
             } else { // make new extension queue
                 if (QUEUE_DEBUG)
-                    Timber.tag(TAG).d("Adding to queue: extension queue creation (and additive)")
+                    Timber.tag(TAG).d("Adding to queue: extension queue rename + extension queue additive")
                 // add items to NEW queue unconditionally (add entirely new queue)
-                if (masterQueues.size > MAX_QUEUES) {
-                    deleteQueue(masterQueues.first())
-                }
-
-                // create new queues
-                val shufQueue = match.getCurrentQueueShuffled()
-                shufQueue.addAll((mediaList.filterNotNull()))
-
-                // queue is always created as un-shuffled
-                shufQueue.fastForEachIndexed { index, s ->
-                    s.shuffleIndex = index
-                }
-
-                val newQueue = MultiQueueObject(
-                    QueueEntity.generateQueueId(),
-                    "$title +\u200B",
-                    shufQueue,
-                    false,
-                    match.getQueuePosShuffled(),
-                    masterQueues.size
-                )
-                masterQueues.add(newQueue)
+                // add items to existing queue unconditionally
+                addSongsToQueue(match, Int.MAX_VALUE, mediaList.filterNotNull(), saveToDb = false)
                 if (shuffled) {
-                    shuffle(newQueue, false, bypassSaveToDb = true)
+                    shuffle(match, false, true)
+                    match.queuePos = match.queue.indexOf(match.queue.find { it.shuffleIndex == 0 })
                 }
 
-                saveQueueSongs(newQueue)
-                return newQueue
+                match.title = "${match.title} +\u200B"
+
+                // rewrite queue
+                saveQueueSongs(match)
+                return match
             }
         } else {
             // add entirely new queue
@@ -794,9 +778,11 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                 player.player.addMediaItems(mediaItems.drop(1).map { it.toMediaItem() })
             } else {
                 // replace items up to current playing, then replace items after current
-                player.player.replaceMediaItems(0, playerIndex,
+                player.player.replaceMediaItems(
+                    0, playerIndex,
                     mediaItems.subList(0, queuePos).map { it.toMediaItem() })
-                player.player.replaceMediaItems(queuePos + 1, Int.MAX_VALUE,
+                player.player.replaceMediaItems(
+                    queuePos + 1, Int.MAX_VALUE,
                     mediaItems.subList(queuePos + 1, mediaItems.size).map { it.toMediaItem() })
             }
         } else {
@@ -884,7 +870,8 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
     private fun saveQueueSongs(mq: MultiQueueObject) {
         if (player.dataStore.get(PersistentQueueKey, true)) {
             queueSongMap.add(
-                PriorityJob(0,
+                PriorityJob(
+                    0,
                     coroutineScope.launch(start = CoroutineStart.LAZY) {
                         player.database.rewriteQueue(mq)
                     }
@@ -899,7 +886,8 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
     private fun saveQueue(mq: MultiQueueObject) {
         if (player.dataStore.get(PersistentQueueKey, true)) {
             queueEntity.add(
-                PriorityJob(0,
+                PriorityJob(
+                    0,
                     coroutineScope.launch(start = CoroutineStart.LAZY) {
                         player.database.updateQueue(mq)
                     }
@@ -915,7 +903,8 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
         if (player.dataStore.get(PersistentQueueKey, true)) {
             queueEntity.add(
                 // we select most recent task, therefore "lowest" numeric priority at the end of the list == "highest" priority
-                PriorityJob(1,
+                PriorityJob(
+                    1,
                     coroutineScope.launch(start = CoroutineStart.LAZY) {
                         player.database.updateAllQueues(mq)
                     }
