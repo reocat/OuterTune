@@ -52,12 +52,11 @@ import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
-import com.dd3boh.outertune.ui.component.AlbumListItem
-import com.dd3boh.outertune.ui.component.DownloadGridMenu
-import com.dd3boh.outertune.ui.component.GridMenu
-import com.dd3boh.outertune.ui.component.GridMenuItem
-import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.menu.dialog.ArtistDialog
+import com.dd3boh.outertune.ui.component.items.AlbumListItem
+import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
+import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
+import com.dd3boh.outertune.ui.dialog.ArtistDialog
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

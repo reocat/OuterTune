@@ -1,4 +1,4 @@
-package com.dd3boh.outertune.ui.menu
+package com.dd3boh.outertune.ui.dialog
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,10 +25,8 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.models.MultiQueueObject
-import com.dd3boh.outertune.ui.component.ListDialog
-import com.dd3boh.outertune.ui.component.ListItem
-import com.dd3boh.outertune.ui.component.QueueListItem
-import com.dd3boh.outertune.ui.component.TextFieldDialog
+import com.dd3boh.outertune.ui.component.items.ListItem
+import com.dd3boh.outertune.ui.component.items.QueueListItem
 
 @Composable
 fun AddToQueueDialog(

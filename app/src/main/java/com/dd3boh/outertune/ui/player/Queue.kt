@@ -131,9 +131,10 @@ import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
-import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.MediaMetadataListItem
-import com.dd3boh.outertune.ui.component.ResizableIconButton
+import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.component.LazyColumnScrollbar
+import com.dd3boh.outertune.ui.component.items.MediaMetadataListItem
+import com.dd3boh.outertune.ui.component.button.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SwipeActionBox
 import com.dd3boh.outertune.ui.menu.PlayerMenu

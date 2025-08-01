@@ -7,7 +7,7 @@
  * For any other attributions, refer to the git commit history
  */
 
-package com.dd3boh.outertune.ui.component
+package com.dd3boh.outertune.ui.component.items
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -18,10 +18,8 @@ import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -40,35 +38,23 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.QueueMusic
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.outlined.Album
-import androidx.compose.material.icons.outlined.CloudOff
-import androidx.compose.material.icons.outlined.DragHandle
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.EditOff
-import androidx.compose.material.icons.outlined.Explicit
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.FolderCopy
-import androidx.compose.material.icons.outlined.LibraryAddCheck
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.OfflinePin
-import androidx.compose.material.icons.outlined.OndemandVideo
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material3.Checkbox
+import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.CloudOff
+import androidx.compose.material.icons.rounded.Explicit
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FolderCopy
+import androidx.compose.material.icons.rounded.LibraryAddCheck
+import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.OfflinePin
+import androidx.compose.material.icons.rounded.OndemandVideo
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,54 +69,33 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
-import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.Download.STATE_COMPLETED
 import androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING
 import androidx.media3.exoplayer.offline.Download.STATE_QUEUED
-import androidx.media3.exoplayer.offline.Download.STATE_STOPPED
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import com.dd3boh.outertune.BuildConfig
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalImageCache
-import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
-import com.dd3boh.outertune.db.entities.Album
-import com.dd3boh.outertune.db.entities.Artist
-import com.dd3boh.outertune.db.entities.Playlist
-import com.dd3boh.outertune.db.entities.PlaylistEntity
-import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.RecentActivityEntity
-import com.dd3boh.outertune.db.entities.Song
-import com.dd3boh.outertune.extensions.toMediaItem
-import com.dd3boh.outertune.extensions.togglePlayPause
-import com.dd3boh.outertune.models.DirectoryTree
+import com.dd3boh.outertune.extensions.isPowerSaver
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.menu.FolderMenu
-import com.dd3boh.outertune.ui.menu.SongMenu
-import com.dd3boh.outertune.ui.utils.getNSongsString
 import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.reportException
@@ -420,813 +385,6 @@ fun GridItem(
     thumbnailContent = thumbnailContent,
     thumbnailRatio = thumbnailRatio,
     fillMaxWidth = fillMaxWidth
-)
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun SongListItem(
-    song: Song,
-    onPlay: () -> Unit,
-    onSelectedChange: (Boolean) -> Unit,
-    inSelectMode: Boolean?,
-    isSelected: Boolean,
-    navController: NavController,
-    modifier: Modifier = Modifier,
-    albumIndex: Int? = null,
-    showLikedIcon: Boolean = true,
-    showInLibraryIcon: Boolean = true,
-    showDownloadIcon: Boolean = true,
-    playlistSong: PlaylistSong? = null,
-    playlist: Playlist? = null,
-    showDragHandle: Boolean = false,
-    dragHandleModifier: Modifier = Modifier,
-    disableShowMenu: Boolean = false,
-    enableSwipeToQueue: Boolean = true,
-    snackbarHostState: SnackbarHostState? = null
-) {
-    val menuState = LocalMenuState.current
-    val haptic = LocalHapticFeedback.current
-
-    val playerConnection = LocalPlayerConnection.current ?: return
-    val isPlaying by playerConnection.isPlaying.collectAsState()
-    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
-
-    val isActive = song.id == mediaMetadata?.id
-
-    val listItem: @Composable () -> Unit = {
-        ListItem(
-            title = song.song.title,
-            subtitle = joinByBullet(
-                (if (BuildConfig.DEBUG) song.song.id else ""),
-                song.artists.joinToString { it.name },
-                makeTimeString(song.song.duration * 1000L)
-            ),
-            badges = {
-                if (showLikedIcon && song.song.liked) {
-                    Icon.Favorite()
-                }
-                if (showInLibraryIcon && song.song.isLocal) {
-                    Icon.FolderCopy()
-                } else if (showInLibraryIcon && song.song.inLibrary != null) {
-                    Icon.Library()
-                }
-                if (showDownloadIcon) {
-                    val downloadUtil = LocalDownloadUtil.current
-                    if (downloadUtil.getCustomDownload(song.id)) {
-                        Icon.Download(Download.STATE_COMPLETED)
-                    } else {
-                        val download by downloadUtil.getDownload(song.id)
-                            .collectAsState(initial = null)
-                        Icon.Download(download?.state)
-                    }
-                }
-            },
-            thumbnailContent = {
-                ItemThumbnail(
-                    thumbnailUrl = song.song.localPath ?: song.song.thumbnailUrl,
-                    albumIndex = albumIndex,
-                    isActive = isActive,
-                    isPlaying = isPlaying,
-                    shape = RoundedCornerShape(ThumbnailCornerRadius),
-                    modifier = Modifier.size(ListThumbnailSize),
-                    placeholderVariant = PlaceholderVariant.SONG
-                )
-            },
-            trailingContent = {
-                if (inSelectMode == true) {
-                    Checkbox(
-                        checked = isSelected,
-                        onCheckedChange = onSelectedChange
-                    )
-                } else {
-                    IconButton(
-                        onClick = {
-                            if (!disableShowMenu) {
-                                menuState.show {
-                                    SongMenu(
-                                        originalSong = song,
-                                        playlistSong = playlistSong,
-                                        playlist = playlist,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss
-                                    )
-                                }
-                            }
-
-                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                        }
-                    ) {
-                        Icon(
-                            Icons.Outlined.MoreVert,
-                            contentDescription = null
-                        )
-                    }
-                }
-
-                if (showDragHandle) {
-                    IconButton(
-                        onClick = { },
-                        modifier = dragHandleModifier
-                    ) {
-                        Icon(
-                            Icons.Outlined.DragHandle,
-                            contentDescription = null
-                        )
-                    }
-                }
-            },
-            isSelected = inSelectMode == true && isSelected,
-            isActive = isActive,
-            modifier = modifier.combinedClickable(
-                onClick = {
-                    if (inSelectMode == true) {
-                        onSelectedChange(!isSelected)
-                    } else if (song.id == mediaMetadata?.id) {
-                        playerConnection.player.togglePlayPause()
-                    } else {
-                        onPlay()
-                    }
-                },
-                onLongClick = {
-                    if (inSelectMode == null) {
-                        menuState.show {
-                            SongMenu(
-                                originalSong = song,
-                                navController = navController,
-                                onDismiss = menuState::dismiss
-                            )
-                        }
-                    } else if (!inSelectMode) {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onSelectedChange(true)
-                    }
-                }
-            )
-        )
-    }
-
-    SwipeToQueueBox(
-        item = song.toMediaItem(),
-        content = { listItem() },
-        snackbarHostState = snackbarHostState,
-        enabled = enableSwipeToQueue
-    )
-}
-
-@Composable
-fun SongFolderItem(
-    folderTitle: String,
-    subtitle: String?,
-    modifier: Modifier = Modifier,
-) = ListItem(
-    title = folderTitle,
-    subtitle = subtitle,
-    thumbnailContent = {
-        Icon(
-            Icons.Filled.Folder,
-            contentDescription = null,
-            modifier = modifier.size(48.dp)
-        )
-    },
-    modifier = modifier
-)
-
-@Composable
-fun SongFolderItem(
-    folder: DirectoryTree,
-    modifier: Modifier = Modifier,
-    folderTitle: String? = null,
-    menuState: MenuState,
-    navController: NavController,
-    subtitle: String?,
-) {
-    val database = LocalDatabase.current
-    var subDirSongCount by remember {
-        mutableIntStateOf(0)
-    }
-    LaunchedEffect(Unit) {
-        if (subtitle == null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                database.localSongCountInPath(folder.getFullSquashedDir()).first()
-                subDirSongCount = database.localSongCountInPath(folder.getFullSquashedDir()).first()
-            }
-        }
-    }
-
-    ListItem(
-        title = folderTitle ?: folder.currentDir,
-        subtitle = subtitle ?: pluralStringResource(R.plurals.n_song, subDirSongCount, subDirSongCount),
-        thumbnailContent = {
-            Icon(
-                Icons.Filled.Folder,
-                contentDescription = null,
-                modifier = modifier.size(48.dp)
-            )
-        },
-        trailingContent = {
-            val haptic = LocalHapticFeedback.current
-            IconButton(
-                onClick = {
-                    menuState.show {
-                        FolderMenu(
-                            folder = folder,
-                            navController = navController,
-                            onDismiss = menuState::dismiss
-                        )
-                    }
-                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                }
-            ) {
-                Icon(
-                    Icons.Outlined.MoreVert,
-                    contentDescription = null
-                )
-            }
-        },
-        modifier = modifier
-    )
-}
-
-@Composable
-fun SongGridItem(
-    song: Song,
-    modifier: Modifier = Modifier,
-    showLikedIcon: Boolean = true,
-    showInLibraryIcon: Boolean = false,
-    showDownloadIcon: Boolean = true,
-    badges: @Composable RowScope.() -> Unit = {
-        if (showLikedIcon && song.song.liked) {
-            Icon(
-                imageVector = Icons.Outlined.Favorite,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-        if (showInLibraryIcon && song.song.inLibrary != null) {
-            Icon(
-                imageVector = Icons.Outlined.LibraryAddCheck,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-        if (showDownloadIcon) {
-            val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
-            when (download?.state) {
-                Download.STATE_COMPLETED -> Icon(
-                    imageVector = Icons.Outlined.OfflinePin,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 2.dp)
-                )
-
-                STATE_QUEUED, STATE_DOWNLOADING -> CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .padding(end = 2.dp)
-                )
-
-                else -> {}
-            }
-        }
-    },
-    isActive: Boolean = false,
-    isPlaying: Boolean = false,
-    fillMaxWidth: Boolean = false,
-) = GridItem(
-    title = song.song.title,
-    subtitle = joinByBullet(
-        song.artists.joinToString { it.name },
-        makeTimeString(song.song.duration * 1000L)
-    ),
-    badges = badges,
-    thumbnailContent = {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(GridThumbnailHeight)
-        ) {
-            if (song.song.isLocal) {
-                val imageCache = LocalImageCache.current
-                AsyncImageLocal(
-                    image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                )
-            } else {
-                val context = LocalContext.current
-                val painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(context)
-                        .data(song.song.thumbnailUrl)
-                        .crossfade(true)
-                        .build()
-                )
-
-                ThemedPlaceholder(
-                    icon = Icons.Outlined.MusicNote,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius)),
-                    variant = PlaceholderVariant.SONG
-                )
-
-                androidx.compose.foundation.Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                )
-            }
-            PlayingIndicatorBox(
-                isActive = isActive,
-                playWhenReady = isPlaying,
-                color = Color.White,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        color = Color.Black.copy(alpha = ActiveBoxAlpha),
-                        shape = RoundedCornerShape(ThumbnailCornerRadius)
-                    )
-            )
-        }
-    },
-    fillMaxWidth = fillMaxWidth,
-    modifier = modifier
-)
-
-@Composable
-fun ArtistListItem(
-    artist: Artist,
-    modifier: Modifier = Modifier,
-    badges: @Composable RowScope.() -> Unit = {
-        if (artist.artist.bookmarkedAt != null) {
-            Icon.Favorite()
-        }
-
-        // assume if they have a non local artist ID, they are not local
-        if (artist.artist.isLocal) {
-            Icon(
-                Icons.Outlined.CloudOff,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-
-        if (artist.downloadCount > 0) {
-            Icon(
-                imageVector = Icons.Outlined.OfflinePin,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-    },
-    trailingContent: @Composable RowScope.() -> Unit = {},
-) = ListItem(
-    title = artist.artist.name,
-    subtitle = getNSongsString(artist.songCount, artist.downloadCount),
-    badges = badges,
-    thumbnailContent = {
-        val context = LocalContext.current
-        val painter = rememberAsyncImagePainter(
-            model = ImageRequest.Builder(context)
-                .data(artist.artist.thumbnailUrl)
-                .crossfade(true)
-                .build()
-        )
-        
-        Box(
-            modifier = Modifier
-                .size(ListThumbnailSize)
-                .clip(CircleShape)
-        ) {
-            ThemedPlaceholder(
-                icon = Icons.Outlined.MusicNote,
-                modifier = Modifier.fillMaxSize(),
-                variant = PlaceholderVariant.ARTIST
-            )
-            
-            androidx.compose.foundation.Image(
-                painter = painter,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    },
-    trailingContent = trailingContent,
-    modifier = modifier
-)
-
-@Composable
-fun ArtistGridItem(
-    artist: Artist,
-    modifier: Modifier = Modifier,
-    badges: @Composable RowScope.() -> Unit = {
-        if (artist.artist.bookmarkedAt != null) {
-            Icon.Favorite()
-        }
-
-        // assume if they have a non local artist ID, they are not local
-        if (artist.artist.isLocal) {
-            Icon(
-                Icons.Outlined.CloudOff,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-
-        if (artist.downloadCount > 0) {
-            Icon(
-                imageVector = Icons.Outlined.OfflinePin,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-    },
-    fillMaxWidth: Boolean = false,
-) = GridItem(
-    title = artist.artist.name,
-    subtitle = getNSongsString(artist.songCount, artist.downloadCount),
-    badges = badges,
-    thumbnailContent = {
-        val context = LocalContext.current
-        val painter = rememberAsyncImagePainter(
-            model = ImageRequest.Builder(context)
-                .data(artist.artist.thumbnailUrl)
-                .crossfade(true)
-                .build()
-        )
-        
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        ) {
-            ThemedPlaceholder(
-                icon = Icons.Outlined.MusicNote,
-                modifier = Modifier.fillMaxSize(),
-                variant = PlaceholderVariant.ARTIST
-            )
-            
-            androidx.compose.foundation.Image(
-                painter = painter,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    },
-    fillMaxWidth = fillMaxWidth,
-    modifier = modifier
-)
-
-@Composable
-fun AlbumListItem(
-    album: Album,
-    modifier: Modifier = Modifier,
-    showLikedIcon: Boolean = true,
-    badges: @Composable RowScope.() -> Unit = {
-        val database = LocalDatabase.current
-        val downloadUtil = LocalDownloadUtil.current
-        var songs by remember {
-            mutableStateOf(emptyList<Song>())
-        }
-
-        LaunchedEffect(Unit) {
-            database.albumSongs(album.id).collect {
-                songs = it
-            }
-        }
-
-        var downloadState by remember {
-            mutableIntStateOf(STATE_STOPPED)
-        }
-
-        LaunchedEffect(songs) {
-            val songs = songs.filterNot { it.song.isLocal }
-            if (songs.isEmpty()) return@LaunchedEffect
-            downloadUtil.downloads.collect { downloads ->
-                downloadState = when {
-                    songs.all { s -> downloads[s.id]?.state == Download.STATE_COMPLETED || downloadUtil.customDownloads.value.any { s.id == it.key } } -> Download.STATE_COMPLETED
-                    songs.all {
-                        downloads[it.id]?.state in listOf(
-                            STATE_QUEUED,
-                            STATE_DOWNLOADING,
-                            Download.STATE_COMPLETED
-                        )
-                    } -> STATE_DOWNLOADING
-
-                    else -> STATE_STOPPED
-                }
-            }
-        }
-
-        if (showLikedIcon && album.album.bookmarkedAt != null) {
-            Icon.Favorite()
-        }
-
-        Icon.Download(downloadState)
-    },
-    isActive: Boolean = false,
-    isPlaying: Boolean = false,
-    trailingContent: @Composable RowScope.() -> Unit = {},
-) = ListItem(
-    title = album.album.title,
-    subtitle = joinByBullet(
-        album.artists.joinToString { it.name },
-        album.takeIf { it.album.songCount != 0 }?.let { album ->
-            getNSongsString(album.album.songCount, album.downloadCount)
-        },
-        album.album.year?.toString()
-    ),
-    badges = badges,
-    thumbnailContent = {
-        ItemThumbnail(
-            thumbnailUrl = album.album.thumbnailUrl,
-            placeholderIcon = Icons.Outlined.Album,
-            isActive = isActive,
-            isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
-            modifier = Modifier.size(ListThumbnailSize),
-            placeholderVariant = PlaceholderVariant.ALBUM
-        )
-    },
-    trailingContent = trailingContent,
-    modifier = modifier
-)
-
-@Composable
-fun AlbumGridItem(
-    album: Album,
-    modifier: Modifier = Modifier,
-    coroutineScope: CoroutineScope,
-    badges: @Composable RowScope.() -> Unit = {
-        val database = LocalDatabase.current
-        val downloadUtil = LocalDownloadUtil.current
-        var songs by remember {
-            mutableStateOf(emptyList<Song>())
-        }
-
-        LaunchedEffect(Unit) {
-            database.albumSongs(album.id).collect {
-                songs = it
-            }
-        }
-
-        var downloadState by remember {
-            mutableIntStateOf(STATE_STOPPED)
-        }
-
-        LaunchedEffect(songs) {
-            val songs = songs.filterNot { it.song.isLocal }
-            if (songs.isEmpty()) return@LaunchedEffect
-            downloadUtil.downloads.collect { downloads ->
-                downloadState = when {
-                    songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED } -> Download.STATE_COMPLETED
-                    songs.all {
-                        downloads[it.id]?.state in listOf(
-                            STATE_QUEUED,
-                            STATE_DOWNLOADING,
-                            Download.STATE_COMPLETED
-                        )
-                    } -> STATE_DOWNLOADING
-
-                    else -> STATE_STOPPED
-                }
-            }
-        }
-
-        if (album.album.bookmarkedAt != null) {
-            Icon.Favorite()
-        }
-
-        Icon.Download(downloadState)
-    },
-    isActive: Boolean = false,
-    isPlaying: Boolean = false,
-    fillMaxWidth: Boolean = false,
-) = GridItem(
-    title = album.album.title,
-    subtitle = album.artists.joinToString { it.name },
-    badges = badges,
-    thumbnailContent = {
-        val database = LocalDatabase.current
-        val playerConnection = LocalPlayerConnection.current ?: return@GridItem
-
-        ItemThumbnail(
-            thumbnailUrl = album.album.thumbnailUrl,
-            placeholderIcon = Icons.Outlined.Album,
-            isActive = isActive,
-            isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
-            placeholderVariant = PlaceholderVariant.ALBUM
-        )
-
-        AlbumPlayButton(
-            visible = !isActive,
-            onClick = {
-                coroutineScope.launch {
-                    database.albumWithSongs(album.id).first()?.songs
-                        ?.map { it.toMediaMetadata() }
-                        ?.let {
-                            playerConnection.playQueue(
-                                ListQueue(
-                                    title = album.album.title,
-                                    items = it
-                                )
-                            )
-                        }
-                }
-            }
-        )
-    },
-    fillMaxWidth = fillMaxWidth,
-    modifier = modifier
-)
-
-@Composable
-fun AutoPlaylistListItem(
-    playlist: PlaylistEntity,
-    thumbnail: ImageVector,
-    modifier: Modifier = Modifier,
-    trailingContent: @Composable RowScope.() -> Unit = {},
-) = ListItem(
-    title = playlist.name,
-    subtitle = stringResource(id = R.string.auto_playlist),
-    thumbnailContent = {
-        Box(
-            modifier = Modifier
-                .size(ListThumbnailSize)
-                .background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
-                    shape = RoundedCornerShape(ThumbnailCornerRadius)
-                )
-        ) {
-            Icon(
-                imageVector = thumbnail,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(ListThumbnailSize / 2 + 4.dp)
-                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
-                    .align(Alignment.Center)
-            )
-        }
-    },
-    trailingContent = trailingContent,
-    modifier = modifier
-)
-
-@Composable
-fun AutoPlaylistGridItem(
-    playlist: PlaylistEntity,
-    thumbnail: ImageVector,
-    modifier: Modifier = Modifier,
-    fillMaxWidth: Boolean = false,
-) = GridItem(
-    title = playlist.name,
-    subtitle = stringResource(id = R.string.auto_playlist),
-    thumbnailContent = {
-        val width = maxWidth
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
-                    shape = RoundedCornerShape(ThumbnailCornerRadius)
-                )
-        ) {
-            Icon(
-                imageVector = thumbnail,
-                contentDescription = null,
-                tint = LocalContentColor.current.copy(alpha = 0.8f),
-                modifier = Modifier
-                    .size(width / 2 + 10.dp)
-                    .align(Alignment.Center)
-            )
-        }
-    },
-    fillMaxWidth = fillMaxWidth,
-    modifier = modifier
-)
-
-@Composable
-fun PlaylistListItem(
-    playlist: Playlist,
-    modifier: Modifier = Modifier,
-    trailingContent: @Composable RowScope.() -> Unit = {},
-) = ListItem(
-    title = playlist.playlist.name,
-    subtitle =
-        if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null)
-            getNSongsString(playlist.playlist.remoteSongCount)
-        else
-            getNSongsString(playlist.songCount, playlist.downloadCount),
-    badges = {
-        Icon(
-            imageVector = if (playlist.playlist.isEditable) Icons.Outlined.Edit else Icons.Outlined.EditOff,
-            contentDescription = null,
-            modifier = Modifier
-                .size(18.dp)
-                .padding(end = 2.dp)
-        )
-
-        if (playlist.playlist.isLocal) {
-            Icon(
-                imageVector = Icons.Outlined.CloudOff,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-
-        if (playlist.downloadCount > 0) {
-            Icon(
-                imageVector = Icons.Outlined.OfflinePin,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-    },
-    thumbnailContent = {
-        PlaylistThumbnail(
-            thumbnails = playlist.thumbnails,
-            size = ListThumbnailSize,
-            placeHolder = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
-                    contentDescription = null,
-                    modifier = Modifier.size(ListThumbnailSize)
-                )
-            },
-            shape = RoundedCornerShape(ThumbnailCornerRadius)
-        )
-    },
-    trailingContent = trailingContent,
-    modifier = modifier
-)
-
-@Composable
-fun PlaylistGridItem(
-    playlist: Playlist,
-    modifier: Modifier = Modifier,
-    fillMaxWidth: Boolean = false,
-) = GridItem(
-    title = playlist.playlist.name,
-    subtitle =
-        if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null)
-            getNSongsString(playlist.playlist.remoteSongCount)
-        else
-            getNSongsString(playlist.songCount, playlist.downloadCount),
-    badges = {
-        if (playlist.downloadCount > 0) {
-            Icon(
-                imageVector = Icons.Outlined.OfflinePin,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .padding(end = 2.dp)
-            )
-        }
-    },
-    thumbnailContent = {
-        val width = maxWidth
-        PlaylistThumbnail(
-            thumbnails = playlist.thumbnails,
-            size = width,
-            placeHolder = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.QueueMusic,
-                    contentDescription = null,
-                    tint = LocalContentColor.current.copy(alpha = 0.8f),
-                    modifier = Modifier
-                        .size(width / 2)
-                        .align(Alignment.Center)
-                )
-            },
-            shape = RoundedCornerShape(ThumbnailCornerRadius)
-        )
-    },
-    fillMaxWidth = fillMaxWidth,
-    modifier = modifier
 )
 
 @Composable
@@ -1551,7 +709,7 @@ fun YouTubeCardItem(
                     )
                     .size(20.dp)
             ) {
-                PlayingIndicator(
+                _root_ide_package_.com.dd3boh.outertune.ui.component.PlayingIndicator(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.height(18.dp),
                     barWidth = 3.dp,
@@ -1586,7 +744,7 @@ fun ItemThumbnail(
 
         if (thumbnailUrl == null || thumbnailUrl.startsWith("/storage")) {
             // local thumbnail arts
-            AsyncImageLocal(
+            _root_ide_package_.com.dd3boh.outertune.ui.component.AsyncImageLocal(
                 image = { thumbnailUrl?.let { imageCache.getLocalThumbnail(thumbnailUrl, true) } },
                 placeholderIcon = placeholderIcon,
                 contentScale = ContentScale.Crop,
@@ -1687,8 +845,8 @@ fun ItemThumbnail(
             }
         }
 
-        PlayingIndicatorBox(
-            isActive = isActive && !(context.getSystemService(Context.POWER_SERVICE) as PowerManager).isPowerSaveMode,
+        _root_ide_package_.com.dd3boh.outertune.ui.component.PlayingIndicatorBox(
+            isActive = isActive && !context.isPowerSaver(),
             playWhenReady = isPlaying,
             color = Color.White,
             modifier = Modifier
@@ -1698,77 +856,6 @@ fun ItemThumbnail(
                     shape = shape
                 )
         )
-    }
-}
-
-@Composable
-fun PlaylistThumbnail(
-    thumbnails: List<String>,
-    size: Dp,
-    placeHolder: @Composable () -> Unit,
-    shape: Shape,
-) {
-    val imageCache = LocalImageCache.current
-    when (thumbnails.size) {
-        0 -> placeHolder()
-
-        1 -> if (thumbnails[0].startsWith("/storage")) {
-            AsyncImage(
-                model = thumbnails[0],
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(size)
-                    .clip(shape)
-            )
-        } else {
-            AsyncImage(
-                model = thumbnails[0],
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(size)
-                    .clip(shape)
-            )
-        }
-
-        else -> Box(
-            modifier = Modifier
-                .size(size)
-                .clip(shape)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(shape)
-            ) {
-                listOf(
-                    Alignment.TopStart,
-                    Alignment.TopEnd,
-                    Alignment.BottomStart,
-                    Alignment.BottomEnd
-                ).fastForEachIndexed { index, alignment ->
-                    if (thumbnails.getOrNull(index)?.startsWith("/storage") == true) {
-                        AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(thumbnails[index], true) },
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .align(alignment)
-                                .size(size / 2)
-                        )
-                    } else {
-                        AsyncImage(
-                            model = thumbnails.getOrNull(index),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .align(alignment)
-                                .size(size / 2)
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -1802,7 +889,7 @@ fun BoxScope.AlbumPlayButton(
     }
 }
 
-private object Icon {
+object Icon {
     @Composable
     fun Favorite() {
         Icon(

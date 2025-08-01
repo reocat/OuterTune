@@ -208,9 +208,9 @@ import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.MusicService
 import com.dd3boh.outertune.playback.MusicService.MusicBinder
 import com.dd3boh.outertune.playback.PlayerConnection
-import com.dd3boh.outertune.ui.component.BottomSheetMenu
-import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.MenuState
+import com.dd3boh.outertune.ui.menu.BottomSheetMenu
+import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.menu.MenuState
 import com.dd3boh.outertune.ui.component.SearchBar
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerTheme

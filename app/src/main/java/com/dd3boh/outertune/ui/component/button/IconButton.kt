@@ -7,7 +7,7 @@
  * For any other attributions, refer to the git commit history
  */
 
-package com.dd3boh.outertune.ui.component
+package com.dd3boh.outertune.ui.component.button
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image

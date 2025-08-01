@@ -7,7 +7,7 @@
  * For any other attributions, refer to the git commit history
  */
 
-package com.dd3boh.outertune.ui.component
+package com.dd3boh.outertune.ui.dialog
 
 import android.content.ClipData
 import android.text.format.Formatter
@@ -80,7 +80,8 @@ import com.dd3boh.outertune.constants.DialogCornerRadius
 import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.MediaMetadata
-import com.dd3boh.outertune.utils.CurrentClientHolder
+import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.component.LazyColumnScrollbar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File

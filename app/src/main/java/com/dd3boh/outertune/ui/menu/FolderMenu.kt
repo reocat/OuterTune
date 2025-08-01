@@ -31,9 +31,9 @@ import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.DirectoryTree
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.component.GridMenu
-import com.dd3boh.outertune.ui.component.GridMenuItem
-import com.dd3boh.outertune.ui.component.SongFolderItem
+import com.dd3boh.outertune.ui.component.items.SongFolderItem
+import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
+import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
 import com.dd3boh.outertune.utils.joinByBullet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

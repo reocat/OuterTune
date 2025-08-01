@@ -1,4 +1,4 @@
-package com.dd3boh.outertune.ui.menu.dialog
+package com.dd3boh.outertune.ui.dialog
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,8 +23,8 @@ import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.models.MediaMetadata
-import com.dd3boh.outertune.ui.component.ListDialog
 
+@JvmName("ArtistDialogMediaMetadataArtist")
 @Composable
 fun ArtistDialog(
     navController: NavController,
@@ -69,6 +69,7 @@ fun ArtistDialog(
     }
 }
 
+@JvmName("ArtistDialogArtistEntity")
 @Composable
 fun ArtistDialog(
     navController: NavController,

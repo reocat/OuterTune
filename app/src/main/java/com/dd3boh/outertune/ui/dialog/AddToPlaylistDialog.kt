@@ -1,4 +1,4 @@
-package com.dd3boh.outertune.ui.menu
+package com.dd3boh.outertune.ui.dialog
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,12 +36,8 @@ import com.dd3boh.outertune.constants.YtmSyncModeKey
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.ui.component.CreatePlaylistDialog
-import com.dd3boh.outertune.ui.component.DefaultDialog
-import com.dd3boh.outertune.ui.component.InfoLabel
-import com.dd3boh.outertune.ui.component.ListDialog
-import com.dd3boh.outertune.ui.component.ListItem
-import com.dd3boh.outertune.ui.component.PlaylistListItem
+import com.dd3boh.outertune.ui.component.items.ListItem
+import com.dd3boh.outertune.ui.component.items.PlaylistListItem
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
