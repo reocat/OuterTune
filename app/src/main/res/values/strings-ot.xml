@@ -313,6 +313,12 @@ while also allowing users to translate our app as well. New, specific strings to
     <!-- Account setup page -->
     <string name="oobe_ytm_logon_title">Account</string>
     <string name="oobe_ytm_logon_subtitle">Sync with YouTube Music</string>
+    <string name="account_connected">Account connected</string>
+    <string name="login_required_description">Login to sync your YouTube Music library and access private content</string>
+    <string name="login_optional">Login is optional - you can use OuterTune without an account</string>
+    <string name="advanced_settings">Advanced Settings</string>
+    <string name="ytm_sync_description">Sync your YouTube Music library, playlists, and preferences</string>
+    <string name="token_description">View and edit your authentication token</string>
 
     <!-- Local media setup -->
     <string name="oobe_local_media_title">Local media</string>
@@ -320,9 +326,17 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="oobe_scan_for_local_music">Scan for Local Music</string>
 
     <!-- Setup complete -->
-    <string name="oobe_complete_title">You\'re All Set!</string>
-    <string name="oobe_complete">OuterTune is set up and ready to use. Explore your music, discover new tracks, and enjoy the experience!</string>
+    <string name="oobe_complete_title">Setup Complete</string>
+    <string name="oobe_complete_subtitle">OuterTune is configured and ready to use. Enjoy the experience!</string>
+    <string name="oobe_ready_to_rock">Ready to Rock!</string>
+    <string name="oobe_ready_to_rock_desc">Start exploring your music library or discover new tracks!</string>
 
+    <!-- Support & Info Section -->
+    <string name="support_and_info">Support and Information</string>
+    <string name="star_on_github">Star on GitHub</string>
+    <string name="star_on_github_desc">Help us grow by starring the project.</string>
+    <string name="report_issue">Report an Issue</string>
+    <string name="report_issue_desc">Found a bug? Let us know so we can fix it.</string>
     <!-- M3U -->
     <string name="import_failed_songs">Could not import</string>
     <string name="import_success_songs">Successfully imported</string>

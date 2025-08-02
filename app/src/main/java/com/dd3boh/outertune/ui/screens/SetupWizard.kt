@@ -8,19 +8,27 @@
 
 package com.dd3boh.outertune.ui.screens
 
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,33 +40,41 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.outlined.NavigateBefore
 import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SdCard
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.VpnKey
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -72,9 +88,9 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,8 +99,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -107,6 +121,7 @@ import com.dd3boh.outertune.constants.CountryCodeToName
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DataSyncIdKey
+import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
@@ -119,6 +134,7 @@ import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
+import com.dd3boh.outertune.ui.component.PreferenceItem
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.TokenEditorDialog
 import com.dd3boh.outertune.utils.rememberEnumPreference
@@ -126,19 +142,20 @@ import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 data class Feature(
     val title: String,
     val description: String,
-    val icon: ImageVector
+    val icon: ImageVector,
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SetupWizard(
     navController: NavController,
 ) {
-    val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
     val layoutDirection = LocalLayoutDirection.current
     val uriHandler = LocalUriHandler.current
 
@@ -148,36 +165,47 @@ fun SetupWizard(
         key = ContentLanguageKey,
         defaultValue = "system"
     )
-    val (contentCountry, onContentCountryChange) = rememberPreference(key = ContentCountryKey, defaultValue = "system")
+    val (contentCountry, onContentCountryChange) = rememberPreference(
+        key = ContentCountryKey,
+        defaultValue = "system"
+    )
 
     // content prefs
-    val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
+    val (darkMode, onDarkModeChange) = rememberEnumPreference(
+        DarkModeKey,
+        defaultValue = DarkMode.AUTO
+    )
+    val (dynamicTheme, onDynamicThemeChange) = rememberPreference(DynamicThemeKey, defaultValue = true)
     val (pureBlack, onPureBlackChange) = rememberPreference(PureBlackKey, defaultValue = false)
 
     val (accountName, onAccountNameChange) = rememberPreference(AccountNameKey, "")
     val (accountEmail, onAccountEmailChange) = rememberPreference(AccountEmailKey, "")
-    val (accountChannelHandle, onAccountChannelHandleChange) = rememberPreference(AccountChannelHandleKey, "")
+    val (accountChannelHandle, onAccountChannelHandleChange) = rememberPreference(
+        AccountChannelHandleKey,
+        ""
+    )
     val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
     val (visitorData, onVisitorDataChange) = rememberPreference(VisitorDataKey, "")
     val (dataSyncId, onDataSyncIdChange) = rememberPreference(DataSyncIdKey, "")
-    val isLoggedIn = remember(innerTubeCookie) {
-        "SAPISID" in parseCookieString(innerTubeCookie)
-    }
     val (ytmSync, onYtmSyncChange) = rememberPreference(LyricTrimKey, defaultValue = true)
 
     // local media prefs
-    val (localLibEnable, onLocalLibEnableChange) = rememberPreference(LocalLibraryEnableKey, defaultValue = true)
-    val (autoScan, onAutoScanChange) = rememberPreference(AutomaticScannerKey, defaultValue = false)
+    val (localLibEnable, onLocalLibEnableChange) = rememberPreference(
+        LocalLibraryEnableKey,
+        defaultValue = true
+    )
+    val (autoScan, onAutoScanChange) = rememberPreference(
+        AutomaticScannerKey,
+        defaultValue = false
+    )
 
-    var position by remember {
-        mutableIntStateOf(0)
-    }
+    val pagerState = rememberPagerState(pageCount = { 5 })
 
-    val MAX_POS = 4
-
-    if (position > 0) {
+    if (pagerState.currentPage > 0) {
         BackHandler {
-            position -= 1
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+            }
         }
     }
 
@@ -193,28 +221,30 @@ fun SetupWizard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 12.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable {
-                    if (position > 0) {
-                        position -= 1
+            TextButton(
+                onClick = {
+                    coroutineScope.launch {
+                        if (pagerState.currentPage > 0) {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
                     }
-                }
+                },
+                enabled = pagerState.currentPage > 0
             ) {
-                Text(
-                    text = stringResource(R.string.action_back),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-                )
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.NavigateBefore,
                     contentDescription = null
                 )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.action_back),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             LinearProgressIndicator(
-                progress = { position.toFloat() / MAX_POS },
+                progress = { (pagerState.currentPage + 1).toFloat() / pagerState.pageCount },
                 strokeCap = StrokeCap.Butt,
                 drawStopIndicator = {},
                 modifier = Modifier
@@ -223,20 +253,22 @@ fun SetupWizard(
                     .padding(2.dp),
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable {
-                    if (position < MAX_POS) {
-                        position += 1
+            TextButton(
+                onClick = {
+                    coroutineScope.launch {
+                        if (pagerState.currentPage < pagerState.pageCount - 1) {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
                     }
-                }
+                },
+                enabled = pagerState.currentPage < pagerState.pageCount - 1
             ) {
                 Text(
                     text = stringResource(R.string.action_next),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                    fontWeight = FontWeight.Bold
                 )
+                Spacer(Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.NavigateNext,
                     contentDescription = null
@@ -247,7 +279,7 @@ fun SetupWizard(
 
     Scaffold(
         bottomBar = {
-            if (position in 1..<MAX_POS) {
+            if (pagerState.currentPage in 1..<pagerState.pageCount - 1) {
                 Box(
                     Modifier
                         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
@@ -277,93 +309,106 @@ fun SetupWizard(
                 )
                 .fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(Modifier.height(WindowInsets.systemBars.asPaddingValues().calculateTopPadding() + 16.dp))
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                AnimatedContent(
+                    targetState = page,
+                    transitionSpec = {
+                        slideInHorizontally(initialOffsetX = { it }) + fadeIn() togetherWith
+                                slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
+                    },
+                    label = "page"
+                ) { targetPage ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            when (targetPage) {
+                                0 -> { // landing page
+                                    WelcomePage(
+                                        onSkip = {
+                                            oobeStatus = OOBE_VERSION
+                                        },
+                                        onRestoreBackup = {
+                                            navController.navigate("settings/backup_restore")
+                                        }
+                                    )
+                                }
 
-                when (position) {
-                    0 -> { // landing page
-                        WelcomePage(
-                            onNext = { position += 1 },
-                            onSkip = {
-                                oobeStatus = OOBE_VERSION
-                            },
-                            onRestoreBackup = {
-                                navController.navigate("settings/backup_restore")
+                                1 -> {
+                                    InterfacePage(
+                                        darkMode = darkMode,
+                                        onDarkModeChange = onDarkModeChange,
+                                        dynamicTheme = dynamicTheme,
+                                        onDynamicThemeChange = onDynamicThemeChange,
+                                        pureBlack = pureBlack,
+                                        onPureBlackChange = onPureBlackChange,
+                                        contentLanguage = contentLanguage,
+                                        onContentLanguageChange = onContentLanguageChange,
+                                        contentCountry = contentCountry,
+                                        onContentCountryChange = onContentCountryChange
+                                    )
+                                }
+
+                                2 -> {
+                                    AccountPage(
+                                        navController = navController,
+                                        accountName = accountName,
+                                        accountEmail = accountEmail,
+                                        accountChannelHandle = accountChannelHandle,
+                                        innerTubeCookie = innerTubeCookie,
+                                        onInnerTubeCookieChange = onInnerTubeCookieChange,
+                                        ytmSync = ytmSync,
+                                        onYtmSyncChange = onYtmSyncChange,
+                                        visitorData = visitorData,
+                                        onVisitorDataChange = onVisitorDataChange,
+                                        dataSyncId = dataSyncId,
+                                        onDataSyncIdChange = onDataSyncIdChange,
+                                        onAccountNameChange = onAccountNameChange,
+                                        onAccountEmailChange = onAccountEmailChange,
+                                        onAccountChannelHandleChange = onAccountChannelHandleChange
+                                    )
+                                }
+
+                                3 -> {
+                                    LocalMediaPage(
+                                        navController = navController,
+                                        localLibEnable = localLibEnable,
+                                        onLocalLibEnableChange = onLocalLibEnableChange,
+                                        autoScan = autoScan,
+                                        onAutoScanChange = onAutoScanChange
+                                    )
+                                }
+
+                                4 -> {
+                                    FinalPage(
+                                        uriHandler = uriHandler
+                                    )
+                                }
                             }
-                        )
-                    }
-
-                    1 -> {
-                        InterfacePage(
-                            navController = navController,
-                            darkMode = darkMode,
-                            onDarkModeChange = onDarkModeChange,
-                            pureBlack = pureBlack,
-                            onPureBlackChange = onPureBlackChange,
-                            contentLanguage = contentLanguage,
-                            onContentLanguageChange = onContentLanguageChange,
-                            contentCountry = contentCountry,
-                            onContentCountryChange = onContentCountryChange
-                        )
-                    }
-
-                    2 -> {
-                        AccountPage(
-                            navController = navController,
-                            isLoggedIn = isLoggedIn,
-                            accountName = accountName,
-                            accountEmail = accountEmail,
-                            accountChannelHandle = accountChannelHandle,
-                            innerTubeCookie = innerTubeCookie,
-                            onInnerTubeCookieChange = onInnerTubeCookieChange,
-                            ytmSync = ytmSync,
-                            onYtmSyncChange = onYtmSyncChange,
-                            visitorData = visitorData,
-                            onVisitorDataChange = onVisitorDataChange,
-                            dataSyncId = dataSyncId,
-                            onDataSyncIdChange = onDataSyncIdChange,
-                            onAccountNameChange = onAccountNameChange,
-                            onAccountEmailChange = onAccountEmailChange,
-                            onAccountChannelHandleChange = onAccountChannelHandleChange
-                        )
-                    }
-
-                    3 -> {
-                        LocalMediaPage(
-                            navController = navController,
-                            localLibEnable = localLibEnable,
-                            onLocalLibEnableChange = onLocalLibEnableChange,
-                            autoScan = autoScan,
-                            onAutoScanChange = onAutoScanChange
-                        )
-                    }
-
-                    4 -> {
-                        FinalPage(
-                            uriHandler = uriHandler,
-                            onFinish = {
-                                oobeStatus = OOBE_VERSION
-                            }
-                        )
+                        }
                     }
                 }
             }
-
-            if (position == 0 || position == MAX_POS) {
+            if (pagerState.currentPage == 0 || pagerState.currentPage == pagerState.pageCount - 1) {
                 FloatingActionButton(
                     modifier = Modifier
                         .padding(16.dp)
                         .align(Alignment.BottomEnd),
                     onClick = {
-                        if (position == 0) {
-                            position += 1
-                        } else {
-                            oobeStatus = OOBE_VERSION
+                        coroutineScope.launch {
+                            if (pagerState.currentPage == 0) {
+                                pagerState.animateScrollToPage(1)
+                            } else {
+                                oobeStatus = OOBE_VERSION
+                            }
                         }
                     }
                 ) {
@@ -375,13 +420,73 @@ fun SetupWizard(
             }
         }
     }
+
+
+}
+
+@Composable
+private fun WizardPage(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(Modifier.weight(0.5f))
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(64.dp)
+                    .padding(8.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.Start
+        ) {
+            content()
+        }
+        Spacer(Modifier.weight(1f))
+    }
 }
 
 @Composable
 private fun WelcomePage(
-    onNext: () -> Unit,
     onSkip: () -> Unit,
-    onRestoreBackup: () -> Unit
+    onRestoreBackup: () -> Unit,
 ) {
     val welcomeFeatures = listOf(
         Feature(
@@ -409,96 +514,78 @@ private fun WelcomePage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(24.dp)
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Image(
-            painter = painterResource(R.drawable.launcher_monochrome),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary, BlendMode.SrcIn),
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(
-                        NavigationBarDefaults.Elevation
-                    )
-                )
-                .clickable { }
-        )
-
-        Text(
-            text = stringResource(R.string.oobe_welcome_message),
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.weight(0.5f))
 
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            welcomeFeatures.forEach { feature ->
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .padding(4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = feature.icon,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
+            Image(
+                painter = painterResource(R.drawable.launcher_monochrome),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary, BlendMode.SrcIn),
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(
+                        MaterialTheme.colorScheme.surfaceColorAtElevation(
+                            NavigationBarDefaults.Elevation
+                        )
+                    )
+                    .clickable { }
+            )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.oobe_welcome_message),
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            )
+        }
 
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = feature.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = feature.description,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            welcomeFeatures.forEachIndexed { index, feature ->
+                PreferenceItem(
+                    title = { Text(feature.title, fontWeight = FontWeight.SemiBold) },
+                    description = feature.description,
+                    icon = {
+                        Icon(
+                            imageVector = feature.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    },
+                    isFirst = index == 0,
+                    isLast = index == welcomeFeatures.lastIndex,
+                    isMiddle = index > 0 && index < welcomeFeatures.lastIndex
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.weight(1f))
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 48.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             TextButton(
-                onClick = onRestoreBackup
+                onClick = onRestoreBackup,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = stringResource(R.string.oobe_use_backup),
@@ -507,7 +594,8 @@ private fun WelcomePage(
             }
 
             TextButton(
-                onClick = onSkip
+                onClick = onSkip,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = stringResource(R.string.action_skip),
@@ -520,50 +608,41 @@ private fun WelcomePage(
 
 @Composable
 private fun InterfacePage(
-    navController: NavController,
     darkMode: DarkMode,
     onDarkModeChange: (DarkMode) -> Unit,
+    dynamicTheme: Boolean,
+    onDynamicThemeChange: (Boolean) -> Unit,
     pureBlack: Boolean,
     onPureBlackChange: (Boolean) -> Unit,
     contentLanguage: String,
     onContentLanguageChange: (String) -> Unit,
     contentCountry: String,
-    onContentCountryChange: (String) -> Unit
+    onContentCountryChange: (String) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    WizardPage(
+        title = stringResource(R.string.grp_interface),
+        subtitle = stringResource(R.string.oobe_interface_subtitle),
+        icon = Icons.Outlined.DarkMode
     ) {
-        Icon(
-            imageVector = Icons.Outlined.DarkMode,
-            contentDescription = null,
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
         Text(
-            text = stringResource(R.string.grp_interface),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 8.dp)
+            text = "Appearance",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Text(
-            text = stringResource(R.string.oobe_interface_subtitle),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        ElevatedCard(
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.enable_dynamic_theme)) },
+                icon = { Icon(Icons.Outlined.Palette, null) },
+                checked = dynamicTheme,
+                onCheckedChange = onDynamicThemeChange,
+                isFirst = true
+            )
             EnumListPreference(
                 title = { Text(stringResource(R.string.dark_theme)) },
                 icon = { Icon(Icons.Outlined.DarkMode, null) },
@@ -575,20 +654,31 @@ private fun InterfacePage(
                         DarkMode.OFF -> stringResource(R.string.dark_theme_off)
                         DarkMode.AUTO -> stringResource(R.string.dark_theme_follow_system)
                     }
-                }
+                },
+                isMiddle = true
             )
 
             SwitchPreference(
                 title = { Text(stringResource(R.string.pure_black)) },
                 icon = { Icon(Icons.Outlined.Contrast, null) },
                 checked = pureBlack,
-                onCheckedChange = onPureBlackChange
+                onCheckedChange = onPureBlackChange,
+                isLast = true
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        ElevatedCard(
+        Text(
+            text = "Content Settings",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             ListPreference(
@@ -613,7 +703,8 @@ private fun InterfacePage(
                     )
 
                     onContentLanguageChange(newValue)
-                }
+                },
+                isFirst = true
             )
 
             ListPreference(
@@ -636,7 +727,8 @@ private fun InterfacePage(
                     )
 
                     onContentCountryChange(newValue)
-                }
+                },
+                isLast = true
             )
         }
     }
@@ -645,7 +737,6 @@ private fun InterfacePage(
 @Composable
 private fun AccountPage(
     navController: NavController,
-    isLoggedIn: Boolean,
     accountName: String,
     accountEmail: String,
     accountChannelHandle: String,
@@ -659,90 +750,101 @@ private fun AccountPage(
     onDataSyncIdChange: (String) -> Unit,
     onAccountNameChange: (String) -> Unit,
     onAccountEmailChange: (String) -> Unit,
-    onAccountChannelHandleChange: (String) -> Unit
+    onAccountChannelHandleChange: (String) -> Unit,
 ) {
     var showToken by remember { mutableStateOf(false) }
     var showTokenEditor by remember { mutableStateOf(false) }
+    val isLoggedIn by remember(innerTubeCookie) {
+        mutableStateOf("SAPISID" in parseCookieString(innerTubeCookie))
+    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    WizardPage(
+        title = stringResource(R.string.oobe_ytm_logon_title),
+        subtitle = stringResource(R.string.oobe_ytm_logon_subtitle),
+        icon = Icons.Outlined.AccountCircle
     ) {
-        Icon(
-            imageVector = Icons.Outlined.AccountCircle,
-            contentDescription = null,
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
         Text(
-            text = stringResource(R.string.oobe_ytm_logon_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 8.dp)
+            text = "YouTube Music Integration",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Text(
-            text = stringResource(R.string.oobe_ytm_logon_subtitle),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            PreferenceEntry(
-                title = { Text(if (isLoggedIn) accountName else stringResource(R.string.login)) },
-                description = if (isLoggedIn) {
-                    accountEmail.takeIf { it.isNotEmpty() }
-                        ?: accountChannelHandle.takeIf { it.isNotEmpty() }
-                } else null,
-                icon = { Icon(Icons.Outlined.Person, null) },
-                onClick = { navController.navigate("login") }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (isLoggedIn) {
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                PreferenceEntry(
-                    title = { Text(stringResource(R.string.logout)) },
-                    icon = { Icon(Icons.AutoMirrored.Outlined.Logout, null) },
-                    onClick = { onInnerTubeCookieChange("") }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        ElevatedCard(
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             PreferenceEntry(
                 title = {
-                    if (showToken) {
-                        Text(stringResource(R.string.token_shown))
-                        Text(
-                            text = if (isLoggedIn) innerTubeCookie else stringResource(R.string.not_logged_in),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Light,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
+                    Text(
+                        text = if (isLoggedIn) accountName.takeIf { it.isNotEmpty() }
+                            ?: stringResource(R.string.account_connected)
+                        else stringResource(R.string.login),
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                description = if (isLoggedIn) {
+                    accountEmail.takeIf { it.isNotEmpty() }
+                        ?: accountChannelHandle.takeIf { it.isNotEmpty() }
+                        ?: "Connected to YouTube Music"
+                } else {
+                    stringResource(R.string.login_required_description)
+                },
+                onClick = {
+                    if (isLoggedIn) {
+                        onInnerTubeCookieChange("")
                     } else {
-                        Text(stringResource(R.string.token_hidden))
+                        navController.navigate("login")
                     }
                 },
+                icon = {
+                    Icon(
+                        imageVector = if (isLoggedIn) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
+                        contentDescription = null,
+                        tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                trailingContent = {
+                    FilledTonalIconButton(
+                        onClick = {
+                            if (isLoggedIn) {
+                                onInnerTubeCookieChange("")
+                            } else {
+                                navController.navigate("login")
+                            }
+                        },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isLoggedIn) Icons.AutoMirrored.Outlined.Logout else Icons.AutoMirrored.Outlined.Login,
+                            contentDescription = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                },
+                isFirst = true
+            )
+
+            PreferenceEntry(
+                title = {
+                    if (showToken) {
+                        Column {
+                            Text(stringResource(R.string.token_shown), fontWeight = FontWeight.Medium)
+                            Text(
+                                text = innerTubeCookie.takeIf { it.isNotEmpty() } ?: "No token set",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Light,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 2,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        Text(stringResource(R.string.token_hidden), fontWeight = FontWeight.Medium)
+                    }
+                },
+                description = stringResource(R.string.token_description),
                 onClick = {
                     if (!showToken) {
                         showToken = true
@@ -752,88 +854,140 @@ private fun AccountPage(
                 },
                 icon = {
                     Icon(Icons.Outlined.VpnKey, null)
-                }
+                },
+                trailingContent = {
+                    FilledTonalIconButton(
+                        onClick = { showTokenEditor = true },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                            contentDescription = "Edit token",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                },
+                isLast = true
             )
         }
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
 
-        ElevatedCard(
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (isLoggedIn) "Account Connected" else "Account Optional",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (isLoggedIn) {
+                            "You can now sync your playlists, liked songs, and preferences with YouTube Music."
+                        } else {
+                            "Connecting your account enables playlist sync, recommendations, and personalized features."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Sync & Features",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             SwitchPreference(
                 title = { Text(stringResource(R.string.ytm_sync)) },
+                description = stringResource(R.string.ytm_sync_description),
                 icon = { Icon(Icons.Outlined.Lyrics, null) },
                 checked = ytmSync,
                 onCheckedChange = onYtmSyncChange,
                 isEnabled = isLoggedIn
             )
         }
+    }
 
-        if (showTokenEditor) {
-            TokenEditorDialog(
-                initialValue = innerTubeCookie,
-                onDone = { newToken ->
-                    onInnerTubeCookieChange(newToken)
-                    showTokenEditor = false
-                },
-                onDismiss = { showTokenEditor = false },
-                modifier = Modifier,
-                visitorData = visitorData,
-                dataSyncId = dataSyncId,
-                accountName = accountName,
-                accountEmail = accountEmail,
-                accountChannelHandle = accountChannelHandle,
-                onInnerTubeCookieChange = onInnerTubeCookieChange,
-                onVisitorDataChange = onVisitorDataChange,
-                onDataSyncIdChange = onDataSyncIdChange,
-                onAccountNameChange = onAccountNameChange,
-                onAccountEmailChange = onAccountEmailChange,
-                onAccountChannelHandleChange = onAccountChannelHandleChange
-            )
-        }
+    if (showTokenEditor) {
+        TokenEditorDialog(
+            initialValue = innerTubeCookie,
+            onDone = { newToken ->
+                onInnerTubeCookieChange(newToken)
+                showTokenEditor = false
+            },
+            onDismiss = { showTokenEditor = false },
+            modifier = Modifier,
+            visitorData = visitorData,
+            dataSyncId = dataSyncId,
+            accountName = accountName,
+            accountEmail = accountEmail,
+            accountChannelHandle = accountChannelHandle,
+            onInnerTubeCookieChange = onInnerTubeCookieChange,
+            onVisitorDataChange = onVisitorDataChange,
+            onDataSyncIdChange = onDataSyncIdChange,
+            onAccountNameChange = onAccountNameChange,
+            onAccountEmailChange = onAccountEmailChange,
+            onAccountChannelHandleChange = onAccountChannelHandleChange
+        )
     }
 }
+
 @Composable
 private fun LocalMediaPage(
     navController: NavController,
     localLibEnable: Boolean,
     onLocalLibEnableChange: (Boolean) -> Unit,
     autoScan: Boolean,
-    onAutoScanChange: (Boolean) -> Unit
+    onAutoScanChange: (Boolean) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    WizardPage(
+        title = stringResource(R.string.oobe_local_media_title),
+        subtitle = stringResource(R.string.oobe_local_media_subtitle),
+        icon = Icons.Outlined.LibraryMusic
     ) {
-        Icon(
-            imageVector = Icons.Outlined.LibraryMusic,
-            contentDescription = null,
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
         Text(
-            text = stringResource(R.string.oobe_local_media_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 8.dp)
+            text = "Local Library Settings",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Text(
-            text = stringResource(R.string.oobe_local_media_subtitle),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        ElevatedCard(
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             SwitchPreference(
@@ -841,97 +995,149 @@ private fun LocalMediaPage(
                 description = stringResource(R.string.local_library_enable_description),
                 icon = { Icon(Icons.Outlined.SdCard, null) },
                 checked = localLibEnable,
-                onCheckedChange = onLocalLibEnableChange
+                onCheckedChange = onLocalLibEnableChange,
+                isFirst = true
             )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
             SwitchPreference(
                 title = { Text(stringResource(R.string.auto_scanner_title)) },
                 description = stringResource(R.string.auto_scanner_description),
                 icon = { Icon(Icons.Outlined.Autorenew, null) },
                 checked = autoScan,
                 onCheckedChange = onAutoScanChange,
-                isEnabled = localLibEnable
+                isEnabled = localLibEnable,
+                isLast = true
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         if (localLibEnable) {
+            Spacer(modifier = Modifier.height(12.dp))
+
             ElevatedButton(
                 onClick = { navController.navigate("settings/local") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(24.dp)
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
                     Icons.Outlined.Search,
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(stringResource(R.string.oobe_scan_for_local_music))
+                Text(
+                    text = stringResource(R.string.oobe_scan_for_local_music),
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
             }
         }
     }
 }
+
 @Composable
 private fun FinalPage(
     uriHandler: UriHandler,
-    onFinish: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    WizardPage(
+        title = stringResource(R.string.oobe_complete_title),
+        subtitle = stringResource(R.string.oobe_complete_subtitle),
+        icon = Icons.Outlined.Check
     ) {
-        Icon(
-            imageVector = Icons.Outlined.Check,
-            contentDescription = null,
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = stringResource(R.string.oobe_complete_title),
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-        )
-        Text(
-            text = stringResource(R.string.oobe_complete),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-        )
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(vertical = 16.dp)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
-            FilledTonalIconButton(
-                onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune") },
-                modifier = Modifier.padding(horizontal = 8.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.github),
-                    contentDescription = "GitHub",
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    imageVector = Icons.Outlined.MusicNote,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.oobe_ready_to_rock),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.oobe_ready_to_rock_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
-            text = "${com.dd3boh.outertune.BuildConfig.VERSION_NAME} (${com.dd3boh.outertune.BuildConfig.VERSION_CODE}) | ${com.dd3boh.outertune.BuildConfig.FLAVOR}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp)
+            text = stringResource(R.string.support_and_info),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.star_on_github), fontWeight = FontWeight.Medium) },
+                description = stringResource(R.string.star_on_github_desc),
+                onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune") },
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.github),
+                        contentDescription = "GitHub",
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                isFirst = true
+            )
+
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.report_issue), fontWeight = FontWeight.Medium) },
+                description = stringResource(R.string.report_issue_desc),
+                onClick = { uriHandler.openUri("https://github.com/OuterTune/OuterTune/issues") },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.BugReport,
+                        contentDescription = "Report Issue",
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                isMiddle = true
+            )
+
+            val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "unknown"
+            val versionInfo = "${com.dd3boh.outertune.BuildConfig.VERSION_NAME} " +
+                    "(${com.dd3boh.outertune.BuildConfig.VERSION_CODE})"
+            val fullDescription = "$versionInfo\n$abi"
+
+            PreferenceItem(
+                title = { Text(stringResource(R.string.app_version), fontWeight = FontWeight.Medium) },
+                description = fullDescription,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = "App Version",
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                isLast = true
+            )
+        }
     }
 }
