@@ -856,6 +856,10 @@ class MainActivity : ComponentActivity() {
 
                         if (navBackStackEntry?.destination?.route?.startsWith("settings/") == true && playerConnection?.isPlaying?.value == true) {
                             playerBottomSheetState.collapseSoft()
+                        } else if (navBackStackEntry?.destination?.route?.startsWith("settings/") != true && playerConnection?.player?.currentMediaItem == null) {
+                            if (!playerBottomSheetState.isDismissed) {
+                                playerBottomSheetState.dismiss()
+                            }
                         }
 
                         navController.currentBackStackEntry?.destination?.route?.let {
