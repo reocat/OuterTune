@@ -223,4 +223,12 @@
     <string name="scanner_sensitivity_L0">Tomar el primer resultado proporcionado por YouTube cuando la búsqueda en YouTube esté habilitada, de lo contrario coincidirá con el título</string>
     <string name="err_restore_incompatible_database">No se pudo restaurar la base de datos incompatible</string>
     <string name="m3u_import_failed">No se encontraron canciones. El archivo M3U no es válido o no se encontraron canciones coincidentes.</string>
+    <string name="tap_show_more">Toque para mostrar más información</string>
+    <string name="all_contributors">Mostrar todos los contribuyentes</string>
+    <string name="att_contributor">Contribuyente</string>
+    <string name="att_lead_developer">Desarrollador principal</string>
+    <string name="att_maintainer">Mantenedor</string>
+    <string name="att_project_support">Apoyo al proyecto</string>
+    <string name="att_translator">Traductor (%s)</string>
+    <string name="lyrics_synced_clickable">Letras en las que se puede hacer clic</string>
 </resources>
