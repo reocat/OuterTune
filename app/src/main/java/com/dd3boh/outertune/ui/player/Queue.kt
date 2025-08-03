@@ -120,6 +120,7 @@ import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.LockQueueKey
 import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
+import com.dd3boh.outertune.constants.ScrollToCurrentSongKey
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.tabMode
@@ -234,6 +235,7 @@ fun BoxScope.QueueContent(
 
     // preferences
     var lockQueue by rememberPreference(LockQueueKey, defaultValue = false)
+    var scrollToCurrentSong by rememberPreference(ScrollToCurrentSongKey, defaultValue = false)
     
     // player
     val currentWindowIndex by playerConnection.currentWindowIndex.collectAsState()
@@ -387,7 +389,9 @@ fun BoxScope.QueueContent(
                 addAll(detachedQueue!!.getCurrentQueueShuffled())
             }
             detachedQueue?.let {
-                lazySongsListState.scrollToItem(it.getQueuePosShuffled())
+                if (scrollToCurrentSong) {
+                    lazySongsListState.scrollToItem(it.getQueuePosShuffled())
+                }
             }
             return@LaunchedEffect
         }
@@ -397,17 +401,17 @@ fun BoxScope.QueueContent(
             addAll(queueWindows.mapIndexedNotNull { index, w -> w.mediaItem.metadata?.copy(composeUidWorkaround = index.toDouble()) })
         }
 
-        if (currentWindowIndex != -1 && !isSearching) {
+        if (scrollToCurrentSong && currentWindowIndex != -1 && !isSearching) {
             lazySongsListState.scrollToItem(currentWindowIndex)
         }
 
         selectedItems.clear()
     }
 
-    LaunchedEffect(mqExpand) { // scroll to queue
+    LaunchedEffect(mqExpand, scrollToCurrentSong) { // scroll to queue
         if (mqExpand) {
             lazyQueuesListState.animateScrollToItem(playingQueue)
-            if (currentWindowIndex != -1) {
+            if (scrollToCurrentSong && currentWindowIndex != -1) {
                 lazySongsListState.scrollToItem(currentWindowIndex)
             }
         }

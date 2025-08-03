@@ -32,6 +32,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="song_added_to_queue">\"%s\" inserted into queue</string>
     <string name="song_added_to_queue_end">\"%s\" added to the end of queue</string>
     <string name="queues_empty">No queues</string>
+    <string name="queue_scroll_to_current_song_title">Scroll to current song</string>
+    <string name="queue_scroll_to_current_song_description">Automatically scroll the queue to the currently playing song</string>
+
 
     <!-- Playlist -->
     <string name="auto_playlist">Auto playlist</string>

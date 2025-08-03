@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.GridView
@@ -69,6 +70,7 @@ import com.dd3boh.outertune.constants.GridCellSizeKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
+import com.dd3boh.outertune.constants.ScrollToCurrentSongKey
 import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SwipeSensitivityKey
@@ -432,6 +434,7 @@ fun ColumnScope.SwipeGesturesFrag() {
         SwipeSensitivityKey,
         defaultValue = 0.73f
     )
+    val (scrollToCurrentSong, onScrollToCurrentSongChange) = rememberPreference(ScrollToCurrentSongKey, defaultValue = false)
 
     SwitchPreference(
         title = { Text(stringResource(R.string.swipe2Queue)) },
@@ -448,9 +451,9 @@ fun ColumnScope.SwipeGesturesFrag() {
         icon = { Icon(Icons.Outlined.Swipe, null) },
         checked = swipeToSkip,
         onCheckedChange = onSwipeToSkipChange,
-        isMiddle = swipeToSkip,
-        isLast = !swipeToSkip
+        isMiddle = true
     )
+
     AnimatedVisibility(swipeToSkip) {
         Column {
             var showSensitivityDialog by rememberSaveable { mutableStateOf(false) }
@@ -478,10 +481,19 @@ fun ColumnScope.SwipeGesturesFrag() {
                 description = stringResource(R.string.sensitivity_percentage, (swipeSensitivity * 100).roundToInt()),
                 icon = { Icon(Icons.Outlined.Tune, null) },
                 onClick = { showSensitivityDialog = true },
-                isLast = true
+                isMiddle = true
             )
         }
     }
+
+    SwitchPreference(
+        title = { Text(stringResource(R.string.queue_scroll_to_current_song_title)) },
+        description = stringResource(R.string.queue_scroll_to_current_song_description),
+        icon = { Icon(Icons.AutoMirrored.Outlined.ListAlt, null) },
+        checked = scrollToCurrentSong,
+        onCheckedChange = onScrollToCurrentSongChange,
+        isLast = true
+    )
 }
 
 @Composable
