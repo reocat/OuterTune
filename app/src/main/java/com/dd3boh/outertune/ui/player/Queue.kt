@@ -46,6 +46,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -66,12 +67,9 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -136,6 +134,7 @@ import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.MediaMetadataListItem
 import com.dd3boh.outertune.ui.component.ResizableIconButton
 import com.dd3boh.outertune.ui.component.SelectHeader
+import com.dd3boh.outertune.ui.component.SwipeActionBox
 import com.dd3boh.outertune.ui.menu.PlayerMenu
 import com.dd3boh.outertune.ui.menu.QueueMenu
 import com.dd3boh.outertune.utils.makeTimeString
@@ -630,19 +629,6 @@ fun BoxScope.QueueContent(
                     state = reorderableState,
                     key = window.hashCode()
                 ) {
-                    val dismissState = rememberSwipeToDismissBoxState()
-
-                    LaunchedEffect(dismissState.currentValue) {
-                        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
-                            if (qb.removeCurrentQueueSong(index)) {
-                                playerConnection.player.removeMediaItem(index)
-                                mutableSongs.removeAt(index)
-                            }
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                            dismissState.reset()
-                        }
-                    }
-
                     val onCheckedChange: (Boolean) -> Unit = {
                         haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                         if (it) {
@@ -709,11 +695,11 @@ fun BoxScope.QueueContent(
                                                 if (index == currentWindowIndex && !detachedHead) {
                                                     playerConnection.player.togglePlayPause()
                                                 } else {
-                                                    val index = index // race condition...?
+                                                    val itemIndex = index // race condition...?
                                                     if (detachedHead) {
                                                         qb.setCurrQueue(detachedQueue, false)
                                                     }
-                                                    playerConnection.player.seekToDefaultPosition(index)
+                                                    playerConnection.player.seekToDefaultPosition(itemIndex)
                                                     playerConnection.player.prepare() // else cannot click to play after auto-skip onError stop
                                                     playerConnection.player.playWhenReady = true
                                                 }
@@ -732,9 +718,14 @@ fun BoxScope.QueueContent(
                     }
 
                     if (!lockQueue && !inSelectMode && !detachedHead) {
-                        SwipeToDismissBox(
-                            state = dismissState,
-                            backgroundContent = {},
+                        SwipeActionBox(
+                            firstAction = Pair(Icons.Outlined.Delete) {
+                                if (qb.removeCurrentQueueSong(index)) {
+                                    playerConnection.player.removeMediaItem(index)
+                                    mutableSongs.removeAt(index)
+                                }
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            },
                             content = { content() }
                         )
                     } else {
