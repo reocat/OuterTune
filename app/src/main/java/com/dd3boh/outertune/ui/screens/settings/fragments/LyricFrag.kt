@@ -36,14 +36,18 @@ import com.dd3boh.outertune.constants.EnableKugouKey
 import com.dd3boh.outertune.constants.EnableLrcLibKey
 import com.dd3boh.outertune.constants.LyricClickable
 import com.dd3boh.outertune.constants.LyricFontSizeKey
+import com.dd3boh.outertune.constants.LyricKaraokeEnable
 import com.dd3boh.outertune.constants.LyricSourcePrefKey
 import com.dd3boh.outertune.constants.LyricTrimKey
+import com.dd3boh.outertune.constants.LyricUpdateSpeed
 import com.dd3boh.outertune.constants.LyricsPosition
 import com.dd3boh.outertune.constants.LyricsScrollKey
 import com.dd3boh.outertune.constants.LyricsTextPositionKey
 import com.dd3boh.outertune.constants.MultilineLrcKey
+import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.ui.dialog.CounterDialog
 import com.dd3boh.outertune.ui.component.EnumListPreference
+import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SliderDialog
 import com.dd3boh.outertune.ui.component.SwitchPreference
@@ -209,4 +213,52 @@ fun ColumnScope.LyricSourceFrag(navController: NavController) {
         onCheckedChange = onPreferLocalLyric,
         isLast = true
     )
+}
+
+@Composable
+fun ColumnScope.LyricAdvancedFrag() {
+    val (lyricUpdateSpeed, onLyricsUpdateSpeedChange) = rememberEnumPreference(LyricUpdateSpeed, Speed.MEDIUM)
+    val (lyricsFancy, onLyricsFancyChange) = rememberPreference(LyricKaraokeEnable, false)
+    val (syncedLyricsClickable, onSyncedLyricsClickable) = rememberPreference(LyricClickable, defaultValue = true)
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // clickable lyrics
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_synced_clickable)) },
+            icon = { Icon(Icons.Rounded.TouchApp, null) },
+            checked = syncedLyricsClickable,
+            onCheckedChange = onSyncedLyricsClickable
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        SwitchPreference(
+            title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
+            description = stringResource(R.string.lyrics_karaoke_description),
+            icon = { Icon(Icons.Rounded.TextRotationAngledown, null) },
+            checked = lyricsFancy,
+            onCheckedChange = onLyricsFancyChange
+        )
+
+        ListPreference(
+            title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
+            icon = { Icon(Icons.Rounded.Speed, null) },
+            selectedValue = lyricUpdateSpeed,
+            onValueSelected = onLyricsUpdateSpeedChange,
+            values = Speed.entries,
+            valueText = {
+                when (it) {
+                    Speed.SLOW -> stringResource(R.string.speed_slow)
+                    Speed.MEDIUM -> stringResource(R.string.speed_medium)
+                    Speed.FAST -> stringResource(R.string.speed_fast)
+                }
+            },
+            isEnabled = lyricsFancy
+        )
+    }
 }

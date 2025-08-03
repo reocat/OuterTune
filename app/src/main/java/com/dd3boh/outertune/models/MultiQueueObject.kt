@@ -13,7 +13,7 @@ data class MultiQueueObject(
     val id: Long,
     var title: String,
     /**
-     * The order of songs are dynamic. This should not be accessed form outside QueueBoard.
+     * The order of songs are dynamic. This should not be accessed from outside QueueBoard.
      */
     val queue: MutableList<MediaMetadata>,
     var shuffled: Boolean = false,
@@ -22,7 +22,6 @@ data class MultiQueueObject(
     var index: Int, // order of queue
     /**
      * Song id to start watch endpoint
-     * TODO: change this in database too
      */
     var playlistId: String? = null,
 ) {

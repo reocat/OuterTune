@@ -409,10 +409,6 @@ class LocalMediaScanner(val context: Context) {
                     if (SCANNER_DEBUG)
                         Timber.tag(TAG).v("PATH: $path")
 
-                    /**
-                     * TODO: do not link album (and whatever song id) with youtube yet, figure that out later
-                     */
-
                     if (!SYNC_SCANNER) {
                         // use async scanner
                         scannerJobs.add(
@@ -525,10 +521,6 @@ Timber.tag(TAG).d(
 
                     if (SCANNER_DEBUG)
                         Timber.tag(TAG).d("PATH: $uri")
-
-                    /**
-                     * TODO: do not link album (and whatever song id) with youtube yet, figure that out later
-                     */
 
                     if (!SYNC_SCANNER) {
                         // use async scanner

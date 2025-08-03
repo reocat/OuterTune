@@ -32,6 +32,8 @@ import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.ColumnWithContentPadding
 import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
+import com.dd3boh.outertune.ui.component.SettingsClickToReveal
+import com.dd3boh.outertune.ui.screens.settings.fragments.LyricAdvancedFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricFormatFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricParserFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.LyricSourceFrag

@@ -109,7 +109,6 @@ data class ContributorInfo(
     val url: String? = null
 )
 
-// TODO: localized contributor types
 enum class ContributorType {
     // General code contributor
     CONTRIBUTOR,

@@ -315,46 +315,6 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
     @Delete
     fun delete(event: Event)
 
-    @Transaction
-    @Query("DELETE FROM genre WHERE isLocal = 1")
-    fun nukeLocalGenre()
-
-    @Transaction
-    @Query("""
-DELETE FROM format 
-WHERE format.id IS NOT NULL 
-AND NOT EXISTS (
-    SELECT 1 FROM song WHERE song.id = format.id
-);
-    """)
-    fun nukeDanglingFormatEntities()
-
-    @Transaction
-    @Query("DELETE FROM lyrics WHERE lyrics.id IN (SELECT song.id FROM song WHERE song.isLocal)")
-    fun nukeLocalLyrics()
-
-    @Transaction
-    @Query("DELETE FROM lyrics WHERE lyrics.id NOT IN (SELECT song.id FROM song)")
-    fun nukeDanglingLyrics()
-
-    @Transaction
-    @Query("DELETE FROM playlist WHERE isLocal = 0")
-    fun nukeRemotePlaylists()
-
-    @Transaction
-    fun nukeLocalData() {
-        nukeLocalSongs()
-        nukeLocalArtists()
-        nukeLocalAlbums()
-        nukeLocalGenre()
-    }
-
-    @RawQuery
-    fun raw(supportSQLiteQuery: SupportSQLiteQuery): Int
-
-    fun checkpoint() {
-        raw("PRAGMA wal_checkpoint(FULL)".toSQLiteQuery())
-    }
 
     /**
      * Queueboard
@@ -494,4 +454,49 @@ AND NOT EXISTS (
 
     @Query("SELECT * FROM recent_activity ORDER BY date DESC")
     fun recentActivity(): Flow<List<RecentActivityEntity>>
+
+    /**
+     * Nukes
+     */
+
+    @Transaction
+    @Query("DELETE FROM genre WHERE isLocal = 1")
+    fun nukeLocalGenre()
+
+    @Transaction
+    @Query("""
+DELETE FROM format 
+WHERE format.id IS NOT NULL 
+AND NOT EXISTS (
+    SELECT 1 FROM song WHERE song.id = format.id
+);
+    """)
+    fun nukeDanglingFormatEntities()
+
+    @Transaction
+    @Query("DELETE FROM lyrics WHERE lyrics.id IN (SELECT song.id FROM song WHERE song.isLocal)")
+    fun nukeLocalLyrics()
+
+    @Transaction
+    @Query("DELETE FROM lyrics WHERE lyrics.id NOT IN (SELECT song.id FROM song)")
+    fun nukeDanglingLyrics()
+
+    @Transaction
+    @Query("DELETE FROM playlist WHERE isLocal = 0")
+    fun nukeRemotePlaylists()
+
+    @Transaction
+    fun nukeLocalData() {
+        nukeLocalSongs()
+        nukeLocalArtists()
+        nukeLocalAlbums()
+        nukeLocalGenre()
+    }
+
+    @RawQuery
+    fun raw(supportSQLiteQuery: SupportSQLiteQuery): Int
+
+    fun checkpoint() {
+        raw("PRAGMA wal_checkpoint(FULL)".toSQLiteQuery())
+    }
 }

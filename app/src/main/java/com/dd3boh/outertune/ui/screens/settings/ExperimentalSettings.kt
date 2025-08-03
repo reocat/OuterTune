@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -61,10 +60,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
+import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
-import com.dd3boh.outertune.constants.LyricKaraokeEnable
-import com.dd3boh.outertune.constants.LyricUpdateSpeed
 import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.Speed
@@ -72,12 +70,10 @@ import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.ColumnWithContentPadding
 import com.dd3boh.outertune.ui.component.button.IconButton
-import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.utils.backToMain
-import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import kotlinx.coroutines.Dispatchers
@@ -94,9 +90,10 @@ fun ExperimentalSettings(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val database = LocalDatabase.current
     val haptic = LocalHapticFeedback.current
-    val coroutineScope = rememberCoroutineScope()
+    val imageCache = LocalImageCache.current
 
     // state variables and such
     val (tabletUi, onTabletUiChange) = rememberPreference(TabletUiKey, defaultValue = false)
@@ -169,6 +166,14 @@ fun ExperimentalSettings(
         PreferenceGroupTitle(
             title = stringResource(R.string.settings_debug)
         )
+        PreferenceEntry(
+            title = { Text("Flush local image cache") },
+            icon = { Icon(Icons.Rounded.Delete, null) },
+            onClick = {
+                imageCache.purgeCache()
+            }
+        )
+
         // dev settings
         SwitchPreference(
             title = { Text(stringResource(R.string.dev_settings_title)) },
