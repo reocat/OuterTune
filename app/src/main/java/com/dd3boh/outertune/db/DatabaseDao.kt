@@ -72,7 +72,6 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                          SELECT id
                          FROM (SELECT id
                                FROM song
-                               ORDER BY totalPlayTime DESC
                                LIMIT 10))
         ORDER BY referredCount DESC
         LIMIT 100

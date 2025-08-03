@@ -253,7 +253,6 @@ fun FolderScreen(
                 SongSortType.RELEASE_DATE -> numberToAlpha(it.song.getDateLong() ?: -1L)
                 SongSortType.NAME -> it.song.title.lowercase()
                 SongSortType.ARTIST -> it.artists.joinToString { artist -> artist.name }.lowercase()
-                SongSortType.PLAY_TIME -> numberToAlpha(it.song.totalPlayTime)
                 SongSortType.PLAY_COUNT -> numberToAlpha((it.playCount?.fastSumBy { it.count })?.toLong() ?: 0L)
             }
         }
@@ -395,7 +394,6 @@ fun FolderScreen(
                                     SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
                                     SongSortType.NAME -> R.string.sort_by_name
                                     SongSortType.ARTIST -> R.string.sort_by_artist
-                                    SongSortType.PLAY_TIME -> R.string.sort_by_play_time
                                     SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
                                 }
                             }

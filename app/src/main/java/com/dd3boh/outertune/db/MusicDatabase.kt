@@ -691,3 +691,8 @@ class Migration12To13 : AutoMigrationSpec {
     DeleteColumn(tableName = "playCount", columnName = "id"),
 )
 class Migration17To18 : AutoMigrationSpec
+
+@DeleteColumn.Entries(
+    DeleteColumn(tableName = "song", columnName = "totalPlayTime"),
+)
+class Migration19To20 : AutoMigrationSpec

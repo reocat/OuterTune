@@ -144,7 +144,6 @@ interface SongsDao {
             SongSortType.RELEASE_DATE -> songsByReleaseDateAsc()
             SongSortType.NAME -> songsByNameAsc()
             SongSortType.ARTIST -> songsByArtistAsc()
-            SongSortType.PLAY_TIME -> songsByPlayTimeAsc()
             SongSortType.PLAY_COUNT -> songsByPlayCountAsc()
         }.map { it.reversed(descending) }
 
@@ -264,7 +263,6 @@ interface SongsDao {
             SongSortType.RELEASE_DATE -> likedSongsByReleaseDateAsc()
             SongSortType.NAME -> likedSongsByNameAsc()
             SongSortType.ARTIST -> likedSongsByArtistAsc()
-            SongSortType.PLAY_TIME -> likedSongsByPlayTimeAsc()
             SongSortType.PLAY_COUNT -> likedSongsByPlayCountAsc()
         }.map { it.reversed(descending) }
     // endregion
@@ -332,10 +330,6 @@ interface SongsDao {
     """)
     fun downloadSongsByArtistAsc(): Flow<List<Song>>
 
-    @Transaction
-    @Query("SELECT * FROM song WHERE isLocal = 0 AND dateDownload IS NOT NULL ORDER BY totalPlayTime")
-    fun downloadSongsByPlayTimeAsc(): Flow<List<Song>>
-
     @RewriteQueriesToDropUnusedColumns
     @Transaction
     @Query("""
@@ -355,7 +349,6 @@ interface SongsDao {
             SongSortType.RELEASE_DATE -> downloadSongsByReleaseDateAsc()
             SongSortType.NAME -> downloadSongsByNameAsc()
             SongSortType.ARTIST -> downloadSongsByArtistAsc()
-            SongSortType.PLAY_TIME -> downloadSongsByPlayTimeAsc()
             SongSortType.PLAY_COUNT -> downloadSongsByPlayCountAsc()
         }.map { it.reversed(descending) }
     // endregion

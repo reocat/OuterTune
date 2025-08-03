@@ -183,7 +183,6 @@ class DirectoryTree(path: String, var culmSongs: CulmSongs) {
                 SongSortType.RELEASE_DATE -> it.song.getDateLong().toString()
                 SongSortType.NAME -> it.song.title
                 SongSortType.ARTIST -> it.artists.firstOrNull()?.name
-                SongSortType.PLAY_TIME -> it.song.totalPlayTime.toString()
                 SongSortType.PLAY_COUNT -> it.playCount.toString()
             }
         }
@@ -216,7 +215,6 @@ class DirectoryTree(path: String, var culmSongs: CulmSongs) {
                 SongSortType.RELEASE_DATE -> it.song.getDateLong().toString()
                 SongSortType.NAME -> it.song.title
                 SongSortType.ARTIST -> it.artists.firstOrNull()?.name
-                SongSortType.PLAY_TIME -> it.song.totalPlayTime.toString()
                 SongSortType.PLAY_COUNT -> it.playCount.toString()
             }
         }

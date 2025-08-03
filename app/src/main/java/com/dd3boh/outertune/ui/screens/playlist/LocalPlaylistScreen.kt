@@ -450,7 +450,6 @@ fun LocalPlaylistScreen(
                                         PlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
                                         PlaylistSongSortType.NAME -> R.string.sort_by_name
                                         PlaylistSongSortType.ARTIST -> R.string.sort_by_artist
-                                        PlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
                                     }
                                 },
                                 modifier = Modifier.weight(1f)

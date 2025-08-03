@@ -1017,7 +1017,6 @@ class MusicService : MediaLibraryService(),
         if (playRatio >= minPlaybackDur && !dataStore.get(PauseListenHistoryKey, false)) {
             database.query {
                 incrementPlayCount(mediaItem.mediaId)
-                incrementTotalPlayTime(mediaItem.mediaId, playbackStats.totalPlayTimeMs)
                 try {
                     insert(
                         Event(

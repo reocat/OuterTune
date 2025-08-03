@@ -27,21 +27,22 @@ import java.time.ZoneOffset
 data class SongEntity(
     @PrimaryKey val id: String,
     val title: String,
-    val duration: Int = -1, // in seconds
+    val duration: Int = -1, // in seconds TODO: in milliseconds
     val thumbnailUrl: String? = null,
+    val inLibrary: LocalDateTime? = null, // doubles as "date added"
+    @ColumnInfo(name = "isLocal", defaultValue = false.toString())
+    val isLocal: Boolean = false,
+    val localPath: String?,
+    val dateDownload: LocalDateTime? = null, // doubles as "isDownloaded" for new downloader system
+    val liked: Boolean = false,
+    val likedDate: LocalDateTime? = null,
+
+    // misc non-critical tags
     val albumId: String? = null,
     val albumName: String? = null,
     val year: Int? = null,
     val date: LocalDateTime? = null, // ID3 tag property
     val dateModified: LocalDateTime? = null, // file property
-    val liked: Boolean = false,
-    val likedDate: LocalDateTime? = null,
-    val totalPlayTime: Long = 0, // in milliseconds
-    val inLibrary: LocalDateTime? = null, // doubles as "date added"
-    @ColumnInfo(name = "isLocal", defaultValue = false.toString())
-    val isLocal: Boolean = false,
-    val localPath: String?,
-    val dateDownload: LocalDateTime? = null, // doubles as "isDownloaded"
 ) {
 
     fun localToggleLike() = copy(

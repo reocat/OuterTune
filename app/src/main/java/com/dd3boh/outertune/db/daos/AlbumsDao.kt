@@ -201,7 +201,6 @@ interface AlbumsDao : ArtistsDao {
             AlbumSortType.YEAR -> "album.year ASC"
             AlbumSortType.SONG_COUNT -> "album.songCount ASC"
             AlbumSortType.LENGTH -> "album.duration ASC"
-            AlbumSortType.PLAY_TIME -> "SUM(song.totalPlayTime) ASC"
         }
 
         val where = when (filter) {
