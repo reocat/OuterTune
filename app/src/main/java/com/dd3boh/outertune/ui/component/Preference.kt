@@ -48,6 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.dd3boh.outertune.ui.screens.settings.IconType
 import com.dd3boh.outertune.ui.screens.settings.SettingsItem
 
+private val PREFERENCE_CARD_SPACING = 2.dp
+
 @Composable
 fun PreferenceItem(
     modifier: Modifier = Modifier,
@@ -117,7 +119,7 @@ fun PreferenceItem(
         }
 
         if (!isLast && (isFirst || isMiddle)) {
-            Spacer(modifier = Modifier.height(1.dp))
+            Spacer(modifier = Modifier.height(PREFERENCE_CARD_SPACING))
         }
     }
 }
@@ -130,14 +132,13 @@ fun SettingsScreenSection(
     onUpdateClick: (() -> Unit)? = null
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         section.items.forEachIndexed { index, item ->
             val isSingle = section.items.size == 1
             val isFirst = index == 0 && !isSingle
             val isLast = index == section.items.lastIndex && !isSingle
-            
+
 
             SettingsScreenItem(
                 item = item,
@@ -380,13 +381,6 @@ fun SettingsScreenItem(
     isLast: Boolean = false,
     isSingle: Boolean = false
 ) {
-    val cardShape = when {
-        isSingle -> RoundedCornerShape(16.dp)
-        isFirst -> RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
-        isLast -> RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
-        else -> RoundedCornerShape(8.dp)
-    }
-
     PreferenceItem(
         modifier = Modifier.fillMaxWidth(),
         title = {
