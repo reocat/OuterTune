@@ -46,6 +46,8 @@ class TagLibScanner : MetadataScanner {
             val songId = SongEntity.generateSongId()
             var rawTitle: String? = null
             var albumName: String? = null
+            var trackNumber: Int? = null
+            var discNumber: Int? = null
             var year: Int? = null
             var date: LocalDateTime? = null
             var codec: String
@@ -55,6 +57,7 @@ class TagLibScanner : MetadataScanner {
             var rawDuration: Int
             var replayGain: Double? = null
 
+            var extraData: String = "" // extra data field
             var allData = "" // for debugging
 
             var artistList = ArrayList<ArtistEntity>()
@@ -125,7 +128,28 @@ class TagLibScanner : MetadataScanner {
                                 }
                             }
                         }
-                        else -> {}
+
+                        "TRACKNUMBER" -> {
+                            try {
+                            trackNumber = parseInt(it)
+                            } catch (e: Exception) {
+                                if (SCANNER_DEBUG) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                        "DISCNUMBER" -> {
+                            try {
+                                discNumber = parseInt(it)
+                            } catch (e: Exception) {
+                                if (SCANNER_DEBUG) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                        else -> {
+                            extraData += "$key: $it\n"
+                        }
                     }
                 }
             }
@@ -179,6 +203,8 @@ class TagLibScanner : MetadataScanner {
                         title = title,
                         duration = duration.toInt(), // we use seconds for duration
                         thumbnailUrl = file.absolutePath,
+                        trackNumber = trackNumber,
+                        discNumber = discNumber,
                         albumId = albumId,
                         albumName = albumName,
                         year = year,
@@ -201,8 +227,7 @@ class TagLibScanner : MetadataScanner {
                     bitrate = bitrate,
                     sampleRate = sampleRate,
                     contentLength = duration,
-                    loudnessDb = replayGain,
-                    playbackTrackingUrl = null
+                    extraComment = if (!extraData.isBlank()) extraData else null,
                 )
             )
         }

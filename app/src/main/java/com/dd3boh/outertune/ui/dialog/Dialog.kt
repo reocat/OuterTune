@@ -524,6 +524,12 @@ fun DetailsDialog(
                 if (!mediaMetadata.isLocal) {
                     details.add("Itag" to currentFormat?.itag?.toString())
                 } else {
+                    mediaMetadata.trackNumber?.let {
+                        details.add(stringResource(R.string.track_number) to it.toString())
+                    }
+                    mediaMetadata.discNumber?.let {
+                        details.add(stringResource(R.string.disc_number) to it.toString())
+                    }
                     details.add(stringResource(R.string.sort_by_date_released) to mediaMetadata.getDateString())
                     details.add(stringResource(R.string.sort_by_date_modified) to mediaMetadata.getDateModifiedString())
                 }
@@ -534,6 +540,8 @@ fun DetailsDialog(
                         stringResource(R.string.codecs) to currentFormat?.codecs,
                         stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" },
                         stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
+                        stringResource(R.string.bits_per_sample) to (currentFormat?.bitsPerSample?.toString()
+                            ?: stringResource(R.string.unknown)),
                     )
                 )
 
@@ -554,7 +562,11 @@ fun DetailsDialog(
                 ))
 
                 if (mediaMetadata.isLocal) {
-                    details.add("Path" to mediaMetadata.localPath)
+                    details.add(stringResource(R.string.file_path) to mediaMetadata.localPath)
+                }
+
+                currentFormat?.extraComment?.let {
+                    details.add(stringResource(R.string.extra_details) to it)
                 }
 
                 details.forEach { (label, text) ->

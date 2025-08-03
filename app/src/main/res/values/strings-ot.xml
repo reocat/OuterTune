@@ -62,6 +62,10 @@ while also allowing users to translate our app as well. New, specific strings to
     <!-- Dialog -->
     <string name="create_sync_playlist">Sync Playlist</string>
     <string name="create_sync_playlist_description">Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.</string>
+    <string name="disc_number">Disc number</string>
+    <string name="extra_details">Extra details</string>
+    <string name="file_path">File path</string>
+    <string name="track_number">Track number</string>
     <string name="play_count">Play count</string>
     <string name="playlist_add_local_to_synced_note">Note: Adding local songs to synced/remote playlists is unsupported. Any other combination is valid</string>
     <string name="playlist_missing_note">Playlists missing? Click here to enable sync read-write mode in settings</string>

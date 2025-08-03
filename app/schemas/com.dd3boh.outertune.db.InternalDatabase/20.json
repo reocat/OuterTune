@@ -6,7 +6,7 @@
     "entities": [
       {
         "tableName": "song",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `duration` INTEGER NOT NULL, `thumbnailUrl` TEXT, `albumId` TEXT, `albumName` TEXT, `year` INTEGER, `date` INTEGER, `dateModified` INTEGER, `liked` INTEGER NOT NULL, `likedDate` INTEGER, `inLibrary` INTEGER, `isLocal` INTEGER NOT NULL DEFAULT false, `localPath` TEXT, `dateDownload` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `duration` INTEGER NOT NULL, `thumbnailUrl` TEXT, `inLibrary` INTEGER, `isLocal` INTEGER NOT NULL DEFAULT false, `localPath` TEXT, `dateDownload` INTEGER, `liked` INTEGER NOT NULL, `likedDate` INTEGER, `trackNumber` INTEGER, `discNumber` INTEGER, `albumId` TEXT, `albumName` TEXT, `year` INTEGER, `date` INTEGER, `dateModified` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -32,6 +32,49 @@
             "affinity": "TEXT"
           },
           {
+            "fieldPath": "inLibrary",
+            "columnName": "inLibrary",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isLocal",
+            "columnName": "isLocal",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "false"
+          },
+          {
+            "fieldPath": "localPath",
+            "columnName": "localPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "dateDownload",
+            "columnName": "dateDownload",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "liked",
+            "columnName": "liked",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "likedDate",
+            "columnName": "likedDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "trackNumber",
+            "columnName": "trackNumber",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "discNumber",
+            "columnName": "discNumber",
+            "affinity": "INTEGER"
+          },
+          {
             "fieldPath": "albumId",
             "columnName": "albumId",
             "affinity": "TEXT"
@@ -54,39 +97,6 @@
           {
             "fieldPath": "dateModified",
             "columnName": "dateModified",
-            "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "liked",
-            "columnName": "liked",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "likedDate",
-            "columnName": "likedDate",
-            "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "inLibrary",
-            "columnName": "inLibrary",
-            "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "isLocal",
-            "columnName": "isLocal",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "false"
-          },
-          {
-            "fieldPath": "localPath",
-            "columnName": "localPath",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "dateDownload",
-            "columnName": "dateDownload",
             "affinity": "INTEGER"
           }
         ],
@@ -939,7 +949,7 @@
       },
       {
         "tableName": "format",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `itag` INTEGER NOT NULL, `mimeType` TEXT NOT NULL, `codecs` TEXT NOT NULL, `bitrate` INTEGER NOT NULL, `sampleRate` INTEGER, `contentLength` INTEGER NOT NULL, `loudnessDb` REAL, `playbackTrackingUrl` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `itag` INTEGER NOT NULL, `mimeType` TEXT NOT NULL, `codecs` TEXT NOT NULL, `bitrate` INTEGER NOT NULL, `sampleRate` INTEGER, `bitsPerSample` INTEGER, `contentLength` INTEGER NOT NULL, `loudnessDb` REAL, `playbackTrackingUrl` TEXT, `extraComment` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -977,6 +987,11 @@
             "affinity": "INTEGER"
           },
           {
+            "fieldPath": "bitsPerSample",
+            "columnName": "bitsPerSample",
+            "affinity": "INTEGER"
+          },
+          {
             "fieldPath": "contentLength",
             "columnName": "contentLength",
             "affinity": "INTEGER",
@@ -990,6 +1005,11 @@
           {
             "fieldPath": "playbackTrackingUrl",
             "columnName": "playbackTrackingUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "extraComment",
+            "columnName": "extraComment",
             "affinity": "TEXT"
           }
         ],

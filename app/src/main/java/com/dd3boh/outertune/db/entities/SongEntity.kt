@@ -38,8 +38,11 @@ data class SongEntity(
     val likedDate: LocalDateTime? = null,
 
     // misc non-critical tags
+    val trackNumber: Int? = null,
+    val discNumber: Int? = null,
     val albumId: String? = null,
     val albumName: String? = null,
+//    val albumArtist // if anyone wants to implement album artists in a sane way, pull requests are welcome.
     val year: Int? = null,
     val date: LocalDateTime? = null, // ID3 tag property
     val dateModified: LocalDateTime? = null, // file property
