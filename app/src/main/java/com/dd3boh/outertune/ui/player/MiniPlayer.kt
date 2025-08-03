@@ -367,14 +367,17 @@ fun MiniMediaInfo(
             androidx.compose.animation.AnimatedVisibility(
                 visible = error != null || isWaitingForNetwork,
                 enter = fadeIn(),
-                exit = fadeOut()
+                exit = fadeOut(),
+                modifier = Modifier.fillMaxSize()
             ) {
                 Box(
                     Modifier
+                        .fillMaxSize()
                         .background(
                             color = if (pureBlack) Color.Black else Color.Black.copy(alpha = 0.6f),
                             shape = RoundedCornerShape(ThumbnailCornerRadius)
-                        )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     if (isWaitingForNetwork) {
                         CircularProgressIndicator(
