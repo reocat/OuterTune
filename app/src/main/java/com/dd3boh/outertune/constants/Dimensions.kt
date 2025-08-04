@@ -24,7 +24,7 @@ const val CONTENT_TYPE_FOLDER = 6
 
 val NavigationBarHeight = 80.dp
 val MiniPlayerHeight = 64.dp
-val QueuePeekHeight = 64.dp
+val QueuePeekHeight = 48.dp
 val AppBarHeight = 64.dp
 
 val ListItemHeight = 64.dp

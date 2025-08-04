@@ -55,6 +55,7 @@ import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.session.CommandButton
+import androidx.media3.session.CommandButton.ICON_UNDEFINED
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
@@ -549,6 +550,7 @@ class MusicService : MediaLibraryService(),
                             R.drawable.shuffle
                     )
                     .setSessionCommand(CommandToggleShuffle)
+                    .setCustomIconResId(if (player.shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle_off)
                     .build(),
 
                 CommandButton.Builder(CommandButton.ICON_UNDEFINED)

@@ -409,7 +409,7 @@ fun HistoryScreen(
         HideOnScrollFAB(
             visible = filteredEventsMap.isNotEmpty(),
             lazyListState = lazyListState,
-            icon = R.drawable.shuffle,
+            icon = R.drawable.shuffle_on,
             onClick = {
                 playerConnection.playQueue(
                     ListQueue(

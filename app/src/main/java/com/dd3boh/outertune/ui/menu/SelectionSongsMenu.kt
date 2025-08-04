@@ -148,7 +148,7 @@ fun SelectionMediaMetadataMenu(
         }
 
         GridMenuItem(
-            icon = R.drawable.shuffle,
+            icon = R.drawable.shuffle_on,
             title = R.string.shuffle
         ) {
             onDismiss()
