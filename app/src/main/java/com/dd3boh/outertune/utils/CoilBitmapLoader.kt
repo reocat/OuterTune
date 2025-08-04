@@ -103,11 +103,11 @@ class CoilBitmapLoader @Inject constructor(
          * @param context
          * @param x Desired final x dimension
          * @param y Desired final y dimension
-         * @param padding Percentage size of valid draw frame. Must be a value between 0.0 and 1.0. For example, 0.8
+         * @param size Percentage size of valid draw frame. Must be a value between 0.0 and 1.0. For example, 0.8
          *      means that inner frame should be 80% of the size of the final frame, and centered within that frame.
          */
-        fun drawPlaceholder(context: Context, x: Int = 2000, y: Int = 2000, padding: Float = 0.8f): Bitmap {
-            val padding = padding.coerceIn(0f, 1f)
+        fun drawPlaceholder(context: Context, x: Int = 2000, y: Int = 2000, size: Float = 0.8f): Bitmap {
+            val padding = size.coerceIn(0f, 1f)
             val innerRecWidth = x * padding
             val innerRecHeight = y * padding
 
