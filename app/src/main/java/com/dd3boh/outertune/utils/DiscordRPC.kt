@@ -13,13 +13,25 @@ class DiscordRPC(
         val currentTime = System.currentTimeMillis()
         val calculatedStartTime = currentTime - currentPlaybackTimeMillis
 
+        // Determine the best image to use
+        val largeImage = when {
+            !song.song.thumbnailUrl.isNullOrBlank() -> RpcImage.ExternalImage(song.song.thumbnailUrl)
+            else -> RpcImage.FallbackImage
+        }
+        
+        val smallImage = when {
+            song.artists.firstOrNull()?.thumbnailUrl?.isNotBlank() == true -> 
+                RpcImage.ExternalImage(song.artists.first().thumbnailUrl)
+            else -> null
+        }
+
         setActivity(
             name = context.getString(R.string.app_name).removeSuffix(" Debug"),
             details = song.song.title,
             detailsUrl = "https://music.youtube.com/watch?v=${song.song.id}",
             state = song.artists.joinToString { it.name },
-            largeImage = song.song.thumbnailUrl?.let { RpcImage.ExternalImage(it) },
-            smallImage = song.artists.firstOrNull()?.thumbnailUrl?.let { RpcImage.ExternalImage(it) },
+            largeImage = largeImage,
+            smallImage = smallImage,
             largeText = song.album?.title,
             smallText = song.artists.firstOrNull()?.name,
             buttons = listOf(

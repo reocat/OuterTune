@@ -21,14 +21,30 @@ The new implementation uses a multi-tier approach:
 2. **Discord Image Proxy** (fallback): Uses Discord's built-in image proxy to fetch images from URLs
 3. **Text-only Presence** (final fallback): Shows presence without images if image processing fails
 
+### 4. Enhanced Thumbnail Support
+- **URL Optimization**: Automatically optimizes YouTube/Google image URLs for Discord compatibility
+- **Fallback Images**: Provides fallback to default music icons when external images can't be loaded
+- **Better Error Handling**: Gracefully handles null or invalid thumbnail URLs
+
 ## How It Works
 
 ### External Images
 When an external image URL is provided:
-1. The system first tries to upload the image directly to Discord's CDN using the Discord token
-2. If that fails or no token is available, it uses Discord's image proxy
-3. Discord fetches the image from the original URL and caches it on their servers
-4. This approach maintains privacy as no third-party services are involved
+1. The system optimizes the URL for Discord (e.g., resizes YouTube thumbnails to 512x512)
+2. Discord fetches the image from the optimized URL and caches it on their servers
+3. This approach maintains privacy as no third-party services are involved
+
+### URL Optimization
+The system automatically optimizes common image URL formats:
+- **Google User Content**: `https://lh3.googleusercontent.com/...` → optimized to 512x512
+- **YouTube Thumbnails**: `https://yt3.ggpht.com/...` → optimized to 512px
+- **Regular URLs**: Passed through unchanged
+
+### Fallback Mechanism
+If image processing fails:
+1. **Primary**: Uses optimized external image URL
+2. **Secondary**: Falls back to Discord's default "music" icon
+3. **Tertiary**: Shows text-only presence
 
 ### Discord Images
 Discord attachment images (starting with "attachments") continue to work as before using the `mp:` prefix.
@@ -39,6 +55,7 @@ Discord attachment images (starting with "attachments") continue to work as befo
 2. **Reliability**: No dependency on third-party APIs that could go down
 3. **Performance**: Local processing reduces latency
 4. **Compliance**: Better alignment with privacy-focused applications
+5. **Better UX**: Proper thumbnails with fallback options
 
 ## Usage
 
@@ -53,6 +70,11 @@ rpc.setActivity(
 )
 ```
 
+The system now automatically:
+- Optimizes image URLs for Discord
+- Provides fallback images when needed
+- Handles null or invalid URLs gracefully
+
 ## Testing
 
 Run the tests to verify the implementation:
@@ -65,4 +87,5 @@ Run the tests to verify the implementation:
 
 - The implementation gracefully falls back to text-only presence if image processing fails
 - All image processing is done locally without external dependencies
-- Discord's own image proxy is used when direct uploads aren't possible 
+- Discord's own image proxy is used when direct uploads aren't possible
+- YouTube/Google image URLs are automatically optimized for better Discord compatibility 

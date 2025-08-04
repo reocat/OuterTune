@@ -17,10 +17,39 @@ class LocalImageProcessorTest {
         assertTrue(processor.isValidImageUrl("https://example.com/image.gif"))
         assertTrue(processor.isValidImageUrl("https://example.com/image.webp"))
         
+        // Test YouTube/Google URLs
+        assertTrue(processor.isValidImageUrl("https://lh3.googleusercontent.com/abc123=w120-h120"))
+        assertTrue(processor.isValidImageUrl("https://yt3.ggpht.com/abc123=s88"))
+        
         // Test invalid URLs
         assertFalse(processor.isValidImageUrl("https://example.com/document.pdf"))
         assertFalse(processor.isValidImageUrl("not-a-url"))
         assertFalse(processor.isValidImageUrl(""))
+    }
+    
+    @Test
+    fun testUrlOptimization() {
+        val processor = LocalImageProcessor()
+        
+        // Test Google user content URLs
+        val googleUrl = "https://lh3.googleusercontent.com/abc123=w120-h120-p-l90-rj"
+        val optimizedGoogle = processor.optimizeUrlForDiscord(googleUrl)
+        assertEquals("https://lh3.googleusercontent.com/abc123=w512-h512-p-l90-rj", optimizedGoogle)
+        
+        // Test YouTube thumbnail URLs
+        val youtubeUrl = "https://yt3.ggpht.com/abc123=s88"
+        val optimizedYoutube = processor.optimizeUrlForDiscord(youtubeUrl)
+        assertEquals("https://yt3.ggpht.com/abc123=s512", optimizedYoutube)
+        
+        // Test URLs without size parameters
+        val googleUrlNoSize = "https://lh3.googleusercontent.com/abc123"
+        val optimizedGoogleNoSize = processor.optimizeUrlForDiscord(googleUrlNoSize)
+        assertEquals("https://lh3.googleusercontent.com/abc123=w512-h512-p-l90-rj", optimizedGoogleNoSize)
+        
+        // Test regular URLs (should remain unchanged)
+        val regularUrl = "https://example.com/image.jpg"
+        val optimizedRegular = processor.optimizeUrlForDiscord(regularUrl)
+        assertEquals(regularUrl, optimizedRegular)
     }
     
     @Test

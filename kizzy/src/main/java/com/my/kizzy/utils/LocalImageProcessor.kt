@@ -105,7 +105,40 @@ class LocalImageProcessor {
         return url.startsWith("http") && 
                (url.contains(".jpg") || url.contains(".jpeg") || 
                 url.contains(".png") || url.contains(".gif") || 
-                url.contains(".webp") || url.contains(".bmp"))
+                url.contains(".webp") || url.contains(".bmp") ||
+                url.contains("googleusercontent.com") || url.contains("ggpht.com"))
+    }
+    
+    /**
+     * Optimize URL for Discord RPC
+     */
+    fun optimizeUrlForDiscord(url: String): String {
+        // Handle YouTube/Google image URLs
+        if (url.contains("googleusercontent.com")) {
+            // Optimize for Discord by using a reasonable size
+            return if (url.contains("=w") && url.contains("-h")) {
+                // Already has size parameters, try to optimize
+                val optimizedUrl = url.replace(Regex("=w\\d+-h\\d+.*"), "=w512-h512-p-l90-rj")
+                optimizedUrl
+            } else {
+                // Add size parameters for better Discord compatibility
+                "$url=w512-h512-p-l90-rj"
+            }
+        }
+        
+        if (url.contains("ggpht.com")) {
+            // YouTube thumbnail URLs
+            return if (url.contains("=s")) {
+                // Already has size parameter
+                url.replace(Regex("=s\\d+"), "=s512")
+            } else {
+                // Add size parameter
+                "$url=s512"
+            }
+        }
+        
+        // For other URLs, return as-is
+        return url
     }
     
     /**

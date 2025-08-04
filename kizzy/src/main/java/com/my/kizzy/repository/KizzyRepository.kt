@@ -29,16 +29,16 @@ class KizzyRepository(private val discordToken: String? = null) {
     
     suspend fun getImage(url: String): String? {
         return try {
-            // Download the image
-            val response = httpClient.get(url)
-            val imageBytes = response.bodyAsChannel().toInputStream().use { input ->
-                val output = ByteArrayOutputStream()
-                input.copyTo(output)
-                output.toByteArray()
-            }
+            // Optimize the URL for Discord first
+            val optimizedUrl = imageProcessor.optimizeUrlForDiscord(url)
             
-            // Process the image locally
-            imageProcessor.processImage(imageBytes, url, discordToken)
+            // For privacy, we'll use Discord's image proxy instead of downloading
+            // Discord will fetch the image directly from the optimized URL
+            if (imageProcessor.isValidImageUrl(optimizedUrl)) {
+                optimizedUrl
+            } else {
+                null
+            }
         } catch (e: Exception) {
             null
         }
