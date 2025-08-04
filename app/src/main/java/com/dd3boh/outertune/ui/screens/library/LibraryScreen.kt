@@ -195,6 +195,8 @@ fun LibraryScreen(
         }
     }
 
+    LaunchedEffect(Unit) { viewModel.syncArtists() }
+
     val filterContent = @Composable {
         var showStoragePerm by remember {
             mutableStateOf(context.checkSelfPermission(MEDIA_PERMISSION_LEVEL) != PackageManager.PERMISSION_GRANTED)

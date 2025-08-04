@@ -346,6 +346,32 @@ class LibraryViewModel @Inject constructor(
     fun syncAll(bypassCd: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) { syncUtils.tryAutoSync(bypassCd) }
     }
+
+    fun syncArtists(bypassCd: Boolean = false) {
+        viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemoteArtists(bypassCd) }
+    }
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            artists.collect { artists ->
+                artists
+                    .map { it.artist }
+                    .filter {
+                        it.thumbnailUrl == null || Duration.between(
+                            it.lastUpdateTime,
+                            LocalDateTime.now()
+                        ) > Duration.ofDays(10)
+                    }
+                    .forEach { artist ->
+                        YouTube.artist(artist.id).onSuccess { artistPage ->
+                            database.query {
+                                update(artist, artistPage)
+                            }
+                        }
+                    }
+            }
+        }
+    }
 }
 
 @HiltViewModel
