@@ -773,7 +773,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     val shouldShowNavigationRail = remember(navBackStackEntry, searchActive, shouldHideNavAndPlayer) {
-                        useRail && !searchActive && !shouldHideNavAndPlayer
+                        useRail && !searchActive && !shouldHideNavAndPlayer && navBackStackEntry?.destination?.route?.startsWith("settings") != true
                     }
 
                     fun getNavPadding(): Dp {
@@ -801,7 +801,8 @@ class MainActivity : ComponentActivity() {
                             bottomInset,
                             shouldShowNavigationBar,
                             playerBottomSheetState.isDismissed,
-                            shouldShowNavigationRail
+                            shouldShowNavigationRail,
+                            shouldHideNavAndPlayer
                         ) {
                             var bottom = bottomInset
 
@@ -854,11 +855,19 @@ class MainActivity : ComponentActivity() {
                             if (navigationItems.fastAny { it.route == previousTab })
                                 searchBarScrollBehavior.state.resetHeightOffset()
 
-                        if (navBackStackEntry?.destination?.route?.startsWith("settings/") == true && playerConnection?.isPlaying?.value == true) {
-                            playerBottomSheetState.collapseSoft()
+                        if (navBackStackEntry?.destination?.route?.startsWith("settings/") == true) {
+                            // When entering settings, always dismiss the player bottom sheet to avoid visual glitches
+                            if (!playerBottomSheetState.isDismissed) {
+                                playerBottomSheetState.dismiss()
+                            }
                         } else if (navBackStackEntry?.destination?.route?.startsWith("settings/") != true && playerConnection?.player?.currentMediaItem == null) {
                             if (!playerBottomSheetState.isDismissed) {
                                 playerBottomSheetState.dismiss()
+                            }
+                        } else if (navBackStackEntry?.destination?.route?.startsWith("settings/") != true && playerConnection?.player?.currentMediaItem != null) {
+                            // When leaving settings and returning to main screens, ensure player is shown if music is playing
+                            if (playerBottomSheetState.isDismissed) {
+                                playerBottomSheetState.collapseSoft()
                             }
                         }
 
@@ -1406,7 +1415,8 @@ class MainActivity : ComponentActivity() {
 
                             @Composable
                             fun navRail(alignment: Alignment = Alignment.BottomStart) {
-                                if (useRail && shouldShowNavigationRail) {
+                                // Ensure navigation rail is completely hidden when in settings
+                                if (useRail && shouldShowNavigationRail && navBackStackEntry?.destination?.route?.startsWith("settings") != true) {
         // Read the preference that indicates if the user enabled pure-black theme
         val pureBlack = isPureBlackEnabled()
                                     Column(
@@ -1512,7 +1522,8 @@ class MainActivity : ComponentActivity() {
                             }
 
                             val navbar: @Composable() (() -> Unit) = @Composable {
-                                NavigationBar(
+                                if (shouldShowNavigationBar) {
+                                    NavigationBar(
                                     modifier = Modifier
                                         .align(Alignment.BottomCenter)
                                         .height(bottomInset + getNavPadding())
@@ -1605,6 +1616,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 }
+                                }
                             }
 
                             val bottomSheetMenu: @Composable() (() -> Unit) = @Composable {
@@ -1639,7 +1651,7 @@ class MainActivity : ComponentActivity() {
                                 navHost()
                                 searchBar()
                                 navRail()
-                                if (oobeStatus >= OOBE_VERSION) {
+                                if (oobeStatus >= OOBE_VERSION && !shouldHideNavAndPlayer) {
                                     BottomSheetPlayer(
                                         state = playerBottomSheetState,
                                         navController = navController
