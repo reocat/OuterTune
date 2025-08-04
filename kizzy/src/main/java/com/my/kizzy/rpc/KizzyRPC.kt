@@ -27,13 +27,15 @@ import org.json.JSONObject
 
 /**
  * Modified by Zion Huang
+ * Updated for local image processing by Assistant
  */
 open class KizzyRPC(token: String) {
-    private val kizzyRepository = KizzyRepository()
+    private val kizzyRepository = KizzyRepository(token)
     private val discordWebSocket = DiscordWebSocket(token)
 
     fun closeRPC() {
         discordWebSocket.close()
+        kizzyRepository.close()
     }
 
     fun isRpcRunning(): Boolean {
