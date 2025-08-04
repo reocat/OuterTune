@@ -447,9 +447,11 @@ fun LocalPlaylistScreen(
                                 sortTypeText = { sortType ->
                                     when (sortType) {
                                         PlaylistSongSortType.CUSTOM -> R.string.sort_by_custom
-                                        PlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
                                         PlaylistSongSortType.NAME -> R.string.sort_by_name
                                         PlaylistSongSortType.ARTIST -> R.string.sort_by_artist
+                                        PlaylistSongSortType.ADDED_DATE -> R.string.sort_by_create_date
+                                        PlaylistSongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
+                                        PlaylistSongSortType.RELEASE_DATE -> R.string.sort_by_date_released
                                     }
                                 },
                                 modifier = Modifier.weight(1f)

@@ -160,7 +160,7 @@ enum class SongSortType {
 }
 
 enum class PlaylistSongSortType {
-    CUSTOM, CREATE_DATE, NAME, ARTIST
+    CUSTOM, NAME, ARTIST, ADDED_DATE, MODIFIED_DATE, RELEASE_DATE
 }
 
 enum class ArtistSortType {
