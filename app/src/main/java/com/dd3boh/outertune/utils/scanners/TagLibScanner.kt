@@ -161,6 +161,7 @@ class TagLibScanner : MetadataScanner {
             val albumEntity = if (albumName != null && albumId != null) AlbumEntity(
                 id = albumId,
                 title = albumName,
+                thumbnailUrl = file.absolutePath,
                 songCount = 1,
                 duration = duration.toInt(),
                 isLocal = true

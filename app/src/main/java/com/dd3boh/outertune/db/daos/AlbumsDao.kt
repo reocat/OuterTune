@@ -336,6 +336,9 @@ interface AlbumsDao : ArtistsDao {
     fun update(album: AlbumEntity)
 
     @Upsert
+    fun upsert(album: AlbumEntity)
+
+    @Upsert
     fun upsert(map: SongAlbumMap)
 
     /**
