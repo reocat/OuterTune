@@ -1,5 +1,8 @@
 package com.dd3boh.outertune.ui.menu
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -20,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -35,10 +39,12 @@ import com.dd3boh.outertune.ui.component.items.SongFolderItem
 import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
 import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
 import com.dd3boh.outertune.utils.joinByBullet
+import com.dd3boh.outertune.utils.reportException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @Composable
 fun FolderMenu(
@@ -46,6 +52,7 @@ fun FolderMenu(
     navController: NavController,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
@@ -54,9 +61,32 @@ fun FolderMenu(
         mutableIntStateOf(0)
     }
 
+    val m3uLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("audio/x-mpegurl")
+    ) { uri: Uri? ->
+        uri?.let {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    var result = "#EXTM3U\n"
+                    allFolderSongs.forEach { s ->
+                        val se = s.song
+                        result += "#EXTINF:${se.duration},${s.artists.joinToString(";") { it.name }} - ${s.title}\n"
+                        result += if (se.isLocal) "${se.id}, ${se.localPath}" else "https://youtube.com/watch?v=${se.id}"
+                        result += "\n"
+                    }
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(result.toByteArray(Charsets.UTF_8))
+                    }
+                } catch (e: IOException) {
+                    reportException(e)
+                }
+            }
+        }
+    }
+
     fun fetchAllSongsRecursive(onFetch: (() -> Unit)? = null) {
         CoroutineScope(Dispatchers.IO).launch {
-            val dbSongs = database.localSongsInDir(folder.getFullSquashedDir()).first()
+            val dbSongs = database.localSongsInDirDeep(folder.getFullSquashedDir()).first()
             allFolderSongs.clear()
             allFolderSongs.addAll(dbSongs)
             if (onFetch != null) {
@@ -141,6 +171,12 @@ fun FolderMenu(
         ) {
             showChoosePlaylistDialog = true
             fetchAllSongsRecursive()
+        }
+        GridMenuItem(
+            icon = Icons.Rounded.Output,
+            title = R.string.m3u_export
+        ) {
+            m3uLauncher.launch("${folder.currentDir.trim('/')}.m3u")
         }
     }
     /**

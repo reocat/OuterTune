@@ -157,7 +157,7 @@ interface SongsDao {
         SELECT * FROM song
         WHERE isLocal = 1 AND localpath LIKE :filter || '%'
     """)
-    fun localSongsInDir(filter: String): Flow<List<Song>>
+    fun localDbSongsInDir(filter: String): Flow<List<Song>>
 
     /**
      * Does not include unavailable songs
