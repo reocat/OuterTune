@@ -174,13 +174,16 @@ fun OnlinePlaylistScreen(
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue())
     }
-    val filteredSongs = remember(songs, query) {
-        if (query.text.isEmpty()) songs.mapIndexed { index, song -> index to song }
+    var searchQuery by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
+    val filteredSongs = remember(songs, searchQuery) {
+        if (searchQuery.text.isEmpty()) songs.mapIndexed { index, song -> index to song }
         else songs
             .mapIndexed { index, song -> index to song }
             .filter { (_, song) ->
-                song.title.contains(query.text, ignoreCase = true) ||
-                        song.artists.fastAny { it.name.contains(query.text, ignoreCase = true) }
+                song.title.contains(searchQuery.text, ignoreCase = true) ||
+                        song.artists.fastAny { it.name.contains(searchQuery.text, ignoreCase = true) }
             }
     }
     val focusRequester = remember { FocusRequester() }
@@ -190,6 +193,11 @@ fun OnlinePlaylistScreen(
         }
     }
 
+    LaunchedEffect(query) {
+        snapshotFlow { searchQuery }.debounce { 300L }.collectLatest {
+            searchQuery = query
+        }
+    }
 
     if (inSelectMode) {
         BackHandler(onBack = onExitSelectionMode)

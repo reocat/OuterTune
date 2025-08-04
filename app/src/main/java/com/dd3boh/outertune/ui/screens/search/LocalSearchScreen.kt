@@ -56,8 +56,12 @@ import com.dd3boh.outertune.ui.component.items.PlaylistListItem
 import com.dd3boh.outertune.ui.component.items.SongListItem
 import com.dd3boh.outertune.viewmodels.LocalFilter
 import com.dd3boh.outertune.viewmodels.LocalSearchViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 
+@OptIn(FlowPreview::class)
 @Composable
 fun LocalSearchScreen(
     query: String,
@@ -86,7 +90,9 @@ fun LocalSearchScreen(
     }
 
     LaunchedEffect(query) {
-        viewModel.query.value = query
+        snapshotFlow { query }.debounce { 300L }.collectLatest {
+            viewModel.query.value = query
+        }
     }
 
     Column(

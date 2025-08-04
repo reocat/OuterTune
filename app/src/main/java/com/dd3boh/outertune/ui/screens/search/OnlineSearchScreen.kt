@@ -65,8 +65,12 @@ import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 
+@OptIn(FlowPreview::class)
 @Composable
 fun OnlineSearchScreen(
     query: String,
@@ -100,7 +104,9 @@ fun OnlineSearchScreen(
     }
 
     LaunchedEffect(query) {
-        viewModel.query.value = query
+        snapshotFlow { query }.debounce { 300L }.collectLatest {
+            viewModel.query.value = query
+        }
     }
 
     LazyColumn(

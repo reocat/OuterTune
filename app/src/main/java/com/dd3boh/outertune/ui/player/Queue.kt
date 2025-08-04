@@ -142,6 +142,9 @@ import com.dd3boh.outertune.ui.menu.QueueMenu
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -219,6 +222,7 @@ fun QueueScreen(
     }
 }
 
+@OptIn(FlowPreview::class)
 @Composable
 fun BoxScope.QueueContent(
     queueState: BottomSheetState? = null,
@@ -285,8 +289,11 @@ fun BoxScope.QueueContent(
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue())
     }
-    val filteredSongs = remember(mutableSongs, query) {
-        if (query.text.isEmpty()) mutableSongs
+    var searchQuery by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
+    val filteredSongs = remember(mutableSongs, searchQuery) {
+        if (searchQuery.text.isEmpty()) mutableSongs
         else mutableSongs.filter { song ->
             song.title.contains(query.text, ignoreCase = true) || song.artists.fastAny { it.name.contains(query.text, ignoreCase = true) }
         }
@@ -298,6 +305,11 @@ fun BoxScope.QueueContent(
         }
     }
 
+    LaunchedEffect(query) {
+        snapshotFlow { searchQuery }.debounce { 300L }.collectLatest {
+            searchQuery = query
+        }
+    }
 
     if (inSelectMode) {
         BackHandler(onBack = onExitSelectionMode)
