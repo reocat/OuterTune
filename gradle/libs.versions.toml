@@ -14,7 +14,7 @@ ktor = "3.2.3"
 ksp = "2.2.20-Beta2-2.0.2"
 multidex = "2.0.1"
 materialKolor = "3.0.1"
-newpipe = "dev-SNAPSHOT"
+pipepipe = "4240401"
 taglib = "rolling"
 leakcanary = "3.0-alpha-8"
 
@@ -83,7 +83,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version = "5.0.1" 
 
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 
-newpipe-extractor = { group = "com.github.libre-tube", name = "NewPipeExtractor", version.ref = "newpipe" }
+pipepipe-extractor = { group = "org.codeberg.NullPointerException", name = "PipePipeExtractor", version.ref = "pipepipe" }
 
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 
