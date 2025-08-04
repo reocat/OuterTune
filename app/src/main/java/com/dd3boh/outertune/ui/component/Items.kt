@@ -77,6 +77,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -97,7 +98,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.Download.STATE_COMPLETED
 import androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING
 import androidx.media3.exoplayer.offline.Download.STATE_QUEUED
 import androidx.media3.exoplayer.offline.Download.STATE_STOPPED
@@ -145,8 +145,72 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.placeholder
 
 const val ActiveBoxAlpha = 0.6f
+
+@Composable
+fun ThemedPlaceholder(
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    variant: PlaceholderVariant = PlaceholderVariant.DEFAULT
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.surface == Color.Black || colorScheme.surface == Color(0xFF121212)
+    
+    val (gradientColors, iconColor) = when (variant) {
+        PlaceholderVariant.ARTIST -> if (isDark) {
+            listOf(colorScheme.primary, colorScheme.primaryContainer) to colorScheme.onPrimary
+        } else {
+            listOf(colorScheme.primaryContainer, colorScheme.primary.copy(alpha = 0.7f)) to colorScheme.primary
+        }
+        PlaceholderVariant.ALBUM -> if (isDark) {
+            listOf(colorScheme.secondary, colorScheme.secondaryContainer) to colorScheme.onSecondary
+        } else {
+            listOf(colorScheme.secondaryContainer, colorScheme.secondary.copy(alpha = 0.7f)) to colorScheme.secondary
+        }
+        PlaceholderVariant.SONG -> if (isDark) {
+            listOf(colorScheme.tertiary, colorScheme.tertiaryContainer) to colorScheme.onTertiary
+        } else {
+            listOf(colorScheme.tertiaryContainer, colorScheme.tertiary.copy(alpha = 0.7f)) to colorScheme.tertiary
+        }
+        PlaceholderVariant.DEFAULT -> if (isDark) {
+            listOf(colorScheme.primary, colorScheme.primaryContainer) to colorScheme.onPrimary
+        } else {
+            listOf(colorScheme.primaryContainer, colorScheme.primary.copy(alpha = 0.7f)) to colorScheme.primary
+        }
+    }
+    
+    Box(
+        modifier = modifier
+            .background(
+                brush = Brush.linearGradient(
+                    colors = gradientColors,
+                    tileMode = TileMode.Clamp
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = iconColor,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+enum class PlaceholderVariant {
+    ARTIST,
+    ALBUM,
+    SONG,
+    DEFAULT
+}
 
 // Basic list item
 @Composable
@@ -367,6 +431,7 @@ fun SongListItem(
     inSelectMode: Boolean?,
     isSelected: Boolean,
     navController: NavController,
+    modifier: Modifier = Modifier,
     albumIndex: Int? = null,
     showLikedIcon: Boolean = true,
     showInLibraryIcon: Boolean = true,
@@ -374,11 +439,10 @@ fun SongListItem(
     playlistSong: PlaylistSong? = null,
     playlist: Playlist? = null,
     showDragHandle: Boolean = false,
-    dragHandleModifier: Modifier? = null,
+    dragHandleModifier: Modifier = Modifier,
     disableShowMenu: Boolean = false,
     enableSwipeToQueue: Boolean = true,
-    snackbarHostState: SnackbarHostState? = null,
-    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null
 ) {
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
@@ -409,7 +473,7 @@ fun SongListItem(
                 if (showDownloadIcon) {
                     val downloadUtil = LocalDownloadUtil.current
                     if (downloadUtil.getCustomDownload(song.id)) {
-                        Icon.Download(STATE_COMPLETED)
+                        Icon.Download(Download.STATE_COMPLETED)
                     } else {
                         val download by downloadUtil.getDownload(song.id)
                             .collectAsState(initial = null)
@@ -458,7 +522,7 @@ fun SongListItem(
                     }
                 }
 
-                if (showDragHandle && dragHandleModifier != null) {
+                if (showDragHandle) {
                     IconButton(
                         onClick = { },
                         modifier = dragHandleModifier
@@ -507,21 +571,6 @@ fun SongListItem(
         enabled = enableSwipeToQueue
     )
 }
-
-@Composable
-fun SongFolderItem(
-    folderTitle: String,
-    modifier: Modifier = Modifier,
-) = ListItem(
-    title = folderTitle, thumbnailContent = {
-        Icon(
-            Icons.Filled.Folder,
-            contentDescription = null,
-            modifier = modifier.size(48.dp)
-        )
-    },
-    modifier = modifier
-)
 
 @Composable
 fun SongFolderItem(
@@ -627,7 +676,7 @@ fun SongGridItem(
         if (showDownloadIcon) {
             val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
             when (download?.state) {
-                STATE_COMPLETED -> Icon(
+                Download.STATE_COMPLETED -> Icon(
                     imageVector = Icons.Outlined.OfflinePin,
                     contentDescription = null,
                     modifier = Modifier
@@ -670,8 +719,18 @@ fun SongGridItem(
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
                 )
             } else {
-                AsyncImage(
-                    model = song.song.thumbnailUrl,
+                val context = LocalContext.current
+                val painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(context)
+                        .data(song.song.thumbnailUrl)
+                        .crossfade(true)
+                        .placeholder(R.drawable.music_note)
+                        .error(R.drawable.music_note)
+                        .build()
+                )
+                
+                androidx.compose.foundation.Image(
+                    painter = painter,
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
@@ -732,13 +791,33 @@ fun ArtistListItem(
     subtitle = getNSongsString(artist.songCount, artist.downloadCount),
     badges = badges,
     thumbnailContent = {
-        AsyncImage(
-            model = artist.artist.thumbnailUrl,
-            contentDescription = null,
+        val context = LocalContext.current
+        val painter = rememberAsyncImagePainter(
+            model = ImageRequest.Builder(context)
+                .data(artist.artist.thumbnailUrl)
+                .crossfade(true)
+                .placeholder(R.drawable.artist)
+                .error(R.drawable.artist)
+                .build()
+        )
+        
+        Box(
             modifier = Modifier
                 .size(ListThumbnailSize)
                 .clip(CircleShape)
-        )
+        ) {
+            ThemedPlaceholder(
+                icon = Icons.Outlined.MusicNote,
+                modifier = Modifier.fillMaxSize(),
+                variant = PlaceholderVariant.ARTIST
+            )
+            
+            androidx.compose.foundation.Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     },
     trailingContent = trailingContent,
     modifier = modifier
@@ -781,14 +860,34 @@ fun ArtistGridItem(
     subtitle = getNSongsString(artist.songCount, artist.downloadCount),
     badges = badges,
     thumbnailContent = {
-        AsyncImage(
-            model = artist.artist.thumbnailUrl,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+        val context = LocalContext.current
+        val painter = rememberAsyncImagePainter(
+            model = ImageRequest.Builder(context)
+                .data(artist.artist.thumbnailUrl)
+                .crossfade(true)
+                .placeholder(R.drawable.artist)
+                .error(R.drawable.artist)
+                .build()
+        )
+        
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape)
-        )
+        ) {
+            ThemedPlaceholder(
+                icon = Icons.Outlined.MusicNote,
+                modifier = Modifier.fillMaxSize(),
+                variant = PlaceholderVariant.ARTIST
+            )
+            
+            androidx.compose.foundation.Image(
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     },
     fillMaxWidth = fillMaxWidth,
     modifier = modifier
@@ -821,12 +920,12 @@ fun AlbumListItem(
             if (songs.isEmpty()) return@LaunchedEffect
             downloadUtil.downloads.collect { downloads ->
                 downloadState = when {
-                    songs.all { s -> downloads[s.id]?.state == STATE_COMPLETED || downloadUtil.customDownloads.value.any { s.id == it.key } } -> STATE_COMPLETED
+                    songs.all { s -> downloads[s.id]?.state == Download.STATE_COMPLETED || downloadUtil.customDownloads.value.any { s.id == it.key } } -> Download.STATE_COMPLETED
                     songs.all {
                         downloads[it.id]?.state in listOf(
                             STATE_QUEUED,
                             STATE_DOWNLOADING,
-                            STATE_COMPLETED
+                            Download.STATE_COMPLETED
                         )
                     } -> STATE_DOWNLOADING
 
@@ -895,12 +994,12 @@ fun AlbumGridItem(
             if (songs.isEmpty()) return@LaunchedEffect
             downloadUtil.downloads.collect { downloads ->
                 downloadState = when {
-                    songs.all { downloads[it.id]?.state == STATE_COMPLETED } -> STATE_COMPLETED
+                    songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED } -> Download.STATE_COMPLETED
                     songs.all {
                         downloads[it.id]?.state in listOf(
                             STATE_QUEUED,
                             STATE_DOWNLOADING,
-                            STATE_COMPLETED
+                            Download.STATE_COMPLETED
                         )
                     } -> STATE_DOWNLOADING
 
@@ -1478,16 +1577,25 @@ fun ItemThumbnail(
                     .aspectRatio(ratio = 1f)
             )
         } else {
-            AsyncImage(
-                model = thumbnailUrl,
+            val painter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(context)
+                    .data(thumbnailUrl)
+                    .crossfade(true)
+                    .placeholder(R.drawable.album)
+                    .error(R.drawable.album)
+                    .build(),
+                onSuccess = { success ->
+                    val width = success.painter.intrinsicSize.width
+                    val height = success.painter.intrinsicSize.height
+
+                    isRectangularImage = width / height != 1f
+                }
+            )
+            
+            androidx.compose.foundation.Image(
+                painter = painter,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                onSuccess = { success ->
-                    val width = success.result.image.width
-                    val height = success.result.image.height
-
-                    isRectangularImage = width.toFloat() / height != 1f
-                },
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(shape)
@@ -1707,7 +1815,7 @@ private object Icon {
     @Composable
     fun Download(state: Int?) {
         when (state) {
-            STATE_COMPLETED -> Icon(
+            Download.STATE_COMPLETED -> Icon(
                 imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier
