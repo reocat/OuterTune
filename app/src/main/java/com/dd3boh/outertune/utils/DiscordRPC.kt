@@ -19,10 +19,8 @@ class DiscordRPC(
             else -> RpcImage.FallbackImage
         }
         
-        val smallImage = when {
-            song.artists.firstOrNull()?.thumbnailUrl?.isNotBlank() == true -> 
-                RpcImage.ExternalImage(song.artists.first().thumbnailUrl)
-            else -> null
+        val smallImage = song.artists.firstOrNull()?.thumbnailUrl?.let { url ->
+            if (url.isNotBlank()) RpcImage.ExternalImage(url) else null
         }
 
         setActivity(
