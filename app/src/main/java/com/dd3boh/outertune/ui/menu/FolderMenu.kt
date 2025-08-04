@@ -31,6 +31,9 @@ import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
+import com.dd3boh.outertune.constants.FolderSongSortDescendingKey
+import com.dd3boh.outertune.constants.FolderSongSortType
+import com.dd3boh.outertune.constants.FolderSongSortTypeKey
 import com.dd3boh.outertune.constants.SongSortDescendingKey
 import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.constants.SongSortTypeKey
@@ -65,8 +68,8 @@ fun FolderMenu(
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
-    val sortType by rememberEnumPreference(SongSortTypeKey, SongSortType.CREATE_DATE)
-    val sortDescending by rememberPreference(SongSortDescendingKey, true)
+    val sortType by rememberEnumPreference(FolderSongSortTypeKey, FolderSongSortType.CREATE_DATE)
+    val sortDescending by rememberPreference(FolderSongSortDescendingKey, true)
 
     val allFolderSongs = remember { mutableStateListOf<Song>() }
     var subDirSongCount by remember {

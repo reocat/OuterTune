@@ -58,6 +58,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="sort_by_date_released">Date released</string>
     <string name="sort_by_like_date">Date liked</string>
     <string name="sort_by_play_count">Play count</string>
+    <string name="sort_by_track_number">Track number</string>
 
     <!-- Dialog -->
     <string name="create_sync_playlist">Sync Playlist</string>

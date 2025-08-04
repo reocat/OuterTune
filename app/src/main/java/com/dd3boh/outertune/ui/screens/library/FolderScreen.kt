@@ -84,6 +84,11 @@ import com.dd3boh.outertune.constants.CONTENT_TYPE_FOLDER
 import com.dd3boh.outertune.constants.CONTENT_TYPE_HEADER
 import com.dd3boh.outertune.constants.CONTENT_TYPE_SONG
 import com.dd3boh.outertune.constants.FlatSubfoldersKey
+import com.dd3boh.outertune.constants.FolderSongSortDescendingKey
+import com.dd3boh.outertune.constants.FolderSongSortType
+import com.dd3boh.outertune.constants.FolderSongSortTypeKey
+import com.dd3boh.outertune.constants.FolderSortType
+import com.dd3boh.outertune.constants.FolderSortTypeKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.SongSortDescendingKey
@@ -155,8 +160,9 @@ fun FolderScreen(
     )
     val localLibEnable by rememberPreference(LocalLibraryEnableKey, defaultValue = true)
 
-    val (sortType, onSortTypeChange) = rememberEnumPreference(SongSortTypeKey, SongSortType.CREATE_DATE)
-    val (sortDescending, onSortDescendingChange) = rememberPreference(SongSortDescendingKey, true)
+    val (sortType, onSortTypeChange) = rememberEnumPreference(FolderSongSortTypeKey, FolderSongSortType.NAME)
+    val (sortDescending, onSortDescendingChange) = rememberPreference(FolderSongSortDescendingKey, true)
+    val (folderSortType, onFolderSortTypeChange) = rememberEnumPreference(FolderSortTypeKey, FolderSortType.NAME)
 
     val lazyListState = rememberLazyListState()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -248,12 +254,13 @@ fun FolderScreen(
         // sort songs
         tempList.sortBy {
             when (sortType) {
-                SongSortType.CREATE_DATE -> numberToAlpha(it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC) ?: -1L)
-                SongSortType.MODIFIED_DATE -> numberToAlpha(it.song.getDateModifiedLong() ?: -1L)
-                SongSortType.RELEASE_DATE -> numberToAlpha(it.song.getDateLong() ?: -1L)
-                SongSortType.NAME -> it.song.title.lowercase()
-                SongSortType.ARTIST -> it.artists.joinToString { artist -> artist.name }.lowercase()
-                SongSortType.PLAY_COUNT -> numberToAlpha((it.playCount?.fastSumBy { it.count })?.toLong() ?: 0L)
+                FolderSongSortType.CREATE_DATE -> numberToAlpha(it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC) ?: -1L)
+                FolderSongSortType.MODIFIED_DATE -> numberToAlpha(it.song.getDateModifiedLong() ?: -1L)
+                FolderSongSortType.RELEASE_DATE -> numberToAlpha(it.song.getDateLong() ?: -1L)
+                FolderSongSortType.NAME -> it.song.title.lowercase()
+                FolderSongSortType.ARTIST -> it.artists.joinToString { artist -> artist.name }.lowercase()
+                FolderSongSortType.PLAY_COUNT -> numberToAlpha((it.playCount?.fastSumBy { it.count })?.toLong() ?: 0L)
+                FolderSongSortType.TRACK_NUMBER -> numberToAlpha(it.song.trackNumber?.toLong() ?: Long.MAX_VALUE)
             }
         }
         // sort folders
@@ -389,12 +396,13 @@ fun FolderScreen(
                             onSortDescendingChange = onSortDescendingChange,
                             sortTypeText = { sortType ->
                                 when (sortType) {
-                                    SongSortType.CREATE_DATE -> R.string.sort_by_create_date
-                                    SongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
-                                    SongSortType.RELEASE_DATE -> R.string.sort_by_date_released
-                                    SongSortType.NAME -> R.string.sort_by_name
-                                    SongSortType.ARTIST -> R.string.sort_by_artist
-                                    SongSortType.PLAY_COUNT -> R.string.sort_by_play_count
+                                    FolderSongSortType.CREATE_DATE -> R.string.sort_by_create_date
+                                    FolderSongSortType.MODIFIED_DATE -> R.string.sort_by_date_modified
+                                    FolderSongSortType.RELEASE_DATE -> R.string.sort_by_date_released
+                                    FolderSongSortType.NAME -> R.string.sort_by_name
+                                    FolderSongSortType.ARTIST -> R.string.sort_by_artist
+                                    FolderSongSortType.PLAY_COUNT -> R.string.sort_by_play_count
+                                    FolderSongSortType.TRACK_NUMBER -> R.string.sort_by_track_number
                                 }
                             }
                         )
