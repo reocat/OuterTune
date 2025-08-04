@@ -21,6 +21,7 @@ import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.ui.component.items.QueueListItem
 import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
 import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
+import com.dd3boh.outertune.ui.dialog.EditQueueDialog
 
 @Composable
 fun QueueMenu(
@@ -40,6 +41,9 @@ fun QueueMenu(
         mutableStateOf(false)
     }
     var showChooseQueueDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showEditDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -68,6 +72,12 @@ fun QueueMenu(
             title = R.string.add_to_playlist
         ) {
             showChoosePlaylistDialog = true
+        }
+        GridMenuItem(
+            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            title = R.string.edit
+        ) {
+            showEditDialog = true
         }
     }
 
@@ -100,6 +110,16 @@ fun QueueMenu(
             onDismiss = {
                 showChooseQueueDialog = false
                 onDismiss() // here we dismiss since we switch to the queue anyways
+            }
+        )
+    }
+
+    if (showEditDialog) {
+        EditQueueDialog(
+            queue = mq,
+            onDismiss = {
+                showEditDialog = false
+                onDismiss()
             }
         )
     }

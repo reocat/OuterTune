@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
@@ -27,6 +28,9 @@ import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.ui.component.items.ListItem
 import com.dd3boh.outertune.ui.component.items.QueueListItem
+import com.zionhuang.innertube.YouTube
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddToQueueDialog(
@@ -95,4 +99,26 @@ fun AddToQueueDialog(
             },
         )
     }
+}
+
+@Composable
+fun EditQueueDialog(
+    queue: MultiQueueObject,
+    onDismiss: () -> Unit,
+) {
+    val playerConnection = LocalPlayerConnection.current
+
+    TextFieldDialog(
+        icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
+        title = { Text(text = stringResource(R.string.edit_playlist)) },
+        onDismiss = onDismiss,
+        initialTextFieldValue = TextFieldValue(
+            queue.title,
+            TextRange(queue.title.length)
+        ),
+        onDone = { name ->
+            onDismiss()
+            playerConnection?.service?.queueBoard?.renameQueue(queue, name)
+        }
+    )
 }

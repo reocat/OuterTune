@@ -676,11 +676,11 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
     }
 
     fun renameQueue(queue: MultiQueueObject, newName: String) {
-        if (masterQueues.remove(queue)) {
-            val updatedQueue = queue.copy(id = queue.id, title = newName)
-            if (!masterQueues.any { it.title == newName }) {
-                masterQueues.add(updatedQueue)
-            }
+        val found = masterQueues.any { it == queue }
+        if (found) {
+            val oldIndex = masterQueues.indexOf(queue)
+            val q = masterQueues.removeAt(oldIndex)
+            masterQueues.add(oldIndex, q.copy(title = newName))
 
             if (QUEUE_DEBUG)
                 Timber.tag(TAG).d("Renamed queue from \"${queue.title}\" to \"$newName\"")
