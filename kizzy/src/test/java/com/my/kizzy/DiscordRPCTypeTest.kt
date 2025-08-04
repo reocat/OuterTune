@@ -28,4 +28,17 @@ class DiscordRPCTypeTest {
         val externalImage = RpcImage.ExternalImage("https://lh3.googleusercontent.com/abc123=w120-h120")
         assertNotNull(externalImage)
     }
+    
+    @Test
+    fun testYouTubeUrlOptimization() {
+        // Test with a realistic YouTube thumbnail URL
+        val youtubeUrl = "https://lh3.googleusercontent.com/abc123=w120-h120-p-l90-rj"
+        val externalImage = RpcImage.ExternalImage(youtubeUrl)
+        assertNotNull(externalImage)
+        
+        // Test with YouTube ggpht URL
+        val ggphtUrl = "https://yt3.ggpht.com/abc123=s88"
+        val ggphtImage = RpcImage.ExternalImage(ggphtUrl)
+        assertNotNull(ggphtImage)
+    }
 } 

@@ -29,17 +29,35 @@ class KizzyRepository(private val discordToken: String? = null) {
     
     suspend fun getImage(url: String): String? {
         return try {
-            // Optimize the URL for Discord first
-            val optimizedUrl = imageProcessor.optimizeUrlForDiscord(url)
+            // Debug logging to understand what's happening
+            println("=== Discord RPC Image Debug ===")
+            println("Original URL: $url")
+            println("Is Valid: ${imageProcessor.isValidImageUrl(url)}")
             
-            // For privacy, we'll use Discord's image proxy instead of downloading
-            // Discord will fetch the image directly from the optimized URL
-            if (imageProcessor.isValidImageUrl(optimizedUrl)) {
-                optimizedUrl
-            } else {
-                null
+            // Only process valid image URLs
+            if (!imageProcessor.isValidImageUrl(url)) {
+                println("URL validation failed, returning null")
+                return null
             }
+            
+            // Download the image
+            println("Downloading image from: $url")
+            val response = httpClient.get(url)
+            val imageBytes = response.bodyAsChannel().toInputStream().use { input ->
+                val output = ByteArrayOutputStream()
+                input.copyTo(output)
+                output.toByteArray()
+            }
+            println("Downloaded ${imageBytes.size} bytes")
+            
+            // Process the image locally and upload to Discord CDN
+            val result = imageProcessor.processImage(imageBytes, url, discordToken)
+            println("Processed result: $result")
+            println("===============================")
+            
+            result
         } catch (e: Exception) {
+            println("Error processing image URL: ${e.message}")
             null
         }
     }

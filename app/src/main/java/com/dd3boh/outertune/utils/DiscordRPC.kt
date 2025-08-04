@@ -13,6 +13,14 @@ class DiscordRPC(
         val currentTime = System.currentTimeMillis()
         val calculatedStartTime = currentTime - currentPlaybackTimeMillis
 
+        // Debug logging
+        println("=== Discord RPC Song Update ===")
+        println("Song: ${song.song.title}")
+        println("Song Thumbnail URL: ${song.song.thumbnailUrl}")
+        println("Artist: ${song.artists.firstOrNull()?.name}")
+        println("Artist Thumbnail URL: ${song.artists.firstOrNull()?.thumbnailUrl}")
+        println("===============================")
+
         // Determine the best image to use
         val largeImage = when {
             !song.song.thumbnailUrl.isNullOrBlank() -> RpcImage.ExternalImage(song.song.thumbnailUrl)

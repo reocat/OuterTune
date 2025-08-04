@@ -17,12 +17,13 @@ This module has been updated to process Discord RPC images locally without requi
 ### 3. Privacy-First Approach
 The new implementation uses a multi-tier approach:
 
-1. **Direct Discord CDN Upload** (if token available): Uploads images directly to Discord's servers
-2. **Discord Image Proxy** (fallback): Uses Discord's built-in image proxy to fetch images from URLs
+1. **Direct Discord CDN Upload** (if token available): Downloads images locally and uploads them directly to Discord's servers
+2. **Fallback to Default Assets**: Uses Discord's default "music" icon when uploads aren't possible
 3. **Text-only Presence** (final fallback): Shows presence without images if image processing fails
 
 ### 4. Enhanced Thumbnail Support
-- **URL Optimization**: Automatically optimizes YouTube/Google image URLs for Discord compatibility
+- **Local Download**: Downloads images locally for processing
+- **Discord CDN Upload**: Uploads processed images to Discord's CDN for proper display
 - **Fallback Images**: Provides fallback to default music icons when external images can't be loaded
 - **Better Error Handling**: Gracefully handles null or invalid thumbnail URLs
 
@@ -30,19 +31,17 @@ The new implementation uses a multi-tier approach:
 
 ### External Images
 When an external image URL is provided:
-1. The system optimizes the URL for Discord (e.g., resizes YouTube thumbnails to 512x512)
-2. Discord fetches the image from the optimized URL and caches it on their servers
-3. This approach maintains privacy as no third-party services are involved
+1. The system downloads the image locally
+2. Resizes it to Discord's recommended size (512x512)
+3. Uploads it directly to Discord's CDN using the Discord token
+4. Uses the returned asset ID for the presence update
 
-### URL Optimization
-The system automatically optimizes common image URL formats:
-- **Google User Content**: `https://lh3.googleusercontent.com/...` → optimized to 512x512
-- **YouTube Thumbnails**: `https://yt3.ggpht.com/...` → optimized to 512px
-- **Regular URLs**: Passed through unchanged
+### Why This Approach?
+Discord RPC doesn't support external image URLs directly. Even though we were sending the correct URLs (as seen in the HTTP Toolkit data), Discord requires images to be uploaded to their CDN and referenced by asset names.
 
 ### Fallback Mechanism
 If image processing fails:
-1. **Primary**: Uses optimized external image URL
+1. **Primary**: Uploads image to Discord CDN and uses asset ID
 2. **Secondary**: Falls back to Discord's default "music" icon
 3. **Tertiary**: Shows text-only presence
 
@@ -55,7 +54,8 @@ Discord attachment images (starting with "attachments") continue to work as befo
 2. **Reliability**: No dependency on third-party APIs that could go down
 3. **Performance**: Local processing reduces latency
 4. **Compliance**: Better alignment with privacy-focused applications
-5. **Better UX**: Proper thumbnails with fallback options
+5. **Proper Thumbnails**: Actual album/artist images are displayed in Discord
+6. **Discord Compatibility**: Uses Discord's official CDN for guaranteed compatibility
 
 ## Usage
 
@@ -71,7 +71,9 @@ rpc.setActivity(
 ```
 
 The system now automatically:
-- Optimizes image URLs for Discord
+- Downloads images locally
+- Uploads them to Discord's CDN
+- Uses the proper asset IDs for display
 - Provides fallback images when needed
 - Handles null or invalid URLs gracefully
 
@@ -87,5 +89,5 @@ Run the tests to verify the implementation:
 
 - The implementation gracefully falls back to text-only presence if image processing fails
 - All image processing is done locally without external dependencies
-- Discord's own image proxy is used when direct uploads aren't possible
-- YouTube/Google image URLs are automatically optimized for better Discord compatibility 
+- Images are uploaded to Discord's CDN for proper display
+- This approach ensures actual thumbnails are shown instead of generic icons 

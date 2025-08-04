@@ -54,16 +54,11 @@ class LocalImageProcessor {
                 uploadToDiscordCDN(imageBytes, discordToken)?.let { return it }
             }
             
-            // Fallback: Use Discord's image proxy
-            if (isValidImageUrl(originalUrl)) {
-                // Use Discord's image proxy - this is the most privacy-friendly approach
-                // Discord will fetch the image directly from the URL we provide
-                originalUrl
-            } else {
-                null
-            }
+            // If we can't upload to Discord CDN, we need to fall back to a different approach
+            // Discord RPC doesn't support external URLs directly, so we'll use a fallback
+            "music"
         } catch (e: Exception) {
-            null
+            "music"
         }
     }
     
