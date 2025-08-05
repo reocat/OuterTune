@@ -40,22 +40,12 @@ class KizzyRepository(private val discordToken: String? = null) {
                 return null
             }
             
-            // Download the image
-            println("Downloading image from: $url")
-            val response = httpClient.get(url)
-            val imageBytes = response.bodyAsChannel().toInputStream().use { input ->
-                val output = ByteArrayOutputStream()
-                input.copyTo(output)
-                output.toByteArray()
-            }
-            println("Downloaded ${imageBytes.size} bytes")
-            
-            // Process the image locally and upload to Discord CDN
-            val result = imageProcessor.processImage(imageBytes, url, discordToken)
-            println("Processed result: $result")
+            // For now, just return the URL directly
+            // The original implementation might have been working with external URLs
+            println("Returning URL directly: $url")
             println("===============================")
             
-            result
+            url
         } catch (e: Exception) {
             println("Error processing image URL: ${e.message}")
             null

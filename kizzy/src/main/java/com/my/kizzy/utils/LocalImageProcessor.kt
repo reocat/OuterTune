@@ -46,29 +46,19 @@ class LocalImageProcessor {
     
     /**
      * Process an image and return a Discord-compatible image asset
-     * Attempts to upload directly to Discord's CDN for better compatibility
+     * For now, let's try a simpler approach - just return the URL directly
+     * since the original implementation was working
      */
     suspend fun processImage(imageBytes: ByteArray, originalUrl: String, discordToken: String? = null): String? {
         return try {
             println("=== LocalImageProcessor Debug ===")
             println("Image bytes size: ${imageBytes.size}")
             println("Original URL: $originalUrl")
-            println("Discord token provided: ${!discordToken.isNullOrBlank()}")
             
-            // First, try to upload directly to Discord's CDN if we have a token
-            if (!discordToken.isNullOrBlank()) {
-                println("Attempting Discord CDN upload...")
-                val result = uploadToDiscordCDN(imageBytes, discordToken)
-                println("Discord CDN upload result: $result")
-                result?.let { return it }
-            } else {
-                println("No Discord token provided, skipping CDN upload")
-            }
-            
-            // If we can't upload to Discord CDN, we need to fall back to a different approach
-            // Discord RPC doesn't support external URLs directly, so we'll use a fallback
-            println("Using fallback: music")
-            "music"
+            // For now, let's try returning the URL directly
+            // The original implementation might have been working with external URLs
+            println("Returning original URL directly: $originalUrl")
+            originalUrl
         } catch (e: Exception) {
             println("Error in processImage: ${e.message}")
             e.printStackTrace()
