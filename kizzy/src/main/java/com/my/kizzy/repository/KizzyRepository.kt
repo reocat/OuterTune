@@ -40,8 +40,18 @@ class KizzyRepository(private val discordToken: String? = null) {
                 return null
             }
             
-            // Process the URL to make it more Discord-friendly
-            val result = imageProcessor.processImage(ByteArray(0), url, discordToken)
+            // Download the image
+            println("Downloading image from: $url")
+            val response = httpClient.get(url)
+            val imageBytes = response.bodyAsChannel().toInputStream().use { input ->
+                val output = ByteArrayOutputStream()
+                input.copyTo(output)
+                output.toByteArray()
+            }
+            println("Downloaded ${imageBytes.size} bytes")
+            
+            // Process the image locally
+            val result = imageProcessor.processImage(imageBytes, url, discordToken)
             println("Processed result: $result")
             println("===============================")
             

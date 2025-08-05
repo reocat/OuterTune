@@ -46,7 +46,7 @@ class LocalImageProcessor {
     
     /**
      * Process an image and return a Discord-compatible image asset
-     * Optimize URLs to be more Discord-friendly
+     * Since Discord RPC needs proper file extensions, we need to handle this differently
      */
     suspend fun processImage(imageBytes: ByteArray, originalUrl: String, discordToken: String? = null): String? {
         return try {
@@ -54,7 +54,20 @@ class LocalImageProcessor {
             println("Image bytes size: ${imageBytes.size}")
             println("Original URL: $originalUrl")
             
-            // Optimize the URL for Discord
+            // If we have image bytes, try to determine format and create a proper URL
+            if (imageBytes.isNotEmpty()) {
+                val format = determineImageFormat(imageBytes)
+                println("Detected image format: $format")
+                
+                // For now, let's try a different approach - use a known working image service
+                // or create a data URL that Discord might accept
+                val dataUrl = createDataUrl(imageBytes, format)
+                println("Created data URL: ${dataUrl.take(100)}...")
+                
+                return dataUrl
+            }
+            
+            // Fallback to URL optimization
             val optimizedUrl = optimizeUrlForDiscord(originalUrl)
             println("Optimized URL: $optimizedUrl")
             
@@ -64,6 +77,27 @@ class LocalImageProcessor {
             e.printStackTrace()
             "music"
         }
+    }
+    
+    /**
+     * Determine image format from byte array
+     */
+    private fun determineImageFormat(bytes: ByteArray): String {
+        return when {
+            bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() -> "image/jpeg"
+            bytes.size >= 8 && bytes.take(8).toByteArray().contentEquals(byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(), 0x1A.toByte(), 0x0A.toByte())) -> "image/png"
+            bytes.size >= 4 && bytes.take(4).toByteArray().contentEquals(byteArrayOf(0x47.toByte(), 0x49.toByte(), 0x46.toByte(), 0x38.toByte())) -> "image/gif"
+            bytes.size >= 12 && bytes.take(12).toByteArray().contentEquals(byteArrayOf(0x52.toByte(), 0x49.toByte(), 0x46.toByte(), 0x46.toByte(), 0, 0, 0, 0, 0x57.toByte(), 0x45.toByte(), 0x42.toByte(), 0x50.toByte())) -> "image/webp"
+            else -> "image/jpeg" // Default to JPEG
+        }
+    }
+    
+    /**
+     * Create a data URL from image bytes
+     */
+    private fun createDataUrl(bytes: ByteArray, mimeType: String): String {
+        val base64 = Base64.getEncoder().encodeToString(bytes)
+        return "data:$mimeType;base64,$base64"
     }
     
     /**
