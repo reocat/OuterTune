@@ -13,6 +13,7 @@ import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -47,7 +48,9 @@ import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,12 +101,32 @@ fun LoginScreen(
                             if (url?.startsWith("https://music.youtube.com") == true) {
                                 innerTubeCookie = CookieManager.getInstance().getCookie(url)
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    YouTube.accountInfo().onSuccess {
-                                        accountName = it.name
-                                        accountEmail = it.email.orEmpty()
-                                        accountChannelHandle = it.channelHandle.orEmpty()
-                                    }.onFailure {
-                                        reportException(it)
+                                    for (attempt in 1..3) {
+                                        var success = false
+                                        YouTube.accountInfo().onSuccess {
+                                            accountName = it.name
+                                            accountEmail = it.email.orEmpty()
+                                            accountChannelHandle = it.channelHandle.orEmpty()
+                                            success = true
+                                        }.onFailure {
+                                            reportException(it)
+                                        }
+
+                                        if (success) {
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(view.context, "Login successful", Toast.LENGTH_SHORT).show()
+                                                navController.navigateUp()
+                                            }
+                                            return@launch
+                                        } else {
+                                            if (attempt < 3) {
+                                                delay(1000)
+                                            }
+                                        }
+                                    }
+
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(view.context, "Failed to get account info", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
