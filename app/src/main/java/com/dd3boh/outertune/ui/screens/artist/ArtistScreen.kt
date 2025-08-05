@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Favorite
@@ -41,6 +43,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -57,7 +60,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -139,13 +145,11 @@ fun ArtistScreen(
             lazyListState.firstVisibleItemIndex == 0
         }
     }
-
     val librarySongsAvailable = {
         librarySongs.filter { it.song.isAvailableOffline() || isNetworkConnected }
-        .map { it.toMediaMetadata() }
-        .toList()
+            .map { it.toMediaMetadata() }
+            .toList()
     }
-
     LaunchedEffect(isNetworkConnected, libraryArtist) {
         // always show local page for local artists. Show local page remote artist when offline
         showLocal = libraryArtist?.artist?.isLocal == true
@@ -161,35 +165,78 @@ fun ArtistScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
-                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier
+                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier.height(320.dp)
                         )
                 ) {
                     if (thumbnail != null) {
                         AsyncImage(
                             model = thumbnail.resize(1200, 900),
                             contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .align(Alignment.Center)
+                                .fillMaxSize()
                                 .fadingEdge(
                                     top = WindowInsets.systemBars
                                         .asPaddingValues()
                                         .calculateTopPadding() + AppBarHeight,
-                                    bottom = 64.dp
+                                    bottom = 80.dp
                                 )
                         )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    alpha = 0.6f
+                                }
+                                .clip(
+                                    RoundedCornerShape(
+                                        bottomStart = 24.dp,
+                                        bottomEnd = 24.dp
+                                    )
+                                )
+                        ) {
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                color = Color.Transparent,
+                                shape = RoundedCornerShape(
+                                    bottomStart = 24.dp,
+                                    bottomEnd = 24.dp
+                                )
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            alpha = 0.3f
+                                        }
+                                )
+                            }
+                        }
+                    } else {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            shape = RoundedCornerShape(
+                                bottomStart = 24.dp,
+                                bottomEnd = 24.dp
+                            )
+                        ) {}
                     }
+
                     AutoResizeText(
-                        text = artistName
-                        ?: "Unknown",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontSizeRange = FontSizeRange(32.sp, 58.sp),
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
+                        text = artistName ?: "Unknown",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = (-0.25).sp
+                        ),
+                        fontSizeRange = FontSizeRange(28.sp, 48.sp),
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Start,
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(horizontal = 48.dp)
+                            .align(Alignment.BottomStart)
+                            .padding(horizontal = 20.dp, vertical = 24.dp)
                             .then(
                                 if (thumbnail == null) {
                                     Modifier.padding(
@@ -222,17 +269,28 @@ fun ArtistScreen(
                                 title = artistName
                             )
                         },
-                        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                        modifier = Modifier.weight(1f)
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = 20.dp,
+                            vertical = 12.dp
+                        ),
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Shuffle,
                             contentDescription = null,
-                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                        Spacer(Modifier.size(6.dp))
                         Text(
-                            text = stringResource(R.string.shuffle)
+                            text = stringResource(R.string.shuffle),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
                         )
                     }
 
@@ -246,16 +304,28 @@ fun ArtistScreen(
                                         title = "Radio: ${artistPage.artist.title}"
                                     )
                                 },
-                                contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                modifier = Modifier.weight(1f)
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                    horizontal = 20.dp,
+                                    vertical = 12.dp
+                                ),
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.Radio,
                                     contentDescription = null,
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(stringResource(R.string.radio))
+                                Spacer(Modifier.size(6.dp))
+                                Text(
+                                    text = stringResource(R.string.radio),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                )
                             }
                         }
                     }
@@ -338,7 +408,10 @@ fun ArtistScreen(
                         }
 
                         item {
-                            LazyRow {
+                            LazyRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 items(
                                     items = libraryAlbums,
                                     key = { it.id }
@@ -453,7 +526,10 @@ fun ArtistScreen(
                     }
                     else {
                         item {
-                            LazyRow {
+                            LazyRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 items(
                                     items = section.items,
                                     key = { it.id }
