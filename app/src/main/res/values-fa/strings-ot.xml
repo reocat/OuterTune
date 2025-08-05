@@ -194,7 +194,6 @@
     <string name="oobe_local_media_title">رسانه محلی</string>
     <string name="oobe_local_media_subtitle">پوشه‌هایی را که حاوی موسیقی شما هستند انتخاب کنید. ما آنها را برای یافتن آهنگ‌های قابل وارد کردن اسکن خواهیم کرد.</string>
     <string name="oobe_complete_title">همه چیز آماده است!</string>
-    <string name="oobe_complete">OuterTune تنظیم و آماده استفاده است. موسیقی خود را کاوش کنید، آهنگ‌های جدید کشف کنید و از این تجربه لذت ببرید!</string>
     <string name="import_failed_songs">وارد نشد</string>
     <string name="import_success_songs">با موفقیت وارد شد</string>
     <string name="m3u_export">استخراج به عنوان فایل M3U</string>
@@ -216,11 +215,5 @@
     <string name="err_restore_incompatible_database">پایگاه داده ناسازگار بازیابی نشد</string>
     <string name="m3u_import_failed">هیچ آهنگی یافت نشد. فایل M3U نامعتبر است، یا هیچ آهنگ منطبقی پیدا نشد</string>
     <string name="tap_show_more">برای نمایش اطلاعات بیشتر، ضربه بزنید</string>
-    <string name="all_contributors">نمایش همه مشارکت کنندگان</string>
-    <string name="att_contributor">مشارکت کننده</string>
-    <string name="att_lead_developer">توسعه دهنده اصلی</string>
-    <string name="att_maintainer">نگهدارنده</string>
-    <string name="att_project_support">پشتیبانی پروژه</string>
-    <string name="att_translator">مترجم (%s)</string>
     <string name="lyrics_synced_clickable">اشعار قابل کلیک</string>
 </resources>

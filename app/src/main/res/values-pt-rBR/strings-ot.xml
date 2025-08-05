@@ -84,7 +84,6 @@
     <string name="experimental_settings_title">Experimentais</string>
     <string name="dev_settings_title">Ativar configurações de desenvolvedor</string>
     <string name="dev_settings_description">Revela configurações avançadas adicionais utilizadas no desenvolvimento</string>
-    <string name="oobe_complete">O OuterTune está configurado e pronto pra ser usado. Explore suas músicas, descubra novas faixas, e aproveite a experiência!</string>
     <string name="oobe_use_backup">Eu tenho um backup</string>
     <string name="action_back">Voltar</string>
     <string name="action_next">Avançar</string>
@@ -218,11 +217,5 @@
     <string name="err_restore_incompatible_database">Não foi possível restaurar banco de dados incompatível</string>
     <string name="m3u_import_failed">Nenhuma música encontrada. Arquivo M3U inválido, ou nenhuma correspondência das músicas foi encontrada</string>
     <string name="tap_show_more">Toque para mostrar mais informações</string>
-    <string name="all_contributors">Mostrar todos os colaboradores</string>
-    <string name="att_contributor">Colaborador</string>
-    <string name="att_lead_developer">Desenvolvedor principal</string>
-    <string name="att_maintainer">Mantenedor</string>
-    <string name="att_project_support">Suporte ao projeto</string>
-    <string name="att_translator">Tradutor (%s)</string>
     <string name="lyrics_synced_clickable">Letras clicáveis</string>
 </resources>

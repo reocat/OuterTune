@@ -201,7 +201,6 @@
     <string name="oobe_local_media_subtitle">Import your music collection</string>
     <string name="oobe_scan_for_local_music">Сканировать локальную музыку</string>
     <string name="oobe_complete_title">Всё готово!</string>
-    <string name="oobe_complete">OuterTune настроен и готов к использованию. Исследуйте свою музыку, открывайте новые треки и наслаждайтесь!</string>
 
     <!-- Setup Wizard features-->
     <string name="oobe_ytm_integration">Интеграция с YouTube Music</string>

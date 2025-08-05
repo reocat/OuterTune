@@ -116,7 +116,6 @@
     <string name="dev_settings_title">開発者向け設定を有効にする</string>
     <string name="dev_settings_description">開発用途向けの追加の詳細設定を表示します</string>
     <string name="oobe_welcome_message">ようこそ、OuterTuneへ</string>
-    <string name="oobe_complete">OuterTuneのセットアップは完了し、利用可能です。好きな音楽にアクセスし、新しい曲を見つけお楽しみください！</string>
     <string name="action_back">戻る</string>
     <string name="action_next">次へ</string>
     <string name="action_skip">スキップ</string>
@@ -214,11 +213,5 @@
     <string name="err_restore_incompatible_database">互換性のないデータベースを復元できませんでした</string>
     <string name="m3u_import_failed">曲が見つかりません。無効なM3Uファイルか、一致する曲が見つかりませんでした</string>
     <string name="tap_show_more">タップで詳細を表示</string>
-    <string name="all_contributors">すべての貢献者を表示</string>
-    <string name="att_contributor">貢献者</string>
-    <string name="att_lead_developer">主要開発者</string>
-    <string name="att_maintainer">保守担当者</string>
-    <string name="att_project_support">プロジェクト支援</string>
-    <string name="att_translator">翻訳者 (%s)</string>
     <string name="lyrics_synced_clickable">歌詞をクリック可能に</string>
 </resources>

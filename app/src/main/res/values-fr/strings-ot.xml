@@ -56,7 +56,6 @@
     <string name="experimental_settings_title">Expérimental</string>
     <string name="dev_settings_title">Activer les paramètres du développeur</string>
     <string name="oobe_welcome_message">Bienvenue sur OuterTune</string>
-    <string name="oobe_complete">OuterTune est configuré et prêt à l\'emploi. Explorez votre musique, découvrez de nouveaux morceaux et profitez pleinement de l\'expérience !</string>
     <string name="action_next">Suivant</string>
     <string name="action_skip">Passer</string>
     <string name="info">Information</string>
@@ -218,11 +217,5 @@
     <string name="err_restore_incompatible_database">Impossible de restaurer une base de données incompatible</string>
     <string name="m3u_import_failed">Aucun titre trouvé. Fichier M3U invalide ou aucun titre correspondant trouvé.</string>
     <string name="tap_show_more">Appuyez pour afficher plus d\'informations</string>
-    <string name="all_contributors">Afficher tous les contributeurs</string>
-    <string name="att_contributor">Contributeur</string>
-    <string name="att_lead_developer">Développeur principal</string>
-    <string name="att_maintainer">Mainteneur</string>
-    <string name="att_project_support">Accompagnement de projet</string>
-    <string name="att_translator">Traducteur (%s)</string>
     <string name="lyrics_synced_clickable">Paroles cliquables</string>
 </resources>

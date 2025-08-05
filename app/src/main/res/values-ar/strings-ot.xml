@@ -159,7 +159,6 @@
     <string name="dev_settings_title">تمكين إعدادات المطور</string>
     <string name="dev_settings_description">يكشف عن إعدادات متقدمة إضافية مخصصة للاستخدام التطويري</string>
     <string name="swipe_to_skip_title">اسحب أفقيًا لتغيير الأغنية</string>
-    <string name="oobe_complete">اكتمل الإعداد</string>
     <string name="oobe_use_backup">لدي نسخة احتياطية</string>
     <string name="action_back">رجوع</string>
     <string name="action_next">التالي</string>
@@ -168,15 +167,4 @@
     <string name="info">معلومات</string>
     <string name="tap_show_more">إضغط لعرض المزيد من المعلومات</string>
     <string name="err_invalid_ytm_song">فشل تشغيل الأغنية ، فقط المحتوى المتاح في YouTube Music يمكن تشغيله</string>
-    <string name="app_info_title">معلومات التطبيق</string>
-    <string name="device_info_title">معلومات الجهاز</string>
-    <string name="help_bug_report_action">إرسال تقرير خطأ (عن طريق GitHub)</string>
-    <string name="help_support_forum">الدعم و المساعدة (GitHub)</string>
-    <string name="oss_licenses_title">فتح تراخبص المصدر</string>
-    <string name="all_contributors">عرض كل المساهمين</string>
-    <string name="att_contributor">مساهم</string>
-    <string name="att_lead_developer">المطور الرئيسي</string>
-    <string name="att_maintainer">مسؤول في الصيانة</string>
-    <string name="att_project_support">دعم المشروع</string>
-    <string name="att_translator">المترجم (%s)</string>
 </resources>

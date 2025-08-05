@@ -132,7 +132,6 @@
     <string name="local_library_enable_description">비활성화시 로컬 라이브러리를 숨깁니다</string>
     <string name="scanner_progress_complete">스캔 완료</string>
     <string name="audio_offload_description">오디오 재생에 \'오프로드 오디오 경로(offload audio path)\'를 사용합니다. 이를 비활성화하면 전력 소모가 증가할 수 있지만, 오디오 재생이나 후처리에서 문제가 발생할 경우 유용할 수 있습니다</string>
-    <string name="oobe_complete">OuterTune를 사용할 준비를 마쳤습니다. 새로운 음악을 탐색하고, 새로운 트랙을 찾으며, 즐거운 경험을 하세요!</string>
     <string name="local_library_enable_title">로컬 미디어 가져오기</string>
     <string name="scan_paths_incl">스캔 위치</string>
     <string name="oobe_welcome_message">OuterTune에 오신걸 환영합니다</string>

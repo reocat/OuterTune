@@ -113,7 +113,6 @@
     <string name="dev_settings_title">启用开发人员设置</string>
     <string name="dev_settings_description">显示用于开发的其他高级设置</string>
     <string name="oobe_welcome_message">欢迎来到 OuterTune</string>
-    <string name="oobe_complete">OuterTune设置完成，可立即使用。探索你的音乐，发现新歌曲，享受美好的体验吧！</string>
     <string name="oobe_use_backup">我有备份</string>
     <string name="action_back">返回</string>
     <string name="action_next">下一个</string>

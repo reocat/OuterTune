@@ -116,7 +116,6 @@
     <string name="scanner_sensitivity_title">Configura la sensibilità dello scanner</string>
     <string name="scanner_type_taglib">Usa l\'estrattore di metadati integrato TagLib</string>
     <string name="sort_by_like_date">Data di gradimento</string>
-    <string name="oobe_complete">OuterTune è impostato e pronto per l\'uso. Esplora la tua musica, scopri nuovi brani e goditi l\'esperienza!</string>
     <string name="scanner_online_artist_linking">Prova a collegare gli artisti dei file locali con quelli su YouTube Music</string>
     <string name="dev_settings_title">Abilita impostazioni sviluppatore</string>
     <string name="dev_settings_description">Rivela impostazioni avanzate aggiuntive destinate all\'uso in fase di sviluppo</string>
@@ -214,21 +213,9 @@
     <string name="oobe_complete_title">Tutto a posto!</string>
     <string name="speed_fast">Veloce</string>
     <string name="err_invalid_ytm_song">Impossibile riprodurre il brano. È possibile riprodurre solo i contenuti accessibili su YouTube Music.</string>
-    <string name="app_info_title">Informazioni sull\'applicazione</string>
-    <string name="device_info_title">Informazioni sul dispositivo</string>
-    <string name="help_bug_report_action">Invia una segnalazione di bug (tramite Github)</string>
-    <string name="help_contact_email_inquiries">Altre richieste (tocca per copiare l\'email)</string>
-    <string name="help_support_forum">Aiuto e supporto (tramite Github)</string>
-    <string name="wiki">Wiki</string>
     <string name="scanner_sensitivity_L0">Prendi il primo risultato fornito da YouTube quando la ricerca su YouTube è abilitata, altrimenti abbina il titolo</string>
     <string name="err_restore_incompatible_database">Impossibile ripristinare il database incompatibile</string>
     <string name="m3u_import_failed">Nessuna canzone trovata. File M3U non valido o nessuna canzone corrispondente trovata.</string>
     <string name="tap_show_more">Tocca per visualizzare maggiori informazioni</string>
-    <string name="all_contributors">Mostra tutti i collaboratori</string>
-    <string name="att_contributor">Collaboratore</string>
-    <string name="att_lead_developer">Sviluppatore principale</string>
-    <string name="att_maintainer">Manutentore</string>
-    <string name="att_project_support">Supporto al progetto</string>
-    <string name="att_translator">Traduttore (%s)</string>
     <string name="lyrics_synced_clickable">Testi cliccabili</string>
 </resources>
