@@ -106,3 +106,5 @@ lint/tmp/
 
 # shell scripts
 *.sh
+
+.crush
