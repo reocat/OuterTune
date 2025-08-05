@@ -32,9 +32,8 @@ The new implementation uses a multi-tier approach:
 ### External Images
 When an external image URL is provided:
 1. The system downloads the image locally
-2. Resizes it to Discord's recommended size (512x512)
-3. Uploads it directly to Discord's CDN using the Discord token
-4. Uses the returned asset ID for the presence update
+2. Uploads it directly to Discord's CDN using the Discord token
+3. Uses the returned asset ID for the presence update
 
 ### Why This Approach?
 Discord RPC doesn't support external image URLs directly. Even though we were sending the correct URLs (as seen in the HTTP Toolkit data), Discord requires images to be uploaded to their CDN and referenced by asset names.
@@ -56,6 +55,7 @@ Discord attachment images (starting with "attachments") continue to work as befo
 4. **Compliance**: Better alignment with privacy-focused applications
 5. **Proper Thumbnails**: Actual album/artist images are displayed in Discord
 6. **Discord Compatibility**: Uses Discord's official CDN for guaranteed compatibility
+7. **Android Compatibility**: Uses only JVM-compatible libraries, avoiding Android dependency issues
 
 ## Usage
 
@@ -90,4 +90,5 @@ Run the tests to verify the implementation:
 - The implementation gracefully falls back to text-only presence if image processing fails
 - All image processing is done locally without external dependencies
 - Images are uploaded to Discord's CDN for proper display
-- This approach ensures actual thumbnails are shown instead of generic icons 
+- This approach ensures actual thumbnails are shown instead of generic icons
+- Uses only JVM-compatible libraries to avoid Android dependency issues 
