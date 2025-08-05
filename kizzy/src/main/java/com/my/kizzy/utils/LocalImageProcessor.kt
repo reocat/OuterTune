@@ -34,8 +34,14 @@ class LocalImageProcessor {
     
     @Serializable
     private data class DiscordUploadResponse(
+        val attachments: List<DiscordAttachment>? = null
+    )
+    
+    @Serializable
+    private data class DiscordAttachment(
         val id: String? = null,
-        val url: String? = null
+        val upload_url: String? = null,
+        val upload_filename: String? = null
     )
     
     /**
@@ -63,9 +69,7 @@ class LocalImageProcessor {
      */
     private suspend fun uploadToDiscordCDN(imageBytes: ByteArray, token: String): String? {
         return try {
-            // For now, upload the image as-is without resizing
-            // We can add resizing later if needed
-            
+            // Step 1: Get upload URL from Discord
             val response = httpClient.post("https://discord.com/api/v9/channels/@me/attachments") {
                 header("Authorization", token)
                 contentType(ContentType.Application.Json)
@@ -82,8 +86,26 @@ class LocalImageProcessor {
             
             // Parse the upload URL from response
             val uploadResponse = json.decodeFromString<DiscordUploadResponse>(response.bodyAsText())
-            uploadResponse.id?.let { "mp:$it" }
+            val attachment = uploadResponse.attachments?.firstOrNull()
+            
+            if (attachment?.upload_url != null) {
+                // Step 2: Upload the actual image data to the provided URL
+                val uploadResponse2 = httpClient.post(attachment.upload_url) {
+                    contentType(ContentType.Image.PNG)
+                    setBody(imageBytes)
+                }
+                
+                // If upload was successful, return the asset ID
+                if (uploadResponse2.status.value in 200..299) {
+                    attachment.id?.let { "mp:$it" }
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
         } catch (e: Exception) {
+            println("Error uploading to Discord CDN: ${e.message}")
             null
         }
     }

@@ -75,6 +75,11 @@ open class KizzyRPC(token: String) {
         if (!isRpcRunning()) {
             discordWebSocket.connect()
         }
+        
+        // Resolve images before creating the activity
+        val resolvedLargeImage = largeImage?.resolveImage(kizzyRepository)
+        val resolvedSmallImage = smallImage?.resolveImage(kizzyRepository)
+        
         val presence = Presence(
             activities = listOf(
                 Activity(
@@ -87,8 +92,8 @@ open class KizzyRPC(token: String) {
                     statusDisplayType = statusDisplayType.value,
                     timestamps = Timestamps(startTime, endTime),
                     assets = Assets(
-                        largeImage = largeImage?.resolveImage(kizzyRepository),
-                        smallImage = smallImage?.resolveImage(kizzyRepository),
+                        largeImage = resolvedLargeImage,
+                        smallImage = resolvedSmallImage,
                         largeText = largeText,
                         smallText = smallText
                     ),
