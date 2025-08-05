@@ -50,15 +50,28 @@ class LocalImageProcessor {
      */
     suspend fun processImage(imageBytes: ByteArray, originalUrl: String, discordToken: String? = null): String? {
         return try {
+            println("=== LocalImageProcessor Debug ===")
+            println("Image bytes size: ${imageBytes.size}")
+            println("Original URL: $originalUrl")
+            println("Discord token provided: ${!discordToken.isNullOrBlank()}")
+            
             // First, try to upload directly to Discord's CDN if we have a token
             if (!discordToken.isNullOrBlank()) {
-                uploadToDiscordCDN(imageBytes, discordToken)?.let { return it }
+                println("Attempting Discord CDN upload...")
+                val result = uploadToDiscordCDN(imageBytes, discordToken)
+                println("Discord CDN upload result: $result")
+                result?.let { return it }
+            } else {
+                println("No Discord token provided, skipping CDN upload")
             }
             
             // If we can't upload to Discord CDN, we need to fall back to a different approach
             // Discord RPC doesn't support external URLs directly, so we'll use a fallback
+            println("Using fallback: music")
             "music"
         } catch (e: Exception) {
+            println("Error in processImage: ${e.message}")
+            e.printStackTrace()
             "music"
         }
     }
@@ -69,7 +82,10 @@ class LocalImageProcessor {
      */
     private suspend fun uploadToDiscordCDN(imageBytes: ByteArray, token: String): String? {
         return try {
+            println("Starting Discord CDN upload...")
+            
             // Step 1: Get upload URL from Discord
+            println("Step 1: Getting upload URL from Discord...")
             val response = httpClient.post("https://discord.com/api/v9/channels/@me/attachments") {
                 header("Authorization", token)
                 contentType(ContentType.Application.Json)
@@ -84,28 +100,42 @@ class LocalImageProcessor {
                 ))
             }
             
+            println("Step 1 response status: ${response.status}")
+            val responseText = response.bodyAsText()
+            println("Step 1 response body: $responseText")
+            
             // Parse the upload URL from response
-            val uploadResponse = json.decodeFromString<DiscordUploadResponse>(response.bodyAsText())
+            val uploadResponse = json.decodeFromString<DiscordUploadResponse>(responseText)
             val attachment = uploadResponse.attachments?.firstOrNull()
+            
+            println("Parsed attachment: $attachment")
             
             if (attachment?.upload_url != null) {
                 // Step 2: Upload the actual image data to the provided URL
+                println("Step 2: Uploading image data to: ${attachment.upload_url}")
                 val uploadResponse2 = httpClient.post(attachment.upload_url) {
                     contentType(ContentType.Image.PNG)
                     setBody(imageBytes)
                 }
                 
+                println("Step 2 response status: ${uploadResponse2.status}")
+                
                 // If upload was successful, return the asset ID
                 if (uploadResponse2.status.value in 200..299) {
-                    attachment.id?.let { "mp:$it" }
+                    val result = attachment.id?.let { "mp:$it" }
+                    println("Upload successful, returning: $result")
+                    result
                 } else {
+                    println("Upload failed with status: ${uploadResponse2.status}")
                     null
                 }
             } else {
+                println("No upload URL received from Discord")
                 null
             }
         } catch (e: Exception) {
             println("Error uploading to Discord CDN: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
