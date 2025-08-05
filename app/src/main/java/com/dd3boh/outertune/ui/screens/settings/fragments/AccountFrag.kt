@@ -8,12 +8,17 @@
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.App.Companion.forgetAccount
@@ -68,25 +74,55 @@ fun ColumnScope.AccountFrag(navController: NavController) {
     }
 
     PreferenceEntry(
-        title = { Text(if (isLoggedIn) accountName else stringResource(R.string.login)) },
+        title = {
+            Text(
+                text = if (isLoggedIn) accountName.takeIf { it.isNotEmpty() }
+                    ?: stringResource(R.string.account_connected)
+                else stringResource(R.string.login),
+                fontWeight = FontWeight.Medium
+            )
+        },
         description = if (isLoggedIn) {
             accountEmail.takeIf { it.isNotEmpty() }
                 ?: accountChannelHandle.takeIf { it.isNotEmpty() }
-        } else null,
-        icon = { Icon(Icons.Outlined.Person, null) },
-        onClick = { navController.navigate("login") },
+                ?: "Connected to YouTube Music"
+        } else {
+            stringResource(R.string.login_required_description)
+        },
+        onClick = {
+            if (isLoggedIn) {
+                onInnerTubeCookieChange("")
+            } else {
+                navController.navigate("login")
+            }
+        },
+        icon = {
+            Icon(
+                imageVector = if (isLoggedIn) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
+                contentDescription = null,
+                tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        trailingContent = {
+            FilledTonalIconButton(
+                onClick = {
+                    if (isLoggedIn) {
+                        onInnerTubeCookieChange("")
+                    } else {
+                        navController.navigate("login")
+                    }
+                },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = if (isLoggedIn) Icons.AutoMirrored.Outlined.Logout else Icons.AutoMirrored.Outlined.Login,
+                    contentDescription = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        },
         isFirst = true
     )
-    if (isLoggedIn) {
-        PreferenceEntry(
-            title = { Text(stringResource(R.string.action_logout)) },
-            icon = { Icon(Icons.AutoMirrored.Outlined.Logout, null) },
-            onClick = {
-                forgetAccount(context)
-            },
-            isMiddle = true
-        )
-    }
 
     PreferenceEntry(
         title = {
