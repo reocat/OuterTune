@@ -36,6 +36,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
+import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.AccountPfpUrlKey
 import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
@@ -64,6 +65,7 @@ fun LoginScreen(
     var accountName by rememberPreference(AccountNameKey, "")
     var accountEmail by rememberPreference(AccountEmailKey, "")
     var accountChannelHandle by rememberPreference(AccountChannelHandleKey, "")
+    var accountPfpUrl by rememberPreference(AccountPfpUrlKey, "")
 
     var webView: WebView? = null
     val layoutDirection = LocalLayoutDirection.current
@@ -103,13 +105,15 @@ fun LoginScreen(
                                 CoroutineScope(Dispatchers.IO).launch {
                                     for (attempt in 1..3) {
                                         var success = false
-                                        YouTube.accountInfo().onSuccess {
-                                            accountName = it.name
-                                            accountEmail = it.email.orEmpty()
-                                            accountChannelHandle = it.channelHandle.orEmpty()
-                                            it.channelHandle?.let { handle ->
+                                        YouTube.accountInfo().onSuccess { accountInfo ->
+                                            accountName = accountInfo.name
+                                            accountEmail = accountInfo.email.orEmpty()
+                                            accountChannelHandle = accountInfo.channelHandle.orEmpty()
+                                            accountInfo.channelHandle?.let { handle ->
                                                 YouTube.channel(handle).onSuccess { channel ->
-                                                    accountPfpUrl = channel.thumbnail.url
+                                                    accountPfpUrl = channel.thumbnail.orEmpty()
+                                                }.onFailure {
+                                                    reportException(it)
                                                 }
                                             }
                                             success = true
