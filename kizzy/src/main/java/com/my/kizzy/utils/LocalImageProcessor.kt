@@ -46,8 +46,7 @@ class LocalImageProcessor {
     
     /**
      * Process an image and return a Discord-compatible image asset
-     * For now, let's try a simpler approach - just return the URL directly
-     * since the original implementation was working
+     * Optimize URLs to be more Discord-friendly
      */
     suspend fun processImage(imageBytes: ByteArray, originalUrl: String, discordToken: String? = null): String? {
         return try {
@@ -55,14 +54,64 @@ class LocalImageProcessor {
             println("Image bytes size: ${imageBytes.size}")
             println("Original URL: $originalUrl")
             
-            // For now, let's try returning the URL directly
-            // The original implementation might have been working with external URLs
-            println("Returning original URL directly: $originalUrl")
-            originalUrl
+            // Optimize the URL for Discord
+            val optimizedUrl = optimizeUrlForDiscord(originalUrl)
+            println("Optimized URL: $optimizedUrl")
+            
+            optimizedUrl
         } catch (e: Exception) {
             println("Error in processImage: ${e.message}")
             e.printStackTrace()
             "music"
+        }
+    }
+    
+    /**
+     * Optimize URLs to be more Discord-friendly
+     * Discord RPC often requires proper file extensions and clean URLs
+     */
+    private fun optimizeUrlForDiscord(url: String): String {
+        return try {
+            when {
+                // YouTube Music thumbnails - optimize for better Discord compatibility
+                url.contains("ytimg.com") -> {
+                    // YouTube images often work better with specific parameters
+                    if (url.contains("maxresdefault.jpg")) {
+                        url
+                    } else if (url.contains("hqdefault.jpg")) {
+                        url
+                    } else {
+                        // Try to get a higher quality version
+                        url.replace("default.jpg", "hqdefault.jpg")
+                            .replace("mqdefault.jpg", "hqdefault.jpg")
+                            .replace("sddefault.jpg", "hqdefault.jpg")
+                    }
+                }
+                
+                // Google user content - often need optimization
+                url.contains("googleusercontent.com") -> {
+                    // Remove unnecessary parameters and ensure proper extension
+                    val baseUrl = url.split("?")[0]
+                    if (!baseUrl.contains(".")) {
+                        "$baseUrl=s0-c"
+                    } else {
+                        url
+                    }
+                }
+                
+                // General optimization - ensure proper file extension
+                else -> {
+                    if (!url.contains(".") || !url.matches(Regex(".*\\.(jpg|jpeg|png|gif|webp|bmp)$", RegexOption.IGNORE_CASE))) {
+                        // Add .jpg extension if none exists
+                        "$url.jpg"
+                    } else {
+                        url
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("Error optimizing URL: ${e.message}")
+            url
         }
     }
     

@@ -40,12 +40,12 @@ class KizzyRepository(private val discordToken: String? = null) {
                 return null
             }
             
-            // For now, just return the URL directly
-            // The original implementation might have been working with external URLs
-            println("Returning URL directly: $url")
+            // Process the URL to make it more Discord-friendly
+            val result = imageProcessor.processImage(ByteArray(0), url, discordToken)
+            println("Processed result: $result")
             println("===============================")
             
-            url
+            result
         } catch (e: Exception) {
             println("Error processing image URL: ${e.message}")
             null
