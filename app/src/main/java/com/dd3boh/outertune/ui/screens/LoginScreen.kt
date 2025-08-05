@@ -36,7 +36,7 @@ import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
-import com.dd3boh.outertune.constants.AccountNameKey
+import com.dd3boh.outertune.constants.AccountPfpUrlKey
 import com.dd3boh.outertune.constants.DataSyncIdKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.TopBarInsets
@@ -107,6 +107,11 @@ fun LoginScreen(
                                             accountName = it.name
                                             accountEmail = it.email.orEmpty()
                                             accountChannelHandle = it.channelHandle.orEmpty()
+                                            it.channelHandle?.let { handle ->
+                                                YouTube.channel(handle).onSuccess { channel ->
+                                                    accountPfpUrl = channel.thumbnail.url
+                                                }
+                                            }
                                             success = true
                                         }.onFailure {
                                             reportException(it)

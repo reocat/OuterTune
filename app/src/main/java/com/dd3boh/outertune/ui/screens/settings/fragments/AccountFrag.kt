@@ -57,6 +57,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
     val (accountName, onAccountNameChange) = rememberPreference(AccountNameKey, "")
     val (accountEmail, onAccountEmailChange) = rememberPreference(AccountEmailKey, "")
     val (accountChannelHandle, onAccountChannelHandleChange) = rememberPreference(AccountChannelHandleKey, "")
+    val (accountPfpUrl, onAccountPfpUrlChange) = rememberPreference(AccountPfpUrlKey, "")
     val (innerTubeCookie, onInnerTubeCookieChange) = rememberPreference(InnerTubeCookieKey, "")
     val (visitorData, onVisitorDataChange) = rememberPreference(VisitorDataKey, "")
     val (dataSyncId, onDataSyncIdChange) = rememberPreference(DataSyncIdKey, "")
@@ -97,11 +98,21 @@ fun ColumnScope.AccountFrag(navController: NavController) {
             }
         },
         icon = {
-            Icon(
-                imageVector = if (isLoggedIn) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
-                contentDescription = null,
-                tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (isLoggedIn && accountPfpUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = accountPfpUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                )
+            } else {
+                Icon(
+                    imageVector = if (isLoggedIn) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
+                    contentDescription = null,
+                    tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         },
         trailingContent = {
             FilledTonalIconButton(
