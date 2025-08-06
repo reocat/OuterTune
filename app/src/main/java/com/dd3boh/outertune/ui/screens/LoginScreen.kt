@@ -112,13 +112,7 @@ fun LoginScreen(
                                             accountName = accountInfo.name
                                             accountEmail = accountInfo.email.orEmpty()
                                             accountChannelHandle = accountInfo.channelHandle.orEmpty()
-                                            accountInfo.channelHandle?.let { handle ->
-                                                YouTube.channel(handle).onSuccess { channel ->
-                                                    accountPfpUrl = channel.thumbnail.orEmpty()
-                                                }.onFailure {
-                                                    reportException(it)
-                                                }
-                                            }
+                                            accountPfpUrl = accountInfo.thumbnailUrl.orEmpty()
                                             success = true
                                         }.onFailure {
                                             reportException(it)

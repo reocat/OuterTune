@@ -2,6 +2,7 @@ package com.zionhuang.innertube.models.response
 
 import com.zionhuang.innertube.models.AccountInfo
 import com.zionhuang.innertube.models.Runs
+import com.zionhuang.innertube.models.Thumbnails
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -31,13 +32,15 @@ data class AccountMenuResponse(
                         @Serializable
                         data class ActiveAccountHeaderRenderer(
                             val accountName: Runs,
+                            val accountPhoto: Thumbnails,
                             val email: Runs?,
                             val channelHandle: Runs?,
                         ) {
                             fun toAccountInfo() = AccountInfo(
                                 name = accountName.runs!!.first().text,
                                 email = email?.runs?.first()?.text,
-                                channelHandle = channelHandle?.runs?.first()?.text
+                                channelHandle = channelHandle?.runs?.first()?.text,
+                                thumbnailUrl = accountPhoto.thumbnails.last().url
                             )
                         }
                     }
