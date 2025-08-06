@@ -70,7 +70,7 @@
     <string name="player_background_gradient">Farbenverlauf</string>
     <string name="token_shown">Erneut antippen, um es zu kopieren oder zu bearbeiten</string>
     <string name="playlist_add_local_to_synced_note">Hinweis: Das Hinzufügen von lokalen Songs zu synchronisierten/online Playlists wird nicht unterstützt. Jede andere Kombination ist gültig</string>
-    <string name="sync_progress_active">Synchronisiert mit YouTube Konto…</string>
+    <string name="sync_progress_active">Synchronisiere mit YouTube Konto…</string>
     <string name="grp_localization">Lokalisierung</string>
     <string name="grp_proxy">Proxy</string>
     <string name="tab_arrangement_disable_tip">--- Zum Deaktivieren hier hinunterziehen ---</string>
