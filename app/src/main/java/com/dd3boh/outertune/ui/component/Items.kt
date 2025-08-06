@@ -488,7 +488,8 @@ fun SongListItem(
                     isActive = isActive,
                     isPlaying = isPlaying,
                     shape = RoundedCornerShape(ThumbnailCornerRadius),
-                    modifier = Modifier.size(ListThumbnailSize)
+                    modifier = Modifier.size(ListThumbnailSize),
+                    placeholderVariant = PlaceholderVariant.SONG
                 )
             },
             trailingContent = {
@@ -724,11 +725,17 @@ fun SongGridItem(
                     model = ImageRequest.Builder(context)
                         .data(song.song.thumbnailUrl)
                         .crossfade(true)
-                        .placeholder(R.drawable.music_note)
-                        .error(R.drawable.music_note)
                         .build()
                 )
-                
+
+                ThemedPlaceholder(
+                    icon = Icons.Outlined.MusicNote,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                    variant = PlaceholderVariant.SONG
+                )
+
                 androidx.compose.foundation.Image(
                     painter = painter,
                     contentDescription = null,
@@ -796,8 +803,6 @@ fun ArtistListItem(
             model = ImageRequest.Builder(context)
                 .data(artist.artist.thumbnailUrl)
                 .crossfade(true)
-                .placeholder(R.drawable.artist)
-                .error(R.drawable.artist)
                 .build()
         )
         
@@ -865,8 +870,6 @@ fun ArtistGridItem(
             model = ImageRequest.Builder(context)
                 .data(artist.artist.thumbnailUrl)
                 .crossfade(true)
-                .placeholder(R.drawable.artist)
-                .error(R.drawable.artist)
                 .build()
         )
         
@@ -960,7 +963,8 @@ fun AlbumListItem(
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
-            modifier = Modifier.size(ListThumbnailSize)
+            modifier = Modifier.size(ListThumbnailSize),
+            placeholderVariant = PlaceholderVariant.ALBUM
         )
     },
     trailingContent = trailingContent,
@@ -1031,6 +1035,7 @@ fun AlbumGridItem(
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
+            placeholderVariant = PlaceholderVariant.ALBUM
         )
 
         AlbumPlayButton(
@@ -1244,7 +1249,8 @@ fun MediaMetadataListItem(
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
-            modifier = Modifier.size(ListThumbnailSize)
+            modifier = Modifier.size(ListThumbnailSize),
+            placeholderVariant = PlaceholderVariant.SONG
         )
     },
     trailingContent = trailingContent,
@@ -1336,6 +1342,12 @@ fun YouTubeListItem(
                 shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(
                     ThumbnailCornerRadius
                 ),
+                placeholderVariant = when (item) {
+                    is ArtistItem -> PlaceholderVariant.ARTIST
+                    is AlbumItem -> PlaceholderVariant.ALBUM
+                    is SongItem -> PlaceholderVariant.SONG
+                    else -> PlaceholderVariant.DEFAULT
+                },
                 modifier = Modifier.size(ListThumbnailSize)
             )
         },
@@ -1420,6 +1432,12 @@ fun YouTubeGridItem(
             isActive = isActive,
             isPlaying = isPlaying,
             shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(ThumbnailCornerRadius),
+            placeholderVariant = when (item) {
+                is ArtistItem -> PlaceholderVariant.ARTIST
+                is AlbumItem -> PlaceholderVariant.ALBUM
+                is SongItem -> PlaceholderVariant.SONG
+                else -> PlaceholderVariant.DEFAULT
+            }
         )
 
         AlbumPlayButton(
@@ -1549,6 +1567,7 @@ fun YouTubeCardItem(
 fun ItemThumbnail(
     thumbnailUrl: String?,
     placeholderIcon: ImageVector = Icons.Outlined.MusicNote,
+    placeholderVariant: PlaceholderVariant = PlaceholderVariant.DEFAULT,
     isActive: Boolean,
     isPlaying: Boolean,
     shape: Shape,
@@ -1581,8 +1600,6 @@ fun ItemThumbnail(
                 model = ImageRequest.Builder(context)
                     .data(thumbnailUrl)
                     .crossfade(true)
-                    .placeholder(R.drawable.album)
-                    .error(R.drawable.album)
                     .build(),
                 onSuccess = { success ->
                     val width = success.painter.intrinsicSize.width
@@ -1591,7 +1608,15 @@ fun ItemThumbnail(
                     isRectangularImage = width / height != 1f
                 }
             )
-            
+
+            ThemedPlaceholder(
+                icon = placeholderIcon,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape),
+                variant = placeholderVariant
+            )
+
             androidx.compose.foundation.Image(
                 painter = painter,
                 contentDescription = null,
