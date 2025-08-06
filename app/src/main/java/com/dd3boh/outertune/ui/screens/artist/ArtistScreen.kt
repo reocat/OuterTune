@@ -63,7 +63,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -292,7 +291,7 @@ fun ArtistScreen(
                                     title = artistName
                                 )
                             },
-                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding.copy(
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
                                 horizontal = 24.dp,
                                 vertical = 16.dp
                             ),
@@ -327,7 +326,7 @@ fun ArtistScreen(
                                             title = "Radio: ${artistPage.artist.title}"
                                         )
                                     },
-                                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding.copy(
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
                                         horizontal = 24.dp,
                                         vertical = 16.dp
                                     ),
