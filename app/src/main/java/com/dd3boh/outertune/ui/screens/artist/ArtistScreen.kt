@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Favorite
@@ -35,12 +37,15 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -57,7 +62,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -157,39 +166,89 @@ fun ArtistScreen(
             val artistName = artistPage?.artist?.title ?: libraryArtist?.artist?.name
 
             Column {
+                // Enhanced Hero Section with MD3 Expressive design
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
-                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier
+                            if (thumbnail != null) Modifier.aspectRatio(16f / 9) else Modifier.height(280.dp)
                         )
                 ) {
                     if (thumbnail != null) {
+                        // Enhanced image with gradient overlay
                         AsyncImage(
                             model = thumbnail.resize(1200, 900),
                             contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .align(Alignment.Center)
+                                .fillMaxSize()
                                 .fadingEdge(
                                     top = WindowInsets.systemBars
                                         .asPaddingValues()
                                         .calculateTopPadding() + AppBarHeight,
-                                    bottom = 64.dp
+                                    bottom = 80.dp
                                 )
                         )
+                        
+                        // Gradient overlay for better text readability
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    alpha = 0.6f
+                                }
+                                .clip(
+                                    RoundedCornerShape(
+                                        bottomStart = 24.dp,
+                                        bottomEnd = 24.dp
+                                    )
+                                )
+                        ) {
+                            // Gradient background
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                color = Color.Transparent,
+                                shape = RoundedCornerShape(
+                                    bottomStart = 24.dp,
+                                    bottomEnd = 24.dp
+                                )
+                            ) {
+                                // Gradient overlay
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            alpha = 0.3f
+                                        }
+                                )
+                            }
+                        }
+                    } else {
+                        // Fallback surface for artists without thumbnails
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            shape = RoundedCornerShape(
+                                bottomStart = 24.dp,
+                                bottomEnd = 24.dp
+                            )
+                        ) {}
                     }
+                    
+                    // Enhanced artist name with better typography
                     AutoResizeText(
-                        text = artistName
-                        ?: "Unknown",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontSizeRange = FontSizeRange(32.sp, 58.sp),
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
+                        text = artistName ?: "Unknown",
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = (-0.5).sp
+                        ),
+                        fontSizeRange = FontSizeRange(36.sp, 72.sp),
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Start,
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(horizontal = 48.dp)
+                            .align(Alignment.BottomStart)
+                            .padding(horizontal = 24.dp, vertical = 32.dp)
                             .then(
                                 if (thumbnail == null) {
                                     Modifier.padding(
@@ -204,58 +263,93 @@ fun ArtistScreen(
                     )
                 }
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(12.dp)
+                // Enhanced action buttons with MD3 Expressive design
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            val watchEndpoint = artistPage?.artist?.shuffleEndpoint?: artistPage?.artist?.playEndpoint
-                            playerConnection.playQueue(
-                                if (!showLocal && watchEndpoint != null) YouTubeQueue(watchEndpoint)
-                                else ListQueue(
-                                    title = artistName,
-                                    items = librarySongs.map { it.toMediaMetadata() },
-                                    startShuffled = true,
-                                ),
-                                isRadio = true,
-                                title = artistName
-                            )
-                        },
-                        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Shuffle,
-                            contentDescription = null,
-                            modifier = Modifier.size(ButtonDefaults.IconSize)
-                        )
-                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                        Text(
-                            text = stringResource(R.string.shuffle)
-                        )
-                    }
-
-                    if (!showLocal) {
-                        artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
-                            OutlinedButton(
-                                onClick = {
-                                    playerConnection.playQueue(
-                                        YouTubeQueue(radioEndpoint),
-                                        isRadio = true,
-                                        title = "Radio: ${artistPage.artist.title}"
-                                    )
-                                },
-                                contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Radio,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                        Button(
+                            onClick = {
+                                val watchEndpoint = artistPage?.artist?.shuffleEndpoint?: artistPage?.artist?.playEndpoint
+                                playerConnection.playQueue(
+                                    if (!showLocal && watchEndpoint != null) YouTubeQueue(watchEndpoint)
+                                    else ListQueue(
+                                        title = artistName,
+                                        items = librarySongs.map { it.toMediaMetadata() },
+                                        startShuffled = true,
+                                    ),
+                                    isRadio = true,
+                                    title = artistName
                                 )
-                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(stringResource(R.string.radio))
+                            },
+                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding.copy(
+                                horizontal = 24.dp,
+                                vertical = 16.dp
+                            ),
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Shuffle,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(
+                                text = stringResource(R.string.shuffle),
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
+
+                        if (!showLocal) {
+                            artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
+                                OutlinedButton(
+                                    onClick = {
+                                        playerConnection.playQueue(
+                                            YouTubeQueue(radioEndpoint),
+                                            isRadio = true,
+                                            title = "Radio: ${artistPage.artist.title}"
+                                        )
+                                    },
+                                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding.copy(
+                                        horizontal = 24.dp,
+                                        vertical = 16.dp
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Radio,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(Modifier.size(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.radio),
+                                        style = MaterialTheme.typography.labelLarge.copy(
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -338,7 +432,10 @@ fun ArtistScreen(
                         }
 
                         item {
-                            LazyRow {
+                            LazyRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 items(
                                     items = libraryAlbums,
                                     key = { it.id }
@@ -453,7 +550,10 @@ fun ArtistScreen(
                     }
                     else {
                         item {
-                            LazyRow {
+                            LazyRow(
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 items(
                                     items = section.items,
                                     key = { it.id }

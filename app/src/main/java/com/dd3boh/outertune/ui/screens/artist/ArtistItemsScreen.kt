@@ -3,6 +3,7 @@ package com.dd3boh.outertune.ui.screens.artist
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -247,8 +250,10 @@ fun ArtistItemsScreen(
     } else {
         LazyVerticalGrid(
             state = lazyGridState,
-            columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 24.dp),
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+            columns = GridCells.Adaptive(minSize = GridThumbnailHeight + 32.dp), // Enhanced spacing
+            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp), // Enhanced spacing
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Enhanced spacing
         ) {
             itemsIndexed(
                 items = itemsPage?.items.orEmpty(),
@@ -324,7 +329,14 @@ fun ArtistItemsScreen(
     }
 
     TopAppBar(
-        title = { Text(title) },
+        title = { 
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            ) 
+        },
         navigationIcon = {
             IconButton(
                 onClick = navController::navigateUp,
