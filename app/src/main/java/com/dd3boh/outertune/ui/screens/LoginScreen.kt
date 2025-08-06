@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.dd3boh.outertune.App
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
@@ -101,7 +102,9 @@ fun LoginScreen(
                             loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID)")
 
                             if (url?.startsWith("https://music.youtube.com") == true) {
-                                innerTubeCookie = CookieManager.getInstance().getCookie(url)
+                                val newCookie = CookieManager.getInstance().getCookie(url)
+                                innerTubeCookie = newCookie
+                                YouTube.cookie = newCookie
                                 CoroutineScope(Dispatchers.IO).launch {
                                     for (attempt in 1..3) {
                                         var success = false
@@ -119,6 +122,9 @@ fun LoginScreen(
                                             success = true
                                         }.onFailure {
                                             reportException(it)
+                                            if (it is io.ktor.client.plugins.ClientRequestException && it.response.status.value == 401) {
+                                                App.forgetAccount(context)
+                                            }
                                         }
 
                                         if (success) {

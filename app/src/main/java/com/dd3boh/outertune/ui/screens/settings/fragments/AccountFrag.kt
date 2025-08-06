@@ -122,7 +122,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
             FilledTonalIconButton(
                 onClick = {
                     if (isLoggedIn) {
-                        onInnerTubeCookieChange("")
+                        forgetAccount(context)
                     } else {
                         navController.navigate("login")
                     }
