@@ -170,7 +170,7 @@ fun ArtistScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
-                            if (thumbnail != null) Modifier.aspectRatio(16f / 9) else Modifier.height(280.dp)
+                            if (thumbnail != null) Modifier.aspectRatio(3f / 2) else Modifier.height(320.dp)
                         )
                 ) {
                     if (thumbnail != null) {
@@ -237,17 +237,17 @@ fun ArtistScreen(
                     // Enhanced artist name with better typography
                     AutoResizeText(
                         text = artistName ?: "Unknown",
-                        style = MaterialTheme.typography.displayLarge.copy(
+                        style = MaterialTheme.typography.headlineLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.5).sp
+                            letterSpacing = (-0.25).sp
                         ),
-                        fontSizeRange = FontSizeRange(36.sp, 72.sp),
+                        fontSizeRange = FontSizeRange(28.sp, 48.sp),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .align(Alignment.BottomStart)
-                            .padding(horizontal = 24.dp, vertical = 32.dp)
+                            .padding(horizontal = 20.dp, vertical = 24.dp)
                             .then(
                                 if (thumbnail == null) {
                                     Modifier.padding(
@@ -275,7 +275,7 @@ fun ArtistScreen(
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(12.dp)
                     ) {
                         Button(
                             onClick = {
@@ -292,11 +292,11 @@ fun ArtistScreen(
                                 )
                             },
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                horizontal = 24.dp,
-                                vertical = 16.dp
+                                horizontal = 20.dp,
+                                vertical = 12.dp
                             ),
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -305,12 +305,12 @@ fun ArtistScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Shuffle,
                                 contentDescription = null,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(Modifier.size(8.dp))
+                            Spacer(Modifier.size(6.dp))
                             Text(
                                 text = stringResource(R.string.shuffle),
-                                style = MaterialTheme.typography.labelLarge.copy(
+                                style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.SemiBold
                                 )
                             )
@@ -327,11 +327,11 @@ fun ArtistScreen(
                                         )
                                     },
                                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                        horizontal = 24.dp,
-                                        vertical = 16.dp
+                                        horizontal = 20.dp,
+                                        vertical = 12.dp
                                     ),
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(12.dp),
+                                    shape = RoundedCornerShape(10.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -339,12 +339,12 @@ fun ArtistScreen(
                                     Icon(
                                         imageVector = Icons.Outlined.Radio,
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(18.dp)
                                     )
-                                    Spacer(Modifier.size(8.dp))
+                                    Spacer(Modifier.size(6.dp))
                                     Text(
                                         text = stringResource(R.string.radio),
-                                        style = MaterialTheme.typography.labelLarge.copy(
+                                        style = MaterialTheme.typography.labelMedium.copy(
                                             fontWeight = FontWeight.SemiBold
                                         )
                                     )
