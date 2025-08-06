@@ -8,6 +8,7 @@
 
 package com.dd3boh.outertune.ui.screens
 
+import android.content.Context
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -57,10 +58,10 @@ import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.LocationOn
@@ -71,7 +72,6 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SdCard
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Sync
-import androidx.compose.material.icons.outlined.VpnKey
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
@@ -99,6 +99,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -110,10 +111,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil3.compose.SubcomposeAsyncImage
+import com.dd3boh.outertune.App.Companion.forgetAccount
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
 import com.dd3boh.outertune.constants.AccountEmailKey
 import com.dd3boh.outertune.constants.AccountNameKey
+import com.dd3boh.outertune.constants.AccountPfpUrlKey
 import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.ContentCountryKey
 import com.dd3boh.outertune.constants.ContentLanguageKey
@@ -141,8 +145,8 @@ import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
-import java.util.Locale
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 data class Feature(
     val title: String,
@@ -155,6 +159,7 @@ data class Feature(
 fun SetupWizard(
     navController: NavController,
 ) {
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val layoutDirection = LocalLayoutDirection.current
     val uriHandler = LocalUriHandler.current
@@ -360,6 +365,7 @@ fun SetupWizard(
                                 2 -> {
                                     AccountPage(
                                         navController = navController,
+                                        context = context,
                                         accountName = accountName,
                                         accountEmail = accountEmail,
                                         accountChannelHandle = accountChannelHandle,
@@ -737,6 +743,7 @@ private fun InterfacePage(
 @Composable
 private fun AccountPage(
     navController: NavController,
+    context: Context,
     accountName: String,
     accountEmail: String,
     accountChannelHandle: String,
@@ -757,6 +764,7 @@ private fun AccountPage(
     val isLoggedIn by remember(innerTubeCookie) {
         mutableStateOf("SAPISID" in parseCookieString(innerTubeCookie))
     }
+    val (accountPfpUrl, onAccountPfpUrlChange) = rememberPreference(AccountPfpUrlKey, "")
 
     WizardPage(
         title = stringResource(R.string.oobe_ytm_logon_title),
@@ -799,17 +807,41 @@ private fun AccountPage(
                     }
                 },
                 icon = {
-                    Icon(
-                        imageVector = if (isLoggedIn) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
-                        contentDescription = null,
-                        tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (isLoggedIn && accountPfpUrl.isNotEmpty()) {
+                        SubcomposeAsyncImage(
+                            model = accountPfpUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape),
+                            loading = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Person,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            error = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Person,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null,
+                            tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 },
                 trailingContent = {
                     FilledTonalIconButton(
                         onClick = {
                             if (isLoggedIn) {
-                                onInnerTubeCookieChange("")
+                                forgetAccount(context)
                             } else {
                                 navController.navigate("login")
                             }
@@ -853,7 +885,7 @@ private fun AccountPage(
                     }
                 },
                 icon = {
-                    Icon(Icons.Outlined.VpnKey, null)
+                    Icon(Icons.Outlined.Key, null)
                 },
                 trailingContent = {
                     FilledTonalIconButton(

@@ -7,13 +7,16 @@
  */
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.Logout
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.dd3boh.outertune.App.Companion.forgetAccount
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AccountChannelHandleKey
@@ -103,16 +106,30 @@ fun ColumnScope.AccountFrag(navController: NavController) {
         },
         icon = {
             if (isLoggedIn && accountPfpUrl.isNotEmpty()) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = accountPfpUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .size(24.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    loading = {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    error = {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 )
             } else {
                 Icon(
-                    imageVector = if (isLoggedIn) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
+                    imageVector = Icons.Outlined.Person,
                     contentDescription = null,
                     tint = if (isLoggedIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -142,19 +159,22 @@ fun ColumnScope.AccountFrag(navController: NavController) {
     PreferenceEntry(
         title = {
             if (showToken) {
-                Text(stringResource(R.string.token_shown))
-                Text(
-                    text = if (isLoggedIn) innerTubeCookie else stringResource(R.string.not_logged_in),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Light,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1 // just give a preview so user knows it's at least there
-                )
+                Column {
+                    Text(stringResource(R.string.token_shown), fontWeight = FontWeight.Medium)
+                    Text(
+                        text = innerTubeCookie.takeIf { it.isNotEmpty() } ?: "No token set",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Light,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             } else {
-                Text(stringResource(R.string.token_hidden))
+                Text(stringResource(R.string.token_hidden), fontWeight = FontWeight.Medium)
             }
         },
-        icon = { Icon(Icons.Outlined.Key, null) },
+        description = stringResource(R.string.token_description),
         onClick = {
             if (!showToken) {
                 showToken = true
@@ -162,8 +182,26 @@ fun ColumnScope.AccountFrag(navController: NavController) {
                 showTokenEditor = true
             }
         },
-        isMiddle = true
+        icon = {
+            Icon(Icons.Outlined.Key, null)
+        },
+        trailingContent = {
+            FilledTonalIconButton(
+                onClick = { showTokenEditor = true },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                    contentDescription = "Edit token",
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        },
+        isLast = true
     )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
     SwitchPreference(
         title = { Text(stringResource(R.string.use_login_for_browse)) },
         description = stringResource(R.string.use_login_for_browse_desc),
@@ -172,8 +210,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
         onCheckedChange = {
             YouTube.useLoginForBrowse = it
             onUseLoginForBrowseChange(it)
-        },
-        isLast = true
+        }
     )
 
 
