@@ -14,28 +14,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -79,14 +71,10 @@ import com.dd3boh.outertune.LocalSnackbarHostState
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AlbumThumbnailSize
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
-import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.component.FloatingFooter
-import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.YouTubeGridItem
 import com.dd3boh.outertune.ui.component.shimmer.ButtonPlaceholder
@@ -95,7 +83,6 @@ import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.AlbumMenu
 import com.dd3boh.outertune.ui.menu.YouTubeAlbumMenu
-import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.getNSongsString
 import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.viewmodels.AlbumViewModel
@@ -171,8 +158,6 @@ fun AlbumScreen(
 
     val songs = albumWithSongs?.songs ?: emptyList()
 
-    val songs = albumWithSongs?.songs ?: emptyList()
-
     Box(modifier = Modifier.fillMaxSize()) {
         val albumWithSongsLocal = albumWithSongs
         if (albumWithSongsLocal != null && songs.isNotEmpty()) {
@@ -230,7 +215,7 @@ fun AlbumScreen(
                                     playerConnection.playQueue(
                                         ListQueue(
                                             title = albumWithSongsLocal.album.title,
-                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                            items = albumWithSongs?.songs?.map { it.toMediaMetadata() }
                                                 ?: emptyList(),
                                             playlistId = albumWithSongsLocal.album.playlistId
                                         )
@@ -240,7 +225,7 @@ fun AlbumScreen(
                                     playerConnection.playQueue(
                                         ListQueue(
                                             title = albumWithSongsLocal.album.title,
-                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                            items = albumWithSongs?.songs?.map { it.toMediaMetadata() }
                                                 ?: emptyList(),
                                             playlistId = albumWithSongsLocal.album.playlistId,
                                             startShuffled = true,
@@ -253,7 +238,8 @@ fun AlbumScreen(
                                     }
                                 },
                                 onDownload = {
-                                    val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
+                                    val songs =
+                                        albumWithSongsLocal.songs.map { it.toMediaMetadata() }
                                     downloadUtil.download(songs)
                                 },
                                 onRemoveDownload = {
@@ -410,7 +396,11 @@ fun AlbumScreen(
                                         text = stringResource(R.string.other_versions),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                                        modifier = Modifier.padding(
+                                            start = 16.dp,
+                                            top = 8.dp,
+                                            bottom = 4.dp
+                                        )
                                     )
                                     LazyRow(
                                         contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -422,7 +412,8 @@ fun AlbumScreen(
                                             items = otherVersions,
                                             key = { it.id },
                                         ) { item ->
-                                            val interactionSource = remember { MutableInteractionSource() }
+                                            val interactionSource =
+                                                remember { MutableInteractionSource() }
                                             YouTubeGridItem(
                                                 item = item,
                                                 isActive = mediaMetadata?.album?.id == item.id,
@@ -434,7 +425,9 @@ fun AlbumScreen(
                                                         indication = ripple(),
                                                         onClick = { navController.navigate("album/${item.id}") },
                                                         onLongClick = {
-                                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                            haptic.performHapticFeedback(
+                                                                HapticFeedbackType.LongPress
+                                                            )
                                                             menuState.show {
                                                                 YouTubeAlbumMenu(
                                                                     albumItem = item,
@@ -502,7 +495,7 @@ fun AlbumScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                        items = albumWithSongs?.songs?.map { it.toMediaMetadata() }
                                             ?: emptyList(),
                                         playlistId = albumWithSongsLocal.album.playlistId
                                     )
@@ -512,7 +505,7 @@ fun AlbumScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                        items = albumWithSongs?.songs?.map { it.toMediaMetadata() }
                                             ?: emptyList(),
                                         playlistId = albumWithSongsLocal.album.playlistId,
                                         startShuffled = true,
@@ -679,7 +672,11 @@ fun AlbumScreen(
                                     text = stringResource(R.string.other_versions),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        top = 8.dp,
+                                        bottom = 4.dp
+                                    )
                                 )
                                 LazyRow(
                                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -691,7 +688,8 @@ fun AlbumScreen(
                                         items = otherVersions,
                                         key = { it.id },
                                     ) { item ->
-                                        val interactionSource = remember { MutableInteractionSource() }
+                                        val interactionSource =
+                                            remember { MutableInteractionSource() }
                                         YouTubeGridItem(
                                             item = item,
                                             isActive = mediaMetadata?.album?.id == item.id,
@@ -703,7 +701,9 @@ fun AlbumScreen(
                                                     indication = ripple(),
                                                     onClick = { navController.navigate("album/${item.id}") },
                                                     onLongClick = {
-                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        haptic.performHapticFeedback(
+                                                            HapticFeedbackType.LongPress
+                                                        )
                                                         menuState.show {
                                                             YouTubeAlbumMenu(
                                                                 albumItem = item,
@@ -725,12 +725,19 @@ fun AlbumScreen(
         } else {
             if (isLandscape) {
                 Row(Modifier.fillMaxSize()) {
-                    LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    ) {
                         item {
                             ShimmerHost {
                                 Column(Modifier.padding(12.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
+                                        Spacer(
+                                            modifier = Modifier.size(AlbumThumbnailSize)
+                                                .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                                                .background(MaterialTheme.colorScheme.onSurface)
+                                        )
                                         Spacer(Modifier.width(16.dp))
                                         Column(verticalArrangement = Arrangement.Center) {
                                             TextPlaceholder()
@@ -748,7 +755,10 @@ fun AlbumScreen(
                             }
                         }
                     }
-                    LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                    ) {
                         items(6) {
                             ShimmerHost {
                                 ListItemPlaceHolder()
@@ -757,12 +767,19 @@ fun AlbumScreen(
                     }
                 }
             } else {
-                LazyColumn(state = state, contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                LazyColumn(
+                    state = state,
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+                ) {
                     item {
                         ShimmerHost {
                             Column(Modifier.padding(12.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
+                                    Spacer(
+                                        modifier = Modifier.size(AlbumThumbnailSize)
+                                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                                            .background(MaterialTheme.colorScheme.onSurface)
+                                    )
                                     Spacer(Modifier.width(16.dp))
                                     Column(verticalArrangement = Arrangement.Center) {
                                         TextPlaceholder()
@@ -787,4 +804,5 @@ fun AlbumScreen(
                 }
             }
         }
+    }
 }
