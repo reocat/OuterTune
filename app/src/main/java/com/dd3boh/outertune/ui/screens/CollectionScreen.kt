@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens
 
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,7 +67,7 @@ fun CollectionScreenHeader(
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(fraction = 9f / 16f)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(24.dp))
         )
