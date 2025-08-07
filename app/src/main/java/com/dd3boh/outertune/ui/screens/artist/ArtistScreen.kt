@@ -301,7 +301,6 @@ fun ArtistScreen(
                                         // Text shadow effect for better readability
                                         Modifier.graphicsLayer {
                                             shadowElevation = 8.dp.toPx()
-                                            shadowRadius = 12.dp.toPx().toInt()
                                         }
                                     } else {
                                         Modifier
@@ -342,7 +341,7 @@ fun ArtistScreen(
                                 )
                             },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(28.dp), 
+                            shape = RoundedCornerShape(28.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
