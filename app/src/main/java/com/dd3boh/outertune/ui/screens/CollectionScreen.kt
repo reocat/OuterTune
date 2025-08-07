@@ -66,7 +66,8 @@ fun CollectionScreenHeader(
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .aspectRatio(16f / 9f)
+                .fillMaxWidth()
+                .aspectRatio(1f)
                 .clip(RoundedCornerShape(24.dp))
         )
 
