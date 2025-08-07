@@ -171,19 +171,294 @@ fun AlbumScreen(
 
     val songs = albumWithSongs?.songs ?: emptyList()
 
-    if (isLandscape) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = if (inSelectMode) 64.dp else 0.dp)
-        ) {
-            LazyColumn(
-                state = state,
-                contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-                modifier = Modifier.weight(1f)
-            ) {
-                val albumWithSongsLocal = albumWithSongs
-                if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
+    val songs = albumWithSongs?.songs ?: emptyList()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        val albumWithSongsLocal = albumWithSongs
+        if (albumWithSongsLocal != null && songs.isNotEmpty()) {
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = if (inSelectMode) 64.dp else 0.dp)
+                ) {
+                    LazyColumn(
+                        state = state,
+                        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        item {
+                            CollectionScreenHeader(
+                                thumbnailUrl = albumWithSongsLocal.album.thumbnailUrl,
+                                title = albumWithSongsLocal.album.title,
+                                artists = {
+                                    val annotatedString = buildAnnotatedString {
+                                        withStyle(
+                                            style = MaterialTheme.typography.titleSmall.toSpanStyle()
+                                        ) {
+                                            albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
+                                                withLink(
+                                                    LinkAnnotation.Clickable(artist.id) {
+                                                        navController.navigate("artist/${artist.id}")
+                                                    }
+                                                ) { append(artist.name) }
+                                                if (index != albumWithSongsLocal.artists.lastIndex) {
+                                                    append(", ")
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Text(annotatedString)
+                                },
+                                metadata = if (albumWithSongsLocal.album.year != null) {
+                                    joinByBullet(
+                                        getNSongsString(
+                                            albumWithSongsLocal.album.songCount,
+                                            albumWithSongsLocal.downloadCount
+                                        ),
+                                        albumWithSongsLocal.album.year.toString()
+                                    )
+                                } else {
+                                    getNSongsString(
+                                        albumWithSongsLocal.album.songCount,
+                                        albumWithSongsLocal.downloadCount
+                                    )
+                                },
+                                isLiked = albumWithSongsLocal.album.bookmarkedAt != null,
+                                downloadState = downloadState,
+                                onPlay = {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = albumWithSongsLocal.album.title,
+                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                                ?: emptyList(),
+                                            playlistId = albumWithSongsLocal.album.playlistId
+                                        )
+                                    )
+                                },
+                                onShuffle = {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = albumWithSongsLocal.album.title,
+                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                                ?: emptyList(),
+                                            playlistId = albumWithSongsLocal.album.playlistId,
+                                            startShuffled = true,
+                                        )
+                                    )
+                                },
+                                onToggleLike = {
+                                    database.query {
+                                        update(albumWithSongsLocal.album.toggleLike())
+                                    }
+                                },
+                                onDownload = {
+                                    val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
+                                    downloadUtil.download(songs)
+                                },
+                                onRemoveDownload = {
+                                    albumWithSongsLocal.songs.forEach { song ->
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            song.id,
+                                            false
+                                        )
+                                    }
+                                },
+                                onShowMenu = {
+                                    menuState.show {
+                                        AlbumMenu(
+                                            originalAlbum = Album(
+                                                albumWithSongsLocal.album,
+                                                albumWithSongsLocal.downloadCount,
+                                                albumWithSongsLocal.artists
+                                            ),
+                                            navController = navController,
+                                            onDismiss = menuState::dismiss,
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+                    ) {
+                        itemsIndexed(
+                            items = songs,
+                            key = { _, song -> song.id }
+                        ) { index, song ->
+                            val selected = selection.contains(song.id)
+                            val inSelection = inSelectMode
+                            val animatedElevation by animateDpAsState(
+                                targetValue = if (selected && inSelection) 8.dp else 0.dp,
+                                label = "SongItemElevation"
+                            )
+                            val animatedColor by animateColorAsState(
+                                targetValue = when {
+                                    selected && inSelection -> MaterialTheme.colorScheme.secondaryContainer
+                                    !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                                        alpha = 0.6f
+                                    )
+
+                                    else -> MaterialTheme.colorScheme.surface
+                                },
+                                label = "SongItemColor"
+                            )
+                            val haptic = LocalHapticFeedback.current
+                            val interactionSource = remember { MutableInteractionSource() }
+                            androidx.compose.material3.Surface(
+                                tonalElevation = animatedElevation,
+                                color = animatedColor,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 2.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .then(
+                                        if (inSelection) Modifier else Modifier
+                                    )
+                                    .combinedClickable(
+                                        interactionSource = interactionSource,
+                                        indication = ripple(
+                                            bounded = true,
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                                        ),
+                                        onClick = {
+                                            if (inSelection) {
+                                                val isSelected = selection.contains(song.id)
+                                                if (isSelected) selection.remove(song.id) else selection.add(
+                                                    song.id
+                                                )
+                                                // Animate scroll to selected item
+                                                if (!isSelected) {
+                                                    scope.launch {
+                                                        state.animateScrollToItem(index)
+                                                    }
+                                                }
+                                                // Haptic feedback for selection
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                            } else {
+                                                playerConnection.playQueue(
+                                                    ListQueue(
+                                                        title = albumWithSongs!!.album.title,
+                                                        items = albumWithSongs!!.songs.map { it.toMediaMetadata() },
+                                                        startIndex = index,
+                                                        playlistId = albumWithSongs!!.album.playlistId
+                                                    )
+                                                )
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!inSelection) {
+                                                inSelectMode = true
+                                                selection.add(song.id)
+                                                // Animate scroll to selected item
+                                                scope.launch {
+                                                    state.animateScrollToItem(index)
+                                                }
+                                                // Haptic feedback for long-press
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                        }
+                                    )
+                                    .animateItem()
+                            ) {
+                                SongListItem(
+                                    song = song,
+                                    albumIndex = index + 1,
+                                    onPlay = {
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                title = albumWithSongs!!.album.title,
+                                                items = albumWithSongs!!.songs.map { it.toMediaMetadata() },
+                                                startIndex = index,
+                                                playlistId = albumWithSongs!!.album.playlistId
+                                            )
+                                        )
+                                    },
+                                    onSelectedChange = {
+                                        inSelectMode = true
+                                        if (it) {
+                                            selection.add(song.id)
+                                            // Animate scroll to selected item
+                                            scope.launch {
+                                                state.animateScrollToItem(index)
+                                            }
+                                            // Haptic feedback for selection
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        } else {
+                                            selection.remove(song.id)
+                                        }
+                                    },
+                                    inSelectMode = inSelectMode,
+                                    isSelected = selection.contains(song.id),
+                                    navController = navController,
+                                    snackbarHostState = snackbarHostState,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateItem()
+                                )
+                            }
+                        }
+                        // --- Other Versions Section ---
+                        if (otherVersions.isNotEmpty()) {
+                            item {
+                                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                    Text(
+                                        text = stringResource(R.string.other_versions),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                                    )
+                                    LazyRow(
+                                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                            horizontal = 12.dp
+                                        ),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        items(
+                                            items = otherVersions,
+                                            key = { it.id },
+                                        ) { item ->
+                                            val interactionSource = remember { MutableInteractionSource() }
+                                            YouTubeGridItem(
+                                                item = item,
+                                                isActive = mediaMetadata?.album?.id == item.id,
+                                                isPlaying = isPlaying,
+                                                coroutineScope = scope,
+                                                modifier = Modifier
+                                                    .combinedClickable(
+                                                        interactionSource = interactionSource,
+                                                        indication = ripple(),
+                                                        onClick = { navController.navigate("album/${item.id}") },
+                                                        onLongClick = {
+                                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                            menuState.show {
+                                                                YouTubeAlbumMenu(
+                                                                    albumItem = item,
+                                                                    navController = navController,
+                                                                    onDismiss = menuState::dismiss,
+                                                                )
+                                                            }
+                                                        },
+                                                    )
+                                                    .animateItem(),
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    state = state,
+                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+                    modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
+                ) {
                     item {
                         CollectionScreenHeader(
                             thumbnailUrl = albumWithSongsLocal.album.thumbnailUrl,
@@ -275,558 +550,241 @@ fun AlbumScreen(
                                         onDismiss = menuState::dismiss,
                                     )
                                 }
-                            }
+                            },
+                            isCompact = true
                         )
                     }
-                }
-            }
-            LazyColumn(
-                contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            ) {
-                // --- Song List Section ---
-                item {
-                    Text(
-                        text = stringResource(R.string.songs),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-                    )
-                }
-                itemsIndexed(
-                    items = songs,
-                    key = { _, song -> song.id }
-                ) { index, song ->
-                    val selected = selection.contains(song.id)
-                    val inSelection = inSelectMode
-                    val animatedElevation by animateDpAsState(
-                        targetValue = if (selected && inSelection) 8.dp else 0.dp,
-                        label = "SongItemElevation"
-                    )
-                    val animatedColor by animateColorAsState(
-                        targetValue = when {
-                            selected && inSelection -> MaterialTheme.colorScheme.secondaryContainer
-                            !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(
-                                alpha = 0.6f
-                            )
 
-                            else -> MaterialTheme.colorScheme.surface
-                        },
-                        label = "SongItemColor"
-                    )
-                    val haptic = LocalHapticFeedback.current
-                    val interactionSource = remember { MutableInteractionSource() }
-                    androidx.compose.material3.Surface(
-                        tonalElevation = animatedElevation,
-                        color = animatedColor,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 2.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .then(
-                                if (inSelection) Modifier else Modifier
-                            )
-                            .combinedClickable(
-                                interactionSource = interactionSource,
-                                indication = ripple(
-                                    bounded = true,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                                ),
-                                onClick = {
-                                    if (inSelection) {
-                                        val isSelected = selection.contains(song.id)
-                                        if (isSelected) selection.remove(song.id) else selection.add(
-                                            song.id
-                                        )
-                                        // Animate scroll to selected item
-                                        if (!isSelected) {
+                    itemsIndexed(
+                        items = songs,
+                        key = { _, song -> song.id }
+                    ) { index, song ->
+                        val selected = selection.contains(song.id)
+                        val inSelection = inSelectMode
+                        val animatedElevation by animateDpAsState(
+                            targetValue = if (selected && inSelection) 8.dp else 0.dp,
+                            label = "SongItemElevation"
+                        )
+                        val animatedColor by animateColorAsState(
+                            targetValue = when {
+                                selected && inSelection -> MaterialTheme.colorScheme.secondaryContainer
+                                !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                                    alpha = 0.6f
+                                )
+
+                                else -> MaterialTheme.colorScheme.surface
+                            },
+                            label = "SongItemColor"
+                        )
+                        val haptic = LocalHapticFeedback.current
+                        val interactionSource = remember { MutableInteractionSource() }
+                        androidx.compose.material3.Surface(
+                            tonalElevation = animatedElevation,
+                            color = animatedColor,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 2.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .then(
+                                    if (inSelection) Modifier else Modifier
+                                )
+                                .combinedClickable(
+                                    interactionSource = interactionSource,
+                                    indication = ripple(
+                                        bounded = true,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                                    ),
+                                    onClick = {
+                                        if (inSelection) {
+                                            val isSelected = selection.contains(song.id)
+                                            if (isSelected) selection.remove(song.id) else selection.add(
+                                                song.id
+                                            )
+                                            // Animate scroll to selected item
+                                            if (!isSelected) {
+                                                scope.launch {
+                                                    state.animateScrollToItem(index)
+                                                }
+                                            }
+                                            // Haptic feedback for selection
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        } else {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    title = albumWithSongsLocal.album.title,
+                                                    items = albumWithSongsLocal.songs.map { it.toMediaMetadata() },
+                                                    startIndex = index,
+                                                    playlistId = albumWithSongsLocal.album.playlistId
+                                                )
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!inSelection) {
+                                            inSelectMode = true
+                                            selection.add(song.id)
+                                            // Animate scroll to selected item
                                             scope.launch {
                                                 state.animateScrollToItem(index)
                                             }
+                                            // Haptic feedback for long-press
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         }
-                                        // Haptic feedback for selection
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    } else {
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = albumWithSongs!!.album.title,
-                                                items = albumWithSongs!!.songs.map { it.toMediaMetadata() },
-                                                startIndex = index,
-                                                playlistId = albumWithSongs!!.album.playlistId
-                                            )
-                                        )
                                     }
+                                )
+                                .animateItem()
+                        ) {
+                            SongListItem(
+                                song = song,
+                                albumIndex = index + 1,
+                                onPlay = {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = albumWithSongsLocal.album.title,
+                                            items = albumWithSongsLocal.songs.map { it.toMediaMetadata() },
+                                            startIndex = index,
+                                            playlistId = albumWithSongsLocal.album.playlistId
+                                        )
+                                    )
                                 },
-                                onLongClick = {
-                                    if (!inSelection) {
-                                        inSelectMode = true
+                                onSelectedChange = {
+                                    inSelectMode = true
+                                    if (it) {
                                         selection.add(song.id)
                                         // Animate scroll to selected item
                                         scope.launch {
                                             state.animateScrollToItem(index)
                                         }
-                                        // Haptic feedback for long-press
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        // Haptic feedback for selection
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    } else {
+                                        selection.remove(song.id)
                                     }
-                                }
+                                },
+                                inSelectMode = inSelectMode,
+                                isSelected = selection.contains(song.id),
+                                navController = navController,
+                                snackbarHostState = snackbarHostState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateItem()
                             )
-                            .animateItem()
-                    ) {
-                        SongListItem(
-                            song = song,
-                            albumIndex = index + 1,
-                            onPlay = {
-                                playerConnection.playQueue(
-                                    ListQueue(
-                                        title = albumWithSongs!!.album.title,
-                                        items = albumWithSongs!!.songs.map { it.toMediaMetadata() },
-                                        startIndex = index,
-                                        playlistId = albumWithSongs!!.album.playlistId
-                                    )
-                                )
-                            },
-                            onSelectedChange = {
-                                inSelectMode = true
-                                if (it) {
-                                    selection.add(song.id)
-                                    // Animate scroll to selected item
-                                    scope.launch {
-                                        state.animateScrollToItem(index)
-                                    }
-                                    // Haptic feedback for selection
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                } else {
-                                    selection.remove(song.id)
-                                }
-                            },
-                            inSelectMode = inSelectMode,
-                            isSelected = selection.contains(song.id),
-                            navController = navController,
-                            snackbarHostState = snackbarHostState,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem()
-                        )
+                        }
                     }
-                }
-                // --- Other Versions Section ---
-                if (otherVersions.isNotEmpty()) {
-                    item {
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(
-                                text = stringResource(R.string.other_versions),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-                            )
-                            LazyRow(
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                    horizontal = 12.dp
-                                ),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(
-                                    items = otherVersions,
-                                    key = { it.id },
-                                ) { item ->
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    YouTubeGridItem(
-                                        item = item,
-                                        isActive = mediaMetadata?.album?.id == item.id,
-                                        isPlaying = isPlaying,
-                                        coroutineScope = scope,
-                                        modifier = Modifier
-                                            .combinedClickable(
-                                                interactionSource = interactionSource,
-                                                indication = ripple(),
-                                                onClick = { navController.navigate("album/${item.id}") },
-                                                onLongClick = {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.show {
-                                                        YouTubeAlbumMenu(
-                                                            albumItem = item,
-                                                            navController = navController,
-                                                            onDismiss = menuState::dismiss,
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                            .animateItem(),
-                                    )
+                    // --- Other Versions Section ---
+                    if (otherVersions.isNotEmpty()) {
+                        item {
+                            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                Text(
+                                    text = stringResource(R.string.other_versions),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+                                )
+                                LazyRow(
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                        horizontal = 12.dp
+                                    ),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    items(
+                                        items = otherVersions,
+                                        key = { it.id },
+                                    ) { item ->
+                                        val interactionSource = remember { MutableInteractionSource() }
+                                        YouTubeGridItem(
+                                            item = item,
+                                            isActive = mediaMetadata?.album?.id == item.id,
+                                            isPlaying = isPlaying,
+                                            coroutineScope = scope,
+                                            modifier = Modifier
+                                                .combinedClickable(
+                                                    interactionSource = interactionSource,
+                                                    indication = ripple(),
+                                                    onClick = { navController.navigate("album/${item.id}") },
+                                                    onLongClick = {
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        menuState.show {
+                                                            YouTubeAlbumMenu(
+                                                                albumItem = item,
+                                                                navController = navController,
+                                                                onDismiss = menuState::dismiss,
+                                                            )
+                                                        }
+                                                    },
+                                                )
+                                                .animateItem(),
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-    } else {
-        LazyColumn(
-            state = state,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
-        ) {
-            val albumWithSongsLocal = albumWithSongs
-            if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
-                item {
-                    CollectionScreenHeader(
-                        thumbnailUrl = albumWithSongsLocal.album.thumbnailUrl,
-                        title = albumWithSongsLocal.album.title,
-                        artists = {
-                            val annotatedString = buildAnnotatedString {
-                                withStyle(
-                                    style = MaterialTheme.typography.titleSmall.toSpanStyle()
-                                ) {
-                                    albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
-                                        withLink(
-                                            LinkAnnotation.Clickable(artist.id) {
-                                                navController.navigate("artist/${artist.id}")
-                                            }
-                                        ) { append(artist.name) }
-                                        if (index != albumWithSongsLocal.artists.lastIndex) {
-                                            append(", ")
+        } else {
+            if (isLandscape) {
+                Row(Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                        item {
+                            ShimmerHost {
+                                Column(Modifier.padding(12.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
+                                        Spacer(Modifier.width(16.dp))
+                                        Column(verticalArrangement = Arrangement.Center) {
+                                            TextPlaceholder()
+                                            TextPlaceholder()
+                                            TextPlaceholder()
                                         }
+                                    }
+                                    Spacer(Modifier.padding(8.dp))
+                                    Row {
+                                        ButtonPlaceholder(Modifier.weight(1f))
+                                        Spacer(Modifier.width(12.dp))
+                                        ButtonPlaceholder(Modifier.weight(1f))
                                     }
                                 }
                             }
-                            Text(annotatedString)
-                        },
-                        metadata = if (albumWithSongsLocal.album.year != null) {
-                            joinByBullet(
-                                getNSongsString(
-                                    albumWithSongsLocal.album.songCount,
-                                    albumWithSongsLocal.downloadCount
-                                ),
-                                albumWithSongsLocal.album.year.toString()
-                            )
-                        } else {
-                            getNSongsString(
-                                albumWithSongsLocal.album.songCount,
-                                albumWithSongsLocal.downloadCount
-                            )
-                        },
-                        isLiked = albumWithSongsLocal.album.bookmarkedAt != null,
-                        downloadState = downloadState,
-                        onPlay = {
-                            playerConnection.playQueue(
-                                ListQueue(
-                                    title = albumWithSongsLocal.album.title,
-                                    items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
-                                        ?: emptyList(),
-                                    playlistId = albumWithSongsLocal.album.playlistId
-                                )
-                            )
-                        },
-                        onShuffle = {
-                            playerConnection.playQueue(
-                                ListQueue(
-                                    title = albumWithSongsLocal.album.title,
-                                    items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
-                                        ?: emptyList(),
-                                    playlistId = albumWithSongsLocal.album.playlistId,
-                                    startShuffled = true,
-                                )
-                            )
-                        },
-                        onToggleLike = {
-                            database.query {
-                                update(albumWithSongsLocal.album.toggleLike())
-                            }
-                        },
-                        onDownload = {
-                            val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
-                            downloadUtil.download(songs)
-                        },
-                        onRemoveDownload = {
-                            albumWithSongsLocal.songs.forEach { song ->
-                                DownloadService.sendRemoveDownload(
-                                    context,
-                                    ExoDownloadService::class.java,
-                                    song.id,
-                                    false
-                                )
-                            }
-                        },
-                        onShowMenu = {
-                            menuState.show {
-                                AlbumMenu(
-                                    originalAlbum = Album(
-                                        albumWithSongsLocal.album,
-                                        albumWithSongsLocal.downloadCount,
-                                        albumWithSongsLocal.artists
-                                    ),
-                                    navController = navController,
-                                    onDismiss = menuState::dismiss,
-                                )
-                            }
-                        },
-                        isCompact = true
-                    )
-                }
-
-                // --- Song List Section ---
-                item {
-                    Text(
-                        text = stringResource(R.string.songs),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-                    )
-                }
-                itemsIndexed(
-                    items = songs,
-                    key = { _, song -> song.id }
-                ) { index, song ->
-                    val selected = selection.contains(song.id)
-                    val inSelection = inSelectMode
-                    val animatedElevation by animateDpAsState(
-                        targetValue = if (selected && inSelection) 8.dp else 0.dp,
-                        label = "SongItemElevation"
-                    )
-                    val animatedColor by animateColorAsState(
-                        targetValue = when {
-                            selected && inSelection -> MaterialTheme.colorScheme.secondaryContainer
-                            !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(
-                                alpha = 0.6f
-                            )
-
-                            else -> MaterialTheme.colorScheme.surface
-                        },
-                        label = "SongItemColor"
-                    )
-                    val haptic = LocalHapticFeedback.current
-                    val interactionSource = remember { MutableInteractionSource() }
-                    androidx.compose.material3.Surface(
-                        tonalElevation = animatedElevation,
-                        color = animatedColor,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 2.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .then(
-                                if (inSelection) Modifier else Modifier
-                            )
-                            .combinedClickable(
-                                interactionSource = interactionSource,
-                                indication = ripple(
-                                    bounded = true,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                                ),
-                                onClick = {
-                                    if (inSelection) {
-                                        val isSelected = selection.contains(song.id)
-                                        if (isSelected) selection.remove(song.id) else selection.add(
-                                            song.id
-                                        )
-                                        // Animate scroll to selected item
-                                        if (!isSelected) {
-                                            scope.launch {
-                                                state.animateScrollToItem(index)
-                                            }
-                                        }
-                                        // Haptic feedback for selection
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    } else {
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = albumWithSongsLocal.album.title,
-                                                items = albumWithSongsLocal.songs.map { it.toMediaMetadata() },
-                                                startIndex = index,
-                                                playlistId = albumWithSongsLocal.album.playlistId
-                                            )
-                                        )
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!inSelection) {
-                                        inSelectMode = true
-                                        selection.add(song.id)
-                                        // Animate scroll to selected item
-                                        scope.launch {
-                                            state.animateScrollToItem(index)
-                                        }
-                                        // Haptic feedback for long-press
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    }
-                                }
-                            )
-                            .animateItem()
-                    ) {
-                        SongListItem(
-                            song = song,
-                            albumIndex = index + 1,
-                            onPlay = {
-                                playerConnection.playQueue(
-                                    ListQueue(
-                                        title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongsLocal.songs.map { it.toMediaMetadata() },
-                                        startIndex = index,
-                                        playlistId = albumWithSongsLocal.album.playlistId
-                                    )
-                                )
-                            },
-                            onSelectedChange = {
-                                inSelectMode = true
-                                if (it) {
-                                    selection.add(song.id)
-                                    // Animate scroll to selected item
-                                    scope.launch {
-                                        state.animateScrollToItem(index)
-                                    }
-                                    // Haptic feedback for selection
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                } else {
-                                    selection.remove(song.id)
-                                }
-                            },
-                            inSelectMode = inSelectMode,
-                            isSelected = selection.contains(song.id),
-                            navController = navController,
-                            snackbarHostState = snackbarHostState,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem()
-                        )
+                        }
                     }
-                }
-                // --- Other Versions Section ---
-                if (otherVersions.isNotEmpty()) {
-                    item {
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(
-                                text = stringResource(R.string.other_versions),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-                            )
-                            LazyRow(
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                    horizontal = 12.dp
-                                ),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(
-                                    items = otherVersions,
-                                    key = { it.id },
-                                ) { item ->
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    YouTubeGridItem(
-                                        item = item,
-                                        isActive = mediaMetadata?.album?.id == item.id,
-                                        isPlaying = isPlaying,
-                                        coroutineScope = scope,
-                                        modifier = Modifier
-                                            .combinedClickable(
-                                                interactionSource = interactionSource,
-                                                indication = ripple(),
-                                                onClick = { navController.navigate("album/${item.id}") },
-                                                onLongClick = {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.show {
-                                                        YouTubeAlbumMenu(
-                                                            albumItem = item,
-                                                            navController = navController,
-                                                            onDismiss = menuState::dismiss,
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                            .animateItem(),
-                                    )
-                                }
+                    LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                        items(6) {
+                            ShimmerHost {
+                                ListItemPlaceHolder()
                             }
                         }
                     }
                 }
             } else {
-                item {
-                    ShimmerHost {
-                        Column(Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Spacer(
-                                    modifier = Modifier
-                                        .size(AlbumThumbnailSize)
-                                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                                        .background(MaterialTheme.colorScheme.onSurface)
-                                )
-
-                                Spacer(Modifier.width(16.dp))
-
-                                Column(
-                                    verticalArrangement = Arrangement.Center,
-                                ) {
-                                    TextPlaceholder()
-                                    TextPlaceholder()
-                                    TextPlaceholder()
+                LazyColumn(state = state, contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                    item {
+                        ShimmerHost {
+                            Column(Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
+                                    Spacer(Modifier.width(16.dp))
+                                    Column(verticalArrangement = Arrangement.Center) {
+                                        TextPlaceholder()
+                                        TextPlaceholder()
+                                        TextPlaceholder()
+                                    }
+                                }
+                                Spacer(Modifier.padding(8.dp))
+                                Row {
+                                    ButtonPlaceholder(Modifier.weight(1f))
+                                    Spacer(Modifier.width(12.dp))
+                                    ButtonPlaceholder(Modifier.weight(1f))
                                 }
                             }
-
-                            Spacer(Modifier.padding(8.dp))
-
-                            Row {
-                                ButtonPlaceholder(Modifier.weight(1f))
-
-                                Spacer(Modifier.width(12.dp))
-
-                                ButtonPlaceholder(Modifier.weight(1f))
-                            }
                         }
-
-                        repeat(6) {
+                    }
+                    items(6) {
+                        ShimmerHost {
                             ListItemPlaceHolder()
                         }
                     }
                 }
             }
         }
-    }
-
-    TopAppBar(
-        title = { },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = null
-                )
-            }
-        },
-        windowInsets = TopBarInsets,
-        scrollBehavior = scrollBehavior
-    )
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        FloatingFooter(inSelectMode) {
-            val albumWithSongsLocal = albumWithSongs
-            if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
-                SelectHeader(
-                    navController = navController,
-                    selectedItems = selection.mapNotNull { id ->
-                        albumWithSongsLocal.songs.find { it.song.id == id }
-                    }.map { it.toMediaMetadata() },
-                    totalItemCount = albumWithSongsLocal.songs.size,
-                    onSelectAll = {
-                        selection.clear()
-                        selection.addAll(albumWithSongsLocal.songs.map { it.id })
-                    },
-                    onDeselectAll = { selection.clear() },
-                    menuState = menuState,
-                    onDismiss = onExitSelectionMode
-                )
-            }
-        }
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .align(Alignment.BottomCenter)
-        )
-    }
 }

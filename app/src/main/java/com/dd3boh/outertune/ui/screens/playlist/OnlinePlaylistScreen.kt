@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
@@ -284,7 +283,71 @@ fun OnlinePlaylistScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        if (isLandscape) {
+        if (playlist == null) {
+            if (isLandscape) {
+                Row(Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                        item {
+                            ShimmerHost {
+                                Column(Modifier.padding(12.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
+                                        Spacer(Modifier.width(16.dp))
+                                        Column(verticalArrangement = Arrangement.Center) {
+                                            TextPlaceholder()
+                                            TextPlaceholder()
+                                            TextPlaceholder()
+                                        }
+                                    }
+                                    Spacer(Modifier.padding(8.dp))
+                                    Row {
+                                        ButtonPlaceholder(Modifier.weight(1f))
+                                        Spacer(Modifier.width(12.dp))
+                                        ButtonPlaceholder(Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                        items(6) {
+                            ShimmerHost {
+                                ListItemPlaceHolder()
+                            }
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(state = lazyListState, contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                    item {
+                        ShimmerHost {
+                            Column(Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
+                                    Spacer(Modifier.width(16.dp))
+                                    Column(verticalArrangement = Arrangement.Center) {
+                                        TextPlaceholder()
+                                        TextPlaceholder()
+                                        TextPlaceholder()
+                                    }
+                                }
+                                Spacer(Modifier.padding(8.dp))
+                                Row {
+                                    ButtonPlaceholder(Modifier.weight(1f))
+                                    Spacer(Modifier.width(12.dp))
+                                    ButtonPlaceholder(Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+                    items(6) {
+                        ShimmerHost {
+                            ListItemPlaceHolder()
+                        }
+                    }
+                }
+            }
+        } else if (isLandscape) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -405,10 +468,8 @@ fun OnlinePlaylistScreen(
                     }
                 }
                 LazyColumn(
+                    modifier = Modifier.weight(1f),
                     contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
                 ) {
                     items(
                         items = filteredSongs,
@@ -699,45 +760,6 @@ fun OnlinePlaylistScreen(
                                     repeat(2) {
                                         ListItemPlaceHolder()
                                     }
-                                }
-                            }
-                        }
-                    } else {
-                        item {
-                            ShimmerHost {
-                                Column(Modifier.padding(12.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Spacer(
-                                            modifier = Modifier
-                                                .size(AlbumThumbnailSize)
-                                                .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                                                .background(MaterialTheme.colorScheme.onSurface)
-                                        )
-
-                                        Spacer(Modifier.width(16.dp))
-
-                                        Column(
-                                            verticalArrangement = Arrangement.Center,
-                                        ) {
-                                            TextPlaceholder()
-                                            TextPlaceholder()
-                                            TextPlaceholder()
-                                        }
-                                    }
-
-                                    Spacer(Modifier.padding(8.dp))
-
-                                    Row {
-                                        ButtonPlaceholder(Modifier.weight(1f))
-
-                                        Spacer(Modifier.width(12.dp))
-
-                                        ButtonPlaceholder(Modifier.weight(1f))
-                                    }
-                                }
-
-                                repeat(6) {
-                                    ListItemPlaceHolder()
                                 }
                             }
                         }
