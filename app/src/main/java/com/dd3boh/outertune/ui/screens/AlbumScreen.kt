@@ -193,7 +193,7 @@ fun AlbumScreen(
             item {
                 // --- MD3 Expressive Hero Section ---
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AsyncImage(
@@ -201,16 +201,16 @@ fun AlbumScreen(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .aspectRatio(1f)
+                            .aspectRatio(16f / 9f)
                             .clip(RoundedCornerShape(24.dp))
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     AutoResizeText(
                         text = albumWithSongsLocal.album.title,
-                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                        fontSizeRange = FontSizeRange(28.sp, 40.sp),
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        fontSizeRange = FontSizeRange(22.sp, 32.sp),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -236,13 +236,13 @@ fun AlbumScreen(
                     }
                     Text(
                         annotatedString,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = if (albumWithSongsLocal.album.year != null) {
@@ -259,16 +259,16 @@ fun AlbumScreen(
                                 albumWithSongsLocal.downloadCount
                             )
                         },
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Normal
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(8.dp)
                     ) {
                         Button(
                             onClick = {
@@ -424,9 +424,9 @@ fun AlbumScreen(
             item {
                 Text(
                     text = stringResource(R.string.songs),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
                 )
             }
             itemsIndexed(
@@ -454,7 +454,7 @@ fun AlbumScreen(
                     color = animatedColor,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 2.dp)
+                        .padding(horizontal = 12.dp, vertical = 2.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .then(
                             if (inSelection) Modifier else Modifier
@@ -546,12 +546,12 @@ fun AlbumScreen(
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text(
                             text = stringResource(R.string.other_versions),
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 4.dp)
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
                         )
                         LazyRow(
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(
