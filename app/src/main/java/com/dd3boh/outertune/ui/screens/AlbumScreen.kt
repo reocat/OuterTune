@@ -13,10 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,22 +27,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.OfflinePin
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -67,24 +53,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalMenuState
@@ -99,9 +81,7 @@ import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.FloatingFooter
-import com.dd3boh.outertune.ui.component.FontSizeRange
 import com.dd3boh.outertune.ui.component.IconButton
 import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongListItem
@@ -191,233 +171,98 @@ fun AlbumScreen(
         val albumWithSongsLocal = albumWithSongs
         if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
             item {
-                // --- MD3 Expressive Hero Section ---
-                Column(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AsyncImage(
-                        model = albumWithSongsLocal.album.thumbnailUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .aspectRatio(16f / 9f)
-                            .clip(RoundedCornerShape(24.dp))
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    AutoResizeText(
-                        text = albumWithSongsLocal.album.title,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        fontSizeRange = FontSizeRange(22.sp, 32.sp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    val annotatedString = buildAnnotatedString {
-                        withStyle(
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Normal,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ).toSpanStyle()
-                        ) {
-                            albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
-                                withLink(
-                                    LinkAnnotation.Clickable(artist.id) {
-                                        navController.navigate("artist/${artist.id}")
+                CollectionScreenHeader(
+                    thumbnailUrl = albumWithSongsLocal.album.thumbnailUrl,
+                    title = albumWithSongsLocal.album.title,
+                    artists = {
+                        val annotatedString = buildAnnotatedString {
+                            withStyle(
+                                style = MaterialTheme.typography.titleSmall.toSpanStyle()
+                            ) {
+                                albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
+                                    withLink(
+                                        LinkAnnotation.Clickable(artist.id) {
+                                            navController.navigate("artist/${artist.id}")
+                                        }
+                                    ) { append(artist.name) }
+                                    if (index != albumWithSongsLocal.artists.lastIndex) {
+                                        append(", ")
                                     }
-                                ) { append(artist.name) }
-                                if (index != albumWithSongsLocal.artists.lastIndex) {
-                                    append(", ")
                                 }
                             }
                         }
-                    }
-                    Text(
-                        annotatedString,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = if (albumWithSongsLocal.album.year != null) {
-                            joinByBullet(
-                                getNSongsString(
-                                    albumWithSongsLocal.album.songCount,
-                                    albumWithSongsLocal.downloadCount
-                                ),
-                                albumWithSongsLocal.album.year.toString()
-                            )
-                        } else {
+                        Text(annotatedString)
+                    },
+                    metadata = if (albumWithSongsLocal.album.year != null) {
+                        joinByBullet(
                             getNSongsString(
                                 albumWithSongsLocal.album.songCount,
                                 albumWithSongsLocal.downloadCount
+                            ),
+                            albumWithSongsLocal.album.year.toString()
+                        )
+                    } else {
+                        getNSongsString(
+                            albumWithSongsLocal.album.songCount,
+                            albumWithSongsLocal.downloadCount
+                        )
+                    },
+                    isLiked = albumWithSongsLocal.album.bookmarkedAt != null,
+                    downloadState = downloadState,
+                    onPlay = {
+                        playerConnection.playQueue(
+                            ListQueue(
+                                title = albumWithSongsLocal.album.title,
+                                items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                    ?: emptyList(),
+                                playlistId = albumWithSongsLocal.album.playlistId
                             )
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Normal
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                playerConnection.playQueue(
-                                    ListQueue(
-                                        title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
-                                        playlistId = albumWithSongsLocal.album.playlistId
-                                    )
-                                )
-                            },
-                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    },
+                    onShuffle = {
+                        playerConnection.playQueue(
+                            ListQueue(
+                                title = albumWithSongsLocal.album.title,
+                                items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }
+                                    ?: emptyList(),
+                                playlistId = albumWithSongsLocal.album.playlistId,
+                                startShuffled = true,
                             )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
-                            )
-                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                            Text(
-                                text = stringResource(R.string.play),
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                    },
+                    onToggleLike = {
+                        database.query {
+                            update(albumWithSongsLocal.album.toggleLike())
+                        }
+                    },
+                    onDownload = {
+                        val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
+                        downloadUtil.download(songs)
+                    },
+                    onRemoveDownload = {
+                        albumWithSongsLocal.songs.forEach { song ->
+                            DownloadService.sendRemoveDownload(
+                                context,
+                                ExoDownloadService::class.java,
+                                song.id,
+                                false
                             )
                         }
-                        OutlinedButton(
-                            onClick = {
-                                playerConnection.playQueue(
-                                    ListQueue(
-                                        title = albumWithSongsLocal.album.title,
-                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
-                                        playlistId = albumWithSongsLocal.album.playlistId,
-                                        startShuffled = true,
-                                    )
-                                )
-                            },
-                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Shuffle,
-                                contentDescription = null,
-                                modifier = Modifier.size(ButtonDefaults.IconSize)
-                            )
-                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                            Text(
-                                text = stringResource(R.string.shuffle),
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                database.query {
-                                    update(albumWithSongsLocal.album.toggleLike())
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = if (albumWithSongsLocal.album.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                                contentDescription = null,
-                                tint = if (albumWithSongsLocal.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
-                            )
-                        }
-                        if (!albumWithSongsLocal.album.isLocal) {
-                            when (downloadState) {
-                                Download.STATE_COMPLETED -> {
-                                    IconButton(
-                                        onClick = {
-                                            albumWithSongsLocal.songs.forEach { song ->
-                                                DownloadService.sendRemoveDownload(
-                                                    context,
-                                                    ExoDownloadService::class.java,
-                                                    song.id,
-                                                    false
-                                                )
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.OfflinePin,
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                                Download.STATE_DOWNLOADING -> {
-                                    IconButton(
-                                        onClick = {
-                                            albumWithSongsLocal.songs.forEach { song ->
-                                                DownloadService.sendRemoveDownload(
-                                                    context,
-                                                    ExoDownloadService::class.java,
-                                                    song.id,
-                                                    false
-                                                )
-                                            }
-                                        }
-                                    ) {
-                                        CircularProgressIndicator(
-                                            strokeWidth = 2.dp,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                }
-                                else -> {
-                                    IconButton(
-                                        onClick = {
-                                            val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
-                                            downloadUtil.download(songs)
-                                        }
-                                    ) {
-                                        Icon(
-                                            Icons.Outlined.Download,
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        IconButton(
-                            onClick = {
-                                menuState.show {
-                                    AlbumMenu(
-                                        originalAlbum = Album(
-                                            albumWithSongsLocal.album,
-                                            albumWithSongsLocal.downloadCount,
-                                            albumWithSongsLocal.artists
-                                        ),
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss,
-                                    )
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Outlined.MoreVert,
-                                contentDescription = null
+                    },
+                    onShowMenu = {
+                        menuState.show {
+                            AlbumMenu(
+                                originalAlbum = Album(
+                                    albumWithSongsLocal.album,
+                                    albumWithSongsLocal.downloadCount,
+                                    albumWithSongsLocal.artists
+                                ),
+                                navController = navController,
+                                onDismiss = menuState::dismiss,
                             )
                         }
                     }
-                }
+                )
             }
 
             // --- Song List Section ---
@@ -442,7 +287,10 @@ fun AlbumScreen(
                 val animatedColor by animateColorAsState(
                     targetValue = when {
                         selected && inSelection -> MaterialTheme.colorScheme.secondaryContainer
-                        !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.6f)
+                        !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                            alpha = 0.6f
+                        )
+
                         else -> MaterialTheme.colorScheme.surface
                     },
                     label = "SongItemColor"
@@ -468,7 +316,9 @@ fun AlbumScreen(
                             onClick = {
                                 if (inSelection) {
                                     val isSelected = selection.contains(song.id)
-                                    if (isSelected) selection.remove(song.id) else selection.add(song.id)
+                                    if (isSelected) selection.remove(song.id) else selection.add(
+                                        song.id
+                                    )
                                     // Animate scroll to selected item
                                     if (!isSelected) {
                                         scope.launch {
@@ -551,7 +401,9 @@ fun AlbumScreen(
                             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
                         )
                         LazyRow(
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                horizontal = 12.dp
+                            ),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(
