@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,7 +39,6 @@ import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -67,6 +67,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -191,301 +192,242 @@ fun AlbumScreen(
         if (albumWithSongsLocal != null && albumWithSongsLocal.songs.isNotEmpty()) {
             item {
                 // --- MD3 Expressive Hero Section ---
-                Column(modifier = Modifier.padding(bottom = 8.dp)) {
-                    Box(
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AsyncImage(
+                        model = albumWithSongsLocal.album.thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(4f / 3)
-                    ) {
-                        if (albumWithSongsLocal.album.thumbnailUrl != null) {
-                            AsyncImage(
-                                model = albumWithSongsLocal.album.thumbnailUrl,
-                                contentDescription = null,
-                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                            )
-                            // Gradient overlay for readability
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.0f),
-                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                                            ),
-                                            startY = 0f,
-                                            endY = Float.POSITIVE_INFINITY
-                                        )
-                                    )
-                                    .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                            )
-                        } else {
-                            // Fallback surface
-                            androidx.compose.material3.Surface(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest
-                            ) {}
-                        }
-                        // Album title and artists overlay
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(horizontal = 24.dp, vertical = 24.dp)
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(24.dp))
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    AutoResizeText(
+                        text = albumWithSongsLocal.album.title,
+                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                        fontSizeRange = FontSizeRange(28.sp, 40.sp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    val annotatedString = buildAnnotatedString {
+                        withStyle(
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ).toSpanStyle()
                         ) {
-                            AutoResizeText(
-                                text = albumWithSongsLocal.album.title,
-                                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                                fontSizeRange = FontSizeRange(28.sp, 40.sp),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            val annotatedString = buildAnnotatedString {
-                                withStyle(
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Normal,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    ).toSpanStyle()
-                                ) {
-                                    albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
-                                        withLink(
-                                            LinkAnnotation.Clickable(artist.id) {
-                                                navController.navigate("artist/${artist.id}")
-                                            }
-                                        ) { append(artist.name) }
-                                        if (index != albumWithSongsLocal.artists.lastIndex) {
-                                            append(", ")
-                                        }
+                            albumWithSongsLocal.artists.fastForEachIndexed { index, artist ->
+                                withLink(
+                                    LinkAnnotation.Clickable(artist.id) {
+                                        navController.navigate("artist/${artist.id}")
                                     }
+                                ) { append(artist.name) }
+                                if (index != albumWithSongsLocal.artists.lastIndex) {
+                                    append(", ")
                                 }
-                            }
-                            Text(
-                                annotatedString,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    // --- Action Card ---
-                    androidx.compose.material3.Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.padding(12.dp)
-                        ) {
-                            Button(
-                                onClick = {
-                                    playerConnection.playQueue(
-                                        ListQueue(
-                                            title = albumWithSongsLocal.album.title,
-                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
-                                            playlistId = albumWithSongsLocal.album.playlistId
-                                        )
-                                    )
-                                },
-                                contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                                )
-                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(
-                                    text = stringResource(R.string.play),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
-                                )
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    playerConnection.playQueue(
-                                        ListQueue(
-                                            title = albumWithSongsLocal.album.title,
-                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
-                                            playlistId = albumWithSongsLocal.album.playlistId,
-                                            startShuffled = true,
-                                        )
-                                    )
-                                },
-                                contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Shuffle,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                                )
-                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(
-                                    text = stringResource(R.string.shuffle),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    database.query {
-                                        update(albumWithSongsLocal.album.toggleLike())
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = if (albumWithSongsLocal.album.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                                    contentDescription = null,
-                                    tint = if (albumWithSongsLocal.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
-                                )
-                            }
-                            if (!albumWithSongsLocal.album.isLocal) {
-                                when (downloadState) {
-                                    Download.STATE_COMPLETED -> {
-                                        IconButton(
-                                            onClick = {
-                                                albumWithSongsLocal.songs.forEach { song ->
-                                                    DownloadService.sendRemoveDownload(
-                                                        context,
-                                                        ExoDownloadService::class.java,
-                                                        song.id,
-                                                        false
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.OfflinePin,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    }
-                                    Download.STATE_DOWNLOADING -> {
-                                        IconButton(
-                                            onClick = {
-                                                albumWithSongsLocal.songs.forEach { song ->
-                                                    DownloadService.sendRemoveDownload(
-                                                        context,
-                                                        ExoDownloadService::class.java,
-                                                        song.id,
-                                                        false
-                                                    )
-                                                }
-                                            }
-                                        ) {
-                                            CircularProgressIndicator(
-                                                strokeWidth = 2.dp,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                    }
-                                    else -> {
-                                        IconButton(
-                                            onClick = {
-                                                val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
-                                                downloadUtil.download(songs)
-                                            }
-                                        ) {
-                                            Icon(
-                                                Icons.Outlined.Download,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            IconButton(
-                                onClick = {
-                                    menuState.show {
-                                        AlbumMenu(
-                                            originalAlbum = Album(
-                                                albumWithSongsLocal.album,
-                                                albumWithSongsLocal.downloadCount,
-                                                albumWithSongsLocal.artists
-                                            ),
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss,
-                                        )
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Outlined.MoreVert,
-                                    contentDescription = null
-                                )
                             }
                         }
                     }
-                    // --- Album meta info ---
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = if (albumWithSongsLocal.album.year != null) {
-                                joinByBullet(
-                                    getNSongsString(
-                                        albumWithSongsLocal.album.songCount,
-                                        albumWithSongsLocal.downloadCount
-                                    ),
-                                    albumWithSongsLocal.album.year.toString()
-                                )
-                            } else {
+                    Text(
+                        annotatedString,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = if (albumWithSongsLocal.album.year != null) {
+                            joinByBullet(
                                 getNSongsString(
                                     albumWithSongsLocal.album.songCount,
                                     albumWithSongsLocal.downloadCount
+                                ),
+                                albumWithSongsLocal.album.year.toString()
+                            )
+                        } else {
+                            getNSongsString(
+                                albumWithSongsLocal.album.songCount,
+                                albumWithSongsLocal.downloadCount
+                            )
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Normal
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                playerConnection.playQueue(
+                                    ListQueue(
+                                        title = albumWithSongsLocal.album.title,
+                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
+                                        playlistId = albumWithSongsLocal.album.playlistId
+                                    )
                                 )
                             },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Normal
-                        )
+                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(
+                                text = stringResource(R.string.play),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                playerConnection.playQueue(
+                                    ListQueue(
+                                        title = albumWithSongsLocal.album.title,
+                                        items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
+                                        playlistId = albumWithSongsLocal.album.playlistId,
+                                        startShuffled = true,
+                                    )
+                                )
+                            },
+                            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Shuffle,
+                                contentDescription = null,
+                                modifier = Modifier.size(ButtonDefaults.IconSize)
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(
+                                text = stringResource(R.string.shuffle),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                database.query {
+                                    update(albumWithSongsLocal.album.toggleLike())
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (albumWithSongsLocal.album.bookmarkedAt != null) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                                contentDescription = null,
+                                tint = if (albumWithSongsLocal.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
+                            )
+                        }
+                        if (!albumWithSongsLocal.album.isLocal) {
+                            when (downloadState) {
+                                Download.STATE_COMPLETED -> {
+                                    IconButton(
+                                        onClick = {
+                                            albumWithSongsLocal.songs.forEach { song ->
+                                                DownloadService.sendRemoveDownload(
+                                                    context,
+                                                    ExoDownloadService::class.java,
+                                                    song.id,
+                                                    false
+                                                )
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.OfflinePin,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                                Download.STATE_DOWNLOADING -> {
+                                    IconButton(
+                                        onClick = {
+                                            albumWithSongsLocal.songs.forEach { song ->
+                                                DownloadService.sendRemoveDownload(
+                                                    context,
+                                                    ExoDownloadService::class.java,
+                                                    song.id,
+                                                    false
+                                                )
+                                            }
+                                        }
+                                    ) {
+                                        CircularProgressIndicator(
+                                            strokeWidth = 2.dp,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    IconButton(
+                                        onClick = {
+                                            val songs = albumWithSongsLocal.songs.map { it.toMediaMetadata() }
+                                            downloadUtil.download(songs)
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.Download,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                menuState.show {
+                                    AlbumMenu(
+                                        originalAlbum = Album(
+                                            albumWithSongsLocal.album,
+                                            albumWithSongsLocal.downloadCount,
+                                            albumWithSongsLocal.artists
+                                        ),
+                                        navController = navController,
+                                        onDismiss = menuState::dismiss,
+                                    )
+                                }
+                            }
+                        ) {
+                            Icon(
+                                Icons.Outlined.MoreVert,
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             }
 
             // --- Song List Section ---
             item {
-                androidx.compose.material3.Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                        Text(
-                            text = stringResource(R.string.songs),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 4.dp)
-                        )
-                    }
-                }
+                Text(
+                    text = stringResource(R.string.songs),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 4.dp)
+                )
             }
             itemsIndexed(
                 items = albumWithSongs!!.songs,
@@ -601,56 +543,45 @@ fun AlbumScreen(
             // --- Other Versions Section ---
             if (otherVersions.isNotEmpty()) {
                 item {
-                    androidx.compose.material3.Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(
-                                text = stringResource(R.string.other_versions),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 4.dp)
-                            )
-                            LazyRow(
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(
-                                    items = otherVersions,
-                                    key = { it.id },
-                                ) { item ->
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    YouTubeGridItem(
-                                        item = item,
-                                        isActive = mediaMetadata?.album?.id == item.id,
-                                        isPlaying = isPlaying,
-                                        coroutineScope = scope,
-                                        modifier = Modifier
-                                            .combinedClickable(
-                                                interactionSource = interactionSource,
-                                                indication = ripple(),
-                                                onClick = { navController.navigate("album/${item.id}") },
-                                                onLongClick = {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    menuState.show {
-                                                        YouTubeAlbumMenu(
-                                                            albumItem = item,
-                                                            navController = navController,
-                                                            onDismiss = menuState::dismiss,
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                            .animateItem(),
-                                    )
-                                }
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        Text(
+                            text = stringResource(R.string.other_versions),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 4.dp)
+                        )
+                        LazyRow(
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(
+                                items = otherVersions,
+                                key = { it.id },
+                            ) { item ->
+                                val interactionSource = remember { MutableInteractionSource() }
+                                YouTubeGridItem(
+                                    item = item,
+                                    isActive = mediaMetadata?.album?.id == item.id,
+                                    isPlaying = isPlaying,
+                                    coroutineScope = scope,
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            interactionSource = interactionSource,
+                                            indication = ripple(),
+                                            onClick = { navController.navigate("album/${item.id}") },
+                                            onLongClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                menuState.show {
+                                                    YouTubeAlbumMenu(
+                                                        albumItem = item,
+                                                        navController = navController,
+                                                        onDismiss = menuState::dismiss,
+                                                    )
+                                                }
+                                            },
+                                        )
+                                        .animateItem(),
+                                )
                             }
                         }
                     }
