@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.screens.playlist
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
@@ -62,6 +64,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -274,121 +277,137 @@ fun OnlinePlaylistScreen(
             }
     }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        LazyColumn(
-            state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
-            modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
-        ) {
-            playlist.let { playlist ->
-                if (playlist != null) {
-                    if (!isSearching) {
-                        item {
-                            CollectionScreenHeader(
-                                thumbnailUrl = playlist.thumbnail,
-                                title = playlist.title,
-                                artists = {
-                                    playlist.author?.let { artist ->
-                                        val annotatedString = buildAnnotatedString {
-                                            withStyle(
-                                                style = MaterialTheme.typography.titleMedium.copy(
-                                                    color = MaterialTheme.colorScheme.onBackground
-                                                ).toSpanStyle()
-                                            ) {
-                                                if (artist.id != null) {
-                                                    withLink(
-                                                        LinkAnnotation.Clickable(artist.id!!) {
-                                                            navController.navigate("artist/${artist.id}")
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = if (inSelectMode) 64.dp else 0.dp)
+            ) {
+                LazyColumn(
+                    state = lazyListState,
+                    contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    playlist.let { playlist ->
+                        if (playlist != null) {
+                            if (!isSearching) {
+                                item {
+                                    CollectionScreenHeader(
+                                        thumbnailUrl = playlist.thumbnail,
+                                        title = playlist.title,
+                                        artists = {
+                                            playlist.author?.let { artist ->
+                                                val annotatedString = buildAnnotatedString {
+                                                    withStyle(
+                                                        style = MaterialTheme.typography.titleMedium.copy(
+                                                            color = MaterialTheme.colorScheme.onBackground
+                                                        ).toSpanStyle()
+                                                    ) {
+                                                        if (artist.id != null) {
+                                                            withLink(
+                                                                LinkAnnotation.Clickable(artist.id!!) {
+                                                                    navController.navigate("artist/${artist.id}")
+                                                                }
+                                                            ) { append(artist.name) }
+                                                        } else append(artist.name)
+                                                    }
+                                                }
+
+                                                Text(annotatedString)
+                                            }
+                                        },
+                                        metadata = playlist.songCountText,
+                                        isLiked = dbPlaylist?.playlist?.bookmarkedAt != null,
+                                        downloadState = downloadState,
+                                        onPlay = {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    playlistId = playlist.playEndpoint!!.playlistId,
+                                                    title = playlist.title,
+                                                    items = songs.map { it.toMediaMetadata() },
+                                                )
+                                            )
+                                        },
+                                        onShuffle = {
+                                            playerConnection.playQueue(
+                                                ListQueue(
+                                                    playlistId = playlist.playEndpoint!!.playlistId,
+                                                    title = playlist.title,
+                                                    items = songs.map { it.toMediaMetadata() },
+                                                    startShuffled = true,
+                                                )
+                                            )
+                                        },
+                                        onToggleLike = {
+                                            if (dbPlaylist?.playlist == null) {
+                                                database.transaction {
+                                                    val playlistEntity = PlaylistEntity(
+                                                        name = playlist.title,
+                                                        description = playlist.description,
+                                                        privacyStatus = playlist.privacyStatus,
+                                                        browseId = playlist.id,
+                                                        isEditable = playlist.isEditable,
+                                                        playEndpointParams = playlist.playEndpoint?.params,
+                                                        shuffleEndpointParams = playlist.shuffleEndpoint?.params,
+                                                        radioEndpointParams = playlist.radioEndpoint?.params
+                                                    ).toggleLike()
+
+                                                    insert(playlistEntity)
+                                                    songs.map(SongItem::toMediaMetadata)
+                                                        .onEach(::insert)
+                                                        .mapIndexed { index, song ->
+                                                            PlaylistSongMap(
+                                                                songId = song.id,
+                                                                playlistId = playlistEntity.id,
+                                                                position = index
+                                                            )
                                                         }
-                                                    ) { append(artist.name) }
-                                                } else append(artist.name)
+                                                        .forEach(::insert)
+                                                }
+                                            } else {
+                                                database.transaction {
+                                                    update(dbPlaylist!!.playlist.toggleLike())
+                                                }
+                                            }
+                                        },
+                                        onDownload = {
+                                            viewModel.viewModelScope.launch(Dispatchers.IO) {
+                                                syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id)
+                                            }
+                                            val songsToDownload = songs.map { it.toMediaMetadata() }
+                                            downloadUtil.download(songsToDownload)
+                                        },
+                                        onRemoveDownload = {
+                                            showRemoveDownloadDialog = true
+                                        },
+                                        onShowMenu = {
+                                            menuState.show {
+                                                YouTubePlaylistMenu(
+                                                    navController = navController,
+                                                    playlist = playlist,
+                                                    songs = songs,
+                                                    coroutineScope = coroutineScope,
+                                                    onDismiss = menuState::dismiss
+                                                )
                                             }
                                         }
-
-                                        Text(annotatedString)
-                                    }
-                                },
-                                metadata = playlist.songCountText,
-                                isLiked = dbPlaylist?.playlist?.bookmarkedAt != null,
-                                downloadState = downloadState,
-                                onPlay = {
-                                    playerConnection.playQueue(
-                                        ListQueue(
-                                            playlistId = playlist.playEndpoint!!.playlistId,
-                                            title = playlist.title,
-                                            items = songs.map { it.toMediaMetadata() },
-                                        )
                                     )
-                                },
-                                onShuffle = {
-                                    playerConnection.playQueue(
-                                        ListQueue(
-                                            playlistId = playlist.playEndpoint!!.playlistId,
-                                            title = playlist.title,
-                                            items = songs.map { it.toMediaMetadata() },
-                                            startShuffled = true,
-                                        )
-                                    )
-                                },
-                                onToggleLike = {
-                                    if (dbPlaylist?.playlist == null) {
-                                        database.transaction {
-                                            val playlistEntity = PlaylistEntity(
-                                                name = playlist.title,
-                                                description = playlist.description,
-                                                privacyStatus = playlist.privacyStatus,
-                                                browseId = playlist.id,
-                                                isEditable = playlist.isEditable,
-                                                playEndpointParams = playlist.playEndpoint?.params,
-                                                shuffleEndpointParams = playlist.shuffleEndpoint?.params,
-                                                radioEndpointParams = playlist.radioEndpoint?.params
-                                            ).toggleLike()
-
-                                            insert(playlistEntity)
-                                            songs.map(SongItem::toMediaMetadata)
-                                                .onEach(::insert)
-                                                .mapIndexed { index, song ->
-                                                    PlaylistSongMap(
-                                                        songId = song.id,
-                                                        playlistId = playlistEntity.id,
-                                                        position = index
-                                                    )
-                                                }
-                                                .forEach(::insert)
-                                        }
-                                    } else {
-                                        database.transaction {
-                                            update(dbPlaylist!!.playlist.toggleLike())
-                                        }
-                                    }
-                                },
-                                onDownload = {
-                                    viewModel.viewModelScope.launch(Dispatchers.IO) {
-                                        syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id)
-                                    }
-                                    val songsToDownload = songs.map { it.toMediaMetadata() }
-                                    downloadUtil.download(songsToDownload)
-                                },
-                                onRemoveDownload = {
-                                    showRemoveDownloadDialog = true
-                                },
-                                onShowMenu = {
-                                    menuState.show {
-                                        YouTubePlaylistMenu(
-                                            navController = navController,
-                                            playlist = playlist,
-                                            songs = songs,
-                                            coroutineScope = coroutineScope,
-                                            onDismiss = menuState::dismiss
-                                        )
-                                    }
                                 }
-                            )
+                            }
                         }
                     }
-
+                }
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
                     items(
                         items = filteredSongs,
                         key = { (index, _) -> index },
@@ -445,8 +464,8 @@ fun OnlinePlaylistScreen(
                                                 } else {
                                                     playerConnection.playQueue(
                                                         ListQueue(
-                                                            playlistId = playlist.id,
-                                                            title = playlist.title,
+                                                            playlistId = playlist!!.id,
+                                                            title = playlist!!.title,
                                                             items = filteredSongs.map { it.second.toMediaMetadata() },
                                                             startIndex = index
                                                         )
@@ -477,42 +496,247 @@ fun OnlinePlaylistScreen(
                             }
                         }
                     }
-                } else {
-                    item {
-                        ShimmerHost {
-                            Column(Modifier.padding(12.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .size(AlbumThumbnailSize)
-                                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                                            .background(MaterialTheme.colorScheme.onSurface)
-                                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
+                modifier = Modifier.padding(bottom = if (inSelectMode) 64.dp else 0.dp)
+            ) {
+                playlist.let { playlist ->
+                    if (playlist != null) {
+                        if (!isSearching) {
+                            item {
+                                CollectionScreenHeader(
+                                    thumbnailUrl = playlist.thumbnail,
+                                    title = playlist.title,
+                                    artists = {
+                                        playlist.author?.let { artist ->
+                                            val annotatedString = buildAnnotatedString {
+                                                withStyle(
+                                                    style = MaterialTheme.typography.titleMedium.copy(
+                                                        color = MaterialTheme.colorScheme.onBackground
+                                                    ).toSpanStyle()
+                                                ) {
+                                                    if (artist.id != null) {
+                                                        withLink(
+                                                            LinkAnnotation.Clickable(artist.id!!) {
+                                                                navController.navigate("artist/${artist.id}")
+                                                            }
+                                                        ) { append(artist.name) }
+                                                    } else append(artist.name)
+                                                }
+                                            }
 
-                                    Spacer(Modifier.width(16.dp))
+                                            Text(annotatedString)
+                                        }
+                                    },
+                                    metadata = playlist.songCountText,
+                                    isLiked = dbPlaylist?.playlist?.bookmarkedAt != null,
+                                    downloadState = downloadState,
+                                    onPlay = {
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                playlistId = playlist.playEndpoint!!.playlistId,
+                                                title = playlist.title,
+                                                items = songs.map { it.toMediaMetadata() },
+                                            )
+                                        )
+                                    },
+                                    onShuffle = {
+                                        playerConnection.playQueue(
+                                            ListQueue(
+                                                playlistId = playlist.playEndpoint!!.playlistId,
+                                                title = playlist.title,
+                                                items = songs.map { it.toMediaMetadata() },
+                                                startShuffled = true,
+                                            )
+                                        )
+                                    },
+                                    onToggleLike = {
+                                        if (dbPlaylist?.playlist == null) {
+                                            database.transaction {
+                                                val playlistEntity = PlaylistEntity(
+                                                    name = playlist.title,
+                                                    description = playlist.description,
+                                                    privacyStatus = playlist.privacyStatus,
+                                                    browseId = playlist.id,
+                                                    isEditable = playlist.isEditable,
+                                                    playEndpointParams = playlist.playEndpoint?.params,
+                                                    shuffleEndpointParams = playlist.shuffleEndpoint?.params,
+                                                    radioEndpointParams = playlist.radioEndpoint?.params
+                                                ).toggleLike()
 
-                                    Column(
-                                        verticalArrangement = Arrangement.Center,
-                                    ) {
-                                        TextPlaceholder()
-                                        TextPlaceholder()
-                                        TextPlaceholder()
-                                    }
-                                }
+                                                insert(playlistEntity)
+                                                songs.map(SongItem::toMediaMetadata)
+                                                    .onEach(::insert)
+                                                    .mapIndexed { index, song ->
+                                                        PlaylistSongMap(
+                                                            songId = song.id,
+                                                            playlistId = playlistEntity.id,
+                                                            position = index
+                                                        )
+                                                    }
+                                                    .forEach(::insert)
+                                            }
+                                        } else {
+                                            database.transaction {
+                                                update(dbPlaylist!!.playlist.toggleLike())
+                                            }
+                                        }
+                                    },
+                                    onDownload = {
+                                        viewModel.viewModelScope.launch(Dispatchers.IO) {
+                                            syncUtils.syncPlaylist(playlist.id, dbPlaylist!!.id)
+                                        }
+                                        val songsToDownload = songs.map { it.toMediaMetadata() }
+                                        downloadUtil.download(songsToDownload)
+                                    },
+                                    onRemoveDownload = {
+                                        showRemoveDownloadDialog = true
+                                    },
+                                    onShowMenu = {
+                                        menuState.show {
+                                            YouTubePlaylistMenu(
+                                                navController = navController,
+                                                playlist = playlist,
+                                                songs = songs,
+                                                coroutineScope = coroutineScope,
+                                                onDismiss = menuState::dismiss
+                                            )
+                                        }
+                                    },
+                                    isCompact = true
+                                )
+                            }
+                        }
 
-                                Spacer(Modifier.padding(8.dp))
-
-                                Row {
-                                    ButtonPlaceholder(Modifier.weight(1f))
-
-                                    Spacer(Modifier.width(12.dp))
-
-                                    ButtonPlaceholder(Modifier.weight(1f))
+                        items(
+                            items = filteredSongs,
+                            key = { (index, _) -> index },
+                        ) { (index, song) ->
+                            val onCheckedChange: (Boolean) -> Unit = {
+                                haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                if (it) {
+                                    selection.add(index)
+                                } else {
+                                    selection.remove(index)
                                 }
                             }
 
-                            repeat(6) {
-                                ListItemPlaceHolder()
+                            SwipeToQueueBox(
+                                item = song.toMediaItem(),
+                                content = {
+                                    YouTubeListItem(
+                                        item = song,
+                                        isActive = mediaMetadata?.id == song.id,
+                                        isPlaying = isPlaying,
+                                        trailingContent = {
+                                            if (inSelectMode) {
+                                                Checkbox(
+                                                    checked = index in selection,
+                                                    onCheckedChange = onCheckedChange
+                                                )
+                                            } else {
+                                                IconButton(
+                                                    onClick = {
+                                                        menuState.show {
+                                                            YouTubeSongMenu(
+                                                                song = song,
+                                                                navController = navController,
+                                                                onDismiss = menuState::dismiss
+                                                            )
+                                                        }
+                                                    }
+                                                ) {
+                                                    Icon(
+                                                        Icons.Outlined.MoreVert,
+                                                        contentDescription = null
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        isSelected = inSelectMode && index in selection,
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onClick = {
+                                                    if (inSelectMode) {
+                                                        onCheckedChange(index !in selection)
+                                                    } else if (song.id == mediaMetadata?.id) {
+                                                        playerConnection.player.togglePlayPause()
+                                                    } else {
+                                                        playerConnection.playQueue(
+                                                            ListQueue(
+                                                                playlistId = playlist.id,
+                                                                title = playlist.title,
+                                                                items = filteredSongs.map { it.second.toMediaMetadata() },
+                                                                startIndex = index
+                                                            )
+                                                        )
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    if (!inSelectMode) {
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        inSelectMode = true
+                                                        onCheckedChange(true)
+                                                    }
+                                                }
+                                            )
+                                            .animateItem()
+                                    )
+                                },
+                                snackbarHostState = snackbarHostState
+                            )
+                        }
+
+                        if (viewModel.continuation != null && songs.isNotEmpty()) {
+                            item {
+                                ShimmerHost {
+                                    repeat(2) {
+                                        ListItemPlaceHolder()
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        item {
+                            ShimmerHost {
+                                Column(Modifier.padding(12.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Spacer(
+                                            modifier = Modifier
+                                                .size(AlbumThumbnailSize)
+                                                .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                                                .background(MaterialTheme.colorScheme.onSurface)
+                                        )
+
+                                        Spacer(Modifier.width(16.dp))
+
+                                        Column(
+                                            verticalArrangement = Arrangement.Center,
+                                        ) {
+                                            TextPlaceholder()
+                                            TextPlaceholder()
+                                            TextPlaceholder()
+                                        }
+                                    }
+
+                                    Spacer(Modifier.padding(8.dp))
+
+                                    Row {
+                                        ButtonPlaceholder(Modifier.weight(1f))
+
+                                        Spacer(Modifier.width(12.dp))
+
+                                        ButtonPlaceholder(Modifier.weight(1f))
+                                    }
+                                }
+
+                                repeat(6) {
+                                    ListItemPlaceHolder()
+                                }
                             }
                         }
                     }

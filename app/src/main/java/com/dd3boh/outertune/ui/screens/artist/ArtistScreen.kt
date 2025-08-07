@@ -1,7 +1,9 @@
 package com.dd3boh.outertune.ui.screens.artist
 
+import android.R.attr.shadowRadius
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,6 +65,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -165,104 +168,149 @@ fun ArtistScreen(
             val artistName = artistPage?.artist?.title ?: libraryArtist?.artist?.name
 
             Column {
-                // Enhanced Hero Section with MD3 Expressive design
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
-                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier.height(320.dp)
+                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier.height(360.dp)
                         )
+                        .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
                 ) {
                     if (thumbnail != null) {
-                        // Enhanced image with gradient overlay
+                        // Enhanced image with better scaling and effects
                         AsyncImage(
-                            model = thumbnail.resize(1200, 900),
+                            model = thumbnail.resize(1600, 1200), // Higher resolution for better quality
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .graphicsLayer {
+                                    // Subtle parallax effect
+                                    translationY = -lazyListState.firstVisibleItemScrollOffset * 0.3f
+                                }
                                 .fadingEdge(
                                     top = WindowInsets.systemBars
                                         .asPaddingValues()
                                         .calculateTopPadding() + AppBarHeight,
-                                    bottom = 80.dp
+                                    bottom = 120.dp // More dramatic fade
                                 )
                         )
-                        
-                        // Gradient overlay for better text readability
+
+                        // Multi-layered gradient overlay for depth and readability
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    alpha = 0.6f
-                                }
-                                .clip(
-                                    RoundedCornerShape(
-                                        bottomStart = 24.dp,
-                                        bottomEnd = 24.dp
-                                    )
-                                )
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            // Gradient background
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color.Transparent,
-                                shape = RoundedCornerShape(
-                                    bottomStart = 24.dp,
-                                    bottomEnd = 24.dp
-                                )
-                            ) {
-                                // Gradient overlay
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .graphicsLayer {
-                                            alpha = 0.3f
-                                        }
-                                )
-                            }
+                            // Bottom gradient for text readability
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                            ),
+                                            startY = 0f,
+                                            endY = Float.POSITIVE_INFINITY
+                                        )
+                                    )
+                            )
+
+                            // Side gradients for edge softening
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                                                Color.Transparent,
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
+                                            )
+                                        )
+                                    )
+                            )
                         }
                     } else {
-                        // Fallback surface for artists without thumbnails
+                        // Enhanced fallback with dynamic color surface
                         Surface(
                             modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            shape = RoundedCornerShape(
-                                bottomStart = 24.dp,
-                                bottomEnd = 24.dp
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                        ) {
+                            // Subtle pattern or texture could go here
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.radialGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
+                                                Color.Transparent
+                                            ),
+                                            radius = 800f
+                                        )
+                                    )
                             )
-                        ) {}
+                        }
                     }
-                    
-                    // Enhanced artist name with better typography
-                    AutoResizeText(
-                        text = artistName ?: "Unknown",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.25).sp
-                        ),
-                        fontSizeRange = FontSizeRange(28.sp, 48.sp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Start,
+
+                    // Enhanced artist name with better positioning and effects
+                    Column(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
-                            .padding(horizontal = 20.dp, vertical = 24.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 32.dp)
                             .then(
                                 if (thumbnail == null) {
                                     Modifier.padding(
                                         top = WindowInsets.systemBars
                                             .asPaddingValues()
-                                            .calculateTopPadding() + AppBarHeight
+                                            .calculateTopPadding() + AppBarHeight + 40.dp
                                     )
                                 } else {
                                     Modifier
                                 }
                             )
-                    )
+                    ) {
+                        // Enhanced artist name with dynamic sizing
+                        AutoResizeText(
+                            text = artistName ?: "Unknown Artist",
+                            style = MaterialTheme.typography.displaySmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.5).sp,
+                                lineHeight = 48.sp
+                            ),
+                            fontSizeRange = FontSizeRange(32.sp, 56.sp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Start,
+                            color = if (thumbnail != null) {
+                                Color.White
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .then(
+                                    if (thumbnail != null) {
+                                        // Text shadow effect for better readability
+                                        Modifier.graphicsLayer {
+                                            shadowElevation = 8.dp.toPx()
+                                            shadowRadius = 12.dp.toPx().toInt()
+                                        }
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                        )
+                    }
                 }
 
-                // Enhanced action buttons with MD3 Expressive design
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -274,8 +322,10 @@ fun ArtistScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
                         Button(
                             onClick = {
@@ -291,34 +341,40 @@ fun ArtistScreen(
                                     title = artistName
                                 )
                             },
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                horizontal = 20.dp,
-                                vertical = 12.dp
-                            ),
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(28.dp), 
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                horizontal = 24.dp,
+                                vertical = 16.dp
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 0.dp,
+                                pressedElevation = 1.dp
                             )
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Shuffle,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
-                            Spacer(Modifier.size(6.dp))
+                            Spacer(Modifier.size(8.dp))
                             Text(
                                 text = stringResource(R.string.shuffle),
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = FontWeight.SemiBold
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.1.sp
                                 )
                             )
                         }
 
                         if (!showLocal) {
                             artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
-                                OutlinedButton(
+                                // Secondary Radio Button - Tonal style
+                                Button(
                                     onClick = {
                                         playerConnection.playQueue(
                                             YouTubeQueue(radioEndpoint),
@@ -326,26 +382,32 @@ fun ArtistScreen(
                                             title = "Radio: ${artistPage.artist.title}"
                                         )
                                     },
-                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                        horizontal = 20.dp,
-                                        vertical = 12.dp
-                                    ),
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    shape = RoundedCornerShape(28.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    ),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                        horizontal = 24.dp,
+                                        vertical = 16.dp
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        defaultElevation = 0.dp,
+                                        pressedElevation = 1.dp
                                     )
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Radio,
                                         contentDescription = null,
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(20.dp)
                                     )
-                                    Spacer(Modifier.size(6.dp))
+                                    Spacer(Modifier.size(8.dp))
                                     Text(
                                         text = stringResource(R.string.radio),
-                                        style = MaterialTheme.typography.labelMedium.copy(
-                                            fontWeight = FontWeight.SemiBold
+                                        style = MaterialTheme.typography.labelLarge.copy(
+                                            fontWeight = FontWeight.Medium,
+                                            letterSpacing = 0.1.sp
                                         )
                                     )
                                 }
