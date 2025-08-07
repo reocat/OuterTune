@@ -1,18 +1,21 @@
 package com.dd3boh.outertune.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,7 +28,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -33,8 +35,10 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.OfflinePin
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,6 +49,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -82,7 +87,6 @@ import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
 import com.dd3boh.outertune.LocalMenuState
-import com.dd3boh.outertune.LocalNetworkConnected
 import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSnackbarHostState
@@ -94,12 +98,10 @@ import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.FloatingFooter
 import com.dd3boh.outertune.ui.component.FontSizeRange
 import com.dd3boh.outertune.ui.component.IconButton
-import com.dd3boh.outertune.ui.component.NavigationTitle
 import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SongListItem
 import com.dd3boh.outertune.ui.component.YouTubeGridItem
@@ -127,7 +129,6 @@ fun AlbumScreen(
     val menuState = LocalMenuState.current
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    val isNetworkConnected = LocalNetworkConnected.current
 
     val scope = rememberCoroutineScope()
 
@@ -137,12 +138,6 @@ fun AlbumScreen(
     val albumWithSongs by viewModel.albumWithSongs.collectAsState()
     val otherVersions by viewModel.otherVersions.collectAsState()
     val state = rememberLazyListState()
-
-    val songsAvailable = {
-        albumWithSongs?.songs?.filter { it.song.isAvailableOffline() || isNetworkConnected }
-            ?.map { it.toMediaMetadata() }
-            ?.toList() ?: emptyList()
-    }
 
     // multiselect
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
@@ -282,11 +277,11 @@ fun AlbumScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        colors = androidx.compose.material3.CardDefaults.cardColors(
+                        colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -297,8 +292,7 @@ fun AlbumScreen(
                                     playerConnection.playQueue(
                                         ListQueue(
                                             title = albumWithSongsLocal.album.title,
-                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()
-                                                ?: emptyList(),
+                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
                                             playlistId = albumWithSongsLocal.album.playlistId
                                         )
                                     )
@@ -327,8 +321,7 @@ fun AlbumScreen(
                                     playerConnection.playQueue(
                                         ListQueue(
                                             title = albumWithSongsLocal.album.title,
-                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() }?.toList()
-                                                ?: emptyList(),
+                                            items = albumWithSongs?.songs?.mapNotNull { it.toMediaMetadata() } ?: emptyList(),
                                             playlistId = albumWithSongsLocal.album.playlistId,
                                             startShuffled = true,
                                         )
@@ -365,7 +358,7 @@ fun AlbumScreen(
                                     tint = if (albumWithSongsLocal.album.bookmarkedAt != null) MaterialTheme.colorScheme.error else LocalContentColor.current
                                 )
                             }
-                            if (albumWithSongsLocal.album.isLocal == false) {
+                            if (!albumWithSongsLocal.album.isLocal) {
                                 when (downloadState) {
                                     Download.STATE_COMPLETED -> {
                                         IconButton(
@@ -478,11 +471,11 @@ fun AlbumScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = androidx.compose.material3.CardDefaults.cardColors(
+                    colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                     ),
                     shape = RoundedCornerShape(16.dp),
-                    elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text(
@@ -500,11 +493,11 @@ fun AlbumScreen(
             ) { index, song ->
                 val selected = selection.contains(song.id)
                 val inSelection = inSelectMode
-                val animatedElevation by androidx.compose.animation.core.animateDpAsState(
+                val animatedElevation by animateDpAsState(
                     targetValue = if (selected && inSelection) 8.dp else 0.dp,
                     label = "SongItemElevation"
                 )
-                val animatedColor by androidx.compose.animation.core.animateColorAsState(
+                val animatedColor by animateColorAsState(
                     targetValue = when {
                         selected && inSelection -> MaterialTheme.colorScheme.secondaryContainer
                         !selected && inSelection -> MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.6f)
@@ -513,6 +506,7 @@ fun AlbumScreen(
                     label = "SongItemColor"
                 )
                 val haptic = LocalHapticFeedback.current
+                val interactionSource = remember { MutableInteractionSource() }
                 androidx.compose.material3.Surface(
                     tonalElevation = animatedElevation,
                     color = animatedColor,
@@ -524,6 +518,11 @@ fun AlbumScreen(
                             if (inSelection) Modifier else Modifier
                         )
                         .combinedClickable(
+                            interactionSource = interactionSource,
+                            indication = ripple(
+                                bounded = true,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                            ),
                             onClick = {
                                 if (inSelection) {
                                     val isSelected = selection.contains(song.id)
@@ -535,7 +534,7 @@ fun AlbumScreen(
                                         }
                                     }
                                     // Haptic feedback for selection
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 } else {
                                     playerConnection.playQueue(
                                         ListQueue(
@@ -556,14 +555,8 @@ fun AlbumScreen(
                                         state.animateScrollToItem(index)
                                     }
                                     // Haptic feedback for long-press
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 }
-                            },
-                            indication = androidx.compose.foundation.IndicationInstance { interactionSource, _ ->
-                                androidx.compose.material.ripple.rememberRipple(
-                                    bounded = true,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                                )
                             }
                         )
                         .animateItem()
@@ -590,7 +583,7 @@ fun AlbumScreen(
                                     state.animateScrollToItem(index)
                                 }
                                 // Haptic feedback for selection
-                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             } else {
                                 selection.remove(song.id)
                             }
@@ -601,9 +594,7 @@ fun AlbumScreen(
                         snackbarHostState = snackbarHostState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .animateItem(),
-                        // Accessibility: content description for each song item
-                        contentDescription = song.song.title + " by " + (song.song.artist ?: "Unknown Artist")
+                            .animateItem()
                     )
                 }
             }
@@ -614,11 +605,11 @@ fun AlbumScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        colors = androidx.compose.material3.CardDefaults.cardColors(
+                        colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                         ),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             Text(
@@ -635,6 +626,7 @@ fun AlbumScreen(
                                     items = otherVersions,
                                     key = { it.id },
                                 ) { item ->
+                                    val interactionSource = remember { MutableInteractionSource() }
                                     YouTubeGridItem(
                                         item = item,
                                         isActive = mediaMetadata?.album?.id == item.id,
@@ -642,6 +634,8 @@ fun AlbumScreen(
                                         coroutineScope = scope,
                                         modifier = Modifier
                                             .combinedClickable(
+                                                interactionSource = interactionSource,
+                                                indication = ripple(),
                                                 onClick = { navController.navigate("album/${item.id}") },
                                                 onLongClick = {
                                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
