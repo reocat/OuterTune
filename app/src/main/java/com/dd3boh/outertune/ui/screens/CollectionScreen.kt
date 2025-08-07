@@ -64,7 +64,7 @@ fun CollectionScreenHeader(
         AsyncImage(
             model = thumbnailUrl,
             contentDescription = null,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
             modifier = Modifier
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(24.dp))
