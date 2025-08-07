@@ -169,6 +169,8 @@ fun AlbumScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    val songs = albumWithSongs?.songs ?: emptyList()
+
     if (isLandscape) {
         Row(
             modifier = Modifier
@@ -279,6 +281,7 @@ fun AlbumScreen(
                 }
             }
             LazyColumn(
+                contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
@@ -293,7 +296,7 @@ fun AlbumScreen(
                     )
                 }
                 itemsIndexed(
-                    items = albumWithSongs!!.songs,
+                    items = songs,
                     key = { _, song -> song.id }
                 ) { index, song ->
                     val selected = selection.contains(song.id)
@@ -573,7 +576,7 @@ fun AlbumScreen(
                     )
                 }
                 itemsIndexed(
-                    items = albumWithSongs!!.songs,
+                    items = songs,
                     key = { _, song -> song.id }
                 ) { index, song ->
                     val selected = selection.contains(song.id)

@@ -157,8 +157,9 @@ fun OnlinePlaylistScreen(
         mutableStateOf(TextFieldValue())
     }
     val filteredSongs = remember(songs, query) {
-        if (query.text.isEmpty()) songs.mapIndexed { index, song -> index to song }
-        else songs
+        val songList = songs ?: emptyList()
+        if (query.text.isEmpty()) songList.mapIndexed { index, song -> index to song }
+        else songList
             .mapIndexed { index, song -> index to song }
             .filter { (_, song) ->
                 song.title.contains(query.text, ignoreCase = true) ||
@@ -204,7 +205,7 @@ fun OnlinePlaylistScreen(
     LaunchedEffect(songs) {
         mutableSongs.apply {
             clear()
-            addAll(songs)
+            addAll(songs ?: emptyList())
         }
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
@@ -404,6 +405,7 @@ fun OnlinePlaylistScreen(
                     }
                 }
                 LazyColumn(
+                    contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
