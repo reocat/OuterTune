@@ -170,7 +170,7 @@ fun ArtistScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
-                            if (thumbnail != null) Modifier.aspectRatio(3f / 2) else Modifier.height(320.dp)
+                            if (thumbnail != null) Modifier.aspectRatio(4f / 3) else Modifier.height(320.dp)
                         )
                 ) {
                     if (thumbnail != null) {

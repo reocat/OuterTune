@@ -115,7 +115,6 @@ fun ArtistItemsScreen(
     val lazyGridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Use existing grid cell size preference
     val (gridCellSize, onGridCellSizeChange) = rememberEnumPreference(GridCellSizeKey, GridCellSize.SMALL)
     var showGridDropdown by rememberSaveable { mutableStateOf(false) }
 
@@ -165,7 +164,6 @@ fun ArtistItemsScreen(
         }
     }
 
-    // Rest of the code remains the same...
     if (itemsPage == null) {
         ShimmerHost(
             modifier = Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
@@ -283,104 +281,6 @@ fun ArtistItemsScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Add header with grid size selector for grid view
-            item(
-                key = "header",
-                span = { GridItemSpan(maxLineSpan) }
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Spacer(Modifier.weight(1f))
-
-                        Text(
-                            text = "${itemsPage?.items?.size ?: 0} items",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(Modifier.size(12.dp))
-
-                        // Grid size selector dropdown
-                        Box {
-                            FilledTonalButton(
-                                onClick = { showGridDropdown = true },
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.GridView,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.size(6.dp))
-                                Text(
-                                    text = stringResource(
-                                        if (gridCellSize == GridCellSize.SMALL) R.string.small else R.string.big
-                                    ),
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                )
-                            }
-
-                            DropdownMenu(
-                                expanded = showGridDropdown,
-                                onDismissRequest = { showGridDropdown = false },
-                                modifier = Modifier.background(
-                                    MaterialTheme.colorScheme.surfaceContainer,
-                                    RoundedCornerShape(12.dp)
-                                )
-                            ) {
-                                GridCellSize.values().forEach { cellSize ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = stringResource(
-                                                    if (cellSize == GridCellSize.SMALL) R.string.small else R.string.big
-                                                ),
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Outlined.ViewColumn,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        },
-                                        onClick = {
-                                            onGridCellSizeChange(cellSize)
-                                            showGridDropdown = false
-                                        },
-                                        modifier = Modifier.background(
-                                            if (gridCellSize == cellSize) 
-                                                MaterialTheme.colorScheme.primaryContainer 
-                                            else 
-                                                Color.Transparent,
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             itemsIndexed(
                 items = itemsPage?.items.orEmpty(),
                 key = { _, item -> item.hashCode() }
