@@ -288,7 +288,7 @@ fun OnlinePlaylistScreen(
                 Row(Modifier.fillMaxSize()) {
                     LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
                         item {
-                            ShimmerHost {
+                            ShimmerHost(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                                 Column(Modifier.padding(12.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Spacer(modifier = Modifier.size(AlbumThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.onSurface))
@@ -312,7 +312,7 @@ fun OnlinePlaylistScreen(
                     LazyColumn(modifier = Modifier.weight(1f), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
                         items(6) {
                             ShimmerHost {
-                                ListItemPlaceHolder()
+                                ListItemPlaceHolder(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                             }
                         }
                     }
@@ -690,6 +690,7 @@ fun OnlinePlaylistScreen(
 
                             SwipeToQueueBox(
                                 item = song.toMediaItem(),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                                 content = {
                                     YouTubeListItem(
                                         item = song,

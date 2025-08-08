@@ -300,7 +300,7 @@ fun AlbumScreen(
                                 color = animatedColor,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 2.dp)
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
                                     .clip(RoundedCornerShape(12.dp))
                                     .then(
                                         if (inSelection) Modifier else Modifier
@@ -398,13 +398,13 @@ fun AlbumScreen(
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(
                                             start = 16.dp,
-                                            top = 8.dp,
-                                            bottom = 4.dp
+                                            top = 16.dp,
+                                            bottom = 8.dp
                                         )
                                     )
                                     LazyRow(
                                         contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                            horizontal = 12.dp
+                                            horizontal = 16.dp
                                         ),
                                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
