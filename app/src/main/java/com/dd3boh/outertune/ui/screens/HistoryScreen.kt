@@ -78,7 +78,6 @@ import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.FloatingFooter
-import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.LazyColumnScrollbar
 import com.dd3boh.outertune.ui.component.NavigationTitle
@@ -405,21 +404,6 @@ fun HistoryScreen(
                 }
             }
         }
-
-        HideOnScrollFAB(
-            visible = filteredEventsMap.isNotEmpty(),
-            lazyListState = lazyListState,
-            icon = R.drawable.shuffle_on,
-            onClick = {
-                playerConnection.playQueue(
-                    ListQueue(
-                        title = context.getString(R.string.history),
-                        items = filteredEventIndex.values.map { it.song.toMediaMetadata() },
-                        startShuffled = true,
-                    )
-                )
-            }
-        )
 
         FloatingFooter(
             visible = inSelectMode
