@@ -33,11 +33,9 @@ jobs:
                 repo: context.repo.repo,
                 per_page: 100
               });
-
               const cachesToDelete = caches.data.actions_caches
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                 .slice(5);
-
               for (const cache of cachesToDelete) {
                 try {
                   await github.rest.actions.deleteActionsCacheById({
@@ -53,7 +51,6 @@ jobs:
             } catch (error) {
               console.log(`Error in cache cleanup: ${error.message}`);
             }
-
   build:
     if: github.actor != 'dependabot[bot]'
     runs-on: self-hosted
@@ -92,9 +89,34 @@ jobs:
           find app/build/outputs/apk -name "*.apk" -type f | sort
           echo "Directory structure:"
           ls -la app/build/outputs/apk/${{ matrix.abi }}/release/
+      - name: Sign APKs
+        uses: ilharp/sign-android-release@v2.0.0
+        with:
+          releaseDir: app/build/outputs/apk/${{ matrix.abi }}/release
+          signingKey: ${{ secrets.RELEASE_KEYSTORE }}
+          keyAlias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
 
+      - name: List signed APKs
+        run: |
+          echo "Signed APKs:"
+          find app/build/outputs/apk/${{ matrix.abi }}/release -name "*-signed.apk" -type f | sort
+      - name: Organize signed APKs
+        run: |
+          mkdir -p app/build/outputs/apk/${{ matrix.abi }}/release/out
+          signed_apk=$(find app/build/outputs/apk/${{ matrix.abi }}/release -name "*-signed.apk" | head -1)
+          if [ -f "$signed_apk" ]; then
+            cp "$signed_apk" "app/build/outputs/apk/${{ matrix.abi }}/release/out/app-${{ matrix.abi }}-release.apk"
+            echo "Moved signed APK: $signed_apk"
+          else
+            echo "No signed APK found!"
+            exit 1
+          fi
+          echo "Final APKs in out directory:"
+          ls -la app/build/outputs/apk/${{ matrix.abi }}/release/out/
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.abi }}-release
-          path: "app/build/outputs/apk/${{ matrix.abi }}/release/*"
+          path: "app/build/outputs/apk/${{ matrix.abi }}/release/out/*"
