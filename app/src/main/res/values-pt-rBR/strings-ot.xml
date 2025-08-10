@@ -196,7 +196,7 @@
     <string name="disable_lm_confirm">Ten certeza que quer desativar todos os recursos de mídia local?</string>
     <string name="oobe_local_media_title">Mídia local</string>
     <string name="oobe_cross_platform_sync_description">Mantenha sua música em harmonia entre dispositivos</string>
-    <string name="oobe_ad_free_exp">Experiência sem anúncios</string>
+    <string name="oobe_ad_free_exp">Sem anúncios do YouTube</string>
     <string name="oobe_local_media_subtitle">Selecione as pastas que contém suas músicas. Iremos buscar músicas nelas para importar.</string>
     <string name="clear_downloads_confirm">Tem certeza que quer remover todos os downloads? Somente downloads na pasta principal de downloads principal serão removidos.</string>
     <string name="clear_image_cache_confirm">Tem certeza que quer limpar a cache de imagens? Todas as miniaturas de álbuns serão removidas.</string>
@@ -218,4 +218,10 @@
     <string name="m3u_import_failed">Nenhuma música encontrada. Arquivo M3U inválido, ou nenhuma correspondência das músicas foi encontrada</string>
     <string name="tap_show_more">Toque para mostrar mais informações</string>
     <string name="lyrics_synced_clickable">Letras clicáveis</string>
+    <string name="sort_by_track_number">Número da faixa</string>
+    <string name="bits_per_sample">Bits por amostra</string>
+    <string name="disc_number">Número do disco</string>
+    <string name="extra_details">Detalhes extras</string>
+    <string name="file_path">Caminho do arquivo</string>
+    <string name="track_number">Número da faixa</string>
 </resources>
