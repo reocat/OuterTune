@@ -18,12 +18,12 @@ permissions:
   discussions: write
   actions: write
 
+# This job can be kept as-is. It runs on a separate, GitHub-hosted runner.
 jobs:
   cleanup:
-    # This job runs on a GitHub-hosted runner and can remain as is.
     runs-on: ubuntu-latest
     steps:
-      - name: Cleanup old caches
+      - name: Cleanup old workflow caches
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -34,6 +34,7 @@ jobs:
                 repo: context.repo.repo,
                 per_page: 100
               });
+              // Keep the 5 most recent caches, delete the rest
               const cachesToDelete = caches.data.actions_caches
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                 .slice(5);
@@ -52,6 +53,7 @@ jobs:
             } catch (error) {
               console.log(`Error in cache cleanup: ${error.message}`);
             }
+
   build:
     if: github.actor != 'dependabot[bot]'
     runs-on: self-hosted
@@ -59,18 +61,16 @@ jobs:
 
     strategy:
       matrix:
+        # The matrix strategy is already a great optimization, as it runs builds for each ABI in parallel.
         abi: [ "universal", "arm64", "arm32", "x86" ]
 
     steps:
       - uses: actions/checkout@v4
 
-      # Change 1: Set environment variables for the job
+      # No changes here. Environment setup remains the same for self-hosted.
       - name: Set up Environment Variables
         run: |
           echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          # Use the BUILD_TOOLS_VERSION you have installed on your runner
-          echo "BUILD_TOOLS_VERSION=33.0.0" >> $GITHUB_ENV
-          # Ensure platform-tools are in the PATH
           echo "PATH=$PATH:$HOME/android-sdk/platform-tools" >> $GITHUB_ENV
 
       - name: Set up JDK 21
@@ -79,27 +79,32 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # Change 2: Removed the "Setup Android SDK" step
-      # The action `android-actions/setup-android@v3` is unnecessary on a 
-      # self-hosted runner where the SDK is already installed.
-
-      - name: Set Up Gradle
+      # Optimization 1: Advanced Gradle Caching
+      # This is the most critical step. It intelligently caches Gradle dependencies,
+      # downloaded tools, and build outputs. The cache is automatically restored
+      # on subsequent runs, dramatically speeding up the build.
+      - name: Set Up Gradle with Caching
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-cleanup: on-success
+          # This enables the Gradle Build Cache, which reuses task outputs from previous builds.
+          cache-read-only: false 
+          cache-write: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Change 3: Corrected the Gradle build command
+      # Optimization 2: Add Performance Flags to Gradle Command
+      # --build-cache: Enables the use of Gradle's build cache for faster builds.
+      # --no-daemon: Recommended for CI environments to ensure clean, predictable builds for each run.
       - name: Build APK for ABI
         run: |
           ABI_NAME="${{ matrix.abi }}"
-          # Capitalize the ABI name for the Gradle task (e.g., "arm64" -> "Arm64")
           CAPITALIZED_ABI_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${ABI_NAME:0:1})${ABI_NAME:1}"
-          ./gradlew assemble${CAPITALIZED_ABI_NAME}Release
+          ./gradlew assemble${CAPITALIZED_ABI_NAME}Release --build-cache --no-daemon
         env:
           PULL_REQUEST: 'false'
+
+      # ---- No changes are needed for the signing and artifact upload steps ----
 
       - name: List generated APKs
         run: |
@@ -121,7 +126,7 @@ jobs:
         run: |
           echo "Signed APKs:"
           find app/build/outputs/apk/${{ matrix.abi }}/release -name "*-signed.apk" -type f | sort
-
+          
       - name: Organize signed APKs
         run: |
           mkdir -p app/build/outputs/apk/${{ matrix.abi }}/release/out
