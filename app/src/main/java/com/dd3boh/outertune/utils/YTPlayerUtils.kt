@@ -16,7 +16,6 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5_SIMPLY_EMB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_CREATOR
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
-import com.dd3boh.outertune.utils.CurrentClientHolder
 import com.zionhuang.innertube.models.response.PlayerResponse
 import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient

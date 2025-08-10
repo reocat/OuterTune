@@ -61,6 +61,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="sort_by_track_number">Track number</string>
 
     <!-- Dialog -->
+    <string name="bits_per_sample">Bits per sample</string>
     <string name="create_sync_playlist">Sync Playlist</string>
     <string name="create_sync_playlist_description">Note: This allows for syncing with YouTube Music. This is NOT changeable later. You cannot add local songs to synced playlists.</string>
     <string name="disc_number">Disc number</string>

@@ -116,15 +116,23 @@ class DownloadUtil @Inject constructor(
         }.getOrThrow()
         val format = playbackData.format
 
+        // Derive codecs string and attempt to parse PCM bit depth (e.g., pcm_s16le -> 16)
+        val codecsStr = format.mimeType.split("codecs=")[1].removeSurrounding("\"")
+        val bitsPerSample = run {
+            val m = Regex("pcm_s(\\d+)", RegexOption.IGNORE_CASE).find(codecsStr)
+            m?.groupValues?.getOrNull(1)?.toIntOrNull()
+        }
+
         database.query {
             upsert(
                 FormatEntity(
                     id = mediaId,
                     itag = format.itag,
                     mimeType = format.mimeType.split(";")[0],
-                    codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                    codecs = codecsStr,
                     bitrate = format.bitrate,
                     sampleRate = format.audioSampleRate,
+                    bitsPerSample = bitsPerSample,
                     contentLength = format.contentLength!!,
                     loudnessDb = playbackData.audioConfig?.loudnessDb,
                     playbackTrackingUrl = playbackData.streamUrl

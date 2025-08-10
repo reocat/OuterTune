@@ -45,6 +45,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -90,7 +91,9 @@ import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.viewmodels.ImportFromSpotifyViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
 fun ImportFromSpotifyScreen(
     navController: NavController,
@@ -141,7 +144,7 @@ fun ImportFromSpotifyScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.spot_import_title)) },
                 navigationIcon = {
-                    com.dd3boh.outertune.ui.component.IconButton(
+                    com.dd3boh.outertune.ui.component.button.IconButton(
                         onClick = navController::navigateUp,
                         onLongClick = navController::backToMain
                     ) {

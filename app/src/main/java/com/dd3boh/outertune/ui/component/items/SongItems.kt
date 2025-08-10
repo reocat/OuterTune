@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.OfflinePin
+import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.OfflinePin
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -168,7 +168,7 @@ fun SongListItem(
                         }
                     ) {
                         Icon(
-                            Icons.Rounded.MoreVert,
+                            Icons.Outlined.MoreVert,
                             contentDescription = null
                         )
                     }
@@ -180,7 +180,7 @@ fun SongListItem(
                         modifier = dragHandleModifier
                     ) {
                         Icon(
-                            Icons.Rounded.DragHandle,
+                            Icons.Outlined.DragHandle,
                             contentDescription = null
                         )
                     }
@@ -231,7 +231,7 @@ fun SongFolderItem(
 ) = ListItem(
     title = folderTitle, thumbnailContent = {
         Icon(
-            Icons.Rounded.Folder,
+            Icons.Outlined.Folder,
             contentDescription = null,
             modifier = modifier.size(48.dp)
         )
@@ -249,7 +249,7 @@ fun SongFolderItem(
     subtitle = subtitle,
     thumbnailContent = {
         Icon(
-            Icons.Rounded.Folder,
+            Icons.Outlined.Folder,
             contentDescription = null,
             modifier = modifier.size(48.dp)
         )
@@ -284,7 +284,7 @@ fun SongFolderItem(
         subtitle = subtitle ?: pluralStringResource(R.plurals.n_song, subDirSongCount, subDirSongCount),
         thumbnailContent = {
             Icon(
-                Icons.Rounded.Folder,
+                Icons.Outlined.Folder,
                 contentDescription = null,
                 modifier = modifier.size(48.dp)
             )
@@ -304,7 +304,7 @@ fun SongFolderItem(
                 }
             ) {
                 Icon(
-                    Icons.Rounded.MoreVert,
+                    Icons.Outlined.MoreVert,
                     contentDescription = null
                 )
             }
@@ -344,7 +344,7 @@ fun SongGridItem(
             val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
             when (download?.state) {
                 Download.STATE_COMPLETED -> Icon(
-                    imageVector = Icons.Rounded.OfflinePin,
+                    imageVector = Icons.Outlined.OfflinePin,
                     contentDescription = null,
                     modifier = Modifier
                         .size(18.dp)

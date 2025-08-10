@@ -54,11 +54,11 @@ import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.FloatingFooter
-import com.dd3boh.outertune.ui.component.button.IconButton
-import com.dd3boh.outertune.ui.component.LazyColumnScrollbar
+import com.dd3boh.outertune.ui.component.HideOnScrollFAB
 import com.dd3boh.outertune.ui.component.SelectHeader
-import com.dd3boh.outertune.ui.component.items.SongListItem
 import com.dd3boh.outertune.ui.component.SortHeader
+import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.component.items.SongListItem
 import com.dd3boh.outertune.ui.menu.ActionDropdown
 import com.dd3boh.outertune.ui.menu.DropdownItem
 import com.dd3boh.outertune.ui.utils.backToMain
@@ -157,7 +157,7 @@ fun ArtistSongsScreen(
                             actions = listOf(
                                 DropdownItem(
                                     title = stringResource(R.string.shuffle),
-                                    leadingIcon = { Icon(Icons.Rounded.Shuffle, null) },
+                                    leadingIcon = { Icon(Icons.Outlined.Shuffle, null) },
                                     action = {
                                         playerConnection.playQueue(
                                             ListQueue(

@@ -81,7 +81,6 @@ import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.MiniPlayerHeight
-import com.dd3boh.outertune.ui.theme.isPureBlackEnabled
 import com.dd3boh.outertune.constants.SwipeSensitivityKey
 import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
@@ -89,6 +88,11 @@ import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.theme.isPureBlackEnabled
+import com.dd3boh.outertune.utils.rememberPreference
+import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 @Composable
 fun MiniPlayer(

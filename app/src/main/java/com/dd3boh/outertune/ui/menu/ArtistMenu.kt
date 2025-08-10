@@ -27,8 +27,8 @@ import com.dd3boh.outertune.constants.ArtistSongSortType
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.playback.queues.ListQueue
-import com.dd3boh.outertune.ui.component.items.ArtistListItem
 import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.component.items.ArtistListItem
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

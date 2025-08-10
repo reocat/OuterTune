@@ -1,4 +1,4 @@
-package com.dd3boh.outertune.ui.component
+package com.dd3boh.outertune.ui.dialog
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

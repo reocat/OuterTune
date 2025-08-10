@@ -26,6 +26,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Player.EVENT_MEDIA_ITEM_TRANSITION
 import androidx.media3.common.Player.EVENT_POSITION_DISCONTINUITY
 import androidx.media3.common.Player.EVENT_TIMELINE_CHANGED
 import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_AUTO
@@ -55,7 +56,6 @@ import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.session.CommandButton
-import androidx.media3.session.CommandButton.ICON_UNDEFINED
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
@@ -79,7 +79,6 @@ import com.dd3boh.outertune.constants.PauseListenHistoryKey
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.constants.PlayerVolumeKey
 import com.dd3boh.outertune.constants.RepeatModeKey
-import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.SkipOnErrorKey
 import com.dd3boh.outertune.constants.SkipSilenceKey
 import com.dd3boh.outertune.constants.minPlaybackDurKey
@@ -131,7 +130,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -537,12 +535,7 @@ class MusicService : MediaLibraryService(),
                         else
                             R.string.action_shuffle_on
                     ))
-                    .setCustomIconResId(
-                        if (queueBoard.getCurrentQueue()?.shuffled == true)
-                            R.drawable.shuffle_on
-                        else
-                            R.drawable.shuffle
-                    )
+                    .setCustomIconResId(if (player.shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle_off)
                     .setSessionCommand(CommandToggleShuffle)
                     .setCustomIconResId(if (player.shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle_off)
                     .build(),
@@ -560,8 +553,8 @@ class MusicService : MediaLibraryService(),
                     )
                     .setCustomIconResId(
                         when (player.repeatMode) {
-                            REPEAT_MODE_OFF -> R.drawable.repeat
-                            REPEAT_MODE_ONE -> R.drawable.repeat_one_on
+                            REPEAT_MODE_OFF -> R.drawable.repeat_off
+                            REPEAT_MODE_ONE -> R.drawable.repeat_one
                             REPEAT_MODE_ALL -> R.drawable.repeat_on
                             else -> throw IllegalStateException()
                         }
@@ -822,7 +815,7 @@ class MusicService : MediaLibraryService(),
                 }
             }
             // Send empty activity to the Discord RPC if the player is not playing
-            else if (!events.containsAny(Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_MEDIA_ITEM_TRANSITION)){
+            else if (!events.containsAny(EVENT_POSITION_DISCONTINUITY, EVENT_MEDIA_ITEM_TRANSITION)) {
                 scope.launch {
                     discordRpc?.stopActivity()
                 }
@@ -936,9 +929,14 @@ class MusicService : MediaLibraryService(),
                             id = mediaId,
                             itag = format.itag,
                             mimeType = format.mimeType.split(";")[0],
-                            codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                            codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\"") ,
                             bitrate = format.bitrate,
                             sampleRate = format.audioSampleRate,
+                            bitsPerSample = run {
+                                val codecsStr = format.mimeType.split("codecs=")[1].removeSurrounding("\"")
+                                val m = Regex("pcm_s(\\d+)", RegexOption.IGNORE_CASE).find(codecsStr)
+                                m?.groupValues?.getOrNull(1)?.toIntOrNull()
+                            },
                             contentLength = format.contentLength!!,
                             loudnessDb = playbackData.audioConfig?.loudnessDb,
                             playbackTrackingUrl = playbackData.streamUrl
@@ -978,7 +976,7 @@ class MusicService : MediaLibraryService(),
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         val q = queueBoard.getCurrentQueue()
-        player.shuffleOrder = ShuffleOrder.UnshuffledShuffleOrder(player.mediaItemCount)
+        player.setShuffleOrder(ShuffleOrder.UnshuffledShuffleOrder(player.mediaItemCount))
         if (q == null || q.shuffled == shuffleModeEnabled) return
         triggerShuffle()
     }

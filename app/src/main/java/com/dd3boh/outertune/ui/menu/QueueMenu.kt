@@ -74,7 +74,7 @@ fun QueueMenu(
             showChoosePlaylistDialog = true
         }
         GridMenuItem(
-            icon = Icons.AutoMirrored.Rounded.PlaylistAdd,
+            icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
             title = R.string.edit
         ) {
             showEditDialog = true

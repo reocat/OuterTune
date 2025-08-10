@@ -16,6 +16,7 @@ import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.ui.utils.uninitializedDirectoryTree
 import com.dd3boh.outertune.utils.fixFilePath
+import com.dd3boh.outertune.utils.numberToAlpha
 import timber.log.Timber
 import java.time.ZoneOffset
 
@@ -92,12 +93,16 @@ class DirectoryTree(path: String, var culmSongs: CulmSongs) {
         var existingSubdir: DirectoryTree? = subdirs.fastFirstOrNull { it.currentDir == subdirPath }
         if (existingSubdir == null) {
             val tree = DirectoryTree(subdirPath, culmSongs)
-            tree.parent = if (parent == "") {
-                currentDir
-            } else if (parent == "/") {
-                "/$currentDir"
-            } else {
-                "$parent/$currentDir"
+            tree.parent = when (parent) {
+                "" -> {
+                    currentDir
+                }
+                "/" -> {
+                    "/$currentDir"
+                }
+                else -> {
+                    "$parent/$currentDir"
+                }
             }
             tree.insert(tmpPath.substringAfter('/'), song)
             subdirs.add(tree)
@@ -178,7 +183,7 @@ class DirectoryTree(path: String, var culmSongs: CulmSongs) {
         val songs = files.toMutableList()
 
         // sort songs. Ignore any subfolder structure
-        songs.sortBy {
+        songs.sortBy { it ->
             when (sortType) {
                 FolderSongSortType.CREATE_DATE -> numberToAlpha(it.song.inLibrary?.toEpochSecond(ZoneOffset.UTC) ?: -1L)
                 FolderSongSortType.MODIFIED_DATE -> numberToAlpha(it.song.getDateModifiedLong() ?: -1L)
@@ -285,7 +290,7 @@ class DirectoryTree(path: String, var culmSongs: CulmSongs) {
         // get full path of blank folders
         // subdir size is 1, and filesize is 0
 
-        if (subdirs.size != 1 && files.size != 0) {
+        if (subdirs.size != 1 && files.isNotEmpty()) {
             return currentDir
         } else {
             var ret = ""

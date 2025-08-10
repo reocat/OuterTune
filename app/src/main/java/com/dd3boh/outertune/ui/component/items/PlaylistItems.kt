@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CloudOff
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.EditOff
-import androidx.compose.material.icons.rounded.OfflinePin
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.EditOff
+import androidx.compose.material.icons.outlined.OfflinePin
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -124,7 +124,7 @@ fun PlaylistListItem(
             getNSongsString(playlist.songCount, playlist.downloadCount),
     badges = {
         Icon(
-            imageVector = if (playlist.playlist.isEditable) Icons.Rounded.Edit else Icons.Rounded.EditOff,
+            imageVector = if (playlist.playlist.isEditable) Icons.Outlined.Edit else Icons.Outlined.EditOff,
             contentDescription = null,
             modifier = Modifier.Companion
                 .size(18.dp)
@@ -133,7 +133,7 @@ fun PlaylistListItem(
 
         if (playlist.playlist.isLocal) {
             Icon(
-                imageVector = Icons.Rounded.CloudOff,
+                imageVector = Icons.Outlined.CloudOff,
                 contentDescription = null,
                 modifier = Modifier.Companion
                     .size(18.dp)
@@ -143,7 +143,7 @@ fun PlaylistListItem(
 
         if (playlist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier.Companion
                     .size(18.dp)
@@ -184,7 +184,7 @@ fun PlaylistGridItem(
     badges = {
         if (playlist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier.Companion
                     .size(18.dp)

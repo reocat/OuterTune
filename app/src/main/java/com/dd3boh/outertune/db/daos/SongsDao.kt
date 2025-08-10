@@ -121,12 +121,8 @@ interface SongsDao {
     """)
     fun songsByArtistAsc(): Flow<List<Song>>
     
-    @Transaction
-    @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY totalPlayTime")
-    fun songsByPlayTimeAsc(): Flow<List<Song>>
-
-    @Transaction
     @RewriteQueriesToDropUnusedColumns
+    @Transaction
     @Query("""
         SELECT song.*, (SELECT SUM(playCount.count) 
             FROM playCount 
@@ -239,10 +235,6 @@ interface SongsDao {
         ) COLLATE NOCASE
     """)
     fun likedSongsByArtistAsc(): Flow<List<Song>>
-
-    @Transaction
-    @Query("SELECT * FROM song WHERE liked ORDER BY totalPlayTime")
-    fun likedSongsByPlayTimeAsc(): Flow<List<Song>>
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
@@ -364,10 +356,6 @@ interface SongsDao {
     // region Updates
     @Update
     fun update(song: SongEntity)
-
-    @Transaction
-    @Query("UPDATE song SET totalPlayTime = totalPlayTime + :playTime WHERE id = :songId")
-    fun incrementTotalPlayTime(songId: String, playTime: Long)
 
     @Transaction
     @Query("UPDATE playCount SET count = count + 1 WHERE song = :songId AND year = :year AND month = :month")

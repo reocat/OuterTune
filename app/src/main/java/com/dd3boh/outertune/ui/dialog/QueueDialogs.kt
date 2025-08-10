@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,9 +29,6 @@ import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.models.MultiQueueObject
 import com.dd3boh.outertune.ui.component.items.ListItem
 import com.dd3boh.outertune.ui.component.items.QueueListItem
-import com.zionhuang.innertube.YouTube
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun AddToQueueDialog(
@@ -109,7 +107,7 @@ fun EditQueueDialog(
     val playerConnection = LocalPlayerConnection.current
 
     TextFieldDialog(
-        icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
+        icon = { Icon(imageVector = Icons.Outlined.Edit, contentDescription = null) },
         title = { Text(text = stringResource(R.string.edit_playlist)) },
         onDismiss = onDismiss,
         initialTextFieldValue = TextFieldValue(

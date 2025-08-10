@@ -16,6 +16,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import coil3.imageLoader
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
@@ -30,7 +31,6 @@ import kotlinx.coroutines.guava.future
 import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 import kotlin.math.min
-import androidx.core.graphics.createBitmap
 
 class CoilBitmapLoader @Inject constructor(
     private val context: Context,

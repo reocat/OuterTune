@@ -6,6 +6,7 @@ import com.dd3boh.outertune.constants.LYRIC_FETCH_TIMEOUT
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.lyrics.LyricsHelper
 import com.dd3boh.outertune.lyrics.LyricsResult
+import com.dd3boh.outertune.models.LyricsData
 import com.dd3boh.outertune.models.MediaMetadata
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.akanework.gramophone.logic.utils.SemanticLyrics
-import com.dd3boh.outertune.models.LyricsData
 import timber.log.Timber
 import javax.inject.Inject
 

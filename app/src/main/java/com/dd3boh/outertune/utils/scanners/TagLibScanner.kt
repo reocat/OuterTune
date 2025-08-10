@@ -56,6 +56,7 @@ class TagLibScanner : MetadataScanner {
             var channels: Int
             var rawDuration: Int
             var replayGain: Double? = null
+            var bitsPerSample: Int? = null
 
             var extraData: String = "" // extra data field
             var allData = "" // for debugging
@@ -71,6 +72,14 @@ class TagLibScanner : MetadataScanner {
             sampleRate = audioProperties.sampleRate
             bitrate = audioProperties.bitrate * 1000
             codec = audioProperties.codec
+
+            // Heuristic: for PCM codecs like "pcm_s16le", extract the number as bits-per-sample
+            runCatching {
+                val regex = Regex("pcm_s(\\d+)", RegexOption.IGNORE_CASE)
+                val match = regex.find(codec)
+                val parsed = match?.groupValues?.getOrNull(1)?.toIntOrNull()
+                if (parsed != null && parsed > 0) bitsPerSample = parsed
+            }
 
 
             // Read metadata
@@ -96,6 +105,12 @@ class TagLibScanner : MetadataScanner {
                             splitArtists.forEach { artistVal ->
                                 artistList.add(ArtistEntity(ArtistEntity.generateArtistId(), artistVal, isLocal = true))
                             }
+                        }
+
+                        "BITS_PER_SAMPLE", "bits_per_sample", "BITSPERSAMPLE", "bitsPerSample", "BITS" -> {
+                            val v = it.trim().filter { ch -> ch.isDigit() }
+                            val bp = v.toIntOrNull()
+                            if (bp != null && bp > 0) bitsPerSample = bp
                         }
 
                         "ALBUM", "album" -> albumName = it
@@ -226,6 +241,7 @@ class TagLibScanner : MetadataScanner {
                     codecs = codec,
                     bitrate = bitrate,
                     sampleRate = sampleRate,
+                    bitsPerSample = bitsPerSample,
                     contentLength = duration,
                     extraComment = if (!extraData.isBlank()) extraData else null,
                 )

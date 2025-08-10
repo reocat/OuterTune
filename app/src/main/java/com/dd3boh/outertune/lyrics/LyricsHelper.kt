@@ -8,8 +8,8 @@ import com.dd3boh.outertune.constants.MultilineLrcKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
-import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.LyricsData
+import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.reportException

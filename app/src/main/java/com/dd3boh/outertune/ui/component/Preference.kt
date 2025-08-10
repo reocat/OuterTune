@@ -14,16 +14,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -35,11 +40,125 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.dd3boh.outertune.ui.dialog.ListDialog
 import com.dd3boh.outertune.ui.dialog.TextFieldDialog
+import com.dd3boh.outertune.ui.screens.settings.IconType
+import com.dd3boh.outertune.ui.screens.settings.SettingsItem
+
+private val PREFERENCE_CARD_SPACING = 2.dp
+
+@Composable
+fun PreferenceItem(
+    modifier: Modifier = Modifier,
+    title: @Composable () -> Unit,
+    description: String? = null,
+    icon: (@Composable () -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
+    isEnabled: Boolean = true,
+    isFirst: Boolean = false,
+    isLast: Boolean = false,
+    isMiddle: Boolean = false
+) {
+    val cardShape = when {
+        isFirst -> RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
+        isLast -> RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 16.dp, bottomEnd = 16.dp)
+        isMiddle -> RoundedCornerShape(0.dp)
+        else -> RoundedCornerShape(16.dp)
+    }
+
+    Column {
+        Card(
+            shape = cardShape,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            modifier = modifier
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        enabled = isEnabled && onClick != null,
+                        onClick = onClick ?: {}
+                    )
+                    .alpha(if (isEnabled) 1f else 0.5f)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+            ) {
+                if (icon != null) {
+                    Box(modifier = Modifier.padding(horizontal = 4.dp)) {
+                        icon()
+                    }
+                    Spacer(Modifier.width(12.dp))
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+                        title()
+                    }
+                    if (description != null) {
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                if (trailingContent != null) {
+                    Spacer(Modifier.width(12.dp))
+                    trailingContent()
+                }
+            }
+        }
+
+        if (!isLast && (isFirst || isMiddle)) {
+            Spacer(modifier = Modifier.height(PREFERENCE_CARD_SPACING))
+        }
+    }
+}
+
+@Composable
+fun SettingsScreenSection(
+    section: com.dd3boh.outertune.ui.screens.settings.SettingsSection,
+    navController: androidx.navigation.NavController,
+    showBadge: Boolean = false,
+    onUpdateClick: (() -> Unit)? = null
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        section.items.forEachIndexed { index, item ->
+            val isSingle = section.items.size == 1
+            val isFirst = index == 0 && !isSingle
+            val isLast = index == section.items.lastIndex && !isSingle
+
+
+            SettingsScreenItem(
+                item = item,
+                onClick = {
+                    if (onUpdateClick != null && item.route.isEmpty()) {
+                        onUpdateClick()
+                    } else {
+                        navController.navigate(item.route)
+                    }
+                },
+                showBadge = showBadge && item.icon is IconType.Vector && item.icon.imageVector == Icons.Outlined.Update,
+                isFirst = isFirst,
+                isLast = isLast,
+                isSingle = isSingle
+            )
+        }
+    }
+}
 
 @Composable
 fun PreferenceEntry(

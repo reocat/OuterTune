@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,17 +27,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.ConfirmationNumber
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material.icons.outlined.TextRotationAngledown
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,14 +64,13 @@ import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DevSettingsKey
 import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
-import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.ColumnWithContentPadding
-import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
+import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
@@ -92,7 +90,6 @@ fun ExperimentalSettings(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val database = LocalDatabase.current
-    val haptic = LocalHapticFeedback.current
     val imageCache = LocalImageCache.current
 
     // state variables and such
@@ -100,9 +97,6 @@ fun ExperimentalSettings(
 
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
     val (oobeStatus, onOobeStatusChange) = rememberPreference(OobeStatusKey, defaultValue = 0)
-
-    val (lyricUpdateSpeed, onLyricsUpdateSpeedChange) = rememberEnumPreference(LyricUpdateSpeed, Speed.MEDIUM)
-    val (lyricsFancy, onLyricsFancyChange) = rememberPreference(LyricKaraokeEnable, false)
 
     var nukeEnabled by remember {
         mutableStateOf(false)
@@ -133,46 +127,17 @@ fun ExperimentalSettings(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-
-        SwitchPreference(
-            title = { Text(stringResource(R.string.lyrics_karaoke_title)) },
-            description = stringResource(R.string.lyrics_karaoke_description),
-            icon = { Icon(Icons.Outlined.TextRotationAngledown, null) },
-            checked = lyricsFancy,
-            onCheckedChange = onLyricsFancyChange,
-            isFirst = true
-        )
-
-        ListPreference(
-            title = { Text(stringResource(R.string.lyrics_karaoke_hz_title)) },
-            icon = { Icon(Icons.Outlined.Speed, null) },
-            selectedValue = lyricUpdateSpeed,
-            onValueSelected = onLyricsUpdateSpeedChange,
-            values = Speed.entries,
-            valueText = {
-                when (it) {
-                    Speed.SLOW -> stringResource(R.string.speed_slow)
-                    Speed.MEDIUM -> stringResource(R.string.speed_medium)
-                    Speed.FAST -> stringResource(R.string.speed_fast)
-                }
-            },
-            isEnabled = lyricsFancy,
-            isLast = true
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-
         PreferenceGroupTitle(
             title = stringResource(R.string.settings_debug)
         )
         PreferenceEntry(
             title = { Text("Flush local image cache") },
-            icon = { Icon(Icons.Rounded.Delete, null) },
+            icon = { Icon(Icons.Outlined.Delete, null) },
             onClick = {
                 imageCache.purgeCache()
             }
         )
+        Spacer(modifier = Modifier.height(12.dp))
 
         // dev settings
         SwitchPreference(
@@ -251,7 +216,8 @@ fun ExperimentalSettings(
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeLocalData()}")
                         }
-                    }
+                    },
+                    isFirst = true
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke local artists") },
@@ -268,7 +234,8 @@ fun ExperimentalSettings(
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeLocalArtists()}")
                         }
-                    }
+                    },
+                    isMiddle = true
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke dangling format entities") },
@@ -285,7 +252,8 @@ fun ExperimentalSettings(
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeDanglingFormatEntities()}")
                         }
-                    }
+                    },
+                    isMiddle = true
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke local db lyrics") },
@@ -302,7 +270,8 @@ fun ExperimentalSettings(
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeLocalLyrics()}")
                         }
-                    }
+                    },
+                    isMiddle = true
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke dangling db lyrics") },
@@ -319,7 +288,8 @@ fun ExperimentalSettings(
                             Timber.tag("Settings")
                                 .i("Nuke database status:  ${database.nukeDanglingLyrics()}")
                         }
-                    }
+                    },
+                    isMiddle = true
                 )
                 PreferenceEntry(
                     title = { Text("DEBUG: Nuke remote playlists") },
@@ -336,7 +306,8 @@ fun ExperimentalSettings(
                             Timber.tag("Settings")
                                 .d("Nuke database status:  ${database.nukeRemotePlaylists()}")
                         }
-                    }
+                    },
+                    isLast = true
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -388,20 +359,6 @@ fun ExperimentalSettings(
         windowInsets = TopBarInsets,
         scrollBehavior = scrollBehavior
     )
-}
-
-@Composable
-fun SyncProgressItem(text: String, isSyncing: Boolean) {
-    if (isSyncing) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        ) {
-            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-            Spacer(Modifier.width(12.dp))
-            Text(text)
-        }
-    }
 }
 
 @Composable

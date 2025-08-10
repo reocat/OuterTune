@@ -11,6 +11,7 @@ package com.dd3boh.outertune.ui.dialog
 
 import android.content.ClipData
 import android.text.format.Formatter
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -38,7 +39,9 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -53,20 +56,21 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -80,11 +84,11 @@ import com.dd3boh.outertune.constants.DialogCornerRadius
 import com.dd3boh.outertune.constants.SNACKBAR_VERY_SHORT
 import com.dd3boh.outertune.db.entities.FormatEntity
 import com.dd3boh.outertune.models.MediaMetadata
-import com.dd3boh.outertune.ui.component.button.IconButton
-import com.dd3boh.outertune.ui.component.LazyColumnScrollbar
+import com.dd3boh.outertune.utils.CurrentClientHolder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.math.roundToInt
 
 @Composable
 fun DefaultDialog(
@@ -347,136 +351,137 @@ fun ActionPromptDialog(
     }
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CounterDialog(
+fun SliderDialog(
     title: String,
     description: String? = null,
     initialValue: Int,
-    upperBound: Int = 100,
-    lowerBound: Int = 0,
-    unitDisplay: String = "",
+    defaultValue: Int,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int = 0,
+    valueSuffix: String = "",
+    previewContent: @Composable ((Int) -> Unit)? = null,
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
-    onReset: (() -> Unit)? = null,
-    onCancel: (() -> Unit)? = null,
-) = BasicAlertDialog(
-    onDismissRequest = { onDismiss() },
-    content = {
-        val tempValue = rememberSaveable {
-            mutableIntStateOf(initialValue)
-        }
-        Column(
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.background,
-                    RoundedCornerShape(DialogCornerRadius)
-                )
-                .fillMaxWidth(0.8f)
-                .padding(16.dp)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                // title and description
-                Text(
-                    text = title,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                if (description != null) {
+    onReset: (() -> Unit)? = null
+) {
+    var currentValue by remember { mutableFloatStateOf(initialValue.toFloat()) }
+
+    val previewOpacity by animateFloatAsState(
+        targetValue = if (currentValue == initialValue.toFloat()) 0.6f else 1f,
+        label = "preview opacity"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth(0.8f),
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(if (description != null) 16.dp else 4.dp)
+            ) {
+                // Optional description
+                description?.let {
                     Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                // Optional preview content
+                previewContent?.let { preview ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .alpha(previewOpacity)
+                    ) {
+                        preview(currentValue.roundToInt())
+                    }
+                }
+
+                // Slider
+                Slider(
+                    value = currentValue,
+                    onValueChange = { currentValue = it },
+                    valueRange = valueRange,
+                    steps = steps,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+
+                // Value controls
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilledTonalIconButton(
+                        onClick = {
+                            currentValue = (currentValue - 1).coerceAtLeast(valueRange.start)
+                        },
+                        enabled = currentValue > valueRange.start
+                    ) {
+                        Text("-", style = MaterialTheme.typography.titleLarge)
+                    }
+                    Text(
+                        text = "${currentValue.roundToInt()}$valueSuffix",
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
-                }
-
-                // plus minus buttons
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
+                    FilledTonalIconButton(
                         onClick = {
-                            if (tempValue.intValue < upperBound) {
-                                tempValue.intValue += 1
-                            }
+                            currentValue = (currentValue + 1).coerceAtMost(valueRange.endInclusive)
                         },
+                        enabled = currentValue < valueRange.endInclusive
                     ) {
-                        Text(
-                            text = "+",
-//                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-
-
-                    IconButton(
-                        onClick = {
-                            if (tempValue.intValue > lowerBound) {
-                                tempValue.intValue -= 1
-                            }
-                        },
-                    ) {
-                        Text(
-                            text = "—",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge
-                        )
+                        Text("+", style = MaterialTheme.typography.titleLarge)
                     }
                 }
-
-                // slider and value display
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "${tempValue.intValue}$unitDisplay",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-                    Slider(
-                        value = tempValue.intValue.toFloat(),
-                        onValueChange = { tempValue.intValue = it.toInt() },
-                        valueRange = lowerBound.toFloat()..upperBound.toFloat()
-                    )
-                }
-
-                // bottom options
-                // always have an ok, but explicit cancel/reset is optional
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (onReset != null)
-                        Row(modifier = Modifier.weight(1f)) {
-                            TextButton(
-                                onClick = { onReset() },
-                            ) {
-                                Text(stringResource(R.string.reset))
-                            }
-                        }
-
+            }
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.padding(horizontal = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                // Reset button (only show if onReset is provided)
+                onReset?.let {
                     TextButton(
-                        onClick = { onConfirm(tempValue.intValue) }
+                        onClick = {
+                            currentValue = defaultValue.toFloat()
+                            it()
+                        },
+                        enabled = currentValue.roundToInt() != defaultValue
                     ) {
-                        Text(stringResource(android.R.string.ok))
+                        Text(stringResource(R.string.reset))
                     }
+                }
 
-                    if (onCancel != null)
-                        TextButton(
-                            onClick = { onCancel() }
-                        ) {
-                            Text(stringResource(android.R.string.cancel))
-                        }
+                Spacer(modifier = Modifier.weight(1f))
+
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+
+                Button(
+                    onClick = { onConfirm(currentValue.roundToInt()) },
+                    enabled = currentValue.roundToInt() != initialValue
+                ) {
+                    Text(stringResource(android.R.string.ok))
                 }
             }
         }
-    }
-)
+    )
+}
 
 @Composable
 fun DetailsDialog(
@@ -515,7 +520,7 @@ fun DetailsDialog(
             ) {
                 val details = mutableListOf(
                     stringResource(R.string.song_title) to mediaMetadata.title,
-                    stringResource(R.string.song_artists) to mediaMetadata.artists?.joinToString { it.name },
+                    stringResource(R.string.song_artists) to mediaMetadata.artists.joinToString { it.name },
                     stringResource(R.string.media_id) to mediaMetadata.id,
                     stringResource(R.string.play_count) to currentPlayCount.toString(),
                     stringResource(R.string.client) to CurrentClientHolder.currentClient?.clientName
@@ -540,8 +545,7 @@ fun DetailsDialog(
                         stringResource(R.string.codecs) to currentFormat?.codecs,
                         stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" },
                         stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
-                        stringResource(R.string.bits_per_sample) to (currentFormat?.bitsPerSample?.toString()
-                            ?: stringResource(R.string.unknown)),
+                        stringResource(R.string.bits_per_sample) to currentFormat?.bitsPerSample?.takeIf { it > 0 }?.toString(),
                     )
                 )
 

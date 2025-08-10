@@ -68,7 +68,7 @@ class MusicDatabase(
     fun close() = delegate.close()
 
     companion object {
-        const val MUSIC_DATABASE_VERSION = 20
+        const val MUSIC_DATABASE_VERSION = 21
     }
 }
 
@@ -115,7 +115,8 @@ class MusicDatabase(
         AutoMigration(from = 12, to = 13, spec = Migration12To13::class), // Migration from InnerTune
         AutoMigration(from = 13, to = 14), // Initial queue as database
         AutoMigration(from = 17, to = 18, spec = Migration17To18::class), // Fix Room nonsense
-        AutoMigration(from = 19, to = 20) // Playlist description and privacy status
+        AutoMigration(from = 19, to = 20, spec = Migration19To20::class),
+        AutoMigration(from = 20, to = 21)
     ]
 )
 @TypeConverters(Converters::class)
@@ -160,7 +161,6 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             val albumId: String? = null,
             val albumName: String? = null,
             val liked: Boolean = false,
-            val totalPlayTime: Long = 0, // in milliseconds
             val downloadState: Int = 0,
             val createDate: LocalDateTime = LocalDateTime.now(),
             val modifyDate: LocalDateTime = LocalDateTime.now(),
@@ -249,7 +249,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("DROP TABLE IF EXISTS artist")
         db.execSQL("DROP TABLE IF EXISTS playlist")
         db.execSQL("DROP TABLE IF EXISTS playlist_song")
-        db.execSQL("CREATE TABLE IF NOT EXISTS `song` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `duration` INTEGER NOT NULL, `thumbnailUrl` TEXT, `albumId` TEXT, `albumName` TEXT, `liked` INTEGER NOT NULL, `totalPlayTime` INTEGER NOT NULL, `isTrash` INTEGER NOT NULL, `download_state` INTEGER NOT NULL, `create_date` INTEGER NOT NULL, `modify_date` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+        db.execSQL("CREATE TABLE IF NOT EXISTS `song` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `duration` INTEGER NOT NULL, `thumbnailUrl` TEXT, `albumId` TEXT, `albumName` TEXT, `liked` INTEGER NOT NULL, `isTrash` INTEGER NOT NULL, `download_state` INTEGER NOT NULL, `create_date` INTEGER NOT NULL, `modify_date` INTEGER NOT NULL, PRIMARY KEY(`id`))")
         db.execSQL("CREATE TABLE IF NOT EXISTS `artist` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `thumbnailUrl` TEXT, `bannerUrl` TEXT, `description` TEXT, `createDate` INTEGER NOT NULL, `lastUpdateTime` INTEGER NOT NULL, PRIMARY KEY(`id`))")
         db.execSQL("CREATE TABLE IF NOT EXISTS `album` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `year` INTEGER, `thumbnailUrl` TEXT, `songCount` INTEGER NOT NULL, `duration` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `lastUpdateTime` INTEGER NOT NULL, PRIMARY KEY(`id`))")
         db.execSQL("CREATE TABLE IF NOT EXISTS `playlist` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `author` TEXT, `authorId` TEXT, `year` INTEGER, `thumbnailUrl` TEXT, `createDate` INTEGER NOT NULL, `lastUpdateTime` INTEGER NOT NULL, PRIMARY KEY(`id`))")
@@ -287,7 +287,6 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                     "title" to song.title,
                     "duration" to song.duration,
                     "liked" to song.liked,
-                    "totalPlayTime" to song.totalPlayTime,
                     "isTrash" to false,
                     "download_state" to song.downloadState,
                     "create_date" to converters.dateToTimestamp(song.createDate),

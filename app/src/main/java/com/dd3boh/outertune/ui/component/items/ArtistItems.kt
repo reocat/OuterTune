@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.OfflinePin
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.OfflinePin
 import androidx.compose.material3.Icon
@@ -39,7 +41,7 @@ fun ArtistListItem(
         // assume if they have a non local artist ID, they are not local
         if (artist.artist.isLocal) {
             Icon(
-                Icons.Rounded.CloudOff,
+                Icons.Outlined.CloudOff,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.Companion
@@ -50,7 +52,7 @@ fun ArtistListItem(
 
         if (artist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier.Companion
                     .size(18.dp)
@@ -88,7 +90,7 @@ fun ArtistGridItem(
         // assume if they have a non local artist ID, they are not local
         if (artist.artist.isLocal) {
             Icon(
-                Icons.Rounded.CloudOff,
+                Icons.Outlined.CloudOff,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.Companion
@@ -99,7 +101,7 @@ fun ArtistGridItem(
 
         if (artist.downloadCount > 0) {
             Icon(
-                imageVector = Icons.Rounded.OfflinePin,
+                imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
                 modifier = Modifier.Companion
                     .size(18.dp)
