@@ -18,8 +18,9 @@ permissions:
   discussions: write
   actions: write
 
-# This job can be kept as-is. It runs on a separate, GitHub-hosted runner.
 jobs:
+  # This job cleans up old caches to prevent using too much storage.
+  # It runs on a standard GitHub-hosted runner.
   cleanup:
     runs-on: ubuntu-latest
     steps:
@@ -54,48 +55,47 @@ jobs:
               console.log(`Error in cache cleanup: ${error.message}`);
             }
 
+  # This job builds the APKs on your self-hosted runner.
   build:
     if: github.actor != 'dependabot[bot]'
     runs-on: self-hosted
     needs: cleanup
 
+    # This strategy creates a parallel job for each ABI, speeding up the total workflow time.
     strategy:
       matrix:
-        # The matrix strategy is already a great optimization, as it runs builds for each ABI in parallel.
         abi: [ "universal", "arm64", "arm32", "x86" ]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      # No changes here. Environment setup remains the same for self-hosted.
+      # Sets the necessary environment variables for the Android SDK on your runner.
+      # Ensure the path '$HOME/android-sdk' matches your actual installation location.
       - name: Set up Environment Variables
         run: |
           echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
           echo "PATH=$PATH:$HOME/android-sdk/platform-tools" >> $GITHUB_ENV
 
+      # Sets up the specified Java version.
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # Optimization 1: Advanced Gradle Caching
-      # This is the most critical step. It intelligently caches Gradle dependencies,
-      # downloaded tools, and build outputs. The cache is automatically restored
-      # on subsequent runs, dramatically speeding up the build.
+      # OPTIMIZATION: Enables intelligent caching for Gradle.
+      # This action automatically handles saving and restoring dependencies and build outputs.
+      # No 'with' block is needed as read/write caching is enabled by default in v4.
       - name: Set Up Gradle with Caching
         uses: gradle/actions/setup-gradle@v4
-        with:
-          # This enables the Gradle Build Cache, which reuses task outputs from previous builds.
-          cache-read-only: false 
-          cache-write: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Optimization 2: Add Performance Flags to Gradle Command
-      # --build-cache: Enables the use of Gradle's build cache for faster builds.
-      # --no-daemon: Recommended for CI environments to ensure clean, predictable builds for each run.
+      # OPTIMIZATION: Runs the Gradle build.
+      # --build-cache: Enables the use of Gradle's local build cache.
+      # --no-daemon: Recommended for cleaner, more predictable builds in CI environments.
       - name: Build APK for ABI
         run: |
           ABI_NAME="${{ matrix.abi }}"
@@ -104,8 +104,6 @@ jobs:
         env:
           PULL_REQUEST: 'false'
 
-      # ---- No changes are needed for the signing and artifact upload steps ----
-
       - name: List generated APKs
         run: |
           echo "Generated APKs:"
@@ -113,6 +111,7 @@ jobs:
           echo "Directory structure:"
           ls -la app/build/outputs/apk/${{ matrix.abi }}/release/
 
+      # Signs the generated release APK.
       - name: Sign APKs
         uses: ilharp/sign-android-release@v2.0.0
         with:
@@ -127,6 +126,7 @@ jobs:
           echo "Signed APKs:"
           find app/build/outputs/apk/${{ matrix.abi }}/release -name "*-signed.apk" -type f | sort
           
+      # Organizes the signed APK into a clean 'out' directory with a standardized name.
       - name: Organize signed APKs
         run: |
           mkdir -p app/build/outputs/apk/${{ matrix.abi }}/release/out
@@ -141,6 +141,7 @@ jobs:
           echo "Final APKs in out directory:"
           ls -la app/build/outputs/apk/${{ matrix.abi }}/release/out/
 
+      # Uploads the final, signed APK as a build artifact.
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
