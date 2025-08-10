@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   cleanup:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Cleanup old caches
         uses: actions/github-script@v7
@@ -56,7 +56,7 @@ jobs:
 
   build:
     if: github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cleanup
 
     strategy:
