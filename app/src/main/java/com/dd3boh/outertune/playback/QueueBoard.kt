@@ -270,6 +270,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
                 q,
                 false,
                 startIndex,
+                -1,
                 masterQueues.size,
                 if (isRadio) q.lastOrNull()?.id else null
             )
@@ -695,11 +696,13 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(index: Int, autoSeek: Boolean = true): Int? {
+    fun setCurrQueue(index: Int, autoSeek: Boolean = true): MultiQueueObject? {
         return try {
-            setCurrQueue(masterQueues[index], autoSeek)
+            val q = masterQueues[index]
+            setCurrQueue(q, autoSeek)
+            return q
         } catch (e: IndexOutOfBoundsException) {
-            -1
+            null
         }
     }
 
@@ -710,8 +713,11 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
      * @param autoSeek true will automatically jump to a position in the queue after loading it
      * @return New current position tracker
      */
-    fun setCurrQueue(autoSeek: Boolean = true) =
-        setCurrQueue(getCurrentQueue(), autoSeek)
+    fun setCurrQueue(autoSeek: Boolean = true): MultiQueueObject? {
+        val q = getCurrentQueue()
+        setCurrQueue(q, autoSeek)
+        return q
+    }
 
     /**
      * Load a queue into the media player

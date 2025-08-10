@@ -210,7 +210,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         ) return
         albumPage.songs.map(SongItem::toMediaMetadata)
             .onEach(::insert)
-            .onEach {
+            .onEach { 
                 update(
                     it.toSongEntity().copy(
                         title = it.title,
@@ -261,7 +261,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         )
         albumPage.songs.map(SongItem::toMediaMetadata)
             .onEach(::insert)
-            .onEach {
+            .onEach { 
                 update(
                     it.toSongEntity().copy(
                         title = it.title,
@@ -371,6 +371,7 @@ AND NOT EXISTS (
                 title = mq.title,
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
+                lastSongPos = mq.lastSongPos,
                 index = mq.index,
                 playlistId = mq.playlistId
             )
@@ -406,6 +407,7 @@ AND NOT EXISTS (
                 title = mq.title,
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
+                lastSongPos = mq.lastSongPos,
                 index = mq.index,
                 playlistId = mq.playlistId
             )

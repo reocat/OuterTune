@@ -55,6 +55,7 @@ interface QueueDao {
                     }.toMutableList(),
                     shuffled = queue.shuffled,
                     queuePos = queue.queuePos,
+                    lastSongPos = queue.lastSongPos,
                     index = queue.index,
                     playlistId = queue.playlistId
                 )
@@ -91,6 +92,7 @@ interface QueueDao {
                 title = mq.title,
                 shuffled = mq.shuffled,
                 queuePos = mq.queuePos,
+                lastSongPos = mq.lastSongPos,
                 index = mq.index,
                 playlistId = mq.playlistId
             )

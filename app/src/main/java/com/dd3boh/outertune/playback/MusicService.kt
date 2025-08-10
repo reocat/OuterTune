@@ -71,7 +71,6 @@ import com.dd3boh.outertune.constants.AutoLoadMoreKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
 import com.dd3boh.outertune.constants.KeepAliveKey
-import com.dd3boh.outertune.constants.LastPosKey
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleLike
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.dd3boh.outertune.constants.MediaSessionConstants.CommandToggleShuffle
@@ -289,11 +288,8 @@ class MusicService : MediaLibraryService(),
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         if (!isPlaying) {
                             val pos = player.currentPosition
-                            scope.launch {
-                                dataStore.edit { settings ->
-                                    settings[LastPosKey] = pos
-                                }
-                            }
+                            val q = queueBoard.getCurrentQueue()
+                            q?.lastSongPos = pos
                         }
                         super.onIsPlayingChanged(isPlaying)
                     }
@@ -456,13 +452,11 @@ class MusicService : MediaLibraryService(),
 
         if (dataStore.get(PersistentQueueKey, true)) {
             initQueue()
-            queueBoard.getCurrentQueue()?.let { lastQueue ->
-                if (lastQueue.queue.isNotEmpty()) {
-                    val lastPosition = dataStore.get(LastPosKey, 0L)
-                    queueBoard.setCurrQueue(lastQueue, autoSeek = true)
-                    player.prepare()
-                    player.seekTo(lastPosition)
-                    Timber.tag(TAG).d("Restored queue '${lastQueue.title}' with ${lastQueue.getSize()} songs, seeking to position $lastPosition")
+            val q = queueBoard.setCurrQueue(false)
+            if (q != null) {
+                player.seekTo(q.queuePos, q.lastSongPos)
+                queueBoard.getCurrentQueue()?.let {
+                    it.lastSongPos = C.TIME_UNSET
                 }
             }
         }
@@ -955,7 +949,7 @@ class MusicService : MediaLibraryService(),
 
                 val streamUrl = playbackData.streamUrl
 
-                songUrlCache[mediaId] =
+                songUrlCache[mediaId] = 
                     streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
                 return@Factory dataSpec.withUri(streamUrl.toUri()).subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
             }
@@ -1040,25 +1034,27 @@ class MusicService : MediaLibraryService(),
 
     fun saveQueueToDisk() {
         val allQueues = queueBoard.getAllQueues()
+        val pos = player.currentPosition
 
         CoroutineScope(Dispatchers.IO).launch {
             // No need to convert IDs since they're already Long
             val savedQueueIds = database.getAllQueueIds()
 
             // Convert MultiQueueObjects to QueueEntities
-            val allQueueEntities = allQueues.map { queue ->
+            val allQueueEntities = allQueues.map {
                 QueueEntity(
                     id = try {
-                        queue.id
+                        it.id
                     } catch (e: NumberFormatException) {
                         Timber.e(e)
                         QueueEntity.generateQueueId()
                     },
-                    title = queue.title,
-                    shuffled = queue.shuffled,
-                    queuePos = queue.queuePos,
-                    index = queue.index,
-                    playlistId = queue.playlistId
+                    title = it.title,
+                    shuffled = it.shuffled,
+                    queuePos = it.queuePos,
+                    lastSongPos = pos,
+                    index = it.index,
+                    playlistId = it.playlistId
                 )
             }
 
@@ -1086,15 +1082,6 @@ class MusicService : MediaLibraryService(),
 
             if (queueIdsToDelete.isNotEmpty()) {
                 database.deleteQueuesByIds(queueIdsToDelete.map { it.toString() })
-            }
-        }
-
-        val pos = player.currentPosition
-
-        runBlocking {
-            // async issues, run blocking
-            dataStore.edit { settings ->
-                settings[LastPosKey] = pos
             }
         }
     }
