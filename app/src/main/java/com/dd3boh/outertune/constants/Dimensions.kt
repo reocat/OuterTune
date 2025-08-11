@@ -80,3 +80,5 @@ val InsetsSafeTEB: WindowInsets
         WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.End + WindowInsetsSides.Bottom)
 
 val NavigationBarAnimationSpec = spring<Dp>(stiffness = Spring.StiffnessMediumLow)
+val BottomSheetAnimationSpec = spring<Dp>(stiffness = Spring.StiffnessMediumLow)
+val BottomSheetSoftAnimationSpec = spring<Dp>(stiffness = Spring.StiffnessLow)
