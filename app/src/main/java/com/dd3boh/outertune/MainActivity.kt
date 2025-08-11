@@ -157,7 +157,6 @@ import androidx.window.core.layout.WindowSizeClass
 import com.dd3boh.outertune.constants.AppBarHeight
 import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
-import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.DefaultOpenTabKey
@@ -185,8 +184,6 @@ import com.dd3boh.outertune.constants.NavigationBarHeight
 import com.dd3boh.outertune.constants.OOBE_VERSION
 import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
-import com.dd3boh.outertune.constants.PlayerBackgroundStyle
-import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
 import com.dd3boh.outertune.constants.ScannerImpl
@@ -442,12 +439,6 @@ class MainActivity : ComponentActivity() {
                 defaultValue = String.format("#%06X", (0xFFFFFF and DefaultThemeColor.toArgb()))
             )
             val monetTintBackground by rememberPreference(MonetTintBackgroundKey, true)
-
-            val playerBackground by rememberEnumPreference(
-                key = PlayerBackgroundStyleKey,
-                defaultValue = DEFAULT_PLAYER_BACKGROUND
-            )
-
             val currentSong by playerConnection?.service?.currentMediaMetadata?.collectAsState() ?: remember { mutableStateOf(null) }
 
             LaunchedEffect(currentSong, enableDynamicTheme, monetCustomColorEnabled, monetAccentColor, monetLuminance, monetChroma, monetGrayscale) {
@@ -945,14 +936,6 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
                         ) {
-
-                            LaunchedEffect(playerBottomSheetState.isExpanded) {
-                                setSystemBarAppearance(
-                                    (playerBottomSheetState.isExpanded
-                                            && playerBackground != PlayerBackgroundStyle.FOLLOW_THEME) || useDarkTheme
-                                )
-                            }
-
                             val navHost: @Composable() (() -> Unit) = @Composable {
                                 NavHost(
                                     navController = navController,
