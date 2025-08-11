@@ -142,6 +142,7 @@ import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
 import com.dd3boh.outertune.constants.SwipeToSkip
 import com.dd3boh.outertune.extensions.metadata
+import com.dd3boh.outertune.extensions.supportsWideScreen
 import com.dd3boh.outertune.extensions.tabMode
 import com.dd3boh.outertune.extensions.togglePlayPause
 import com.dd3boh.outertune.extensions.toggleRepeatMode
@@ -379,6 +380,8 @@ fun BottomSheetPlayer(
         }
     ) {
         val tabMode = context.tabMode()
+        val wideScreen = context.supportsWideScreen()
+
         val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
             Row(
                 modifier = Modifier
@@ -729,7 +732,7 @@ fun BottomSheetPlayer(
                 }
             }
 
-            if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode) {
+            if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode && wideScreen) {
                 val vPadding = max(
                     WindowInsets.safeDrawing.getTop(LocalDensity.current),
                     WindowInsets.safeDrawing.getBottom(LocalDensity.current)
