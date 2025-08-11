@@ -186,7 +186,7 @@
     <string name="dl_size_used_cache">Interno: %s utilizzato</string>
     <string name="dl_size_used_extra">Impostazioni extra: %s utilizzato</string>
     <string name="dl_size_used_main">Esterno: %s utilizzato</string>
-    <string name="oobe_ad_free_exp">Esperienza senza pubblicità</string>
+    <string name="oobe_ad_free_exp">Senza pubblicità di YouTube</string>
     <string name="oobe_ad_free_exp_description">Goditi la riproduzione musicale ininterrotta</string>
     <string name="oobe_cross_platform_sync_description">Mantieni la tua musica in armonia su tutti i dispositivi</string>
     <string name="oobe_local_media_title">Media locali</string>
@@ -212,10 +212,16 @@
     <string name="m3u_ytm_lookup">Cerca su YouTube Music per brani non trovati nel database delle app</string>
     <string name="oobe_complete_title">Tutto a posto!</string>
     <string name="speed_fast">Veloce</string>
-    <string name="err_invalid_ytm_song">Impossibile riprodurre il brano. È possibile riprodurre solo i contenuti accessibili su YouTube Music.</string>
+    <string name="err_invalid_ytm_song">Impossibile riprodurre il brano. È possibile riprodurre solo i contenuti accessibili su YouTube Music</string>
     <string name="scanner_sensitivity_L0">Prendi il primo risultato fornito da YouTube quando la ricerca su YouTube è abilitata, altrimenti abbina il titolo</string>
     <string name="err_restore_incompatible_database">Impossibile ripristinare il database incompatibile</string>
-    <string name="m3u_import_failed">Nessuna canzone trovata. File M3U non valido o nessuna canzone corrispondente trovata.</string>
+    <string name="m3u_import_failed">Nessuna canzone trovata. File M3U non valido o nessuna canzone corrispondente trovata</string>
     <string name="tap_show_more">Tocca per visualizzare maggiori informazioni</string>
     <string name="lyrics_synced_clickable">Testi cliccabili</string>
+    <string name="sort_by_track_number">Numero del brano</string>
+    <string name="bits_per_sample">Bit per campione</string>
+    <string name="disc_number">Numero del disco</string>
+    <string name="extra_details">Dettagli extra</string>
+    <string name="file_path">Percorso del file</string>
+    <string name="track_number">Numero brano</string>
 </resources>
