@@ -1005,12 +1005,14 @@ fun findCurrentLineIndex(lines: List<LyricLine>, position: Long): Int {
 
 fun calculateLineProgress(line: LyricLine, currentPositionMs: Long): Float {
     val words = line.words
+    val startMs = line.start.toLong()
+    val endMs = line.end.toLong()
+
+    // by line if no words are available
     if (words.isNullOrEmpty()) {
-        val startMs = line.start.toLong()
-        val endMs = line.end.toLong()
         return when {
             currentPositionMs < startMs -> 0f
-            currentPositionMs > endMs -> 1f
+            currentPositionMs > endMs - 200L -> 1f // add buffer so lyric line animation completes
             else -> (currentPositionMs - startMs).toFloat() / (endMs - startMs).toFloat()
         }
     }
@@ -1019,26 +1021,35 @@ fun calculateLineProgress(line: LyricLine, currentPositionMs: Long): Float {
     var completedWords = 0
     var partialProgress = 0f
 
-    for (i in words.indices) {
-        val word = words[i]
-        val start = word.timeRange.first
-        val end = word.timeRange.last
+    return when {
+        currentPositionMs < startMs -> 0f
+        currentPositionMs > endMs - 200L -> 1f // add buffer so lyric line animation completes
+        else -> {
+            for (i in words.indices) {
+                val word = words[i]
+                val start = word.timeRange.first
+                val end = word.timeRange.last
 
-        if (currentMs < start) {
-            break
-        } else if (currentMs in word.timeRange) {
-            val wordDuration = (end - start).coerceAtLeast(1u).toFloat()
-            partialProgress = (currentMs - start).toFloat() / wordDuration
-            completedWords = i
-            break
-        } else {
-            completedWords++
+                if (currentMs < start) {
+                    break // we're before this word
+                } else if (currentMs in word.timeRange) {
+                    val wordDuration = (end - start).coerceAtLeast(1u).toFloat()
+                    partialProgress = (currentMs - start).toFloat() / wordDuration
+                    completedWords = i
+                    break
+                } else {
+                    completedWords++
+                }
+            }
+
+            val totalWords = words.size.toFloat()
+            var progress = (completedWords + partialProgress) / totalWords
+            if (progress > 0.95f) {
+                progress = 1f
+            }
+            progress.coerceIn(0f, 1f)
         }
     }
-
-    val totalWords = words.size.toFloat()
-    val progress = (completedWords + partialProgress) / totalWords
-    return progress.coerceIn(0f, 1f)
 }
 
 const val animateScrollDuration = 300L
