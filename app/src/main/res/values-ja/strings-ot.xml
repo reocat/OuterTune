@@ -218,6 +218,6 @@
     <string name="disc_number">ディスク番号</string>
     <string name="file_path">ファイルのパス</string>
     <string name="track_number">曲番号</string>
-    <string name="bits_per_sample">サンプルあたりのビット数</string>
+    <string name="bits_per_sample">ビット深度</string>
     <string name="extra_details">詳細情報</string>
 </resources>
