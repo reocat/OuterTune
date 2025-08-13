@@ -370,11 +370,16 @@ fun BottomSheetPlayer(
         }
     }
 
+    // On today's episode of compose horror stories: The queue sheet click to expand on my Pixel with one-notch lower
+    // display size and one-notch higher font size. The player sheet is fine, but the queue sheet won't open on click.
+    // Solution: collapsedBound = dismissedBound + 2 (or more?) dp for the sheet to work *after* the first manual drag
+    // AND set initialAnchor = 1 for the button to work without a manual drag first. I wish I was making this up but
+    // both are required.
     val dismissedBound = QueuePeekHeight + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
     val queueSheetState = rememberBottomSheetState(
         dismissedBound = dismissedBound,
         expandedBound = state.expandedBound,
-        collapsedBound = dismissedBound + 1.dp,
+        collapsedBound = dismissedBound + 2.dp,
         initialAnchor = 1
     )
 
