@@ -18,7 +18,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -57,6 +55,7 @@ import com.dd3boh.outertune.constants.BottomSheetSoftAnimationSpec
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.pow
 
 /**
  * Bottom Sheet
@@ -66,12 +65,21 @@ import kotlinx.coroutines.launch
 fun BottomSheet(
     state: BottomSheetState,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    background: @Composable (BoxScope.() -> Unit) = { },
     onDismiss: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     collapsedBackgroundColor: Color = Color.Transparent,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                // background fades during about 10%-61% progress
+                alpha = (1.4f * (state.progress.coerceAtLeast(0.1f) - 0.1f).pow(0.5f)).coerceIn(0f, 1f)
+            }
+            .fillMaxSize(),
+        content = background
+    )
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -117,8 +125,7 @@ fun BottomSheet(
                     .fillMaxSize()
                     .graphicsLayer {
                         alpha = ((state.progress * 4 - 0.25f) * 4).coerceIn(0f, 1f)
-                    }
-                    .background(backgroundColor),
+                    },
                 content = content
             )
         }

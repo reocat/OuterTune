@@ -15,7 +15,6 @@ import android.content.res.Configuration
 import android.graphics.drawable.BitmapDrawable
 import android.os.PowerManager
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -382,9 +381,80 @@ fun BottomSheetPlayer(
     BottomSheet(
         state = state,
         modifier = modifier,
-        backgroundColor = if (useDarkTheme || playerBackground == PlayerBackgroundStyle.FOLLOW_THEME) {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation)
-        } else MaterialTheme.colorScheme.onSurfaceVariant,
+        background = {
+            Box(
+                modifier = Modifier
+                    .background(if (useDarkTheme || playerBackground == PlayerBackgroundStyle.FOLLOW_THEME) {
+                        MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation)
+                    } else MaterialTheme.colorScheme.onSurfaceVariant)
+                    .fillMaxSize()
+            ) {
+                val overlayColor = if (useDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.5f)
+                AnimatedContent(
+                    targetState = mediaMetadata,
+                    transitionSpec = {
+                        fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+                    }
+                ) { metadata ->
+                    if (playerBackground == PlayerBackgroundStyle.BLUR) {
+                        if (metadata?.isLocal == true) {
+                            metadata.let {
+                                AsyncImageLocal(
+                                    image = { imageCache.getLocalThumbnail(it.localPath) },
+                                    contentScale = ContentScale.FillBounds,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .blur(if (useDarkTheme) 150.dp else 100.dp)
+                                )
+                            }
+                        } else {
+                            AsyncImage(
+                                model = metadata?.thumbnailUrl,
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .blur(if (useDarkTheme) 150.dp else 100.dp)
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(overlayColor)
+                        )
+                    }
+                }
+
+                AnimatedContent(
+                    targetState = gradientColors,
+                    transitionSpec = {
+                        fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+                    }
+                ) { colors ->
+                    if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Brush.verticalGradient(colors), alpha = 0.8f)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(overlayColor)
+                        )
+                    }
+                }
+
+                if (playerBackground != PlayerBackgroundStyle.FOLLOW_THEME && showLyrics) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(if (useDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.5f))
+                    )
+                }
+            }
+        },
         collapsedBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
         onDismiss = {
             playerConnection.player.stop()
@@ -753,6 +823,7 @@ fun BottomSheetPlayer(
             }
         }
 
+<<<<<<< HEAD
         Box(modifier = modifier.fillMaxSize()) {
             AnimatedVisibility(
                 visible = !powerManager.isPowerSaveMode && state.isExpanded,
@@ -812,6 +883,28 @@ fun BottomSheetPlayer(
                     visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying && playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.isNotEmpty(),
                     enter = fadeIn(tween(1000)),
                     exit = fadeOut(tween(1000))
+=======
+
+        if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode && wideScreen) {
+            val vPadding = max(
+                WindowInsets.safeDrawing.getTop(LocalDensity.current),
+                WindowInsets.safeDrawing.getBottom(LocalDensity.current)
+            )
+            val vPaddingDp = with(LocalDensity.current) { vPadding.toDp() }
+            val verticalInsets = WindowInsets(left = 0.dp, top = vPaddingDp, right = 0.dp, bottom = vPaddingDp)
+            Row(
+                modifier = Modifier
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).add(verticalInsets)
+                    )
+                    .fillMaxSize()
+            ) {
+                BoxWithConstraints(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .nestedScroll(state.preUpPostDownNestedScrollConnection)
+>>>>>>> 0f5a489c8 (ui: TIL moving image bg is ludicrously expensive)
                 ) {
                     val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
                     val shimmerTranslate by infiniteTransition.animateFloat(

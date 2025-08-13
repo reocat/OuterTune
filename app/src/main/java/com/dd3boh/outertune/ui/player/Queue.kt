@@ -166,7 +166,13 @@ fun QueueSheet(
     val haptic = LocalHapticFeedback.current
     BottomSheet(
         state = state,
-        backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation),
+        background = {
+            Box(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
+                    .fillMaxSize()
+            )
+        },
         modifier = modifier,
         collapsedContent = {
             Row(
