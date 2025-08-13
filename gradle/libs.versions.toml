@@ -1,5 +1,5 @@
 [versions]
-adaptive = "1.2.0-alpha10"
+adaptive = "1.2.0-alpha11"
 androidGradlePlugin = "8.13.0-alpha04"
 json = "20250517"
 kotlin = "2.2.20-Beta2"
