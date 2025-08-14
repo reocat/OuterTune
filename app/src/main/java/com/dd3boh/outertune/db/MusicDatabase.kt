@@ -115,8 +115,7 @@ class MusicDatabase(
         AutoMigration(from = 12, to = 13, spec = Migration12To13::class), // Migration from InnerTune
         AutoMigration(from = 13, to = 14), // Initial queue as database
         AutoMigration(from = 17, to = 18, spec = Migration17To18::class), // Fix Room nonsense
-        AutoMigration(from = 19, to = 20, spec = Migration19To20::class),
-        AutoMigration(from = 20, to = 21)
+        AutoMigration(from = 19, to = 20, spec = Migration19To20::class)
     ]
 )
 @TypeConverters(Converters::class)
@@ -135,6 +134,7 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
                     .addMigrations(MIGRATION_18_19)
+                    .addMigrations(MIGRATION_20_21)
                     .build()
             )
 
@@ -146,6 +146,8 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_14_15)
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
+                    .addMigrations(MIGRATION_18_19)
+                    .addMigrations(MIGRATION_20_21)
                     .build()
             )
     }
@@ -490,6 +492,102 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
                 PRIMARY KEY(`id`)
             )
         """)
+    }
+}
+
+val MIGRATION_20_21 = object : Migration(20, 21) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        data class ColInfo(val name: String, val dflt: String?)
+        fun tableCols(name: String): List<ColInfo> {
+            val cols = mutableListOf<ColInfo>()
+            db.query("PRAGMA table_info($name)").use { c ->
+                val nameIndex = c.getColumnIndex("name")
+                val dfltIndex = c.getColumnIndex("dflt_value")
+                while (c.moveToNext()) cols += ColInfo(c.getString(nameIndex), c.getString(dfltIndex))
+            }
+            return cols
+        }
+
+        val songColsList = tableCols("song")
+        val songCols = songColsList.map { it.name }.toSet()
+        val isLocalDefault = songColsList.firstOrNull { it.name == "isLocal" }?.dflt
+        val needsRebuild =
+            ("totalPlayTime" in songCols) ||
+                ("trackNumber" !in songCols) ||
+                ("discNumber" !in songCols) ||
+                // Room expects the literal 'false' (including quotes) as default string
+                (isLocalDefault != "0")
+
+        if (needsRebuild) {
+            // Ensure source table has the optional columns so SELECT works
+            if ("trackNumber" !in songCols) {
+                db.execSQL("ALTER TABLE song ADD COLUMN trackNumber INTEGER NULL")
+            }
+            if ("discNumber" !in songCols) {
+                db.execSQL("ALTER TABLE song ADD COLUMN discNumber INTEGER NULL")
+            }
+
+            // Rebuild song table without totalPlayTime and with correct schema
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `song_new` (
+                    `id` TEXT NOT NULL,
+                    `title` TEXT NOT NULL,
+                    `duration` INTEGER NOT NULL,
+                    `thumbnailUrl` TEXT,
+                    `inLibrary` INTEGER,
+                    `isLocal` INTEGER NOT NULL DEFAULT 0,
+                    `localPath` TEXT,
+                    `dateDownload` INTEGER,
+                    `liked` INTEGER NOT NULL,
+                    `likedDate` INTEGER,
+                    `trackNumber` INTEGER,
+                    `discNumber` INTEGER,
+                    `albumId` TEXT,
+                    `albumName` TEXT,
+                    `year` INTEGER,
+                    `date` INTEGER,
+                    `dateModified` INTEGER,
+                    PRIMARY KEY(`id`)
+                )
+                """
+            )
+
+            db.execSQL(
+                """
+                INSERT INTO `song_new` (
+                    id, title, duration, thumbnailUrl, inLibrary, isLocal, localPath,
+                    dateDownload, liked, likedDate, trackNumber, discNumber, albumId,
+                    albumName, year, date, dateModified
+                )
+                SELECT
+                    id, title, duration, thumbnailUrl, inLibrary, isLocal, localPath,
+                    dateDownload, liked, likedDate, trackNumber, discNumber, albumId,
+                    albumName, year, date, dateModified
+                FROM `song`
+                """
+            )
+
+            db.execSQL("DROP TABLE `song`")
+            db.execSQL("ALTER TABLE `song_new` RENAME TO `song`")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_song_albumId` ON `song` (`albumId`)")
+        }
+
+        // Ensure queue has lastSongPos column expected by entity
+        val queueCols = tableCols("queue").map { it.name }.toSet()
+        if ("lastSongPos" !in queueCols) {
+            // C.TIME_UNSET is -9223372036854775807 in Media3; use it as NOT NULL default
+            db.execSQL("ALTER TABLE queue ADD COLUMN lastSongPos INTEGER NOT NULL DEFAULT -9223372036854775807")
+        }
+
+        // Ensure format has new nullable columns expected by entity
+        val formatCols = tableCols("format").map { it.name }.toSet()
+        if ("bitsPerSample" !in formatCols) {
+            db.execSQL("ALTER TABLE format ADD COLUMN bitsPerSample INTEGER NULL")
+        }
+        if ("extraComment" !in formatCols) {
+            db.execSQL("ALTER TABLE format ADD COLUMN extraComment TEXT NULL")
+        }
     }
 }
 
