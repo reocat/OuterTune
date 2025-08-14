@@ -354,31 +354,36 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        /*
-         * While music is playing:
-         *      StopMusicOnTaskClearKey true: clearing from recent apps will kill service
-         *      StopMusicOnTaskClearKey false: clearing from recent apps will NOT kill service
-         * While music is not playing:
-         *      Service will never be automatically killed
-         *
-         * Regardless of what happens, queues and last position are saves
-         */
-        lifecycleScope.cancel()
-        lifecycle.removeObserver(connectivityObserver)
+    /*
+     * While music is playing:
+     *      StopMusicOnTaskClearKey true: clearing from recent apps will kill service
+     *      StopMusicOnTaskClearKey false: clearing from recent apps will NOT kill service
+     * While music is not playing:
+     *      Service will never be automatically killed
+     *
+     * Regardless of what happens, queues and last position are saves
+     */
+    // Remove observers first so they don't receive further callbacks
+    runCatching { lifecycle.removeObserver(connectivityObserver) }
 
-        super.onDestroy()
-        unbindService(serviceConnection)
+    // Unbind from the service before calling super.onDestroy to avoid lifecycle
+    // callbacks occurring after the Activity is already torn down.
+    runCatching { unbindService(serviceConnection) }
 
-        if (dataStore.get(StopMusicOnTaskClearKey, false) && isFinishing) {
-//                stopService(Intent(this, MusicService::class.java)) // Believe me, this doesn't actually stop
-            playerConnection?.service?.onDestroy()
-            playerConnection = null
-        } else {
-            playerConnection?.service?.saveQueueToDisk()
-        }
-
-        super.onDestroy()
+    if (dataStore.get(StopMusicOnTaskClearKey, false) && isFinishing) {
+        // stopService(Intent(this, MusicService::class.java)) // This doesn't actually stop
+        playerConnection?.service?.onDestroy()
+        playerConnection = null
+    } else {
+        playerConnection?.service?.saveQueueToDisk()
     }
+
+    // Cancel any Activity-scoped coroutines
+    lifecycleScope.cancel()
+
+    // Call super exactly once
+    super.onDestroy()
+}
 
     @SuppressLint("UnusedBoxWithConstraintsScope")
     @OptIn(ExperimentalMaterial3Api::class)
