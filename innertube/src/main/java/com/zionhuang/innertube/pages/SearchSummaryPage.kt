@@ -86,7 +86,8 @@ data class SearchSummaryPage(
                 renderer.onTap.browseEndpoint?.isPlaylistEndpoint == true -> {
                     PlaylistItem(
                         id = renderer.onTap.browseEndpoint.browseId.removePrefix("VL"),
-                        title = renderer.header.musicCardShelfHeaderBasicRenderer.title.runs?.joinToString(separator = "") { it.text }
+                        title = renderer.header?.musicCardShelfHeaderBasicRenderer?.title?.runs?.joinToString(separator = "") { it.text }
+                            ?: renderer.title.runs?.firstOrNull()?.text
                             ?: return null,
                         description = "",
                         privacyStatus = "",
