@@ -1,6 +1,5 @@
 package com.zionhuang.innertube
 
-import com.sun.jndi.toolkit.dir.SearchFilter
 import com.zionhuang.innertube.models.AccountInfo
 import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.Artist
@@ -19,7 +18,6 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
 import com.zionhuang.innertube.models.YouTubeLocale
 import com.zionhuang.innertube.models.body.CreatePlaylistBody
-import com.zionhuang.innertube.models.body.EditPlaylistBody
 import com.zionhuang.innertube.models.getContinuation
 import com.zionhuang.innertube.models.getItems
 import com.zionhuang.innertube.models.oddElements
@@ -62,7 +60,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
-import java.io.File
 import java.net.Proxy
 import kotlin.random.Random
 
@@ -125,7 +122,9 @@ object YouTube {
             summaries = response.contents?.tabbedSearchResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.mapNotNull { it ->
                 if (it.musicCardShelfRenderer != null)
                     SearchSummary(
-                        title = it.musicCardShelfRenderer.header.musicCardShelfHeaderBasicRenderer.title.runs?.firstOrNull()?.text ?: return@mapNotNull null,
+                        title = it.musicCardShelfRenderer.header?.musicCardShelfHeaderBasicRenderer?.title?.runs?.firstOrNull()?.text
+                            ?: it.musicCardShelfRenderer.title.runs?.firstOrNull()?.text
+                            ?: return@mapNotNull null,
                         items = listOfNotNull(SearchSummaryPage.fromMusicCardShelfRenderer(it.musicCardShelfRenderer))
                             .plus(
                                 it.musicCardShelfRenderer.contents
