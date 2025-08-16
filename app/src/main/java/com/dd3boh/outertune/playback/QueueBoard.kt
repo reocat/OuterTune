@@ -150,10 +150,15 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
             return null
         }
 
-        val match = masterQueues.firstOrNull { it.title == title } // look for matching queue. Title is uid
+        val normalizedTitle = title.trim()
+        val match = masterQueues.firstOrNull { 
+            it.title.trim().equals(normalizedTitle, ignoreCase = true) 
+        } // look for matching queue with case-insensitive comparison
         if (match != null) { // found an existing queue
             // Titles ending in "+" (u200B) signify a extension queue
-            val anyExts = masterQueues.firstOrNull { it.title == match.title + " +\u200B" }
+            val anyExts = masterQueues.firstOrNull { 
+                it.title.trim().equals("${match.title.trim()} +\u200B", ignoreCase = true) 
+            }
             if (replace) { // force replace
                 if (QUEUE_DEBUG)
                     Timber.tag(TAG).d("Adding to queue: Replacing all queue items")

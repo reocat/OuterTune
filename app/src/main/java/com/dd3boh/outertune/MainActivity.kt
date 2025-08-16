@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -109,12 +110,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -144,7 +147,6 @@ import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavType
@@ -181,13 +183,12 @@ import com.dd3boh.outertune.constants.MonetThemeStyleKey
 import com.dd3boh.outertune.constants.MonetTintBackgroundKey
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
 import com.dd3boh.outertune.constants.NavigationBarHeight
+import com.dd3boh.outertune.constants.NavigationRailWidth
 import com.dd3boh.outertune.constants.OOBE_VERSION
 import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
-import com.dd3boh.outertune.constants.ScannerImpl
-import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.constants.ScannerSensitivityKey
 import com.dd3boh.outertune.constants.ScannerStrictExtKey
@@ -294,6 +295,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -328,6 +330,7 @@ class MainActivity : ComponentActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is MusicBinder) {
                 playerConnection = PlayerConnection(service, database, lifecycleScope)
+                playerConnection?.service?.queueBoard?.setCurrQueue()
             }
         }
 
@@ -450,7 +453,7 @@ class MainActivity : ComponentActivity() {
                 val baseColor = if (monetCustomColorEnabled) {
                     try {
                         Color(monetAccentColor.toColorInt())
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         DefaultThemeColor
                     }
                 } else if (enableDynamicTheme && currentSong != null) {
@@ -483,10 +486,7 @@ class MainActivity : ComponentActivity() {
                 key = ScannerSensitivityKey,
                 defaultValue = ScannerMatchCriteria.LEVEL_2
             )
-            val (scannerImpl) = rememberEnumPreference(
-                key = ScannerImplKey,
-                defaultValue = ScannerImpl.TAGLIB
-            )
+            
             val (scanPaths) = rememberPreference(ScanPathsKey, defaultValue = "")
             val (excludedScanPaths) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
             val (strictExtensions) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
@@ -638,12 +638,13 @@ class MainActivity : ComponentActivity() {
                     // setup filters for new layout
                     if (tabOpenedFromShortcut != null && navigationItems.contains(Screens.Library)) {
                         var filter by rememberEnumPreference(LibraryFilterKey, LibraryFilter.ALL)
-                        filter = when (intent?.action) {
-                            ACTION_SONGS -> LibraryFilter.SONGS
-                            ACTION_ALBUMS -> LibraryFilter.ALBUMS
-                            ACTION_PLAYLISTS -> LibraryFilter.PLAYLISTS
-                            ACTION_SEARCH -> filter // do change filter for search
-                            else -> LibraryFilter.ALL
+                        if (intent?.action != ACTION_SEARCH) {
+                            filter = when (intent?.action) {
+                                ACTION_SONGS -> LibraryFilter.SONGS
+                                ACTION_ALBUMS -> LibraryFilter.ALBUMS
+                                ACTION_PLAYLISTS -> LibraryFilter.PLAYLISTS
+                                else -> LibraryFilter.ALL
+                            }
                         }
                     }
 
@@ -812,7 +813,7 @@ class MainActivity : ComponentActivity() {
                                     .add(cutoutInsets.only(WindowInsetsSides.Horizontal))
                                     .add(
                                         WindowInsets(
-                                            left = if (tabMode || !shouldShowNavigationRail) 0.dp else NavigationBarHeight,
+                                            left = if (tabMode || !shouldShowNavigationRail) 0.dp else NavigationRailWidth,
                                             top = AppBarHeight,
                                             bottom = bottom
                                         )
@@ -885,30 +886,20 @@ class MainActivity : ComponentActivity() {
                     }
 
                     LaunchedEffect(playerConnection) {
-                        val player = playerConnection?.player ?: return@LaunchedEffect
-                        if (player.currentMediaItem == null) {
-                            if (!playerBottomSheetState.isDismissed) {
-                                playerBottomSheetState.dismiss()
-                            }
-                        } else {
-                            if (playerBottomSheetState.isDismissed) {
-                                playerBottomSheetState.collapseSoft()
-                            }
-                        }
-                    }
-
-                    DisposableEffect(playerConnection, playerBottomSheetState) {
-                        val player = playerConnection?.player ?: return@DisposableEffect onDispose { }
-                        val listener = object : Player.Listener {
-                            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null && playerBottomSheetState.isDismissed) {
-                                    playerBottomSheetState.collapseSoft()
+                        playerConnection?.let { pc ->
+                            pc.mediaMetadata.combine(pc.playbackState) { metadata, state ->
+                                metadata to state
+                            }.collectLatest { (metadata, state) ->
+                                if (metadata != null && state == Player.STATE_READY) {
+                                    if (playerBottomSheetState.isDismissed) {
+                                        playerBottomSheetState.collapseSoft()
+                                    }
+                                } else if (metadata == null) {
+                                    if (!playerBottomSheetState.isDismissed) {
+                                        playerBottomSheetState.dismiss()
+                                    }
                                 }
                             }
-                        }
-                        player.addListener(listener)
-                        onDispose {
-                            player.removeListener(listener)
                         }
                     }
 
@@ -1284,8 +1275,8 @@ class MainActivity : ComponentActivity() {
                                                 Icon(
                                                     imageVector =
                                                         if (searchActive || navBackStackEntry?.destination?.route?.startsWith(
-                                                                "search"
-                                                            ) == true
+                                                            "search"
+                                                        ) == true
                                                         ) {
                                                             Icons.AutoMirrored.Outlined.ArrowBack
                                                         } else {
@@ -1321,7 +1312,7 @@ class MainActivity : ComponentActivity() {
                                                         contentDescription = null
                                                     )
                                                 }
-                                            } else if (navBackStackEntry?.destination?.route in Screens.getAllScreens()
+                                            } else if (!shouldShowNavigationRail && navBackStackEntry?.destination?.route in Screens.getAllScreens()
                                                     .map { it.route }
                                             ) {
                                                 Box(
@@ -1351,14 +1342,7 @@ class MainActivity : ComponentActivity() {
                                         focusRequester = searchBarFocusRequester,
                                         modifier = Modifier
                                             .align(Alignment.TopCenter)
-                                            .windowInsetsPadding(
-                                                if (shouldShowNavigationRail) {
-                                                    WindowInsets(left = NavigationBarHeight)
-                                                } else {
-                                                    // please shield your eyes.
-                                                    WindowInsets(0.dp)
-                                                }
-                                            )
+                                            .padding(start = if (shouldShowNavigationRail) NavigationRailWidth else 0.dp)
                                     ) {
                                         Crossfade(
                                             targetState = searchSource,
@@ -1401,22 +1385,22 @@ class MainActivity : ComponentActivity() {
 
                             @Composable
                             fun navRail(alignment: Alignment = Alignment.BottomStart) {
-                                // Ensure navigation rail is completely hidden when in settings
                                 if (useRail && shouldShowNavigationRail && navBackStackEntry?.destination?.route?.startsWith("settings") != true) {
-        // Read the preference that indicates if the user enabled pure-black theme
-        val pureBlack = isPureBlackEnabled()
+                                    val pureBlack = isPureBlackEnabled()
+                                    val railCombinedInsets = remember(playerAwareWindowInsets, windowsInsets, cutoutInsets) {
+                                        playerAwareWindowInsets
+                                            .only(WindowInsetsSides.Bottom)
+                                            .add(windowsInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top))
+                                            .add(cutoutInsets.only(WindowInsetsSides.Start))
+                                    }
+                                    val railPaddingValues = railCombinedInsets.asPaddingValues()
                                     Column(
                                         verticalArrangement = Arrangement.Bottom,
                                         modifier = Modifier
                                             .align(alignment)
                                             .fillMaxHeight()
                                             .verticalScroll(rememberScrollState())
-                                            .windowInsetsPadding(
-                                                playerAwareWindowInsets
-                                                    .only(WindowInsetsSides.Bottom)
-                                                    .add(windowsInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top))
-                                                    .add(cutoutInsets.only(WindowInsetsSides.Start))
-                                            )
+                                            .padding(railPaddingValues)
                                     ) {
                                         NavigationRail(
                                             containerColor = if (pureBlack) Color.Black else Color.Transparent,
@@ -1502,6 +1486,35 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 )
                                             }
+                                            Spacer(modifier = Modifier.weight(1f))
+                                            val updateAvailable by rememberPreference(UpdateAvailableKey, defaultValue = false)
+                                            NavigationRailItem(
+                                                selected = navBackStackEntry?.destination?.route == "settings",
+                                                icon = {
+                                                    BadgedBox(
+                                                        badge = {
+                                                            if (ENABLE_UPDATE_CHECKER && updateAvailable) {
+                                                                Badge()
+                                                            }
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Outlined.Settings,
+                                                            contentDescription = null
+                                                        )
+                                                    }
+                                                },
+                                                label = { if (!slimNav) Text(text = stringResource(R.string.settings)) },
+                                                onClick = {
+                                                    if (playerBottomSheetState.isExpanded) {
+                                                        playerBottomSheetState.collapseSoft()
+                                                    }
+                                                    if (navBackStackEntry?.destination?.route != "settings") {
+                                                        navController.navigate("settings")
+                                                    }
+                                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                }
+                                            )
                                         }
                                     }
                                 }
@@ -1689,29 +1702,56 @@ class MainActivity : ComponentActivity() {
 
                             if (BuildConfig.DEBUG) {
                                 val debugColour = Color.Red
-                                Column(
-                                    modifier = Modifier.padding(start = 50.dp, top = 100.dp)
-                                ) {
-                                    Text(
-                                        text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = debugColour
-                                    )
-                                    Text(
-                                        text = "${BuildConfig.APPLICATION_ID} | ${BuildConfig.BUILD_TYPE}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = debugColour
-                                    )
-                                    Text(
-                                        text = "${Build.BRAND} ${Build.DEVICE} (${Build.MODEL})",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = debugColour
-                                    )
-                                    Text(
-                                        text = "${Build.VERSION.SDK_INT} (${Build.ID})",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = debugColour
-                                    )
+                                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                                    var x by remember { mutableFloatStateOf(0f) }
+                                    var y by remember { mutableFloatStateOf(0f) }
+                                    var vx by remember { mutableFloatStateOf(5f) }
+                                    var vy by remember { mutableFloatStateOf(5f) }
+                                    val density = LocalDensity.current
+
+                                    LaunchedEffect(Unit) {
+                                        while (true) {
+                                            withFrameNanos {
+                                                x += vx
+                                                y += vy
+
+                                                val screenWidth = with(density) { constraints.maxWidth.toDp().toPx() }
+                                                val screenHeight = with(density) { constraints.maxHeight.toDp().toPx() }
+
+                                                if (x < 0 || x > screenWidth - 200) {
+                                                    vx *= -1
+                                                }
+                                                if (y < 0 || y > screenHeight - 100) {
+                                                    vy *= -1
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Column(
+                                        modifier = Modifier.offset { IntOffset(x.toInt(), y.toInt()) }
+                                    ) {
+                                        Text(
+                                            text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) | ${BuildConfig.FLAVOR}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                        Text(
+                                            text = "${BuildConfig.APPLICATION_ID} | ${BuildConfig.BUILD_TYPE}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                        Text(
+                                            text = "${Build.BRAND} ${Build.DEVICE} (${Build.MODEL})",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                        Text(
+                                            text = "${Build.VERSION.SDK_INT} (${Build.ID})",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = debugColour
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1720,7 +1760,8 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(shouldShowSearchBar, openSearchImmediately) {
                         if (shouldShowSearchBar && openSearchImmediately) {
                             onSearchActiveChange(true)
-                            searchBarFocusRequester.requestFocus()
+                            withFrameNanos { /* wait a frame for composition */ }
+                            runCatching { searchBarFocusRequester.requestFocus() }
                             openSearchImmediately = false
                         }
                     }

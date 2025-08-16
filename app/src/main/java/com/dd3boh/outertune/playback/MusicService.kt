@@ -508,9 +508,7 @@ class MusicService : MediaLibraryService(),
     fun initQueue() {
         if (dataStore.get(PersistentQueueKey, true)) {
             queueBoard = QueueBoard(this, database.readQueue().toMutableList())
-            queueBoard.getCurrentQueue()?.let {
-                queueBoard.initialized = true
-            }
+            queueBoard.initialized = true
         } else {
             queueBoard = QueueBoard(this)
         }
@@ -702,18 +700,17 @@ class MusicService : MediaLibraryService(),
      */
     fun enqueueNext(items: List<MediaItem>) {
         if (!queueBoard.initialized) {
+            initQueue()
+            queueBoard.initialized = true
+        }
 
-            // when enqueuing next when player isn't active, play as a new song
-            if (items.isNotEmpty()) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    playQueue(
-                        ListQueue(
-                            title = items.first().mediaMetadata.title.toString(),
-                            items = items.mapNotNull { it.metadata }
-                        )
-                    )
-                }
-            }
+        if (queueBoard.getCurrentQueue() == null) {
+            playQueue(
+                ListQueue(
+                    title = items.first().mediaMetadata.title.toString(),
+                    items = items.mapNotNull { it.metadata }
+                )
+            )
         } else {
             // enqueue next
             queueBoard.getCurrentQueue()?.let { it ->

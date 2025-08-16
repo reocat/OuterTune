@@ -47,7 +47,7 @@ interface QueueDao {
             resultQueues.add(
                 MultiQueueObject(
                     id = queue.id,
-                    title = queue.title,
+                    title = queue.title.trim(),
                     queue = shuffledSongs.map {
                         val s = it.song.toMediaMetadata()
                         s.shuffleIndex = it.shuffledIndex

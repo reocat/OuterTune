@@ -169,7 +169,7 @@ fun SearchBar(
                 IntOffset(x = 0, y = scrollBehavior.state.heightOffset.roundToInt())
             }
             .background(MaterialTheme.colorScheme.background),
-        propagateMinConstraints = true
+        propagateMinConstraints = false
     ) {
         val height: Dp
         val width: Dp

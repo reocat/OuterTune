@@ -170,7 +170,13 @@ class BottomSheetState(
     }
 
     val progress by derivedStateOf {
-        1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
+        val upper = animatable.upperBound!!
+        val denom = (upper - collapsedBound)
+        if (denom == 0.dp) {
+            1f
+        } else {
+            1f - (upper - animatable.value) / denom
+        }
     }
 
     private fun collapse(animationSpec: AnimationSpec<Dp>) {
@@ -323,9 +329,11 @@ fun rememberBottomSheetState(
     }
 
     return remember(dismissedBound, expandedBound, collapsedBound, coroutineScope) {
+        // Clamp collapsed bound within [dismissed, expanded] to avoid out-of-bounds animations
+        val effectiveCollapsedBound = collapsedBound.coerceIn(dismissedBound, expandedBound)
         val initialValue = when (previousAnchor) {
             expandedAnchor -> expandedBound
-            collapsedAnchor -> collapsedBound
+            collapsedAnchor -> effectiveCollapsedBound
             dismissedAnchor -> dismissedBound
             else -> error("Unknown BottomSheet anchor")
         }
@@ -344,7 +352,7 @@ fun rememberBottomSheetState(
             onAnchorChanged = { previousAnchor = it },
             coroutineScope = coroutineScope,
             animatable = animatable,
-            collapsedBound = collapsedBound
+            collapsedBound = effectiveCollapsedBound
         )
     }
 }
