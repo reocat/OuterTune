@@ -141,7 +141,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         if (insert(mediaMetadata.toSongEntity().let(block)) == -1L) return
         mediaMetadata.artists.forEachIndexed { index, artist ->
             val artistId = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId()
-            insert(
+            insert( // TODO: use upsert???
                 ArtistEntity(
                     id = artistId,
                     name = artist.name,
@@ -158,7 +158,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         }
         mediaMetadata.genre?.forEachIndexed { index, genre ->
             val genreId = genreByName(genre.title)?.id ?: GenreEntity.generateGenreId()
-            insert(
+            insert( // TODO: use upsert???
                 GenreEntity(
                     id = genreId,
                     title = genre.title,
@@ -173,14 +173,17 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 )
             )
         }
-        /*
+
         mediaMetadata.album?.let {
             val album = albumsByName(it.title)
             val albumId = album?.id ?: GenreEntity.generateGenreId()
-            insert(
-                GenreEntity(
+            upsert(
+                AlbumEntity(
                     id = albumId,
                     title = it.title,
+                    thumbnailUrl = album?.thumbnailUrl?: mediaMetadata.thumbnailUrl,
+                    songCount = 1,
+                    duration = (album?.duration ?: 0) + mediaMetadata.duration,
                     isLocal = it.isLocal
                 )
             )
@@ -192,7 +195,6 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 )
             )
         }
-       */
     }
 
     @Transaction
