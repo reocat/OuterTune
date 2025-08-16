@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -115,6 +116,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -186,8 +188,6 @@ import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.ScanPathsKey
-import com.dd3boh.outertune.constants.ScannerImpl
-import com.dd3boh.outertune.constants.ScannerImplKey
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.constants.ScannerSensitivityKey
 import com.dd3boh.outertune.constants.ScannerStrictExtKey
@@ -450,7 +450,7 @@ class MainActivity : ComponentActivity() {
                 val baseColor = if (monetCustomColorEnabled) {
                     try {
                         Color(monetAccentColor.toColorInt())
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         DefaultThemeColor
                     }
                 } else if (enableDynamicTheme && currentSong != null) {
@@ -483,10 +483,7 @@ class MainActivity : ComponentActivity() {
                 key = ScannerSensitivityKey,
                 defaultValue = ScannerMatchCriteria.LEVEL_2
             )
-            val (scannerImpl) = rememberEnumPreference(
-                key = ScannerImplKey,
-                defaultValue = ScannerImpl.TAGLIB
-            )
+            
             val (scanPaths) = rememberPreference(ScanPathsKey, defaultValue = "")
             val (excludedScanPaths) = rememberPreference(ExcludedScanPathsKey, defaultValue = "")
             val (strictExtensions) = rememberPreference(ScannerStrictExtKey, defaultValue = false)
@@ -638,12 +635,13 @@ class MainActivity : ComponentActivity() {
                     // setup filters for new layout
                     if (tabOpenedFromShortcut != null && navigationItems.contains(Screens.Library)) {
                         var filter by rememberEnumPreference(LibraryFilterKey, LibraryFilter.ALL)
-                        filter = when (intent?.action) {
-                            ACTION_SONGS -> LibraryFilter.SONGS
-                            ACTION_ALBUMS -> LibraryFilter.ALBUMS
-                            ACTION_PLAYLISTS -> LibraryFilter.PLAYLISTS
-                            ACTION_SEARCH -> filter // do change filter for search
-                            else -> LibraryFilter.ALL
+                        if (intent?.action != ACTION_SEARCH) {
+                            filter = when (intent?.action) {
+                                ACTION_SONGS -> LibraryFilter.SONGS
+                                ACTION_ALBUMS -> LibraryFilter.ALBUMS
+                                ACTION_PLAYLISTS -> LibraryFilter.PLAYLISTS
+                                else -> LibraryFilter.ALL
+                            }
                         }
                     }
 
@@ -1351,14 +1349,7 @@ class MainActivity : ComponentActivity() {
                                         focusRequester = searchBarFocusRequester,
                                         modifier = Modifier
                                             .align(Alignment.TopCenter)
-                                            .windowInsetsPadding(
-                                                if (shouldShowNavigationRail) {
-                                                    WindowInsets(left = NavigationBarHeight)
-                                                } else {
-                                                    // please shield your eyes.
-                                                    WindowInsets(0.dp)
-                                                }
-                                            )
+                                            .padding(start = if (shouldShowNavigationRail) NavigationBarHeight else 0.dp)
                                     ) {
                                         Crossfade(
                                             targetState = searchSource,
@@ -1401,22 +1392,22 @@ class MainActivity : ComponentActivity() {
 
                             @Composable
                             fun navRail(alignment: Alignment = Alignment.BottomStart) {
-                                // Ensure navigation rail is completely hidden when in settings
                                 if (useRail && shouldShowNavigationRail && navBackStackEntry?.destination?.route?.startsWith("settings") != true) {
-        // Read the preference that indicates if the user enabled pure-black theme
-        val pureBlack = isPureBlackEnabled()
+                                    val pureBlack = isPureBlackEnabled()
+                                    val railCombinedInsets = remember(playerAwareWindowInsets, windowsInsets, cutoutInsets) {
+                                        playerAwareWindowInsets
+                                            .only(WindowInsetsSides.Bottom)
+                                            .add(windowsInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top))
+                                            .add(cutoutInsets.only(WindowInsetsSides.Start))
+                                    }
+                                    val railPaddingValues = railCombinedInsets.asPaddingValues()
                                     Column(
                                         verticalArrangement = Arrangement.Bottom,
                                         modifier = Modifier
                                             .align(alignment)
                                             .fillMaxHeight()
                                             .verticalScroll(rememberScrollState())
-                                            .windowInsetsPadding(
-                                                playerAwareWindowInsets
-                                                    .only(WindowInsetsSides.Bottom)
-                                                    .add(windowsInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Top))
-                                                    .add(cutoutInsets.only(WindowInsetsSides.Start))
-                                            )
+                                            .padding(railPaddingValues)
                                     ) {
                                         NavigationRail(
                                             containerColor = if (pureBlack) Color.Black else Color.Transparent,
@@ -1720,7 +1711,8 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(shouldShowSearchBar, openSearchImmediately) {
                         if (shouldShowSearchBar && openSearchImmediately) {
                             onSearchActiveChange(true)
-                            searchBarFocusRequester.requestFocus()
+                            withFrameNanos { /* wait a frame for composition */ }
+                            runCatching { searchBarFocusRequester.requestFocus() }
                             openSearchImmediately = false
                         }
                     }
