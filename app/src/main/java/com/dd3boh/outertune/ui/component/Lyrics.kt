@@ -488,8 +488,15 @@ fun Lyrics(
                                 }
                             )
                     ) {
+<<<<<<< HEAD
                         val isCurrentLine = currentPos.toULong() in item.start..item.end
                         if (isCurrentLine && lyricsFancy && item.words != null && !context.isPowerSaver()) {
+=======
+                        if (currentPos.toULong() in item.start..item.end + 100.toULong() && lyricsFancy
+                            && item.words != null && !context.isPowerSaver()
+                        ) { // word by word
+                            // now do eye bleach to make lyric line babies
+>>>>>>> b0a58f841 (ui: Fix lyrics translations highlighting/jumping)
                             val style = LocalTextStyle.current.copy(
                                 fontSize = lyricsFontSize.sp,
                                 color = textColor,
@@ -540,7 +547,13 @@ fun Lyrics(
                                     LyricsPosition.RIGHT -> TextAlign.Right
                                 },
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.alpha(if (!isSynced || index == displayedCurrentLineIndex) 1f else 0.5f)
+                                modifier = Modifier.alpha(
+                                    if (!isSynced || ((index == displayedCurrentLineIndex || (index == displayedCurrentLineIndex + 1 && item.isTranslated)) && item.words == null)) {
+                                        1f
+                                    } else {
+                                        0.5f
+                                    }
+                                )
                             )
                         }
                     }
@@ -996,11 +1009,11 @@ fun splitTextToLines(
 
 fun findCurrentLineIndex(lines: List<LyricLine>, position: Long): Int {
     for (index in lines.indices) {
-        if (lines[index].start > position.toUInt()) {
-            return index - 1
+        if (lines[index].start > (position).toUInt()) {
+            return if (lines[index - 1].isTranslated) index - 2 else index - 1
         }
     }
-    return lines.lastIndex
+    return if (lines[lines.lastIndex].isTranslated) lines.lastIndex - 1 else lines.lastIndex
 }
 
 fun calculateLineProgress(line: LyricLine, currentPositionMs: Long): Float {
