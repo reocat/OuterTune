@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +62,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
+import com.dd3boh.outertune.ui.utils.safeWindowInsetsPadding
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -236,7 +239,9 @@ fun LocalSearchScreen(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .then(
+                    safeWindowInsetsPadding()
+                )
                 .align(Alignment.BottomCenter)
         )
     }

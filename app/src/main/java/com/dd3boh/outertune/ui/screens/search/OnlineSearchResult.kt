@@ -72,32 +72,30 @@ import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.models.YTItem
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
+import com.dd3boh.outertune.ui.utils.safeWindowInsetsPadding
+import com.dd3boh.outertune.ui.utils.safeWindowInsets
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnlineSearchResult(
+    query: String,
     navController: NavController,
+    onDismiss: () -> Unit,
     viewModel: OnlineSearchViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = LocalSnackbarHostState.current
+
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
-    val coroutineScope = rememberCoroutineScope()
-    val lazyListState = rememberLazyListState()
-    val snackbarHostState = LocalSnackbarHostState.current
-
     val searchFilter by viewModel.filter.collectAsState()
-    val searchSummary = viewModel.summaryPage
-    val itemsPage by remember(searchFilter) {
-        derivedStateOf {
-            searchFilter?.value?.let {
-                viewModel.viewStateMap[it]
-            }
-        }
-    }
+    val searchSummary by viewModel.searchSummary.collectAsState()
+    val itemsPage by viewModel.itemsPage.collectAsState()
+
+    val lazyListState = rememberLazyListState()
 
     LaunchedEffect(lazyListState) {
         snapshotFlow {
@@ -121,30 +119,30 @@ fun OnlineSearchResult(
                 trailingContent = {
                     IconButton(
                         onClick = {
-                            menuState.show {
+                            LocalMenuState.current.show {
                                 when (item) {
                                     is SongItem -> YouTubeSongMenu(
                                         song = item,
                                         navController = navController,
-                                        onDismiss = menuState::dismiss
+                                        onDismiss = LocalMenuState.current::dismiss
                                     )
 
                                     is AlbumItem -> YouTubeAlbumMenu(
                                         albumItem = item,
                                         navController = navController,
-                                        onDismiss = menuState::dismiss
+                                        onDismiss = LocalMenuState.current::dismiss
                                     )
 
                                     is ArtistItem -> YouTubeArtistMenu(
                                         artist = item,
-                                        onDismiss = menuState::dismiss
+                                        onDismiss = LocalMenuState.current::dismiss
                                     )
 
                                     is PlaylistItem -> YouTubePlaylistMenu(
                                         navController = navController,
                                         playlist = item,
-                                        coroutineScope = coroutineScope,
-                                        onDismiss = menuState::dismiss
+                                        coroutineScope = scope,
+                                        onDismiss = LocalMenuState.current::dismiss
                                     )
                                 }
                             }
@@ -183,12 +181,12 @@ fun OnlineSearchResult(
                             }
                         },
                         onLongClick = {
-                            menuState.show {
+                            LocalMenuState.current.show {
                                 when (item) {
                                     is SongItem -> YouTubeSongMenu(
                                         song = item,
                                         navController = navController,
-                                        onDismiss = menuState::dismiss
+                                        onDismiss = LocalMenuState.current::dismiss
                                     )
 
                                     else -> {}
@@ -210,9 +208,9 @@ fun OnlineSearchResult(
 
     LazyColumn(
         state = lazyListState,
-        contentPadding = LocalPlayerAwareWindowInsets.current
-            .add(WindowInsets(top = SearchFilterHeight))
-            .asPaddingValues()
+        contentPadding = safeWindowInsets(
+            WindowInsets(top = SearchFilterHeight)
+        ).asPaddingValues()
     ) {
         if (searchFilter == null) {
             searchSummary?.summaries?.forEach { summary ->
@@ -283,7 +281,9 @@ fun OnlineSearchResult(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .then(
+                    safeWindowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                )
                 .align(Alignment.BottomCenter)
         )
     }
@@ -303,7 +303,7 @@ fun OnlineSearchResult(
             if (viewModel.filter.value != it) {
                 viewModel.filter.value = it
             }
-            coroutineScope.launch {
+            scope.launch {
                 lazyListState.animateScrollToItem(0)
             }
         },

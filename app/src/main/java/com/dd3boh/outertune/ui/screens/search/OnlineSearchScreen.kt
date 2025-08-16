@@ -66,6 +66,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
+import com.dd3boh.outertune.ui.utils.safeWindowInsetsPadding
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -278,7 +281,9 @@ fun OnlineSearchScreen(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+                .then(
+                    safeWindowInsetsPadding()
+                )
                 .align(Alignment.BottomCenter)
         )
     }
