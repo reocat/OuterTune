@@ -183,6 +183,7 @@ import com.dd3boh.outertune.constants.MonetThemeStyleKey
 import com.dd3boh.outertune.constants.MonetTintBackgroundKey
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
 import com.dd3boh.outertune.constants.NavigationBarHeight
+import com.dd3boh.outertune.constants.NavigationRailWidth
 import com.dd3boh.outertune.constants.OOBE_VERSION
 import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.PauseSearchHistoryKey
@@ -810,7 +811,7 @@ class MainActivity : ComponentActivity() {
                                     .add(cutoutInsets.only(WindowInsetsSides.Horizontal))
                                     .add(
                                         WindowInsets(
-                                            left = if (tabMode || !shouldShowNavigationRail) 0.dp else NavigationBarHeight,
+                                            left = if (tabMode || !shouldShowNavigationRail) 0.dp else NavigationRailWidth,
                                             top = AppBarHeight,
                                             bottom = bottom
                                         )
@@ -1282,8 +1283,8 @@ class MainActivity : ComponentActivity() {
                                                 Icon(
                                                     imageVector =
                                                         if (searchActive || navBackStackEntry?.destination?.route?.startsWith(
-                                                                "search"
-                                                            ) == true
+                                                            "search"
+                                                        ) == true
                                                         ) {
                                                             Icons.AutoMirrored.Outlined.ArrowBack
                                                         } else {
@@ -1319,7 +1320,7 @@ class MainActivity : ComponentActivity() {
                                                         contentDescription = null
                                                     )
                                                 }
-                                            } else if (navBackStackEntry?.destination?.route in Screens.getAllScreens()
+                                            } else if (!shouldShowNavigationRail && navBackStackEntry?.destination?.route in Screens.getAllScreens()
                                                     .map { it.route }
                                             ) {
                                                 Box(
@@ -1349,7 +1350,7 @@ class MainActivity : ComponentActivity() {
                                         focusRequester = searchBarFocusRequester,
                                         modifier = Modifier
                                             .align(Alignment.TopCenter)
-                                            .padding(start = if (shouldShowNavigationRail) NavigationBarHeight else 0.dp)
+                                            .padding(start = if (shouldShowNavigationRail) NavigationRailWidth else 0.dp)
                                     ) {
                                         Crossfade(
                                             targetState = searchSource,
@@ -1493,6 +1494,35 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 )
                                             }
+                                            Spacer(modifier = Modifier.weight(1f))
+                                            val updateAvailable by rememberPreference(UpdateAvailableKey, defaultValue = false)
+                                            NavigationRailItem(
+                                                selected = navBackStackEntry?.destination?.route == "settings",
+                                                icon = {
+                                                    BadgedBox(
+                                                        badge = {
+                                                            if (ENABLE_UPDATE_CHECKER && updateAvailable) {
+                                                                Badge()
+                                                            }
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Outlined.Settings,
+                                                            contentDescription = null
+                                                        )
+                                                    }
+                                                },
+                                                label = { if (!slimNav) Text(text = stringResource(R.string.settings)) },
+                                                onClick = {
+                                                    if (playerBottomSheetState.isExpanded) {
+                                                        playerBottomSheetState.collapseSoft()
+                                                    }
+                                                    if (navBackStackEntry?.destination?.route != "settings") {
+                                                        navController.navigate("settings")
+                                                    }
+                                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                }
+                                            )
                                         }
                                     }
                                 }
