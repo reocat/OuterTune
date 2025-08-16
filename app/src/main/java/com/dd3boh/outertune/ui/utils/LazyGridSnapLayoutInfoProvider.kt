@@ -67,7 +67,7 @@ fun calculateDistanceToDesiredSnapPosition(
     positionInLayout: (layoutSize: Float, itemSize: Float) -> Float,
 ): Float {
     val containerSize =
-        layoutInfo.singleAxisViewportSize - layoutInfo.beforeContentPadding - layoutInfo.afterContentPadding
+        (layoutInfo.singleAxisViewportSize - layoutInfo.beforeContentPadding - layoutInfo.afterContentPadding).coerceAtLeast(0)
 
     val desiredDistance = positionInLayout(containerSize.toFloat(), item.size.width.toFloat())
     val itemCurrentPosition = item.offset.x.toFloat()

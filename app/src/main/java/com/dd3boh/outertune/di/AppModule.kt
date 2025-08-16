@@ -7,8 +7,8 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
-import com.dd3boh.outertune.db.InternalDatabase
 import com.dd3boh.outertune.db.MusicDatabase
+import com.dd3boh.outertune.db.DatabasePatcher
 import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
@@ -39,7 +39,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): MusicDatabase =
-        InternalDatabase.newInstance(context)
+        DatabasePatcher.buildPatched(context)
 
     @Provides
     @Singleton
