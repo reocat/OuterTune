@@ -281,9 +281,7 @@ fun OnlineSearchResult(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
-                .then(
-                    safeWindowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-                )
+                .safeWindowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
                 .align(Alignment.BottomCenter)
         )
     }

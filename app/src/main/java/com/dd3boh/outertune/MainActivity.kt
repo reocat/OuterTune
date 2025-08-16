@@ -1068,7 +1068,11 @@ class MainActivity : ComponentActivity() {
                                             }
                                         )
                                     ) {
-                                        OnlineSearchResult(navController)
+                                        OnlineSearchResult(
+                                            query = navBackStackEntry.arguments?.getString("query") ?: "",
+                                            navController = navController,
+                                            onDismiss = { navController.popBackStack() }
+                                        )
                                     }
                                     composable(
                                         route = "album/{albumId}",

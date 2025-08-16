@@ -239,9 +239,7 @@ fun LocalSearchScreen(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
-                .then(
-                    safeWindowInsetsPadding()
-                )
+                .safeWindowInsetsPadding()
                 .align(Alignment.BottomCenter)
         )
     }
