@@ -296,7 +296,9 @@ fun BoxScope.QueueContent(
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(isSearching) {
         if (isSearching && (queueState == null || queueState.isExpanded)) {
-            focusRequester.requestFocus()
+            // Ensure the node is attached before requesting focus
+            withFrameNanos { /* wait a frame for composition */ }
+            runCatching { focusRequester.requestFocus() }
         }
     }
 
@@ -398,7 +400,11 @@ fun BoxScope.QueueContent(
             }
             detachedQueue?.let {
                 if (scrollToCurrentSong) {
-                    lazySongsListState.scrollToItem(it.getQueuePosShuffled())
+                    val target = it.getQueuePosShuffled()
+                    withFrameNanos { /* wait a frame for layout to attach */ }
+                    if (target in 0 until lazySongsListState.layoutInfo.totalItemsCount) {
+                        runCatching { lazySongsListState.scrollToItem(target) }
+                    }
                 }
             }
             return@LaunchedEffect
@@ -410,7 +416,10 @@ fun BoxScope.QueueContent(
         }
 
         if (scrollToCurrentSong && currentWindowIndex != -1 && !isSearching) {
-            lazySongsListState.scrollToItem(currentWindowIndex)
+            withFrameNanos { /* wait a frame for layout to attach */ }
+            if (currentWindowIndex in 0 until lazySongsListState.layoutInfo.totalItemsCount) {
+                runCatching { lazySongsListState.scrollToItem(currentWindowIndex) }
+            }
         }
 
         selectedItems.clear()
@@ -418,9 +427,14 @@ fun BoxScope.QueueContent(
 
     LaunchedEffect(mqExpand, scrollToCurrentSong) { // scroll to queue
         if (mqExpand) {
-            lazyQueuesListState.animateScrollToItem(playingQueue)
+            withFrameNanos { /* wait a frame for layout to attach */ }
+            if (playingQueue in 0 until lazyQueuesListState.layoutInfo.totalItemsCount) {
+                runCatching { lazyQueuesListState.animateScrollToItem(playingQueue) }
+            }
             if (scrollToCurrentSong && currentWindowIndex != -1) {
-                lazySongsListState.scrollToItem(currentWindowIndex)
+                if (currentWindowIndex in 0 until lazySongsListState.layoutInfo.totalItemsCount) {
+                    runCatching { lazySongsListState.scrollToItem(currentWindowIndex) }
+                }
             }
         }
     }
