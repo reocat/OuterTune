@@ -161,7 +161,7 @@ fun Lyrics(
     val playerConnection = LocalPlayerConnection.current ?: return
     val menuState = LocalMenuState.current
     val density = LocalDensity.current
-    var showLyrics by rememberPreference(ShowLyricsKey, false)
+    var (showLyrics, onShowLyricsChange) = rememberPreference(ShowLyricsKey, false)
     val landscapeOffset = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val scope = rememberCoroutineScope()
 
@@ -608,7 +608,7 @@ fun Lyrics(
                     }
                 } else {
                     IconButton(
-                        onClick = { showLyrics = false }
+                        onClick = { onShowLyricsChange(false) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
@@ -727,6 +727,7 @@ fun Lyrics(
                 }
             }
         }
+    }
     }
     if (showShareImageDialog && selectedIndices.isNotEmpty()) {
         val selectedLyrics = selectedIndices.sorted()

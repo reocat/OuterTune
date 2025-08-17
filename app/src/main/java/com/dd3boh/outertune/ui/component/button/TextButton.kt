@@ -23,7 +23,7 @@ fun IconLabelButton(
     icon: ImageVector,
     background: Color = MaterialTheme.colorScheme.secondaryContainer,
     tint: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) = Row(
     verticalAlignment = Alignment.Companion.CenterVertically,
@@ -36,12 +36,12 @@ fun IconLabelButton(
         imageVector = icon,
         contentDescription = null,
         tint = tint,
-        modifier = Modifier.Companion.padding(4.dp)
+        modifier = Modifier.padding(4.dp)
     )
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.Companion.padding(horizontal = 4.dp)
+        modifier = Modifier.padding(horizontal = 4.dp)
     )
 }
 
@@ -51,7 +51,7 @@ fun IconLabelButton(
     painter: Painter,
     background: Color = MaterialTheme.colorScheme.secondaryContainer,
     tint: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) = Row(
     verticalAlignment = Alignment.Companion.CenterVertically,
@@ -64,11 +64,11 @@ fun IconLabelButton(
         painter = painter,
         contentDescription = null,
         tint = tint,
-        modifier = Modifier.Companion.padding(4.dp)
+        modifier = Modifier.padding(4.dp)
     )
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.Companion.padding(horizontal = 4.dp)
+        modifier = Modifier.padding(horizontal = 4.dp)
     )
 }

@@ -94,7 +94,7 @@ fun SongListItem(
     disableShowMenu: Boolean = false,
     enableSwipeToQueue: Boolean = true,
     snackbarHostState: SnackbarHostState? = null,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
 ) {
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
@@ -140,7 +140,7 @@ fun SongListItem(
                     isActive = isActive,
                     isPlaying = isPlaying,
                     shape = RoundedCornerShape(ThumbnailCornerRadius),
-                    modifier = Modifier.Companion.size(ListThumbnailSize)
+                    modifier = Modifier.size(ListThumbnailSize)
                 )
             },
             trailingContent = {
@@ -227,7 +227,7 @@ fun SongListItem(
 @Composable
 fun SongFolderItem(
     folderTitle: String,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
 ) = ListItem(
     title = folderTitle, thumbnailContent = {
         Icon(
@@ -243,7 +243,7 @@ fun SongFolderItem(
 fun SongFolderItem(
     folderTitle: String,
     subtitle: String?,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
 ) = ListItem(
     title = folderTitle,
     subtitle = subtitle,
@@ -260,7 +260,7 @@ fun SongFolderItem(
 @Composable
 fun SongFolderItem(
     folder: DirectoryTree,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     folderTitle: String? = null,
     menuState: MenuState,
     navController: NavController,
@@ -375,13 +375,13 @@ fun SongGridItem(
     thumbnailContent = {
         Box(
             contentAlignment = Alignment.Companion.Center,
-            modifier = Modifier.Companion.size(GridThumbnailHeight)
+            modifier = Modifier.size(GridThumbnailHeight)
         ) {
             if (song.song.isLocal) {
                 val imageCache = LocalImageCache.current
                 AsyncImageLocal(
                     image = { imageCache.getLocalThumbnail(song.song.localPath, true) },
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(ThumbnailCornerRadius))
                 )

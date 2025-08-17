@@ -147,7 +147,7 @@ class MediaLibrarySessionCallback @Inject constructor(
                         browsableMediaItem("${MusicService.PLAYLIST}/${PlaylistEntity.LIKED_PLAYLIST_ID}", context.getString(R.string.liked_songs), context.resources.getQuantityString(R.plurals.n_song, likedSongCount, likedSongCount), drawableUri(R.drawable.favorite), MediaMetadata.MEDIA_TYPE_PLAYLIST),
                         browsableMediaItem("${MusicService.PLAYLIST}/${PlaylistEntity.DOWNLOADED_PLAYLIST_ID}", context.getString(R.string.downloaded_songs), context.resources.getQuantityString(R.plurals.n_song, downloadedSongCount, downloadedSongCount), drawableUri(R.drawable.download), MediaMetadata.MEDIA_TYPE_PLAYLIST)
                     ) + database.playlistInLibraryAsc().first().map { playlist ->
-                        browsableMediaItem("${MusicService.PLAYLIST}/${playlist.id}", playlist.playlist.name, context.resources.getQuantityString(R.plurals.n_song, playlist.songCount, playlist.songCount), playlist.thumbnails.firstOrNull()?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST)
+                        browsableMediaItem("${MusicService.PLAYLIST}/${playlist.id}", playlist.playlist.name, context.resources.getQuantityString(R.plurals.n_song, playlist.songCount, playlist.songCount), drawableUri(R.drawable.queue_music), MediaMetadata.MEDIA_TYPE_PLAYLIST)
                     }
                 }
 

@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
@@ -184,7 +185,8 @@ fun PlaylistMenu(
                     )
                 }
             }
-        }
+        },
+        showBadges = true
     )
 
     HorizontalDivider()
@@ -265,16 +267,18 @@ fun PlaylistMenu(
             showChoosePlaylistDialog = true
         }
 
-        DownloadGridMenu(
-            state = downloadState,
-            onDownload = {
-                val _songs = songs.filterNot { it.song.isLocal }.map{ it.toMediaMetadata() }
-                downloadUtil.download(_songs)
-            },
-            onRemoveDownload = {
-                showRemoveDownloadDialog = true
-            }
-        )
+        if (songs.fastAny { !it.song.isLocal }) {
+            DownloadGridMenu(
+                state = downloadState,
+                onDownload = {
+                    val _songs = songs.filterNot { it.song.isLocal }.map { it.toMediaMetadata() }
+                    downloadUtil.download(_songs)
+                },
+                onRemoveDownload = {
+                    showRemoveDownloadDialog = true
+                }
+            )
+        }
 
         if (editable) {
             GridMenuItem(

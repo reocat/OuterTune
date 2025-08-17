@@ -9,16 +9,25 @@ package com.dd3boh.outertune.ui.component.items
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
+import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EditOff
 import androidx.compose.material.icons.outlined.OfflinePin
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.EditOff
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.OfflinePin
+import androidx.compose.material.icons.rounded.SdCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -27,48 +36,42 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
-import coil3.compose.AsyncImage
-import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
-import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.utils.getNSongsString
 
 @Composable
 fun AutoPlaylistListItem(
     playlist: PlaylistEntity,
     thumbnail: ImageVector,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) = ListItem(
     title = playlist.name,
     subtitle = stringResource(id = R.string.auto_playlist),
     thumbnailContent = {
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .size(ListThumbnailSize)
                 .background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(128.dp),
                     shape = RoundedCornerShape(ThumbnailCornerRadius)
                 )
         ) {
             Icon(
                 imageVector = thumbnail,
                 contentDescription = null,
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .size(ListThumbnailSize / 2 + 4.dp)
-                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
                     .align(Alignment.Companion.Center)
             )
         }
@@ -81,7 +84,7 @@ fun AutoPlaylistListItem(
 fun AutoPlaylistGridItem(
     playlist: PlaylistEntity,
     thumbnail: ImageVector,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     fillMaxWidth: Boolean = false,
 ) = GridItem(
     title = playlist.name,
@@ -89,18 +92,18 @@ fun AutoPlaylistGridItem(
     thumbnailContent = {
         val width = maxWidth
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(ThumbnailCornerRadius)
+                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(128.dp),
+                    shape = RoundedCornerShape(ThumbnailCornerRadius)
                 )
         ) {
             Icon(
                 imageVector = thumbnail,
                 contentDescription = null,
                 tint = LocalContentColor.current.copy(alpha = 0.8f),
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .size(width / 2 + 10.dp)
                     .align(Alignment.Companion.Center)
             )
@@ -113,7 +116,8 @@ fun AutoPlaylistGridItem(
 @Composable
 fun PlaylistListItem(
     playlist: Playlist,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
+    showBadges: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) = ListItem(
     title = playlist.playlist.name,
@@ -123,10 +127,11 @@ fun PlaylistListItem(
         else
             getNSongsString(playlist.songCount, playlist.downloadCount),
     badges = {
+        if (!showBadges) return@ListItem
         Icon(
             imageVector = if (playlist.playlist.isEditable) Icons.Outlined.Edit else Icons.Outlined.EditOff,
             contentDescription = null,
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .size(18.dp)
                 .padding(end = 2.dp)
         )
@@ -135,7 +140,7 @@ fun PlaylistListItem(
             Icon(
                 imageVector = Icons.Outlined.CloudOff,
                 contentDescription = null,
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .size(18.dp)
                     .padding(end = 2.dp)
             )
@@ -145,7 +150,7 @@ fun PlaylistListItem(
             Icon(
                 imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .size(18.dp)
                     .padding(end = 2.dp)
             )
@@ -153,16 +158,7 @@ fun PlaylistListItem(
     },
     thumbnailContent = {
         PlaylistThumbnail(
-            thumbnails = playlist.thumbnails,
-            size = ListThumbnailSize,
-            placeHolder = {
-                Icon(
-                    painter = painterResource(R.drawable.queue_music),
-                    contentDescription = null,
-                    modifier = Modifier.Companion.size(ListThumbnailSize)
-                )
-            },
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(ThumbnailCornerRadius)
+            playlist = playlist.playlist,
         )
     },
     trailingContent = trailingContent,
@@ -172,7 +168,7 @@ fun PlaylistListItem(
 @Composable
 fun PlaylistGridItem(
     playlist: Playlist,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     fillMaxWidth: Boolean = false,
 ) = GridItem(
     title = playlist.playlist.name,
@@ -186,7 +182,7 @@ fun PlaylistGridItem(
             Icon(
                 imageVector = Icons.Outlined.OfflinePin,
                 contentDescription = null,
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .size(18.dp)
                     .padding(end = 2.dp)
             )
@@ -195,19 +191,10 @@ fun PlaylistGridItem(
     thumbnailContent = {
         val width = maxWidth
         PlaylistThumbnail(
-            thumbnails = playlist.thumbnails,
+            playlist = playlist.playlist,
             size = width,
-            placeHolder = {
-                Icon(
-                    painter = painterResource(R.drawable.queue_music),
-                    contentDescription = null,
-                    tint = LocalContentColor.current.copy(alpha = 0.8f),
-                    modifier = Modifier.Companion
-                        .size(width / 2)
-                        .align(Alignment.Companion.Center)
-                )
-            },
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(ThumbnailCornerRadius)
+            iconPadding = width / 6,
+            iconTint = LocalContentColor.current.copy(alpha = 0.8f),
         )
     },
     fillMaxWidth = fillMaxWidth,
@@ -216,71 +203,51 @@ fun PlaylistGridItem(
 
 @Composable
 fun PlaylistThumbnail(
-    thumbnails: List<String>,
-    size: Dp,
-    placeHolder: @Composable () -> Unit,
-    shape: Shape,
+    playlist: PlaylistEntity,
+    size: Dp = ListThumbnailSize,
+    shape: Shape = RoundedCornerShape(ThumbnailCornerRadius),
+    iconPadding: Dp = 4.dp,
+    iconTint: Color = LocalContentColor.current,
+    customIcon: (@Composable BoxScope.() -> Unit)? = null,
 ) {
-    val imageCache = LocalImageCache.current
-    when (thumbnails.size) {
-        0 -> placeHolder()
+    /**
+     * 8: Local playlist
+     * 4: Synced/editable playlist
+     * 2: Saved remote playlist
+     * 1: Supports endpoints
+     *
+     */
+    var features = 0
+    if (playlist.isLocal) features += 8
+    if (playlist.isEditable) features += 4
+    if (playlist.bookmarkedAt != null) features += 2
+    if ((playlist.playEndpointParams ?: playlist.radioEndpointParams
+        ?: playlist.shuffleEndpointParams) != null
+    ) features += 1
 
-        1 -> if (thumbnails[0].startsWith("/storage")) {
-            AsyncImage(
-                model = thumbnails[0],
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp))
+    ) {
+        if (customIcon == null) {
+            Icon(
+                imageVector = when {
+                    // TODO: Icons that actually godammn match with each other wth is this google???
+                    features >= 8 -> Icons.AutoMirrored.Rounded.QueueMusic
+                    features >= 4 -> Icons.AutoMirrored.Rounded.PlaylistAdd
+                    features >= 2 -> Icons.AutoMirrored.Rounded.PlaylistPlay
+                    else -> Icons.Rounded.Error
+                },
                 contentDescription = null,
-                contentScale = ContentScale.Companion.Crop,
-                modifier = Modifier.Companion
-                    .size(size)
-                    .clip(shape)
+                tint = iconTint,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(iconPadding)
             )
         } else {
-            AsyncImage(
-                model = thumbnails[0],
-                contentDescription = null,
-                contentScale = ContentScale.Companion.Crop,
-                modifier = Modifier.Companion
-                    .size(size)
-                    .clip(shape)
-            )
-        }
-
-        else -> Box(
-            modifier = Modifier.Companion
-                .size(size)
-                .clip(shape)
-        ) {
-            Box(
-                modifier = Modifier.Companion
-                    .fillMaxSize()
-                    .clip(shape)
-            ) {
-                listOf(
-                    Alignment.Companion.TopStart,
-                    Alignment.Companion.TopEnd,
-                    Alignment.Companion.BottomStart,
-                    Alignment.Companion.BottomEnd
-                ).fastForEachIndexed { index, alignment ->
-                    if (thumbnails.getOrNull(index)?.startsWith("/storage") == true) {
-                        AsyncImageLocal(
-                            image = { imageCache.getLocalThumbnail(thumbnails[index], true) },
-                            contentScale = ContentScale.Companion.Crop,
-                            modifier = Modifier.Companion
-                                .align(alignment)
-                                .size(size / 2)
-                        )
-                    } else {
-                        AsyncImage(
-                            model = thumbnails.getOrNull(index),
-                            contentDescription = null,
-                            contentScale = ContentScale.Companion.Crop,
-                            modifier = Modifier.Companion
-                                .align(alignment)
-                                .size(size / 2)
-                        )
-                    }
-                }
-            }
+            customIcon()
         }
     }
 }

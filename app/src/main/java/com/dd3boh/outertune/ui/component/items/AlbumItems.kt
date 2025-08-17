@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AlbumListItem(
     album: Album,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     showLikedIcon: Boolean = true,
     badges: @Composable RowScope.() -> Unit = {
         val database = LocalDatabase.current
@@ -96,7 +96,7 @@ fun AlbumListItem(
             isActive = isActive,
             isPlaying = isPlaying,
             shape = RoundedCornerShape(ThumbnailCornerRadius),
-            modifier = Modifier.Companion.size(ListThumbnailSize)
+            modifier = Modifier.size(ListThumbnailSize)
         )
     },
     trailingContent = trailingContent,
@@ -106,7 +106,7 @@ fun AlbumListItem(
 @Composable
 fun AlbumGridItem(
     album: Album,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     coroutineScope: CoroutineScope,
     badges: @Composable RowScope.() -> Unit = {
         val database = LocalDatabase.current

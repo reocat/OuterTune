@@ -208,7 +208,7 @@ fun LibraryPlaylistListItem(
                                 privacyStatus = playlist.playlist.privacyStatus,
                                 author = null,
                                 songCountText = null,
-                                thumbnail = playlist.thumbnails.getOrNull(0),
+                                thumbnail = null,
                                 playEndpoint = WatchEndpoint(
                                     playlistId = browseId,
                                     params = playlist.playlist.playEndpointParams
@@ -288,7 +288,7 @@ fun LibraryPlaylistGridItem(
                                     privacyStatus = playlist.playlist.privacyStatus,
                                     author = null,
                                     songCountText = null,
-                                    thumbnail = playlist.thumbnails.getOrNull(0),
+                                    thumbnail = null,
                                     playEndpoint = WatchEndpoint(
                                         playlistId = browseId,
                                         params = playlist.playlist.playEndpointParams

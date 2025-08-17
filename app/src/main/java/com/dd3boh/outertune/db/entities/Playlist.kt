@@ -22,7 +22,7 @@ data class Playlist(
             entityColumn = "songId"
         )
     )
-    val songThumbnails: List<String?>,
+    val songThumbnails: List<String?>, //  TODO: Remove during next db update
 ) : LocalItem() {
     override val id: String
         get() = playlist.id
@@ -31,6 +31,7 @@ data class Playlist(
     override val thumbnailUrl: String?
         get() = null
 
+    @Deprecated("Thumbnails are to be replaced with icons.")
     val thumbnails: List<String>
         get() {
             return if (playlist.thumbnailUrl != null)
