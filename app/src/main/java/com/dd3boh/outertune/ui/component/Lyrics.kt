@@ -543,7 +543,7 @@ fun Lyrics(
                                 },
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.alpha(
-                                    if (!isSynced || ((index == displayedCurrentLineIndex || (index == displayedCurrentLineIndex + 1 && item.isTranslated)) && item.words == null)) {
+                                    if (!isSynced || ((index == displayedCurrentLineIndex || (index == displayedCurrentLineIndex + 1 && item.isTranslated)))) {
                                         1f
                                     } else {
                                         0.5f
@@ -1006,7 +1006,7 @@ fun splitTextToLines(
 fun findCurrentLineIndex(lines: List<LyricLine>, position: Long): Int {
     for (index in lines.indices) {
         if (lines[index].start > (position).toUInt()) {
-            return if (lines[index - 1].isTranslated) index - 2 else index - 1
+            return if (index > 0 && lines[index - 1].isTranslated) index - 2 else index - 1
         }
     }
     return if (lines[lines.lastIndex].isTranslated) lines.lastIndex - 1 else lines.lastIndex
