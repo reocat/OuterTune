@@ -745,15 +745,13 @@ fun BoxScope.QueueContent(
                                         )
                                     }
                                     if (!lockQueue && !detachedHead) {
-                                        IconButton(
-                                            onClick = { },
-                                            modifier = Modifier.draggableHandle()
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.DragHandle,
-                                                contentDescription = null
-                                            )
-                                        }
+                                        Icon(
+                                            imageVector = Icons.Outlined.DragHandle,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .padding(end = 16.dp)
+                                                .draggableHandle()
+                                        )
                                     }
                                 }
                             },
@@ -790,7 +788,6 @@ fun BoxScope.QueueContent(
                                         }
                                     }
                                 )
-                                .longPressDraggableHandle()
                         )
                     }
 
