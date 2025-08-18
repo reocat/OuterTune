@@ -538,6 +538,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
             item.queuePos = item.queue.indexOf(currentSong)
         } else {
             item.queuePos = item.queue.indexOf(item.queue.fastFirstOrNull { it.shuffleIndex == 0 })
+            item.lastSongPos = C.TIME_UNSET
         }
 
         item.shuffled = true
