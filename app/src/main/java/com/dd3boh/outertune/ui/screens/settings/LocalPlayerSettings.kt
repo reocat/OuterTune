@@ -42,7 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.AutomaticScannerKey
+import com.dd3boh.outertune.constants.DEFAULT_ENABLED_FILTERS
 import com.dd3boh.outertune.constants.DEFAULT_ENABLED_TABS
+import com.dd3boh.outertune.constants.EnabledFiltersKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
 import com.dd3boh.outertune.constants.LocalLibraryEnableKey
 import com.dd3boh.outertune.constants.TopBarInsets
@@ -64,15 +66,18 @@ fun LocalPlayerSettings(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val (autoScan, onAutoScanChange) = rememberPreference(AutomaticScannerKey, defaultValue = false)
+    val (enabledFilters, onEnabledFiltersChange) = rememberPreference(EnabledFiltersKey, defaultValue = DEFAULT_ENABLED_FILTERS)
     val (enabledTabs, onEnabledTabsChange) = rememberPreference(EnabledTabsKey, defaultValue = DEFAULT_ENABLED_TABS)
     val (localLibEnable, onLocalLibEnableChange) = rememberPreference(LocalLibraryEnableKey, defaultValue = true)
 
     LaunchedEffect(localLibEnable) {
-        val containsFolders = enabledTabs.contains('F')
-        if (localLibEnable && !containsFolders) {
-            onEnabledTabsChange(enabledTabs + "F")
-        } else if (!localLibEnable && containsFolders) {
+        var containsFolders = enabledTabs.contains('F')
+        if (!localLibEnable && containsFolders) {
             onEnabledTabsChange(enabledTabs.filterNot { it == 'F' })
+        }
+        containsFolders = enabledFilters.contains('F')
+        if (!localLibEnable && containsFolders) {
+            onEnabledFiltersChange(enabledFilters.filterNot { it == 'F' })
         }
     }
 

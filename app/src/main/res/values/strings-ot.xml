@@ -197,7 +197,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="local_player_settings_title">Local media</string>
     <string name="flat_subfolders_title">Flatten subfolders</string>
     <string name="flat_subfolders_description">Disable to preserve the file structure as on disk</string>
-    <string name="disable_lm_confirm">Are you sure you want to disable local media features?</string>
+    <string name="disable_lm_confirm">Are you sure you want to disable local media features? Your library contents will not be affected.</string>
 
     <!-- Scanner settings -->
     <string name="auto_scanner_title">Scan automatically</string>
