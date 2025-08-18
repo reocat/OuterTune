@@ -206,7 +206,7 @@ fun ColumnScope.SyncParamsFrag() {
         key = YtmSyncConflictKey,
         defaultValue = SyncConflictResolution.ADD_ONLY
     )
-    val (syncMode, onSyncModeChange) = rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RO)
+    val (syncMode, onSyncModeChange) = rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RW)
 
     EnumListPreference(
         title = { Text(stringResource(R.string.sync_mode)) },

@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -78,6 +77,7 @@ import com.dd3boh.outertune.utils.joinByBullet
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.zionhuang.innertube.YouTube
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -98,12 +98,13 @@ fun SongMenu(
     val syncUtils = LocalSyncUtils.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
-    val syncMode by rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RO)
+    val syncMode by rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RW)
 
     val songState = database.song(originalSong.id).collectAsState(initial = originalSong)
     val song = songState.value ?: originalSong
     val download by LocalDownloadUtil.current.getDownload(originalSong.id).collectAsState(initial = null)
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope =
+        CoroutineScope(Dispatchers.IO) // rememberCoroutineScope has exception "rememberCoroutineScope left the composition"
 
     val currentFormatState = database.format(originalSong.id).collectAsState(initial = null)
     val currentFormat = currentFormatState.value
@@ -231,7 +232,7 @@ fun SongMenu(
             ) {
                 database.transaction {
                     coroutineScope.launch {
-                        playlist?.id?.let { playlistId ->
+                        playlist?.playlist?.browseId?.let { playlistId ->
                             if (playlistSong.map.setVideoId != null) {
                                 YouTube.removeFromPlaylist(
                                     playlistId, playlistSong.map.songId, playlistSong.map.setVideoId
@@ -382,7 +383,7 @@ fun SongMenu(
         AddToPlaylistDialog(
             navController = navController,
             onGetSong = { playlist ->
-                coroutineScope.launch(Dispatchers.IO) {
+                CoroutineScope(Dispatchers.IO).launch {
                     playlist.playlist.browseId?.let { browseId ->
                         YouTube.addToPlaylist(browseId, song.id)
                     }

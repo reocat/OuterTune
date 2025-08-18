@@ -55,7 +55,7 @@ fun AddToPlaylistDialog(
     val database = LocalDatabase.current
     val coroutineScope = rememberCoroutineScope()
 
-    val syncMode by rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RO)
+    val syncMode by rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RW)
 
     var playlists by remember {
         mutableStateOf(emptyList<Playlist>())

@@ -53,9 +53,13 @@ data class LibraryPage(
                     radioEndpoint = renderer.menu?.menuRenderer?.items?.find {
                         it.menuNavigationItemRenderer?.icon?.iconType == "MIX"
                     }?.menuNavigationItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
-                    isEditable = renderer.menu?.menuRenderer?.items?.find {
-                        it.menuNavigationItemRenderer?.icon?.iconType == "EDIT"
-                    } != null
+                    isEditable = renderer.menu?.menuRenderer?.items?.none {
+                        // idk why we have the same menu even if on YTM webpage it shows different menus. I would rather
+                        // check for a proper edit status or even a "delete playlist" item in the menu but... this is
+                        // good enough for now...
+                        // hax: You can't inLibrary a playlist you can edit, so check for that
+                        it.toggleMenuServiceItemRenderer?.defaultIcon?.iconType == "LIBRARY_SAVED"
+                    } == true
                 )
 
                 renderer.isArtist -> ArtistItem(
