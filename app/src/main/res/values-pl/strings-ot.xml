@@ -220,4 +220,10 @@
     <string name="tap_show_more">Kliknij, by uzyskać więcej informacji</string>
     <string name="err_invalid_ytm_song">Nieudano włączyć piosenke. Można włączyć tylko treści z Youtube Music.</string>
     <string name="scanner_sensitivity_L0">Wybierz pierwszy wynik podany przez YouTube, gdy wyszukiwanie na YouTube jest włączone, w przeciwnym razie dopasuj tytuł</string>
+    <string name="sort_by_track_number">Numer utworu</string>
+    <string name="bits_per_sample">Bity na próbkę</string>
+    <string name="disc_number">Numer dysku</string>
+    <string name="extra_details">Dodatkowe szczegóły</string>
+    <string name="file_path">Ścieżka pliku</string>
+    <string name="track_number">Numer utworu</string>
 </resources>
