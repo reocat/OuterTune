@@ -44,27 +44,27 @@ class CoilBitmapLoader @Inject constructor(
 
     override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> =
         scope.future(Dispatchers.IO) {
-            BitmapFactory.decodeByteArray(data, 0, data.size)
-                ?: error("Could not decode image data")
+            BitmapFactory.decodeByteArray(data, 0, data.size) ?: imageCache.placeholderImage
         }
 
     override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> =
         scope.future(Dispatchers.IO) {
-            // local images
-            if (uri.toString().startsWith("/storage/")) {
-                return@future imageCache.getLocalThumbnail(uri.toString()) ?: imageCache.placeholderImage
-            }
-            val result = context.imageLoader.execute(
-                ImageRequest.Builder(context)
-                    .data(uri)
-                    .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
-                    .build()
-            )
-            if (result is ErrorResult) {
-                reportException(ExecutionException(result.throwable))
-                return@future imageCache.placeholderImage
-            }
             try {
+                // local images
+                if (uri.toString().startsWith("/storage/")) {
+                    return@future imageCache.getLocalThumbnail(uri.toString()) ?: imageCache.placeholderImage
+                }
+                val result = context.imageLoader.execute(
+                    ImageRequest.Builder(context)
+                        .data(uri)
+                        .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
+                        .build()
+                )
+                if (result is ErrorResult) {
+                    reportException(ExecutionException(result.throwable))
+                    return@future imageCache.placeholderImage
+                }
+
                 result.image!!.toBitmap()
             } catch (e: Exception) {
                 reportException(ExecutionException(e))
@@ -74,21 +74,22 @@ class CoilBitmapLoader @Inject constructor(
 
     fun loadBitmapOrNull(uri: Uri): ListenableFuture<Bitmap?> =
         scope.future(Dispatchers.IO) {
-            // local images
-            if (uri.toString().startsWith("/storage/")) {
-                return@future imageCache.getLocalThumbnail(uri.toString()) ?: imageCache.placeholderImage
-            }
-            val result = context.imageLoader.execute(
-                ImageRequest.Builder(context)
-                    .data(uri)
-                    .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
-                    .build()
-            )
-            if (result is ErrorResult) {
-                reportException(ExecutionException(result.throwable))
-                return@future null
-            }
             try {
+                // local images
+                if (uri.toString().startsWith("/storage/")) {
+                    return@future imageCache.getLocalThumbnail(uri.toString()) ?: imageCache.placeholderImage
+                }
+                val result = context.imageLoader.execute(
+                    ImageRequest.Builder(context)
+                        .data(uri)
+                        .allowHardware(false) // pixel access is not supported on Config#HARDWARE bitmaps
+                        .build()
+                )
+                if (result is ErrorResult) {
+                    reportException(ExecutionException(result.throwable))
+                    return@future null
+                }
+
                 result.image!!.toBitmap()
             } catch (e: Exception) {
                 reportException(ExecutionException(e))
