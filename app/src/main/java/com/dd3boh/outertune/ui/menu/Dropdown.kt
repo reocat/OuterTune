@@ -7,15 +7,19 @@
  */
 package com.dd3boh.outertune.ui.menu
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.rounded.ChevronLeft
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,29 +35,38 @@ import androidx.compose.ui.unit.sp
 data class DropdownItem(
     val title: String,
     val leadingIcon: @Composable (() -> Unit)?,
-    val action: () -> Unit
+    val action: () -> Unit,
+    val secondaryDropdown: List<DropdownItem>? = null
 )
 
 @Composable
 fun ActionDropdown(
     actions: List<DropdownItem>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit = {},
+    extraContent: @Composable (() -> Unit)? = null,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.padding(vertical = 8.dp)
-    ) {
-        IconButton(
-            onClick = {
-                menuExpanded = true
-            },
-        ) {
-            Icon(
-                Icons.Outlined.MoreVert,
-                contentDescription = null
+        modifier = modifier
+            .clickable(
+                onClick = {
+                    menuExpanded = true
+                }
             )
+    ) {
+
+        if (extraContent == null) {
+            Icon(
+                imageVector = Icons.Rounded.MoreVert,
+                contentDescription = null,
+                modifier = modifier
+                    .padding(4.dp),
+            )
+        } else {
+            extraContent()
         }
 
         DropdownMenu(
@@ -61,21 +74,47 @@ fun ActionDropdown(
             onDismissRequest = { menuExpanded = false },
             modifier = Modifier.widthIn(min = 172.dp)
         ) {
-            actions.forEach { action ->
-                DropdownMenuItem(
-                    leadingIcon = action.leadingIcon,
-                    text = {
-                        Text(
-                            text = action.title,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal
+            actions.forEach { item ->
+                Column {
+                    if (item.secondaryDropdown != null) {
+                        ActionDropdown(
+                            actions = item.secondaryDropdown,
+                            onDismiss = { menuExpanded = false },
+                            modifier = Modifier
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .fillMaxWidth()
+                            ) {
+//                                item.leadingIcon?.invoke()
+                                Icon(Icons.Rounded.ChevronLeft, null)
+                                Text(
+                                    text = item.title,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            }
+                        }
+                    } else {
+                        DropdownMenuItem(
+                            leadingIcon = item.leadingIcon,
+                            text = {
+                                Text(
+                                    text = item.title,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            },
+                            onClick = {
+                                item.action()
+                                menuExpanded = false
+                                onDismiss()
+                            }
                         )
-                    },
-                    onClick = {
-                        action.action()
-                        menuExpanded = false
                     }
-                )
+                }
             }
         }
     }

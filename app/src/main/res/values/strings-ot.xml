@@ -23,6 +23,8 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="remote_history">Remote</string>
 
     <!-- Library screens -->
+    <string name="library_filter">Library filter</string>
+    <string name="library_empty">Your library contents will show up here</string>
     <string name="missing_media_permission_warning">Storage permissions is required for local media. Click to grant permission.</string>
 
     <!-- Queue -->
