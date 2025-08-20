@@ -330,7 +330,9 @@ class MainActivity : ComponentActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is MusicBinder) {
                 playerConnection = PlayerConnection(service, database, lifecycleScope)
-                playerConnection?.service?.queueBoard?.setCurrQueue()
+                if (playerConnection?.service?.player?.mediaItemCount == 0) {
+                    playerConnection?.service?.queueBoard?.setCurrQueue()
+                }
             }
         }
 
@@ -885,19 +887,17 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    LaunchedEffect(playerConnection) {
+                    LaunchedEffect(playerConnection, playerConnection?.isPlaying?.value) {
                         playerConnection?.let { pc ->
-                            pc.mediaMetadata.combine(pc.playbackState) { metadata, state ->
-                                metadata to state
-                            }.collectLatest { (metadata, state) ->
-                                if (metadata != null && state == Player.STATE_READY) {
-                                    if (playerBottomSheetState.isDismissed) {
-                                        playerBottomSheetState.collapseSoft()
-                                    }
-                                } else if (metadata == null) {
-                                    if (!playerBottomSheetState.isDismissed) {
-                                        playerBottomSheetState.dismiss()
-                                    }
+                            val hasMediaItem = pc.player.currentMediaItem != null
+                            if (hasMediaItem && !shouldHideNavAndPlayer) {
+                                if (playerBottomSheetState.isDismissed) {
+                                    playerBottomSheetState.collapseSoft()
+                                }
+                            }
+                            else if (!hasMediaItem && !shouldHideNavAndPlayer) {
+                                if (!playerBottomSheetState.isDismissed) {
+                                    playerBottomSheetState.dismiss()
                                 }
                             }
                         }
