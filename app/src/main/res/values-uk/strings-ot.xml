@@ -180,7 +180,8 @@
     <string name="scanner_progress_processing">Обробка…</string>
     <string name="scanner_rejected_dir">Недійсний вибір. Папка сканування не може бути підкаталогом папки завантажень або самою папкою завантажень</string>
     <string name="scanner_progress_discovering">Відкриття…</string>
-    <string name="disable_lm_confirm">Ви впевнені, що хочете вимкнути функції локальних медіа?</string>
+    <string name="disable_lm_confirm">Ви впевнені, що хочете вимкнути функції локальних медіа? Це не вплине на вміст вашої бібліотеки.</string>
+    <string name="scan_paths_description">Виберіть папки на вашому локальному сховищі для сканування пісень</string>
     <string name="clear_image_cache_confirm">Ви впевнені, що хочете очистити кеш зображень? Усі існуючі мініатюри альбомів будуть видалені.</string>
     <string name="oobe_ytm_logon_title">Обліковий запис</string>
     <string name="oobe_local_media_title">Місцеві ЗМІ</string>
