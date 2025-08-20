@@ -105,6 +105,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastAny
+import androidx.media3.common.C
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
@@ -663,6 +664,7 @@ fun BoxScope.QueueContent(
                         coroutineScope.launch(Dispatchers.Main) {
                             // change to this queue, seek to the item clicked on
                             qb.setCurrQueue(detachedQueue)
+                            playerConnection.player.prepare() // else cannot click to play after auto-skip onError stop
                             playerConnection.player.playWhenReady = true
                             detachedHead = false
                         }
