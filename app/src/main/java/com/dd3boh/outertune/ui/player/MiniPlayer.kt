@@ -12,9 +12,13 @@ package com.dd3boh.outertune.ui.player
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
@@ -24,7 +28,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,6 +47,8 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -60,13 +65,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -107,9 +114,8 @@ fun MiniPlayer(
     val error by playerConnection.error.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
-
     val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
-    val currentView = LocalView.current
+
     val coroutineScope = rememberCoroutineScope()
     val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
     val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
@@ -120,174 +126,266 @@ fun MiniPlayer(
     var totalDragDistance by remember { mutableFloatStateOf(0f) }
 
     val animationSpec = spring<Float>(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessLow
+        dampingRatio = Spring.DampingRatioMediumBouncy, 
+        stiffness = Spring.StiffnessMedium
     )
-
-    /**
-     * Calculates the auto-swipe threshold based on swipe sensitivity.
-     * The formula uses a sigmoid function to determine the threshold dynamically.
-     * Constants:
-     * - -11.44748: Controls the steepness of the sigmoid curve.
-     * - 9.04945: Adjusts the midpoint of the curve.
-     * - 600: Base threshold value in pixels.
-     *
-     * @param swipeSensitivity The sensitivity value (typically between 0 and 1).
-     * @return The calculated auto-swipe threshold in pixels.
-     */
+    
     fun calculateAutoSwipeThreshold(swipeSensitivity: Float): Int {
-        return (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()
+        return (500 / (1f + kotlin.math.exp(-(-10.0 * swipeSensitivity + 8.0)))).roundToInt()
     }
     val autoSwipeThreshold = calculateAutoSwipeThreshold(swipeSensitivity)
 
-    Box(
+    val swipeIndicatorScale by animateFloatAsState(
+        targetValue = when {
+            offsetXAnimatable.value.absoluteValue > autoSwipeThreshold * 0.8f -> 1.3f
+            offsetXAnimatable.value.absoluteValue > 80f -> 1.2f
+            offsetXAnimatable.value.absoluteValue > 50f -> 1.1f
+            else -> 0.9f
+        },
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = "swipe_indicator_scale"
+    )
+
+    val swipeIndicatorAlpha by animateFloatAsState(
+        targetValue = (offsetXAnimatable.value.absoluteValue / 120f).coerceIn(0f, 1f),
+        animationSpec = tween(100),
+        label = "swipe_indicator_alpha"
+    )
+
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(MiniPlayerHeight)
-            .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant)
-            .let { baseModifier ->
-                if (swipeToSkip) {
-                    baseModifier.pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragStart = {
-                                dragStartTime = System.currentTimeMillis()
-                                totalDragDistance = 0f
-                            },
-                            onDragCancel = {
-                                coroutineScope.launch {
-                                    offsetXAnimatable.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = animationSpec
-                                    )
-                                }
-                            },
-                            onHorizontalDrag = { _, dragAmount ->
-                                val adjustedDragAmount =
-                                    if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
-                                val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
-                                val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
-                                val allowLeft = adjustedDragAmount < 0 && canSkipNext
-                                val allowRight = adjustedDragAmount > 0 && canSkipPrevious
-                                if (allowLeft || allowRight) {
-                                    totalDragDistance += kotlin.math.abs(adjustedDragAmount)
+            .height(MiniPlayerHeight),
+        shape = RoundedCornerShape(0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (pureBlack)
+                Color.Black.copy(alpha = 0.95f)
+            else
+                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .let { baseModifier ->
+                    if (swipeToSkip) {
+                        baseModifier.pointerInput(Unit) {
+                            detectHorizontalDragGestures(
+                                onDragStart = {
+                                    dragStartTime = System.currentTimeMillis()
+                                    totalDragDistance = 0f
+                                },
+                                onDragCancel = {
                                     coroutineScope.launch {
-                                        offsetXAnimatable.snapTo(offsetXAnimatable.value + adjustedDragAmount)
+                                        offsetXAnimatable.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = animationSpec
+                                        )
+                                    }
+                                },
+                                onHorizontalDrag = { _, dragAmount ->
+                                    val adjustedDragAmount =
+                                        if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
+                                    val canSkipPreviousCheck = playerConnection.player.previousMediaItemIndex != -1
+                                    val canSkipNextCheck = playerConnection.player.nextMediaItemIndex != -1
+                                    val currentOffset = offsetXAnimatable.value
+                                    
+                                    val isRetractingLeft = currentOffset < 0 && adjustedDragAmount > 0
+                                    val isRetractingRight = currentOffset > 0 && adjustedDragAmount < 0
+                                    val isMovingLeft = adjustedDragAmount < 0 && canSkipNextCheck
+                                    val isMovingRight = adjustedDragAmount > 0 && canSkipPreviousCheck
+
+                                    val allowMovement = isRetractingLeft || isRetractingRight || isMovingLeft || isMovingRight
+
+                                    if (allowMovement) {
+                                        totalDragDistance += kotlin.math.abs(adjustedDragAmount)
+                                        coroutineScope.launch {
+                                            val newOffset = currentOffset + adjustedDragAmount
+
+                                            val resistance = when {
+                                                (currentOffset < 0 && adjustedDragAmount > 0) -> 1f
+                                                (currentOffset > 0 && adjustedDragAmount < 0) -> 1f
+                                                kotlin.math.abs(newOffset) > 150 -> 0.4f
+                                                kotlin.math.abs(newOffset) > 100 -> 0.7f
+                                                else -> 1f
+                                            }
+                                            offsetXAnimatable.snapTo(currentOffset + (adjustedDragAmount * resistance))
+                                        }
+                                    }
+                                },
+                                onDragEnd = {
+                                    val dragDuration = System.currentTimeMillis() - dragStartTime
+                                    val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
+                                    val currentOffset = offsetXAnimatable.value
+
+                                    val minDistanceThreshold = 80f
+                                    val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
+                                    
+                                    val reachedAutoThreshold = kotlin.math.abs(currentOffset) > autoSwipeThreshold
+                                    val hasCommittedSwipe = kotlin.math.abs(currentOffset) > minDistanceThreshold &&
+                                            velocity > velocityThreshold
+
+                                    val shouldChangeSong = reachedAutoThreshold || hasCommittedSwipe
+
+                                    if (shouldChangeSong) {
+                                        val isRightSwipe = currentOffset > 0
+
+                                        if (isRightSwipe && canSkipPrevious) {
+                                            playerConnection.player.seekToPreviousMediaItem()
+                                        } else if (!isRightSwipe && canSkipNext) {
+                                            playerConnection.player.seekToNext()
+                                        }
+                                    }
+
+                                    coroutineScope.launch {
+                                        offsetXAnimatable.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = animationSpec
+                                        )
                                     }
                                 }
-                            },
-                            onDragEnd = {
-                                val dragDuration = System.currentTimeMillis() - dragStartTime
-                                val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
-                                val currentOffset = offsetXAnimatable.value
+                            )
+                        }
+                    } else {
+                        baseModifier
+                    }
+                }
+        ) {
+            LinearProgressIndicator(
+                progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .align(Alignment.BottomCenter),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                strokeCap = StrokeCap.Round,
+                drawStopIndicator = { }
+            )
 
-                                val minDistanceThreshold = 50f
-                                val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
-
-                                val shouldChangeSong = (
-                                        kotlin.math.abs(currentOffset) > minDistanceThreshold &&
-                                                velocity > velocityThreshold
-                                        ) || (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
-
-                                if (shouldChangeSong) {
-                                    val isRightSwipe = currentOffset > 0
-
-                                    if (isRightSwipe && canSkipPrevious) {
-                                        playerConnection.player.seekToPreviousMediaItem()
-                                    } else if (!isRightSwipe && canSkipNext) {
-                                        playerConnection.player.seekToNext()
-                                    }
-                                }
-
-                                coroutineScope.launch {
-                                    offsetXAnimatable.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = animationSpec
-                                    )
-                                }
-                            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars
+                            .only(WindowInsetsSides.Horizontal)
+                            .add(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
+                    )
+                    .fillMaxSize()
+                    .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
+                    .padding(horizontal = 12.dp, vertical = 8.dp), // Enhanced padding
+            ) {
+                Box(Modifier.weight(1f)) {
+                    mediaMetadata?.let {
+                        MiniMediaInfo(
+                            mediaMetadata = it,
+                            error = error,
+                            modifier = Modifier.padding(end = 8.dp)
                         )
                     }
-                } else {
-                    baseModifier
                 }
-            }
-    ) {
-        LinearProgressIndicator(
-            progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
-            drawStopIndicator = { },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .align(Alignment.BottomCenter),
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .windowInsetsPadding(
-                    WindowInsets.systemBars
-                        .only(WindowInsetsSides.Horizontal)
-                        .add(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
+
+                ControlsButton(
+                    onClick = {
+                        if (playbackState == Player.STATE_ENDED) {
+                            playerConnection.player.seekTo(0, 0)
+                            playerConnection.player.playWhenReady = true
+                        } else {
+                            playerConnection.player.togglePlayPause()
+                        }
+                    },
+                    isPlaying = isPlaying,
+                    playbackState = playbackState
                 )
-                .fillMaxSize()
-                .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
-                .padding(end = 6.dp),
-        ) {
-            Box(Modifier.weight(1f)) {
-                mediaMetadata?.let {
-                    MiniMediaInfo(
-                        mediaMetadata = it,
-                        error = error,
-                        pureBlack = pureBlack,
-                        modifier = Modifier.padding(horizontal = 6.dp)
+
+                ControlsButton(
+                    onClick = playerConnection.player::seekToNext,
+                    enabled = canSkipNext,
+                    icon = Icons.Outlined.SkipNext,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = offsetXAnimatable.value.absoluteValue > 50f,
+                enter = scaleIn(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessHigh
+                    )
+                ) + fadeIn(),
+                exit = scaleOut() + fadeOut(),
+                modifier = Modifier.align(
+                    if (offsetXAnimatable.value > 0) Alignment.CenterStart else Alignment.CenterEnd
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                            shape = CircleShape
+                        )
+                        .scale(swipeIndicatorScale)
+                        .alpha(swipeIndicatorAlpha),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next
+                        ),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
+        }
+    }
+}
 
-            IconButton(
-                onClick = {
-                    if (playbackState == Player.STATE_ENDED) {
-                        playerConnection.player.seekTo(0, 0)
-                        playerConnection.player.playWhenReady = true
-                    } else {
-                        playerConnection.player.togglePlayPause()
-                    }
+@Composable
+private fun ControlsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    isPlaying: Boolean = false,
+    playbackState: Int = Player.STATE_IDLE,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null
+) {
+    val buttonScale by animateFloatAsState(
+        targetValue = if (isPlaying && icon == null) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "button_scale"
+    )
+
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .scale(buttonScale)
+            .size(44.dp) // Slightly larger for better touch targets
+    ) {
+        Icon(
+            imageVector = icon ?: run {
+                when {
+                    playbackState == Player.STATE_ENDED -> Icons.Outlined.Replay
+                    isPlaying -> Icons.Outlined.Pause
+                    else -> Icons.Outlined.PlayArrow
                 }
-            ) {
-                Icon(
-                    imageVector = if (playbackState == Player.STATE_ENDED) Icons.Outlined.Replay else if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
-                    contentDescription = null
-                )
-            }
-
-            IconButton(
-                enabled = canSkipNext,
-                onClick = playerConnection.player::seekToNext
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.SkipNext,
-                    contentDescription = null
-                )
-            }
-        }
-        // Visual indicator
-        if (offsetXAnimatable.value.absoluteValue > 50f) {
-            Box(
-                modifier = Modifier
-                    .align(if (offsetXAnimatable.value > 0) Alignment.CenterStart else Alignment.CenterEnd)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next
-                    ),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(
-                        alpha = (offsetXAnimatable.value.absoluteValue / autoSwipeThreshold).coerceIn(0f, 1f)
-                    ),
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+            },
+            contentDescription = null,
+            tint = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
 
@@ -296,7 +394,6 @@ fun MiniPlayer(
 fun MiniMediaInfo(
     mediaMetadata: MediaMetadata,
     error: PlaybackException?,
-    pureBlack: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val imageCache = LocalImageCache.current
@@ -308,117 +405,119 @@ fun MiniMediaInfo(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        BoxWithConstraints(
+        Card(
             modifier = Modifier
-                .padding(6.dp)
-                .size(48.dp)
+                .padding(end = 12.dp)
+                .size(52.dp),
+            shape = RoundedCornerShape(ThumbnailCornerRadius * 1.2f),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            var isRectangularImage by remember { mutableStateOf(false) }
-
-            if (mediaMetadata.isLocal) {
-                // local thumbnail arts
-                AsyncImageLocal(
-                    image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, true) },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                        .aspectRatio(ratio = 1f)
-                )
-            } else {
-                // YTM thumbnail arts
-                AsyncImage(
-                    model = mediaMetadata.thumbnailUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    onSuccess = { success ->
-                        val width = success.result.image.width
-                        val height = success.result.image.height
-
-                        isRectangularImage = width.toFloat() / height != 1f
-                    },
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius))
-                )
-            }
-
-            if (isRectangularImage) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(bottom = 2.dp, end = 2.dp)
-                        .size(18.dp)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent)
-                            ),
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.OndemandVideo,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(10.dp)
-                    )
-                }
-            }
-
-            androidx.compose.animation.AnimatedVisibility(
-                visible = error != null || isWaitingForNetwork,
-                enter = fadeIn(),
-                exit = fadeOut(),
+            BoxWithConstraints(
                 modifier = Modifier.fillMaxSize()
             ) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(
-                            color = if (pureBlack) Color.Black else Color.Black.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(ThumbnailCornerRadius)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isWaitingForNetwork) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(24.dp),
-                            strokeWidth = 2.dp,
-                            color = Color.White
-                        )
-                    } else {
+                var isRectangularImage by remember { mutableStateOf(false) }
+
+                if (mediaMetadata.isLocal) {
+                    AsyncImageLocal(
+                        image = { imageCache.getLocalThumbnail(mediaMetadata.localPath, true) },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                    )
+                } else {
+                    AsyncImage(
+                        model = mediaMetadata.thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        onSuccess = { success ->
+                            val width = success.result.image.width
+                            val height = success.result.image.height
+                            isRectangularImage = width.toFloat() / height != 1f
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(ThumbnailCornerRadius))
+                    )
+                }
+
+                if (isRectangularImage) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(4.dp)
+                            .size(20.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                shape = CircleShape
+                            )
+                    ) {
                         Icon(
-                            imageVector = Icons.Outlined.Info,
+                            imageVector = Icons.Outlined.OndemandVideo,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier
-                                .align(Alignment.Center)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(12.dp)
                         )
+                    }
+                }
+
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = error != null || isWaitingForNetwork,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                                shape = RoundedCornerShape(ThumbnailCornerRadius)
+                            )
+                            .blur(radius = if (error != null) 0.dp else 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isWaitingForNetwork) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeCap = StrokeCap.Round
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
         }
 
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 6.dp)
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = mediaMetadata.title,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 20.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = mediaMetadata.artists.joinToString { it.name },
-                color = MaterialTheme.colorScheme.secondary,
-                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp)
             )
         }
     }

@@ -449,7 +449,9 @@ class MusicService : MediaLibraryService(),
 
         if (dataStore.get(PersistentQueueKey, true)) {
             initQueue()
-            queueBoard.setCurrQueue()
+            if (player.mediaItemCount == 0) {
+                queueBoard.setCurrQueue()
+            }
         }
 
         scope.launch {

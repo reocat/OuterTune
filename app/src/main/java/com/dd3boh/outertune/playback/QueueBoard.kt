@@ -13,6 +13,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.util.fastFirst
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.media3.common.C
 import com.dd3boh.outertune.constants.PersistentQueueKey
 import com.dd3boh.outertune.db.entities.QueueEntity
 import com.dd3boh.outertune.extensions.currentMetadata
@@ -793,7 +794,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
             }
         } else {
             Timber.tag(TAG).d("Seamless is not supported. Loading songs in directly")
-            player.player.setMediaItems(mediaItems.map { it.toMediaItem() }, queuePos, lastSongPos)
+            player.player.setMediaItems(mediaItems.map { it.toMediaItem() }, queuePos, C.TIME_UNSET)
         }
 
         bubbleUp(item)

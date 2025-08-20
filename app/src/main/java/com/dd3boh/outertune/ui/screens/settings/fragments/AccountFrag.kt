@@ -174,7 +174,7 @@ fun ColumnScope.AccountFrag(navController: NavController) {
                 Text(stringResource(R.string.token_hidden), fontWeight = FontWeight.Medium)
             }
         },
-        description = stringResource(R.string.token_description),
+        description = if (!showToken) stringResource(R.string.token_description) else null,
         onClick = {
             if (!showToken) {
                 showToken = true

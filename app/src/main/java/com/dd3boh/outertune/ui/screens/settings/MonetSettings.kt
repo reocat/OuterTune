@@ -31,11 +31,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -171,14 +166,7 @@ fun MonetSettings(
     )
     val defaultColorHex = String.format("#%06X", (0xFFFFFF and DefaultThemeColor.toArgb()))
     val (accentColor, onAccentColorChange) = rememberPreference(MonetAccentColorKey, defaultValue = defaultColorHex)
-    val (tintBackground, onTintBackgroundChange) = rememberPreference(MonetTintBackgroundKey, defaultValue = false)
-
-    var tempAccentColor by remember(accentColor) { mutableStateOf(accentColor) }
-    val isHexValid by remember(tempAccentColor) {
-        derivedStateOf {
-            tempAccentColor.matches(Regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"))
-        }
-    }
+    val (tintBackground, onTintBackgroundChange) = rememberPreference(MonetTintBackgroundKey, defaultValue = true)
 
     LaunchedEffect(customColorEnabled) {
         if (!customColorEnabled) {

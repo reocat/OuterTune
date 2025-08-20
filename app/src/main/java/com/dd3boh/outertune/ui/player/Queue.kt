@@ -233,6 +233,7 @@ fun BoxScope.QueueContent(
     val menuState = LocalMenuState.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val qb = playerConnection.service.queueBoard
+    var wasExpanded by remember { mutableStateOf(false) }
 
     // preferences
     var lockQueue by rememberPreference(LockQueueKey, defaultValue = false)
@@ -298,7 +299,6 @@ fun BoxScope.QueueContent(
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(isSearching) {
         if (isSearching && (queueState == null || queueState.isExpanded)) {
-            // Ensure the node is attached before requesting focus
             withFrameNanos { /* wait a frame for composition */ }
             runCatching { focusRequester.requestFocus() }
         }
@@ -316,6 +316,18 @@ fun BoxScope.QueueContent(
         BackHandler {
             isSearching = false
             query = TextFieldValue()
+        }
+    }
+    
+    if (queueState == null) {
+        BackHandler {
+            if (detachedHead && detachedQueue != null) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    qb.setCurrQueue(detachedQueue)
+                    playerConnection.player.playWhenReady = true
+                }
+            }
+            navController.navigateUp()
         }
     }
 
@@ -440,6 +452,18 @@ fun BoxScope.QueueContent(
             }
         }
     }
+    
+    if (queueState != null) {
+        LaunchedEffect(queueState.isExpanded, queueState.isCollapsed, detachedHead, detachedQueue) {
+            if ((wasExpanded && !queueState.isExpanded || queueState.isCollapsed) && detachedHead && detachedQueue != null) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    qb.setCurrQueue(detachedQueue)
+                    playerConnection.player.playWhenReady = true
+                }
+            }
+            wasExpanded = queueState.isExpanded
+        }
+    }
 
     LaunchedEffect(Unit) {
         snapshotFlow { qb.masterQueues.toList() }
@@ -482,6 +506,12 @@ fun BoxScope.QueueContent(
                     ResizableIconButton(
                         icon = Icons.Outlined.Close,
                         onClick = {
+                            if (detachedHead && detachedQueue != null) {
+                                coroutineScope.launch(Dispatchers.Main) {
+                                    qb.setCurrQueue(detachedQueue)
+                                    playerConnection.player.playWhenReady = true
+                                }
+                            }
                             mqExpand = false
                         },
                         modifier = Modifier.padding(horizontal = 20.dp)
@@ -526,6 +556,7 @@ fun BoxScope.QueueContent(
                                     // clicking on queue shows it in the ui
                                     if (playingQueue == index) {
                                         detachedHead = false
+                                        detachedQueue = null
                                     } else {
                                         detachedHead = true
                                         detachedQueue = mq

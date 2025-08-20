@@ -90,8 +90,10 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -147,7 +149,6 @@ import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.Player
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -295,7 +296,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -330,7 +330,9 @@ class MainActivity : ComponentActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is MusicBinder) {
                 playerConnection = PlayerConnection(service, database, lifecycleScope)
-                playerConnection?.service?.queueBoard?.setCurrQueue()
+                if (playerConnection?.service?.player?.mediaItemCount == 0) {
+                    playerConnection?.service?.queueBoard?.setCurrQueue()
+                }
             }
         }
 
@@ -885,19 +887,18 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    LaunchedEffect(playerConnection) {
+                    val isPlaying by playerConnection?.isPlaying?.collectAsState() ?: remember { mutableStateOf(false) }
+                    LaunchedEffect(playerConnection, isPlaying) {
                         playerConnection?.let { pc ->
-                            pc.mediaMetadata.combine(pc.playbackState) { metadata, state ->
-                                metadata to state
-                            }.collectLatest { (metadata, state) ->
-                                if (metadata != null && state == Player.STATE_READY) {
-                                    if (playerBottomSheetState.isDismissed) {
-                                        playerBottomSheetState.collapseSoft()
-                                    }
-                                } else if (metadata == null) {
-                                    if (!playerBottomSheetState.isDismissed) {
-                                        playerBottomSheetState.dismiss()
-                                    }
+                            val hasMediaItem = pc.player.currentMediaItem != null
+                            if (hasMediaItem && !shouldHideNavAndPlayer) {
+                                if (playerBottomSheetState.isDismissed) {
+                                    playerBottomSheetState.collapseSoft()
+                                }
+                            }
+                            else if (!hasMediaItem && !shouldHideNavAndPlayer) {
+                                if (!playerBottomSheetState.isDismissed) {
+                                    playerBottomSheetState.dismiss()
                                 }
                             }
                         }
@@ -1452,6 +1453,13 @@ class MainActivity : ComponentActivity() {
                                                             )
                                                         }
                                                     },
+                                                    colors = NavigationRailItemDefaults.colors(
+                                                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                                                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                                                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    ),
                                                     onClick = {
                                                         if (playerBottomSheetState.isExpanded) {
                                                             playerBottomSheetState.collapseSoft()
@@ -1590,6 +1598,13 @@ class MainActivity : ComponentActivity() {
                                                     )
                                                 }
                                             },
+                                            colors = NavigationBarItemDefaults.colors(
+                                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                            ),
                                             onClick = {
                                                 if (navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true) {
                                                     navBackStackEntry?.savedStateHandle?.set(
