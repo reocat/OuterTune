@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -38,8 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +56,7 @@ import com.dd3boh.outertune.constants.AccountNameKey
 import com.dd3boh.outertune.constants.GridThumbnailHeight
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.TopBarInsets
+import com.dd3boh.outertune.ui.component.ChipsRow
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.items.YouTubeGridItem
@@ -64,6 +68,7 @@ import com.dd3boh.outertune.ui.menu.YouTubePlaylistMenu
 import com.dd3boh.outertune.ui.screens.settings.fragments.AccountFrag
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.viewmodels.AccountContentType
 import com.dd3boh.outertune.viewmodels.AccountViewModel
 import com.zionhuang.innertube.utils.parseCookieString
 
@@ -75,6 +80,8 @@ fun AccountScreen(
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
     val menuState = LocalMenuState.current
+    val haptic = LocalHapticFeedback.current
+
     val coroutineScope = rememberCoroutineScope()
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
@@ -86,6 +93,7 @@ fun AccountScreen(
     val playlists by viewModel.playlists.collectAsState()
     val albums by viewModel.albums.collectAsState()
     val artists by viewModel.artists.collectAsState()
+    val selectedContentType by viewModel.selectedContentType.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
@@ -163,85 +171,124 @@ fun AccountScreen(
                     }
                 }
             }
-            items(
-                items = playlists.orEmpty(),
-                key = { it.id }
-            ) { item ->
-                YouTubeGridItem(
-                    item = item,
-                    fillMaxWidth = true,
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = {
-                                navController.navigate("online_playlist/${item.id}")
-                            },
-                            onLongClick = {
-                                menuState.show {
-                                    YouTubePlaylistMenu(
-                                        navController = navController,
-                                        playlist = item,
-                                        coroutineScope = coroutineScope,
-                                        onDismiss = menuState::dismiss
-                                    )
-                                }
-                            }
-                        )
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                ChipsRow(
+                    chips = listOf(
+                        AccountContentType.PLAYLISTS to stringResource(R.string.filter_playlists),
+                        AccountContentType.ALBUMS to stringResource(R.string.filter_albums),
+                        AccountContentType.ARTISTS to stringResource(R.string.filter_artists),
+                    ),
+                    currentValue = selectedContentType,
+                    onValueUpdate = { viewModel.setSelectedContentType(it) },
                 )
             }
 
-            items(
-                items = albums.orEmpty(),
-                key = { it.id }
-            ) { item ->
-                YouTubeGridItem(
-                    item = item,
-                    fillMaxWidth = true,
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = {
-                                navController.navigate("album/${item.id}")
-                            },
-                            onLongClick = {
-                                menuState.show {
-                                    YouTubeAlbumMenu(
-                                        albumItem = item,
-                                        navController = navController,
-                                        onDismiss = menuState::dismiss
-                                    )
-                                }
-                            }
+            when (selectedContentType) {
+                AccountContentType.PLAYLISTS -> {
+                    items(
+                        items = playlists.orEmpty().distinctBy { it.id },
+                        key = { it.id },
+                    ) { item ->
+                        YouTubeGridItem(
+                            item = item,
+                            fillMaxWidth = true,
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onClick = {
+                                        navController.navigate("online_playlist/${item.id}")
+                                    },
+                                    onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.show {
+                                            YouTubePlaylistMenu(
+                                                playlist = item,
+                                                coroutineScope = coroutineScope,
+                                                onDismiss = menuState::dismiss,
+                                                navController = navController
+                                            )
+                                        }
+                                    },
+                                ),
                         )
-                )
-            }
+                    }
 
-            items(
-                items = artists.orEmpty(),
-                key = { it.id }
-            ) { item ->
-                YouTubeGridItem(
-                    item = item,
-                    fillMaxWidth = true,
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = {
-                                navController.navigate("artist/${item.id}")
-                            },
-                            onLongClick = {
-                                menuState.show {
-                                    YouTubeArtistMenu(
-                                        artist = item,
-                                        onDismiss = menuState::dismiss
-                                    )
-                                }
+                    if (playlists == null) {
+                        items(8) {
+                            ShimmerHost {
+                                GridItemPlaceHolder(fillMaxWidth = true)
                             }
-                        )
-                )
-            }
+                        }
+                    }
+                }
 
-            if (isLoggedIn && (playlists == null && isLoading < 3)) {
-                items(8) {
-                    ShimmerHost {
-                        GridItemPlaceHolder(fillMaxWidth = true)
+                AccountContentType.ALBUMS -> {
+                    items(
+                        items = albums.orEmpty().distinctBy { it.id },
+                        key = { it.id }
+                    ) { item ->
+                        YouTubeGridItem(
+                            item = item,
+                            fillMaxWidth = true,
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onClick = {
+                                        navController.navigate("album/${item.id}")
+                                    },
+                                    onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.show {
+                                            YouTubeAlbumMenu(
+                                                albumItem = item,
+                                                navController = navController,
+                                                onDismiss = menuState::dismiss
+                                            )
+                                        }
+                                    }
+                                )
+                        )
+                    }
+
+                    if (albums == null) {
+                        items(8) {
+                            ShimmerHost {
+                                GridItemPlaceHolder(fillMaxWidth = true)
+                            }
+                        }
+                    }
+                }
+
+                AccountContentType.ARTISTS -> {
+                    items(
+                        items = artists.orEmpty().distinctBy { it.id },
+                        key = { it.id }
+                    ) { item ->
+                        YouTubeGridItem(
+                            item = item,
+                            fillMaxWidth = true,
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onClick = {
+                                        navController.navigate("artist/${item.id}")
+                                    },
+                                    onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.show {
+                                            YouTubeArtistMenu(
+                                                artist = item,
+                                                onDismiss = menuState::dismiss
+                                            )
+                                        }
+                                    }
+                                )
+                        )
+                    }
+
+                    if (isLoggedIn && (artists == null && isLoading < 3)) {
+                        items(8) {
+                            ShimmerHost {
+                                GridItemPlaceHolder(fillMaxWidth = true)
+                            }
+                        }
                     }
                 }
             }
