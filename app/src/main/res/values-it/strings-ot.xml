@@ -162,7 +162,7 @@
     <string name="library_empty">I contenuti della tua libreria verranno mostrati qui</string>
     <string name="playlist_missing_note">Playlist mancanti? Fai clic qui per abilitare la modalità sync sead-write in impostazioni</string>
     <string name="no_updates_available">Nessun aggiornamento disponibile</string>
-    <string name="disable_lm_confirm">Sei sicuro di voler disabilitare le funzionalità dei media locali?</string>
+    <string name="disable_lm_confirm">Sei sicuro di voler disabilitare le funzionalità dei media locali? Il contenuto della tua libreria non sarà interessato..</string>
     <string name="clear_downloads_confirm">Sei sicuro di voler rimuovere tutti i download? Verranno rimossi solo quelli presenti nella cartella di download principale.</string>
     <string name="clear_image_cache_confirm">Sei sicuro di voler cancellare la cache delle immagini? Tutte le miniature degli album verranno rimosse.</string>
     <string name="clear_song_cache_confirm">Sei sicuro di voler cancellare la cache delle canzoni?</string>
