@@ -187,7 +187,7 @@
     <string name="speed_very_slow">Muy lento</string>
     <string name="speed_fast">Rápido</string>
     <string name="speed_very_fast">Muy rápido</string>
-    <string name="disable_lm_confirm">¿Estás seguro que quieres deshabilitar las funciones multimedia locales?</string>
+    <string name="disable_lm_confirm">¿Seguro que desea desactivar las funciones multimedia locales? El contenido de su biblioteca no se verá afectado.</string>
     <string name="scanner_rejected_dir">Selección no válida. Una carpeta para escaneo no puede ser un subdirectorio de la carpeta de descargas ni la propia carpeta de descargas</string>
     <string name="clear_downloads_confirm">¿Estás seguro que quieres eliminar todas las descargas? Solo se eliminarán las descargas de la carpeta de descargas principal.</string>
     <string name="clear_image_cache_confirm">¿Estás seguro que quieres eliminar la caché de imágenes? Se eliminarán todas las miniaturas de los álbumes.</string>
