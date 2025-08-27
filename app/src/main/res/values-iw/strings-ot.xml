@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="folders">תקיות</string>
+    <string name="folders">תיקיות</string>
     <string name="recent_activity">פעילות אחרונה</string>
     <string name="queue_local_history">היסטוריה (מקומי)</string>
     <string name="queue_remote_history">היסטוריה (מרוחק)</string>
@@ -59,7 +59,7 @@
     <string name="ytm_sync">סנכרן אוטומטית עם חשבון YouTube Music שלך</string>
     <string name="wifi_only">Wi-Fi בלבד</string>
     <string name="audio_offload">אפשר העברה</string>
-    <string name="android_auto">Android Auto</string>
+    <string name="android_auto">אנדרואיד אוטו</string>
     <string name="library">ספריה</string>
     <string name="sort_by_date_modified">תאריך שינוי</string>
     <string name="local_history">מקומי</string>
@@ -99,7 +99,7 @@
     <string name="oobe_welcome_message">ברוכים הבאים ל-OuterTune</string>
     <string name="oobe_ytm_integration">שילוב YouTube Music</string>
     <string name="oobe_ytm_integration_description">גש בצורה חלקה לרצועות האהובות עליך</string>
-    <string name="oobe_ad_free_exp">חוויה ללא פרסומות</string>
+    <string name="oobe_ad_free_exp">ללא פרסומות יוטיוב</string>
     <string name="oobe_ad_free_exp_description">תיהנו מהשמעת מוזיקה ללא הפרעה</string>
     <string name="oobe_local_music_support">תמיכה נרחבת במוזיקה מקומית</string>
     <string name="oobe_local_music_support_description">הפעל את קבצי המוזיקה שלך (ex. MP3, OGG, FLAC, etc.)</string>
@@ -172,4 +172,10 @@
     <string name="local_library_enable_description">השבתה תסתיר את הספרייה המקומית מהאפליקציה</string>
     <string name="local_player_settings_title">מדיה מקומית</string>
     <string name="flat_subfolders_title">שיטוח תיקיות משנה</string>
+    <string name="sort_by_track_number">מספר רצועה</string>
+    <string name="bits_per_sample">דיאלוג</string>
+    <string name="disc_number">מספר דיסק</string>
+    <string name="extra_details">פרטים נוספים</string>
+    <string name="file_path">נתיב הקובץ</string>
+    <string name="track_number">מספר רצועה</string>
 </resources>
