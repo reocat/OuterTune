@@ -625,6 +625,8 @@ class MusicService : MediaLibraryService(),
      *
      * @param queue Queue to play.
      * @param playWhenReady
+     * @param shouldResume Set to true for the player should resume playing at the current song's last save position or
+     * false to start from the beginning.
      * @param replace Replace media items instead of the underlying logic
      * @param title Title override for the queue. If this value us unspecified, this method takes the value from queue.
      * If both are unspecified, the title will default to "Queue".
@@ -632,6 +634,7 @@ class MusicService : MediaLibraryService(),
     fun playQueue(
         queue: Queue,
         playWhenReady: Boolean = true,
+        shouldResume: Boolean = false,
         replace: Boolean = true,
         isRadio: Boolean = false,
         title: String? = null
@@ -655,7 +658,7 @@ class MusicService : MediaLibraryService(),
                         replace = replace,
                         isRadio = isRadio
                     )
-                    queueBoard.setCurrQueue(q)
+                    queueBoard.setCurrQueue(q, true)
                 }
 
                 val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
@@ -684,7 +687,7 @@ class MusicService : MediaLibraryService(),
                     replace = replace || preloadItem != null,
                     isRadio = isRadio
                 )
-                queueBoard.setCurrQueue(q)
+                queueBoard.setCurrQueue(q, shouldResume)
 
                 player.prepare()
                 player.playWhenReady = playWhenReady
