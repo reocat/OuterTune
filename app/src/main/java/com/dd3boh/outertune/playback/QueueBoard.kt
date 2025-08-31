@@ -350,7 +350,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
             }
         }
 
-        setCurrQueue(q)
+        setCurrQueue(q, false)
         if (isRadio) {
             q.playlistId = mediaList.lastOrNull()?.id
         }
@@ -697,13 +697,13 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
      * Load a queue into the media player
      *
      * @param index Index of queue
-     * @param player MusicService link
+     * @param shouldResume Set to true for the player should resume playing at the current song's last save position or
+     * false to start from the beginning.
      * @return New current position tracker
      */
-    fun setCurrQueue(index: Int): MultiQueueObject? {
-        return try {
+    fun setCurrQueue(index: Int, shouldResume: Boolean = true): MultiQueueObject? {        return try {
             val q = masterQueues[index]
-            setCurrQueue(q)
+            setCurrQueue(q, shouldResume)
             return q
         } catch (e: IndexOutOfBoundsException) {
             null
@@ -712,11 +712,13 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
 
     /**
      * Load the current queue into the media player
+     * @param shouldResume Set to true for the player should resume playing at the current song's last save position or
+     * false to start from the beginning.
      * @return New current position tracker
      */
-    fun setCurrQueue(): MultiQueueObject? {
+    fun setCurrQueue(shouldResume: Boolean = true): MultiQueueObject? {
         val q = getCurrentQueue()
-        setCurrQueue(q)
+        setCurrQueue(q, shouldResume)
         return q
     }
 
@@ -724,10 +726,11 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
      * Load a queue into the media player
      *
      * @param item Queue object
-     * @param player MusicService link
+     * @param shouldResume Set to true for the player should resume playing at the current song's last save position or
+     * false to start from the beginning.
      * @return New current position tracker
      */
-    fun setCurrQueue(item: MultiQueueObject?): Int? {
+    fun setCurrQueue(item: MultiQueueObject?, shouldResume: Boolean = true): Int? {
         if (QUEUE_DEBUG)
             Timber.tag(TAG).d(
                 "Loading queue ${item?.title ?: "null"} into player. Shuffle state = ${item?.shuffled}"
@@ -740,7 +743,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
 
         // I have no idea why this value gets reset to 0 by the end... but ig this works
         val queuePos = item.getQueuePosShuffled()
-        val lastSongPos = item.lastSongPos
+        val lastSongPos = if (shouldResume) item.lastSongPos else C.TIME_UNSET
         val realQueuePos = item.queuePos
         masterIndex = masterQueues.indexOf(item)
 

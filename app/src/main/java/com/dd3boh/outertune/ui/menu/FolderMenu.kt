@@ -172,7 +172,7 @@ fun FolderMenu(
         }
         GridMenuItem(
             icon = Icons.AutoMirrored.Outlined.QueueMusic,
-            title = R.string.add_to_queue
+            title = R.string.shuffle
         ) {
             showChooseQueueDialog = true
             fetchAllSongsRecursive()
@@ -201,11 +201,13 @@ fun FolderMenu(
         AddToQueueDialog(
             onAdd = { queueName ->
                 if (allFolderSongs.isEmpty()) return@AddToQueueDialog
-                playerConnection.service.queueBoard.addQueue(
+                val q = playerConnection.service.queueBoard.addQueue(
                     queueName, allFolderSongs.map { it.toMediaMetadata() },
                     forceInsert = true, delta = false
                 )
-                playerConnection.service.queueBoard.setCurrQueue()
+                q?.let {
+                    playerConnection.service.queueBoard.setCurrQueue(it)
+                }
             },
             onDismiss = {
                 showChooseQueueDialog = false
