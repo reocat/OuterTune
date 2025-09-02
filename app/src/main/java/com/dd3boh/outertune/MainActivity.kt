@@ -888,7 +888,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     val isPlaying by playerConnection?.isPlaying?.collectAsState() ?: remember { mutableStateOf(false) }
-                    LaunchedEffect(playerConnection, isPlaying) {
+                    val mediaMetadata by playerConnection?.mediaMetadata?.collectAsState() ?: remember { mutableStateOf(null) }
+                    LaunchedEffect(playerConnection, mediaMetadata) {
                         playerConnection?.let { pc ->
                             val hasMediaItem = pc.player.currentMediaItem != null
                             if (hasMediaItem && !shouldHideNavAndPlayer) {

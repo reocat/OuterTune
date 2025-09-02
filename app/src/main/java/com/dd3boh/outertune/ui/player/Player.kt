@@ -27,6 +27,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -100,6 +101,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -115,6 +117,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_READY
 import androidx.navigation.NavController
@@ -127,6 +130,7 @@ import coil3.size.Size
 import coil3.toBitmap
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
+import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
@@ -151,6 +155,7 @@ import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.BottomSheet
 import com.dd3boh.outertune.ui.component.BottomSheetState
 import com.dd3boh.outertune.ui.component.PlayerSliderTrack
+import com.dd3boh.outertune.ui.component.SquigglyLoadingAnimation
 import com.dd3boh.outertune.ui.component.SquigglySlider
 import com.dd3boh.outertune.ui.component.SquigglySliderDefaults
 import com.dd3boh.outertune.ui.component.button.ResizableIconButton
@@ -187,6 +192,7 @@ fun BottomSheetPlayer(
     val repeatMode by playerConnection.repeatMode.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val currentSong by playerConnection.currentSong.collectAsState(initial = null)
+    val isBuffering by remember { derivedStateOf { playbackState == STATE_BUFFERING } }
 
     val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
@@ -318,6 +324,12 @@ fun BottomSheetPlayer(
     var sliderPosition by remember {
         mutableStateOf<Long?>(null)
     }
+    var isSeeking by remember {
+        mutableStateOf(false)
+    }
+    var lastSeekTime by remember {
+        mutableLongStateOf(0L)
+    }
 
     var gradientColors by remember {
         mutableStateOf<List<Color>>(emptyList())
@@ -332,12 +344,13 @@ fun BottomSheetPlayer(
         val currentMetadata = mediaMetadata
         gradientColors = when {
             playerBackground != PlayerBackgroundStyle.GRADIENT -> emptyList()
-            currentMetadata?.thumbnailUrl == null -> emptyList()
+            currentMetadata == null -> emptyList()
             else -> fetchAndExtractGradientColors(
                 context = context,
                 metadata = currentMetadata,
                 cache = gradientColorsCache,
-                defaultColors = defaultGradientColors
+                defaultColors = defaultGradientColors,
+                imageCache = imageCache
             )
         }
     }
@@ -462,68 +475,129 @@ fun BottomSheetPlayer(
             Spacer(Modifier.height(16.dp))
 
             Column(modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)) {
-                when (sliderStyle) {
-                    SliderStyle.DEFAULT -> Slider(
-                        value = (sliderPosition ?: position).toFloat(),
-                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                        onValueChange = { sliderPosition = it.toLong() },
-                        onValueChangeFinished = {
-                            sliderPosition?.let {
-                                playerConnection.player.seekTo(it)
-                                position = it
-                            }
-                            sliderPosition = null
-                        },
-                        colors = SliderDefaults.colors(
-                            thumbColor = accentStyledColor,
-                            activeTrackColor = accentStyledColor,
-                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
-                        )
-                    )
-                    SliderStyle.SQUIGGLY -> SquigglySlider(
-                        value = (sliderPosition ?: position).toFloat(),
-                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                        onValueChange = { sliderPosition = it.toLong() },
-                        onValueChangeFinished = {
-                            sliderPosition?.let {
-                                playerConnection.player.seekTo(it)
-                                position = it
-                            }
-                            sliderPosition = null
-                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                        },
-                        colors = SquigglySliderDefaults.colors(
-                            thumbColor = accentStyledColor,
-                            activeTrackColor = accentStyledColor,
-                            inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
-                        ),
-                        squigglesSpec = SquigglySlider.SquigglesSpec(
-                            amplitude = if (isPlaying) 2.dp else 0.dp,
-                            strokeWidth = 4.dp,
-                        )
-                    )
-                    SliderStyle.SLIM -> Slider(
-                        value = (sliderPosition ?: position).toFloat(),
-                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                        onValueChange = { sliderPosition = it.toLong() },
-                        onValueChangeFinished = {
-                            sliderPosition?.let {
-                                playerConnection.player.seekTo(it)
-                                position = it
-                            }
-                            sliderPosition = null
-                        },
-                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
-                        track = { sliderState ->
-                            PlayerSliderTrack(
-                                sliderState = sliderState,
-                                colors = SliderDefaults.colors(
-                                    activeTrackColor = accentStyledColor,
-                                    inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when (sliderStyle) {
+                        SliderStyle.DEFAULT ->
+                            if (isBuffering && !isSeeking && System.currentTimeMillis() - lastSeekTime > 2000) {
+                                SliderLoadingAnimation(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    sliderStyle = sliderStyle,
+                                    color = accentStyledColor
                                 )
-                            )
+                            } else {
+                                Slider(
+                                    value = (sliderPosition ?: position).toFloat(),
+                                    valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                                    onValueChange = {
+                                        sliderPosition = it.toLong()
+                                        isSeeking = true
+                                    },
+                                    onValueChangeFinished = {
+                                        isSeeking = false
+                                        sliderPosition?.let {
+                                            playerConnection.player.seekTo(it)
+                                            position = it
+                                        }
+                                        sliderPosition = null
+                                        lastSeekTime = System.currentTimeMillis()
+                                    },
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = accentStyledColor,
+                                        activeTrackColor = accentStyledColor,
+                                        inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                                    )
+                                )
+                            }
+                        SliderStyle.SQUIGGLY -> {
+                            if (isBuffering && !isSeeking && System.currentTimeMillis() - lastSeekTime > 2000) {
+                                val infiniteTransition = rememberInfiniteTransition(label = "BufferingProgress")
+                                val animatedProgress by infiniteTransition.animateFloat(
+                                    initialValue = 0f,
+                                    targetValue = 1f,
+                                    animationSpec = infiniteRepeatable(
+                                        animation = tween(durationMillis = 2000, easing = LinearEasing),
+                                        repeatMode = RepeatMode.Restart
+                                    ),
+                                    label = "animatedProgress"
+                                )
+                                SquigglyLoadingAnimation(
+                                    progress = animatedProgress,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    activeTrackColor = accentStyledColor,
+                                    amplitude = 4.dp
+                                )
+                            } else {
+                                SquigglySlider(
+                                    value = (sliderPosition ?: position).toFloat(),
+                                    valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                                    onValueChange = {
+                                        sliderPosition = it.toLong()
+                                        isSeeking = true
+                                    },
+                                    onValueChangeFinished = {
+                                        isSeeking = false
+                                        sliderPosition?.let {
+                                            playerConnection.player.seekTo(it)
+                                            position = it
+                                        }
+                                        sliderPosition = null
+                                        lastSeekTime = System.currentTimeMillis()
+                                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    },
+                                    colors = SquigglySliderDefaults.colors(
+                                        thumbColor = accentStyledColor,
+                                        activeTrackColor = accentStyledColor,
+                                        inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                                    ),
+                                    squigglesSpec = SquigglySlider.SquigglesSpec(
+                                        amplitude = if (isPlaying) 2.dp else 0.dp,
+                                        strokeWidth = 4.dp,
+                                    )
+                                )
+                            }
                         }
-                    )
+                        SliderStyle.SLIM ->
+                            if (isBuffering && !isSeeking && System.currentTimeMillis() - lastSeekTime > 2000) {
+                                SliderLoadingAnimation(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    sliderStyle = sliderStyle,
+                                    color = accentStyledColor
+                                )
+                            } else {
+                                Slider(
+                                    value = (sliderPosition ?: position).toFloat(),
+                                    valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                                    onValueChange = {
+                                        sliderPosition = it.toLong()
+                                        isSeeking = true
+                                    },
+                                    onValueChangeFinished = {
+                                        isSeeking = false
+                                        sliderPosition?.let {
+                                            playerConnection.player.seekTo(it)
+                                            position = it
+                                        }
+                                        sliderPosition = null
+                                        lastSeekTime = System.currentTimeMillis()
+                                    },
+                                    thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                                    track = { sliderState ->
+                                        PlayerSliderTrack(
+                                            sliderState = sliderState,
+                                            colors = SliderDefaults.colors(
+                                                activeTrackColor = accentStyledColor,
+                                                inactiveTrackColor = accentStyledColor.copy(alpha = 0.4f)
+                                            )
+                                        )
+                                    }
+                                )
+                            }
+                    }
                 }
                 Spacer(Modifier.height(4.dp))
                 Row(
@@ -857,31 +931,37 @@ fun BottomSheetPlayer(
  * and caches the result.
  *
  * @param context The current context.
- * @param metadata The media metadata containing the thumbnail URL.
+ * @param metadata The media metadata containing the thumbnail URL or local path.
  * @param cache A mutable map to store and retrieve cached color lists.
  * @param defaultColors A list of colors to return in case of any failure.
+ * @param imageCache The image cache for local thumbnails.
  * @return A list of [Color] objects for the gradient.
  */
 private suspend fun fetchAndExtractGradientColors(
     context: Context,
     metadata: MediaMetadata,
     cache: MutableMap<String, List<Color>>,
-    defaultColors: List<Color>
+    defaultColors: List<Color>,
+    imageCache: LmImageCacheMgr
 ): List<Color> {
     cache[metadata.id]?.let { return it }
 
     return try {
-        val request = ImageRequest.Builder(context)
-            .data(metadata.thumbnailUrl)
-            .size(Size(200, 200))
-            .allowHardware(false)
-            .build()
-
         val bitmap = withContext(Dispatchers.IO) {
-            val drawable = context.imageLoader.execute(request).image
-            when (drawable) {
-                is BitmapDrawable -> drawable.bitmap
-                else -> drawable?.toBitmap()
+            if (metadata.isLocal && metadata.localPath != null) {
+                imageCache.getLocalThumbnail(metadata.localPath, false)
+            } else {
+                val request = ImageRequest.Builder(context)
+                    .data(metadata.thumbnailUrl)
+                    .size(Size(200, 200))
+                    .allowHardware(false)
+                    .build()
+
+                val drawable = context.imageLoader.execute(request).image
+                when (drawable) {
+                    is BitmapDrawable -> drawable.bitmap
+                    else -> drawable?.toBitmap()
+                }
             }
         }
 
@@ -933,4 +1013,80 @@ private suspend fun fetchAndExtractGradientColors(
     } catch (e: Exception) {
         defaultColors
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SliderLoadingAnimation(
+    modifier: Modifier = Modifier,
+    sliderStyle: SliderStyle,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "SliderLoading")
+    val animatedPosition by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "animatedPosition"
+    )
+
+    val segmentWidth = 0.2f
+    val segmentStart = (animatedPosition * (1f - segmentWidth)).coerceIn(0f, 1f - segmentWidth)
+    val segmentEnd = segmentStart + segmentWidth
+
+    val darkerColor = color.copy(alpha = color.alpha * 0.7f)
+
+    @Composable
+    fun LoadingTrack() {
+        Canvas(
+            modifier
+                .fillMaxWidth()
+                .height(if (sliderStyle == SliderStyle.DEFAULT) 16.dp else 10.dp)
+        ) {
+            val trackHeight = if (sliderStyle == SliderStyle.DEFAULT) 16.dp else 10.dp
+            val trackStrokeWidth = trackHeight.toPx()
+            val inset = 10.dp.toPx()
+            val sliderLeft = Offset(inset, center.y)
+            val sliderRight = Offset(size.width - inset, center.y)
+
+            drawLine(
+                darkerColor.copy(alpha = 0.3f),
+                sliderLeft,
+                sliderRight,
+                trackStrokeWidth,
+                StrokeCap.Round
+            )
+
+            val activeStart = Offset(
+                sliderLeft.x + (sliderRight.x - sliderLeft.x) * segmentStart,
+                center.y
+            )
+            val activeEnd = Offset(
+                sliderLeft.x + (sliderRight.x - sliderLeft.x) * segmentEnd,
+                center.y
+            )
+            drawLine(
+                darkerColor,
+                activeStart,
+                activeEnd,
+                trackStrokeWidth,
+                StrokeCap.Round
+            )
+        }
+    }
+
+    Slider(
+        value = segmentEnd,
+        valueRange = 0f..1f,
+        onValueChange = { },
+        enabled = false,
+        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+        track = { sliderState ->
+            LoadingTrack()
+        },
+        modifier = modifier
+    )
 }

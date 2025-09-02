@@ -11,8 +11,13 @@ package com.dd3boh.outertune.ui.player
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -37,6 +42,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,6 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Player.STATE_BUFFERING
 import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalPlayerConnection
@@ -120,10 +127,13 @@ fun MiniPlayer(
     val swipeToSkip by rememberPreference(SwipeToSkip, defaultValue = true)
     val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
     val layoutDirection = LocalLayoutDirection.current
+    val isBuffering = playbackState == STATE_BUFFERING
 
     val offsetXAnimatable = remember { Animatable(0f) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var totalDragDistance by remember { mutableFloatStateOf(0f) }
+    var initialSwipeDirection by remember { mutableFloatStateOf(0f) }
+    var isRetractingGesture by remember { mutableStateOf(false) }
 
     val animationSpec = spring<Float>(
         dampingRatio = Spring.DampingRatioMediumBouncy, 
@@ -178,6 +188,8 @@ fun MiniPlayer(
                                 onDragStart = {
                                     dragStartTime = System.currentTimeMillis()
                                     totalDragDistance = 0f
+                                    initialSwipeDirection = 0f
+                                    isRetractingGesture = false
                                 },
                                 onDragCancel = {
                                     coroutineScope.launch {
@@ -193,7 +205,15 @@ fun MiniPlayer(
                                     val canSkipPreviousCheck = playerConnection.player.previousMediaItemIndex != -1
                                     val canSkipNextCheck = playerConnection.player.nextMediaItemIndex != -1
                                     val currentOffset = offsetXAnimatable.value
-                                    
+
+                                    // Track initial swipe direction
+                                    if (initialSwipeDirection == 0f && kotlin.math.abs(adjustedDragAmount) > 5f) {
+                                        initialSwipeDirection = adjustedDragAmount
+                                        // Determine if this is a retracting gesture
+                                        isRetractingGesture = (currentOffset < 0 && adjustedDragAmount > 0) ||
+                                                             (currentOffset > 0 && adjustedDragAmount < 0)
+                                    }
+
                                     val isRetractingLeft = currentOffset < 0 && adjustedDragAmount > 0
                                     val isRetractingRight = currentOffset > 0 && adjustedDragAmount < 0
                                     val isMovingLeft = adjustedDragAmount < 0 && canSkipNextCheck
@@ -222,22 +242,25 @@ fun MiniPlayer(
                                     val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
                                     val currentOffset = offsetXAnimatable.value
 
-                                    val minDistanceThreshold = 80f
-                                    val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
-                                    
-                                    val reachedAutoThreshold = kotlin.math.abs(currentOffset) > autoSwipeThreshold
-                                    val hasCommittedSwipe = kotlin.math.abs(currentOffset) > minDistanceThreshold &&
-                                            velocity > velocityThreshold
+                                    // Only trigger song change if this is NOT a retracting gesture
+                                    if (!isRetractingGesture) {
+                                        val minDistanceThreshold = 60f 
+                                        val velocityThreshold = (swipeSensitivity * -6.25f) + 6.5f
 
-                                    val shouldChangeSong = reachedAutoThreshold || hasCommittedSwipe
+                                        val reachedAutoThreshold = kotlin.math.abs(currentOffset) > autoSwipeThreshold
+                                        val hasCommittedSwipe = kotlin.math.abs(currentOffset) > minDistanceThreshold &&
+                                                velocity > velocityThreshold
 
-                                    if (shouldChangeSong) {
-                                        val isRightSwipe = currentOffset > 0
+                                        val shouldChangeSong = reachedAutoThreshold || hasCommittedSwipe
 
-                                        if (isRightSwipe && canSkipPrevious) {
-                                            playerConnection.player.seekToPreviousMediaItem()
-                                        } else if (!isRightSwipe && canSkipNext) {
-                                            playerConnection.player.seekToNext()
+                                        if (shouldChangeSong) {
+                                            val isRightSwipe = currentOffset > 0
+
+                                            if (isRightSwipe && canSkipPrevious) {
+                                                playerConnection.player.seekToPreviousMediaItem()
+                                            } else if (!isRightSwipe && canSkipNext) {
+                                                playerConnection.player.seekToNext()
+                                            }
                                         }
                                     }
 
@@ -255,16 +278,13 @@ fun MiniPlayer(
                     }
                 }
         ) {
-            LinearProgressIndicator(
-                progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
+            MiniPlayerProgressIndicator(
+                progress = (position.toFloat() / duration).coerceIn(0f, 1f),
+                isBuffering = isBuffering,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(3.dp)
-                    .align(Alignment.BottomCenter),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                strokeCap = StrokeCap.Round,
-                drawStopIndicator = { }
+                    .align(Alignment.BottomCenter)
             )
 
             Row(
@@ -520,5 +540,61 @@ fun MiniMediaInfo(
                 modifier = Modifier.padding(top = 2.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun MiniPlayerProgressIndicator(
+    progress: Float,
+    isBuffering: Boolean,
+    modifier: Modifier = Modifier
+) {
+    if (isBuffering) {
+        val infiniteTransition = rememberInfiniteTransition(label = "miniPlayerBuffering")
+        val segmentPosition by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(2000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "bufferingSegmentPosition"
+        )
+
+        BoxWithConstraints(modifier = modifier) {
+            val trackWidth = maxWidth
+            val segmentWidth = 60.dp
+            val maxOffset = trackWidth - segmentWidth
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(1.5.dp)
+                    )
+            )
+
+            Box(
+                modifier = Modifier
+                    .width(segmentWidth)
+                    .height(3.dp)
+                    .offset(x = maxOffset * segmentPosition)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(1.5.dp)
+                    )
+            )
+        }
+    } else {
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = modifier,
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+            strokeCap = StrokeCap.Round,
+            drawStopIndicator = { }
+        )
     }
 }

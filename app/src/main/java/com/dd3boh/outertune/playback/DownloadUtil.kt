@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -148,6 +149,8 @@ class DownloadUtil @Inject constructor(
         songUrlCache[mediaId] = streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
         dataSpec.withUri(streamUrl.toUri())
     }
+    private val httpClient = OkHttpClient.Builder().proxy(YouTube.proxy).build()
+
     val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
     val downloadManager: DownloadManager =
         DownloadManager(context, databaseProvider, downloadCache, dataSourceFactory, Executor(Runnable::run)).apply {
@@ -463,6 +466,28 @@ class DownloadUtil @Inject constructor(
                             val updateTime =
                                 Instant.ofEpochMilli(download.updateTimeMs).atZone(ZoneOffset.UTC).toLocalDateTime()
                             database.updateDownloadStatus(download.request.id, updateTime)
+
+                            val song = database.song(download.request.id).first()?.song
+                            if (song != null && song.thumbnailUrl != null && !song.thumbnailUrl.startsWith("/storage")) {
+                                try {
+                                    val request = Request.Builder().url(song.thumbnailUrl).build()
+                                    httpClient.newCall(request).execute().use { resp ->
+                                        if (resp.isSuccessful) {
+                                            val body = resp.body
+                                            if (body != null) {
+                                                val bytes = body.bytes()
+                                                val thumbId = "thumb_${song.id}"
+                                                val savedUri = localMgr.saveFile(thumbId, bytes.inputStream(), "thumbnail")
+                                                if (savedUri != null) {
+                                                    database.updateSongThumbnail(song.id, savedUri.toString())
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    reportException(e)
+                                }
+                            }
                         } else {
                             database.updateDownloadStatus(download.request.id, null)
                         }

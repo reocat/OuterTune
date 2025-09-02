@@ -11,6 +11,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
@@ -109,6 +110,15 @@ fun SquigglySlider(
                     }
                 }
             }
+            .pointerInput(enabled, valueRange) {
+                detectTapGestures { offset ->
+                    if (enabled && hasValidRange) {
+                        val newNormalizedValue = (offset.x / size.width).coerceIn(0f, 1f)
+                        onValueChange(valueRange.start + newNormalizedValue * rangeSize)
+                        onValueChangeFinished?.invoke()
+                    }
+                }
+            }
     ) {
         SquigglySliderTrack(
             normalizedValue = normalizedValue,
@@ -128,6 +138,7 @@ fun SquigglySlider(
         SquigglySliderThumb(
             normalizedValue = normalizedValue,
             thumbSize = thumbSize,
+            sliderHeight = sliderHeight,
             enabled = enabled,
             hasValidRange = hasValidRange,
             colors = colors,
@@ -170,35 +181,35 @@ private fun SquigglySliderTrack(
     Canvas(modifier = modifier) {
         val strokeWidth = squigglesSpec.strokeWidth.toPx()
         val centerY = size.height * 0.5f
-        val trackLength = size.width - strokeWidth
-        val strokeWidthHalf = strokeWidth * 0.5f
+        val inset = 10.dp.toPx()
+        val trackLength = size.width - 2 * inset
 
         if (!hasValidRange) {
             drawLine(
                 color = inactiveColor,
-                start = Offset(strokeWidthHalf, centerY),
-                end = Offset(size.width - strokeWidthHalf, centerY),
+                start = Offset(inset, centerY),
+                end = Offset(size.width - inset, centerY),
                 strokeWidth = strokeWidth,
                 cap = StrokeCap.Round
             )
             return@Canvas
         }
 
-        val activeTrackEnd = strokeWidthHalf + trackLength * normalizedValue
+        val activeTrackEnd = inset + trackLength * normalizedValue
 
-        if (activeTrackEnd < size.width - strokeWidthHalf) {
+        if (activeTrackEnd < size.width - inset) {
             drawLine(
                 color = inactiveColor,
                 start = Offset(activeTrackEnd, centerY),
-                end = Offset(size.width - strokeWidthHalf, centerY),
+                end = Offset(size.width - inset, centerY),
                 strokeWidth = strokeWidth,
                 cap = StrokeCap.Round
             )
         }
 
-        if (normalizedValue > 0f && activeTrackEnd > strokeWidthHalf) {
+        if (normalizedValue > 0f && activeTrackEnd > inset) {
             drawSquigglyLine(
-                startX = strokeWidthHalf,
+                startX = inset,
                 endX = activeTrackEnd,
                 centerY = centerY,
                 color = activeColor,
@@ -215,6 +226,7 @@ private fun SquigglySliderTrack(
 private fun SquigglySliderThumb(
     normalizedValue: Float,
     thumbSize: DpSize,
+    sliderHeight: Dp,
     enabled: Boolean,
     hasValidRange: Boolean,
     colors: SquigglySliderColors,
@@ -225,16 +237,17 @@ private fun SquigglySliderThumb(
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(thumbSize.height.coerceAtLeast(20.dp))
+            .height(sliderHeight)
     ) {
         val thumbWidthPx = thumbSize.width.toPx()
         val thumbHeightPx = thumbSize.height.toPx()
-        val availableWidth = size.width - thumbWidthPx
+        val inset = 10.dp.toPx()
+        val trackLength = size.width - 2 * inset
 
         val thumbX = if (hasValidRange) {
-            availableWidth * normalizedValue
+            inset + (trackLength * normalizedValue) - (thumbWidthPx / 2f)
         } else {
-            0f
+            inset - (thumbWidthPx / 2f)
         }
 
         val thumbY = (size.height - thumbHeightPx) * 0.5f
@@ -373,4 +386,124 @@ object SquigglySlider {
             SquigglesAnimator(animationProgress)
         }
     }
+}
+
+@Composable
+fun SquigglyLoadingAnimation(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    activeTrackColor: Color = MaterialTheme.colorScheme.primary,
+    inactiveTrackColor: Color = activeTrackColor.copy(alpha = 0.24f),
+    strokeWidth: Dp = 3.dp,
+    wavelength: Dp = 28.dp,
+    amplitude: Dp = 3.dp,
+    animationDuration: Duration = 1.5.seconds,
+    waveSegmentLength: Dp = 120.dp
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "SquigglyProgress")
+    val animationProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = animationDuration.inWholeMilliseconds.toInt(),
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "WaveProgress"
+    )
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height((amplitude * 2) + strokeWidth)
+    ) {
+        val strokeWidthPx = strokeWidth.toPx()
+        val centerY = size.height / 2f
+        val inset = 10.dp.toPx()
+
+        val waveSegmentLengthPx = waveSegmentLength.toPx()
+        val trackWidth = size.width - 2 * inset
+        val progressPositionX = inset + trackWidth * progress.coerceIn(0f, 1f)
+        val waveEndX = progressPositionX
+        val waveStartX = (waveEndX - waveSegmentLengthPx).coerceAtLeast(inset)
+
+        if (waveStartX > inset) {
+            drawLine(
+                color = inactiveTrackColor,
+                start = Offset(inset, centerY),
+                end = Offset(waveStartX, centerY),
+                strokeWidth = strokeWidthPx,
+                cap = StrokeCap.Round
+            )
+        }
+
+        drawTravelingWaveSegment(
+            startX = waveStartX,
+            endX = waveEndX,
+            centerY = centerY,
+            color = activeTrackColor,
+            strokeWidth = strokeWidthPx,
+            wavelength = wavelength.toPx(),
+            amplitude = amplitude.toPx(),
+            animationProgress = animationProgress
+        )
+
+        if (waveEndX < size.width - inset) {
+            drawLine(
+                color = inactiveTrackColor,
+                start = Offset(waveEndX, centerY),
+                end = Offset(size.width - inset, centerY),
+                strokeWidth = strokeWidthPx,
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawTravelingWaveSegment(
+    startX: Float,
+    endX: Float,
+    centerY: Float,
+    color: Color,
+    strokeWidth: Float,
+    wavelength: Float,
+    amplitude: Float,
+    animationProgress: Float
+) {
+    if (startX >= endX || wavelength <= 0f) return
+
+    val path = Path()
+    val twoPi = (2 * PI).toFloat()
+    val animationOffset = animationProgress * twoPi
+
+    val drawingStep = 2f
+    val numSteps = ((endX - startX) / drawingStep).toInt()
+
+    var currentX = startX
+    var angle = (currentX / wavelength) * twoPi - animationOffset
+    var y = centerY + sin(angle) * amplitude
+    path.moveTo(currentX, y)
+
+    for (i in 0 until numSteps) {
+        currentX = (currentX + drawingStep).coerceAtMost(endX)
+        angle = (currentX / wavelength) * twoPi - animationOffset
+        y = centerY + sin(angle) * amplitude
+        path.lineTo(currentX, y)
+    }
+
+    angle = (endX / wavelength) * twoPi - animationOffset
+    y = centerY + sin(angle) * amplitude
+    path.lineTo(endX, y)
+
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(
+            width = strokeWidth,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+    )
 }
