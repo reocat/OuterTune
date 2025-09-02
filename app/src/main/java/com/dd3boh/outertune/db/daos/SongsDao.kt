@@ -399,6 +399,10 @@ interface SongsDao {
     fun updateDownloadStatus(songId: String, dateDownload: LocalDateTime?)
 
     @Transaction
+    @Query("UPDATE song SET thumbnailUrl = :thumbnailUrl WHERE id = :songId")
+    fun updateSongThumbnail(songId: String, thumbnailUrl: String)
+
+    @Transaction
     @Query("UPDATE song SET inLibrary = null WHERE localPath = null")
     fun disableInvalidLocalSongs()
 
