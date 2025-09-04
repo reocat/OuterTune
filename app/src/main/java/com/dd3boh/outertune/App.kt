@@ -36,8 +36,10 @@ import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
 import com.dd3boh.outertune.constants.ProxyEnabledKey
+import com.dd3boh.outertune.constants.ProxyPasswordKey
 import com.dd3boh.outertune.constants.ProxyTypeKey
 import com.dd3boh.outertune.constants.ProxyUrlKey
+import com.dd3boh.outertune.constants.ProxyUsernameKey
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
@@ -58,7 +60,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import okhttp3.Credentials
 import timber.log.Timber
+import java.net.Authenticator
+import java.net.PasswordAuthentication
 import java.net.Proxy
 import java.util.Locale
 
@@ -86,6 +91,23 @@ class App : Application(), SingletonImageLoader.Factory {
         }
 
         if (dataStore[ProxyEnabledKey] == true) {
+            if (dataStore[ProxyUsernameKey] != "" || dataStore[ProxyPasswordKey] != "") {
+                if (dataStore[ProxyTypeKey].toEnum(defaultValue = Proxy.Type.HTTP) == Proxy.Type.HTTP) {
+                    YouTube.proxyAuth = Credentials.basic(
+                        dataStore[ProxyUsernameKey] ?: "",
+                        dataStore[ProxyPasswordKey] ?: ""
+                    )
+                } else {
+                    val authenticator = object : Authenticator() {
+                        override fun getPasswordAuthentication() =
+                            PasswordAuthentication(
+                                dataStore[ProxyUsernameKey] ?: "",
+                                (dataStore[ProxyPasswordKey] ?: "").toCharArray()
+                            )
+                    }
+                    Authenticator.setDefault(authenticator)
+                }
+            }
             try {
                 YouTube.proxy = Proxy(
                     dataStore[ProxyTypeKey].toEnum(defaultValue = Proxy.Type.HTTP),

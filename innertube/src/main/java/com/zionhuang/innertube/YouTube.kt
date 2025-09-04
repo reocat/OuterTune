@@ -96,6 +96,11 @@ object YouTube {
             innerTube.proxy = value
         }
 
+    var proxyAuth: String?
+        get() = innerTube.proxyAuth
+        set(value) {
+            innerTube.proxyAuth = value
+        }
     var useLoginForBrowse: Boolean
         get() = innerTube.useLoginForBrowse
         set(value) {
