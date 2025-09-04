@@ -161,6 +161,10 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="sync_mode_ro">Read only (View remote content)</string>
     <string name="sync_mode_rw">Read write (Also allow changes to remote content)</string>
     <string name="wifi_only">Wi-Fi only</string>
+    <string name="config_proxy">Configure proxy</string>
+    <string name="proxy_username">Proxy username</string>
+    <string name="proxy_password">Proxy password</string>
+    <string name="enable_authentication">Enable authentication</string>
 
     <!-- Player settings -->
     <string name="audio_offload">Enable offload</string>

@@ -94,7 +94,12 @@ class DownloadUtil @Inject constructor(
                 OkHttpDataSource.Factory(
                     OkHttpClient.Builder()
                         .proxy(YouTube.proxy)
-                        .build()
+                        .proxyAuthenticator { _, response ->
+                            response.request.newBuilder()
+                                .header("Proxy-Authorization", YouTube.proxyAuth!!)
+                                .build()
+                        }
+                        .build(),
                 )
             )
     ) { dataSpec ->

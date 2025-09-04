@@ -845,6 +845,11 @@ class MusicService : MediaLibraryService(),
                             OkHttpDataSource.Factory(
                                 OkHttpClient.Builder()
                                     .proxy(YouTube.proxy)
+                                    .proxyAuthenticator { _, response ->
+                                        response.request.newBuilder()
+                                            .header("Proxy-Authorization", YouTube.proxyAuth!!)
+                                            .build()
+                                    }
                                     .build()
                             )
                         )
