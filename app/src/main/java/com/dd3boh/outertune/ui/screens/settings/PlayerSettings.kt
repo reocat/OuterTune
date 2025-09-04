@@ -80,7 +80,6 @@ fun PlayerSettings(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-
         AudioEffectsFrag()
 
         Spacer(modifier = Modifier.height(12.dp))

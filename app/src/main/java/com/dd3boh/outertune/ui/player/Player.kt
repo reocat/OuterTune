@@ -63,6 +63,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FastForward
+import androidx.compose.material.icons.outlined.FastRewind
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MoreVert
@@ -132,6 +134,7 @@ import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
 import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.LocalPlayerConnection
+import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
 import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
@@ -141,6 +144,8 @@ import com.dd3boh.outertune.constants.PlayerButtonsStyle
 import com.dd3boh.outertune.constants.PlayerButtonsStyleKey
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.QueuePeekHeight
+import com.dd3boh.outertune.constants.SeekIncrement
+import com.dd3boh.outertune.constants.SeekIncrementKey
 import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.SliderStyle
 import com.dd3boh.outertune.constants.SliderStyleKey
@@ -264,6 +269,11 @@ fun BottomSheetPlayer(
     val playerBackground by rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
         defaultValue = DEFAULT_PLAYER_BACKGROUND
+    )
+
+    val seekIncrement by rememberEnumPreference(
+        key = SeekIncrementKey,
+        defaultValue = SeekIncrement.OFF
     )
 
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -635,11 +645,10 @@ fun BottomSheetPlayer(
             ) {
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     ResizableIconButton(
-                        icon = Icons.Outlined.Shuffle,
+                        icon = if (shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle_off,
                         modifier = Modifier
-                            .size(32.dp)
-                            .alpha(if (shuffleModeEnabled) 1f else 0.5f),
-                        color = controlIconColor,
+                            .size(32.dp),
+                        color = onBackgroundColor,
                         onClick = {
                             playerConnection.triggerShuffle()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -657,6 +666,21 @@ fun BottomSheetPlayer(
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                         }
                     )
+                }
+
+                if(seekIncrement != SeekIncrement.OFF) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        ResizableIconButton (
+                            icon = Icons.Outlined.FastRewind,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .align(Alignment.Center),
+                            color = onBackgroundColor,
+                            onClick = {
+                                playerConnection.player.seekTo(playerConnection.player.currentPosition - seekIncrement.millisec)
+                            }
+                        )
+                    }
                 }
                 Spacer(Modifier.width(16.dp))
                 Box(
@@ -684,6 +708,22 @@ fun BottomSheetPlayer(
                 }
                 Spacer(Modifier.width(16.dp))
 
+                if(seekIncrement != SeekIncrement.OFF) {
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                        ResizableIconButton(
+                            icon = Icons.Outlined.FastForward,
+                            modifier = Modifier
+                                .size(40.dp),
+                            color = onBackgroundColor,
+                            onClick = {
+                                //ExoPlayer seek increment can only be set in builder
+                                //playerConnection.player.seekForward()
+                                playerConnection.player.seekTo(playerConnection.player.currentPosition + seekIncrement.millisec)
+                            }
+                        )
+                    }
+                }
+
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     ResizableIconButton(
                         icon = Icons.Outlined.SkipNext,
@@ -700,14 +740,14 @@ fun BottomSheetPlayer(
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     ResizableIconButton(
                         icon = when (repeatMode) {
-                            REPEAT_MODE_OFF, REPEAT_MODE_ALL -> Icons.Outlined.Repeat
-                            REPEAT_MODE_ONE -> Icons.Outlined.RepeatOne
-                            else -> Icons.Outlined.Repeat
+                            REPEAT_MODE_OFF -> R.drawable.repeat_off
+                            REPEAT_MODE_ALL -> R.drawable.repeat_on
+                            REPEAT_MODE_ONE -> R.drawable.repeat_one
+                            else -> throw IllegalStateException()
                         },
                         modifier = Modifier
-                            .size(32.dp)
-                            .alpha(if (repeatMode == REPEAT_MODE_OFF) 0.5f else 1f),
-                        color = controlIconColor,
+                            .size(32.dp),
+                        color = onBackgroundColor,
                         onClick = {
                             playerConnection.player.toggleRepeatMode()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
