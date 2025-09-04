@@ -256,7 +256,7 @@ fun BoxScope.QueueContent(
     val repeatMode by playerConnection.repeatMode.collectAsState()
     val seekIncrement by rememberEnumPreference(
         key = SeekIncrementKey,
-        defaultValue = SeekIncrement.FIVE
+        defaultValue = SeekIncrement.OFF
     )
 
     // ui
