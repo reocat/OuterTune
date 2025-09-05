@@ -222,4 +222,10 @@
     <string name="file_path">Път на файла</string>
     <string name="track_number">Номер на песен</string>
     <string name="bits_per_sample">Битове на проба</string>
+    <string name="ffmpeg_lgpl">Този софтуер използва библиотеки от проекта FFmpeg под LGPLv2.1</string>
+    <string name="seek_increment">Търсене на увеличение</string>
+    <plurals name="second">
+        <item quantity="one">1 секунда</item>
+        <item quantity="other">%d секунди</item>
+    </plurals>
 </resources>
