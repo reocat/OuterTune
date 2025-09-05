@@ -220,4 +220,9 @@
     <string name="track_number">曲番号</string>
     <string name="bits_per_sample">ビット深度</string>
     <string name="extra_details">詳細情報</string>
+    <plurals name="second">
+        <item quantity="other">%d 秒</item>
+    </plurals>
+    <string name="seek_increment">シーク増加</string>
+    <string name="ffmpeg_lgpl">本アプリはLGPLバージョン2.1でFFmpegのライブラリを使用</string>
 </resources>
