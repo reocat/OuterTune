@@ -230,4 +230,5 @@
         <item quantity="many">%d de segundos</item>
         <item quantity="other">%d segundos</item>
     </plurals>
+    <string name="seek_increment">Incremento de tempo no avançar/retroceder</string>
 </resources>
