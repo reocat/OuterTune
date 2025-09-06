@@ -386,6 +386,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="rpc_preview_title">Listening to %s</string>
     <string name="rpc_listen_ytm">Listen on YouTube Music</string>
     <string name="rpc_visit">Visit %s</string>
+    <string name="advanced_login">Login with token</string>
 
     <!-- Library screen placeholder -->
     <string name="library_empty">Your library is empty</string>
