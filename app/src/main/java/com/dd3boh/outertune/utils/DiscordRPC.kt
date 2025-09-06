@@ -29,7 +29,7 @@ class DiscordRPC(
                         "https://github.com/OuterTune/OuterTune"
             ),
             type = Type.LISTENING,
-            statusDisplayType = KizzyRPC.StatusDisplayType.STATE,
+            statusDisplayType = StatusDisplayType.STATE,
             since = currentTime,
             startTime = calculatedStartTime,
             endTime = currentTime + (song.song.duration * 1000L - currentPlaybackTimeMillis),
@@ -37,6 +37,6 @@ class DiscordRPC(
         )
     }
     companion object {
-        private const val APPLICATION_ID = "1271273225120125040"
+        private const val APPLICATION_ID = "1411019391843172514"
     }
 }

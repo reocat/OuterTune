@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Token
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -76,8 +78,11 @@ import com.dd3boh.outertune.constants.DiscordNameKey
 import com.dd3boh.outertune.constants.DiscordTokenKey
 import com.dd3boh.outertune.constants.DiscordUsernameKey
 import com.dd3boh.outertune.constants.EnableDiscordRPCKey
+import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.button.IconButton
+import com.dd3boh.outertune.ui.dialog.InfoLabel
+import com.dd3boh.outertune.ui.dialog.TextFieldDialog
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberPreference
@@ -100,6 +105,23 @@ fun DiscordSettings(
     var infoDismissed by rememberPreference(DiscordInfoDismissedKey, false)
     val (discordRPC, onDiscordRPCChange) = rememberPreference(key = EnableDiscordRPCKey, defaultValue = true)
     val isLoggedIn = discordToken.isNotEmpty()
+    var showTokenDialog by rememberSaveable { mutableStateOf(false) }
+
+    if (showTokenDialog) {
+        TextFieldDialog(
+            onDismiss = { showTokenDialog = false },
+            icon = { Icon(Icons.Outlined.Token, null) },
+            onDone = {
+                discordToken = it
+                showTokenDialog = false
+            },
+            singleLine = true,
+            isInputValid = { it.isNotEmpty() },
+            extraContent = {
+                InfoLabel(text = stringResource(R.string.token_adv_login_description))
+            }
+        )
+    }
 
     LaunchedEffect(discordToken) {
         if (discordToken.isNotEmpty()) {
@@ -170,6 +192,18 @@ fun DiscordSettings(
                             discordUsername = ""
                         }
                     )
+                    
+                    if (!isLoggedIn) {
+                        PreferenceEntry(
+                            title = {
+                                Text(stringResource(R.string.advanced_login))
+                            },
+                            icon = { Icon(Icons.Outlined.Token, null) },
+                            onClick = {
+                                showTokenDialog = true
+                            }
+                        )
+                    }
                 }
 
                 SettingsCategoryHeader(title = stringResource(R.string.options))
