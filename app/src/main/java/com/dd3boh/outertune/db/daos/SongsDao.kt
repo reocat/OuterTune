@@ -383,7 +383,7 @@ interface SongsDao {
     }
 
     @Transaction
-    @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId AND inLibrary IS NULL")
+    @Query("UPDATE song SET inLibrary = :inLibrary WHERE id = :songId")
     fun inLibrary(songId: String, inLibrary: LocalDateTime?)
 
     @Transaction
