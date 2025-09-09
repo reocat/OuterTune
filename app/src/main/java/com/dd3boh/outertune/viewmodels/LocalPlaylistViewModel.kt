@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.Collator
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,9 +43,24 @@ class LocalPlaylistViewModel @Inject constructor(
     ) { songs, (sortType, sortDescending) ->
         when (sortType) {
             PlaylistSongSortType.CUSTOM -> songs
-            PlaylistSongSortType.NAME -> songs.sortedBy { it.song.song.title.lowercase() }
-            PlaylistSongSortType.ARTIST -> songs.sortedBy { song ->
-                song.song.artists.joinToString { it.name }.lowercase()
+            PlaylistSongSortType.NAME -> {
+                val collator = Collator.getInstance(Locale.getDefault())
+                collator.strength = Collator.PRIMARY
+                songs.sortedWith(compareBy(collator) { it.song.song.title })
+            }
+            PlaylistSongSortType.ARTIST -> {
+                val collator = Collator.getInstance(Locale.getDefault())
+                collator.strength = Collator.PRIMARY
+                songs
+                    .sortedWith(compareBy(collator) { song -> song.song.artists.joinToString("") { it.name } })
+                    .groupBy { it.song.album?.title }
+                    .flatMap { (_, songsByAlbum) ->
+                        songsByAlbum.sortedBy {
+                            it.song.artists.joinToString(
+                                ""
+                            ) { it.name }
+                        }
+                    }
             }
             PlaylistSongSortType.ADDED_DATE -> songs.sortedBy { it.song.song.inLibrary }
             PlaylistSongSortType.MODIFIED_DATE -> songs.sortedBy { it.song.song.dateModified }
