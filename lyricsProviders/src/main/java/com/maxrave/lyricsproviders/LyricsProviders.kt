@@ -1,6 +1,5 @@
 package com.maxrave.lyricsproviders
 
-import android.content.Context
 import com.maxrave.lyricsproviders.encoder.brotli
 import com.maxrave.lyricsproviders.models.body.MusixmatchCredentialsBody
 import com.maxrave.lyricsproviders.models.response.SearchMusixmatchResponse
@@ -29,6 +28,7 @@ import io.ktor.serialization.kotlinx.KotlinxSerializationConverter
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
+import java.io.File
 import java.net.Proxy
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -38,7 +38,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 class LyricsProviders(
-    private val context: Context,
+    private val cacheDir: File,
     private val commonJson: Json,
 ) {
     private var lyricsClient = createClient()
@@ -57,7 +57,7 @@ class LyricsProviders(
             lyricsClient = createClient()
         }
 
-    private fun cachePath() = context.cacheDir.resolve("http_cache")
+    private fun cachePath() = cacheDir.resolve("http_cache")
 
     private fun createClient() =
         HttpClient(OkHttp) {

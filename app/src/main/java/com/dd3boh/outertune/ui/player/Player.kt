@@ -70,10 +70,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Repeat
-import androidx.compose.material.icons.outlined.RepeatOne
 import androidx.compose.material.icons.outlined.Replay
-import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -95,7 +92,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -132,7 +128,6 @@ import coil3.size.Size
 import coil3.toBitmap
 import com.dd3boh.outertune.LocalImageCache
 import com.dd3boh.outertune.LocalMenuState
-import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DEFAULT_PLAYER_BACKGROUND
@@ -167,6 +162,7 @@ import com.dd3boh.outertune.ui.component.button.ResizableIconButton
 import com.dd3boh.outertune.ui.component.rememberBottomSheetState
 import com.dd3boh.outertune.ui.menu.PlayerMenu
 import com.dd3boh.outertune.ui.utils.SnapLayoutInfoProvider
+import com.dd3boh.outertune.utils.LmImageCacheMgr
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -648,7 +644,7 @@ fun BottomSheetPlayer(
                         icon = if (shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle_off,
                         modifier = Modifier
                             .size(32.dp),
-                        color = onBackgroundColor,
+                        color = controlIconColor,
                         onClick = {
                             playerConnection.triggerShuffle()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
@@ -675,7 +671,7 @@ fun BottomSheetPlayer(
                             modifier = Modifier
                                 .size(40.dp)
                                 .align(Alignment.Center),
-                            color = onBackgroundColor,
+                            color = controlIconColor,
                             onClick = {
                                 playerConnection.player.seekTo(playerConnection.player.currentPosition - seekIncrement.millisec)
                             }
@@ -714,7 +710,7 @@ fun BottomSheetPlayer(
                             icon = Icons.Outlined.FastForward,
                             modifier = Modifier
                                 .size(40.dp),
-                            color = onBackgroundColor,
+                            color = controlIconColor,
                             onClick = {
                                 //ExoPlayer seek increment can only be set in builder
                                 //playerConnection.player.seekForward()
@@ -747,7 +743,7 @@ fun BottomSheetPlayer(
                         },
                         modifier = Modifier
                             .size(32.dp),
-                        color = onBackgroundColor,
+                        color = controlIconColor,
                         onClick = {
                             playerConnection.player.toggleRepeatMode()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)

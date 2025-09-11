@@ -1,7 +1,5 @@
 package com.maxrave.lyricsproviders
 
-import android.content.Context
-import android.util.Log
 import com.maxrave.lyricsproviders.models.lyrics.Lyrics
 import com.maxrave.lyricsproviders.models.response.LrclibObject
 import com.maxrave.lyricsproviders.models.response.MacroSearchResponse
@@ -22,15 +20,16 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
+import java.io.File
 import kotlin.math.abs
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class LyricsClient(
-    context: Context,
+    cacheDir: File,
 ) {
     private val commonJson = commonJson()
-    private val lyricsProvider = LyricsProviders(context, commonJson)
+    private val lyricsProvider = LyricsProviders(cacheDir, commonJson)
 
     private fun commonJson() =
         Json {
@@ -114,15 +113,12 @@ class LyricsClient(
                 .credential.account != null
         ) {
             val setCookies = request.headers.getAll("Set-Cookie")
-//            Log.w("postMusixmatchCredentials", setCookies.toString())
             if (!setCookies.isNullOrEmpty()) {
                 fromArrayListNull(setCookies, commonJson)?.let {
                     musixmatchCookie = it
                 }
             }
         }
-//        Log.w("postMusixmatchCredentials cookie", musixmatchCookie.toString())
-//        Log.w("postMusixmatchCredentials", response.toString())
         return@runCatching response
     }
 
@@ -199,7 +195,7 @@ class LyricsClient(
                         q_track = q_track,
                         q_artist = q_artist,
                     ).bodyWithoutCaptcha<MusixmatchLyricsResponse>()
-            Log.w("Macro Subtitle Result", response.toString())
+            println("Macro Subtitle Result: $response")
             val trackId =
                 response.message.body.macro_calls
                     ?.trackGet
@@ -240,7 +236,7 @@ class LyricsClient(
     ) = runCatching {
         delay(500)
         val rs = lyricsProvider.fixSearchMusixmatch(q_artist, q_track, q_duration, userToken).bodyWithoutCaptcha<SearchMusixmatchResponse>()
-        Log.w("Search Result", rs.toString())
+        println("Search Result: $rs")
         return@runCatching rs
     }
 
@@ -351,7 +347,7 @@ class LyricsClient(
             if (text.contains("captcha")) {
                 throw CaptchaException()
             } else {
-                Log.e("LyricsClient", "Error: $text")
+                println("LyricsClient Error: $text")
                 throw Exception("Error: $text")
             }
         }

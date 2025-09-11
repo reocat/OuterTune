@@ -31,7 +31,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
-import okhttp3.internal.toImmutableList
 import timber.log.Timber
 import java.util.PriorityQueue
 import kotlin.math.max
@@ -659,7 +658,7 @@ class QueueBoard(private val player: MusicService, queues: MutableList<MultiQueu
     /**
      * Get all copy of all queues
      */
-    fun getAllQueues() = masterQueues.toImmutableList()
+    fun getAllQueues() = masterQueues.toList()
 
 
     /**
