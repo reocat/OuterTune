@@ -21,7 +21,7 @@ object LyricsClientModule {
     @Provides
     @Singleton
     fun provideLyricsClient(@ApplicationContext context: Context): LyricsClient {
-        val client = LyricsClient(context)
+        val client = LyricsClient(context.cacheDir)
         runBlocking {
             client.musixmatchUserToken = context.dataStore[MusixmatchUserTokenKey]
             client.musixmatchCookie = context.dataStore[MusixmatchCookieKey]

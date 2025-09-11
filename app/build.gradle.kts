@@ -5,6 +5,7 @@ import java.util.Date
 
 plugins {
     id("com.android.application")
+    kotlin("android")
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.compose.compiler)
@@ -90,7 +91,7 @@ android {
                     "-opt-in=kotlin.RequiresOptIn"
                 )
             )
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
         }
     }
 

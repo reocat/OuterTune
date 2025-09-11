@@ -1,40 +1,11 @@
-import com.android.build.gradle.internal.tasks.CompileArtProfileTask
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    id("com.android.library")
+    kotlin("jvm")
     alias(libs.plugins.kotlin.serialization)
 }
 
-android {
-    namespace = "com.maxrave.lyricsproviders"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 26
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-}
-
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {
@@ -47,7 +18,4 @@ dependencies {
     implementation(libs.ktor.serialization.json)
 
     implementation(libs.brotli)
-}
-tasks.withType<CompileArtProfileTask> {
-    enabled = false
 }
