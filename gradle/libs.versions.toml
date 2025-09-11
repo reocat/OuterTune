@@ -1,6 +1,6 @@
 [versions]
 adaptive = "1.2.0-beta02"
-androidGradlePlugin = "9.0.0-alpha02"
+androidGradlePlugin = "9.0.0-alpha04"
 json = "20250517"
 kotlin = "2.2.20"
 coil = "3.3.0"
