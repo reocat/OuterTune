@@ -91,6 +91,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import com.dd3boh.outertune.ui.component.items.ItemThumbnail
+import com.dd3boh.outertune.ui.component.items.PlaceholderVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -412,31 +414,24 @@ private fun RichPresencePreview() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(Modifier.size(80.dp)) {
-                    AsyncImage(
-                        model = song?.song?.thumbnailUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clip(RoundedCornerShape(12.dp))
-                            .run {
-                                if (song == null) border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outlineVariant,
-                                    RoundedCornerShape(12.dp)
-                                ) else this
-                            }
+                    ItemThumbnail(
+                        thumbnailUrl = song?.song?.localPath ?: song?.song?.thumbnailUrl,
+                        isActive = false,
+                        isPlaying = false,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.matchParentSize(),
+                        placeholderVariant = PlaceholderVariant.SONG
                     )
-                    song?.artists?.firstOrNull()?.thumbnailUrl?.let {
-                        AsyncImage(
-                            model = it,
-                            contentDescription = null,
+                    song?.takeIf { !it.song.isLocal }?.artists?.firstOrNull()?.thumbnailUrl?.takeIf { it.isNotEmpty() && it != "null" }?.let {
+                        ItemThumbnail(
+                            thumbnailUrl = it,
+                            isActive = false,
+                            isPlaying = false,
+                            shape = CircleShape,
                             modifier = Modifier
                                 .size(30.dp)
-                                .align(Alignment.BottomEnd)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-                                .border(2.dp, MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-
+                                .align(Alignment.BottomEnd),
+                            placeholderVariant = PlaceholderVariant.ARTIST
                         )
                     }
                 }

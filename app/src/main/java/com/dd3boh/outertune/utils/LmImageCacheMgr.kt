@@ -20,7 +20,6 @@ class LmImageCacheMgr(context: Context, val placeholderImage: Bitmap = drawPlace
 
     private var localImageCache = ImageCacheManager(300)
 
-
     /**
      * Extract the album art from the audio file. The image is not resized
      *
@@ -63,7 +62,7 @@ class LmImageCacheMgr(context: Context, val placeholderImage: Bitmap = drawPlace
         } ?: return placeholderImage
 
         if (resize) {
-            image = image.scale(100, 100, false)
+            image = image.scale(400, 400, true)
         }
 
         localImageCache.cache(path, image, resize)

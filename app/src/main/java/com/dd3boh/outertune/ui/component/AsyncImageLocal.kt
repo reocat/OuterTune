@@ -45,7 +45,7 @@ fun AsyncImageLocal(
     image: () -> Bitmap?,
     modifier: Modifier = Modifier,
     placeholderIcon: ImageVector? = Icons.Outlined.MusicNote,
-    contentScale: ContentScale = ContentScale.Fit,
+    contentScale: ContentScale = ContentScale.Crop,
     contentDescription: String? = null,
     colorFilter: ColorFilter? = null,
 ) {
