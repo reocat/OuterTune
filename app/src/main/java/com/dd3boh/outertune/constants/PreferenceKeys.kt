@@ -187,6 +187,40 @@ val DevSettingsKey = booleanPreferencesKey("devSettings")
 val OobeStatusKey = intPreferencesKey("oobeStatus")
 val SwipeToSkip = booleanPreferencesKey("swipeToSkip")
 
+/**
+ * DPI Bypass settings
+ */
+val DpiBypassEnabledKey = booleanPreferencesKey("dpiBypassEnabled")
+val DpiBypassModeKey = booleanPreferencesKey("dpiBypassMode")
+val DpiBypassCmdArgsKey = stringPreferencesKey("dpiBypassCmdArgs")
+val DpiBypassMaxConnectionsKey = stringPreferencesKey("dpiBypassMaxConnections")
+val DpiBypassBufferSizeKey = stringPreferencesKey("dpiBypassBufferSize")
+val DpiBypassDefaultTtlKey = stringPreferencesKey("dpiBypassDefaultTtl")
+val DpiBypassNoDomainKey = booleanPreferencesKey("dpiBypassNoDomain")
+val DpiBypassDesyncHttpKey = booleanPreferencesKey("dpiBypassDesyncHttp")
+val DpiBypassDesyncHttpsKey = booleanPreferencesKey("dpiBypassDesyncHttps")
+val DpiBypassDesyncUdpKey = booleanPreferencesKey("dpiBypassDesyncUdp")
+val DpiBypassDesyncMethodKey = stringPreferencesKey("dpiBypassDesyncMethod")
+val DpiBypassSplitPositionKey = stringPreferencesKey("dpiBypassSplitPosition")
+val DpiBypassSplitAtHostKey = booleanPreferencesKey("dpiBypassSplitAtHost")
+val DpiBypassFakeTtlKey = stringPreferencesKey("dpiBypassFakeTtl")
+val DpiBypassFakeSniKey = stringPreferencesKey("dpiBypassFakeSni")
+val DpiBypassOobCharKey = stringPreferencesKey("dpiBypassOobChar")
+val DpiBypassHostMixedCaseKey = booleanPreferencesKey("dpiBypassHostMixedCase")
+val DpiBypassDomainMixedCaseKey = booleanPreferencesKey("dpiBypassDomainMixedCase")
+val DpiBypassHostRemoveSpacesKey = booleanPreferencesKey("dpiBypassHostRemoveSpaces")
+val DpiBypassTlsRecordSplitKey = booleanPreferencesKey("dpiBypassTlsRecordSplit")
+val DpiBypassTlsRecordSplitPositionKey = stringPreferencesKey("dpiBypassTlsRecordSplitPosition")
+val DpiBypassTlsRecordSplitAtSniKey = booleanPreferencesKey("dpiBypassTlsRecordSplitAtSni")
+val DpiBypassTcpFastOpenKey = booleanPreferencesKey("dpiBypassTcpFastOpen")
+val DpiBypassUdpFakeCountKey = stringPreferencesKey("dpiBypassUdpFakeCount")
+val DpiBypassDropSackKey = booleanPreferencesKey("dpiBypassDropSack")
+val DpiBypassFakeOffsetKey = stringPreferencesKey("dpiBypassFakeOffset")
+val DpiBypassHostsModeKey = stringPreferencesKey("dpiBypassHostsMode")
+val DpiBypassHostsBlacklistKey = stringPreferencesKey("dpiBypassHostsBlacklist")
+val DpiBypassHostsWhitelistKey = stringPreferencesKey("dpiBypassHostsWhitelist")
+
+
 
 /**
  * Non-settings UI preferences

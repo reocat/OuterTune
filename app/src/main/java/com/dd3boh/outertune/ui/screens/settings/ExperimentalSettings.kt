@@ -8,6 +8,7 @@
 
 package com.dd3boh.outertune.ui.screens.settings
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +50,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -66,6 +69,9 @@ import com.dd3boh.outertune.constants.OobeStatusKey
 import com.dd3boh.outertune.constants.SCANNER_OWNER_LM
 import com.dd3boh.outertune.constants.TabletUiKey
 import com.dd3boh.outertune.constants.TopBarInsets
+import com.dd3boh.outertune.constants.DpiBypassEnabledKey
+import com.dd3boh.outertune.constants.DpiBypassModeKey
+import com.dd3boh.outertune.dpi.DpiProxyService
 import com.dd3boh.outertune.ui.component.ColumnWithContentPadding
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
@@ -96,6 +102,9 @@ fun ExperimentalSettings(
     val (tabletUi, onTabletUiChange) = rememberPreference(TabletUiKey, defaultValue = false)
 
     val (devSettings, onDevSettingsChange) = rememberPreference(DevSettingsKey, defaultValue = false)
+
+    val (dpiBypassEnabled, onDpiBypassEnabledChange) = rememberPreference(DpiBypassEnabledKey, defaultValue = false)
+
     val (oobeStatus, onOobeStatusChange) = rememberPreference(OobeStatusKey, defaultValue = 0)
 
     var nukeEnabled by remember {
@@ -127,11 +136,41 @@ fun ExperimentalSettings(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // DPI Bypass group
+        PreferenceGroupTitle(
+            title = "DPI Bypass Settings"
+        )
+        SwitchPreference(
+            title = { Text("Enable DPI Bypass") },
+            description = "Enable DPI bypass using proxy",
+            icon = { Icon(Icons.Outlined.DeveloperMode, null) },
+            checked = dpiBypassEnabled,
+            onCheckedChange = onDpiBypassEnabledChange
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        if (dpiBypassEnabled) {
+            PreferenceEntry(
+                title = { Text("Configure DPI Bypass") },
+                description = "Configure DPI bypass settings",
+                icon = { Icon(Icons.Outlined.Settings, null) },
+                onClick = {
+                    navController.navigate("settings/dpi")
+                }
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Debug group
         PreferenceGroupTitle(
             title = stringResource(R.string.settings_debug)
         )
+        
         PreferenceEntry(
             title = { Text("Flush local image cache") },
+            description = "Clear the local image cache to free up space",
             icon = { Icon(Icons.Outlined.Delete, null) },
             onClick = {
                 imageCache.purgeCache()

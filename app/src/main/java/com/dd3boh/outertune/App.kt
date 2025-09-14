@@ -11,6 +11,7 @@ package com.dd3boh.outertune
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -32,6 +33,7 @@ import com.dd3boh.outertune.constants.ContentCountryKey
 import com.dd3boh.outertune.constants.ContentLanguageKey
 import com.dd3boh.outertune.constants.CountryCodeToName
 import com.dd3boh.outertune.constants.DataSyncIdKey
+import com.dd3boh.outertune.constants.DpiBypassEnabledKey
 import com.dd3boh.outertune.constants.InnerTubeCookieKey
 import com.dd3boh.outertune.constants.LanguageCodeToName
 import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
@@ -43,6 +45,7 @@ import com.dd3boh.outertune.constants.ProxyUsernameKey
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
+import com.dd3boh.outertune.dpi.DpiProxyService
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.extensions.toInetSocketAddress
 import com.dd3boh.outertune.utils.dataStore
@@ -90,28 +93,7 @@ class App : Application(), SingletonImageLoader.Factory {
             KuGou.useTraditionalChinese = true
         }
 
-        if (dataStore[ProxyEnabledKey] == true) {
-            val username = dataStore[ProxyUsernameKey].orEmpty()
-            val password = dataStore[ProxyPasswordKey].orEmpty()
-            val type = dataStore[ProxyTypeKey].toEnum(defaultValue = Proxy.Type.HTTP)
-
-            if (username.isNotEmpty() || password.isNotEmpty()) {
-                if (type == Proxy.Type.HTTP) {
-                    YouTube.proxyAuth = Credentials.basic(username, password)
-                } else {
-                    Authenticator.setDefault(object : Authenticator() {
-                        override fun getPasswordAuthentication() =
-                            PasswordAuthentication(username, password.toCharArray())
-                    })
-                }
-            }
-            try {
-                YouTube.proxy = Proxy(type, dataStore[ProxyUrlKey]!!.toInetSocketAddress())
-            } catch (e: Exception) {
-                Toast.makeText(this, "Failed to parse proxy url.", LENGTH_SHORT).show()
-                reportException(e)
-            }
-        }
+        updateProxy()
 
         if (dataStore[UseLoginForBrowse] != false) {
             YouTube.useLoginForBrowse = true
@@ -153,7 +135,7 @@ class App : Application(), SingletonImageLoader.Factory {
                     // quick hack until https://github.com/z-huang/InnerTune/pull/1694 is done
                     val isLoggedIn: Boolean = rawCookie?.contains("SAPISID") == true
                     val cookie = if (isLoggedIn) rawCookie else null
-                    
+
                     try {
                         YouTube.cookie = cookie
                     } catch (e: Exception) {
@@ -162,6 +144,124 @@ class App : Application(), SingletonImageLoader.Factory {
                         forgetAccount(this@App)
                     }
                 }
+        }
+
+        GlobalScope.launch {
+            dataStore.data
+                .map { Pair(it[ProxyEnabledKey], it[DpiBypassEnabledKey]) }
+                .distinctUntilChanged()
+                .collect {
+                    withContext(Dispatchers.Main) {
+                        updateProxy()
+                    }
+                }
+        }
+    }
+
+    private fun updateProxy() {
+        val proxyEnabled = dataStore[ProxyEnabledKey] == true
+        val dpiBypassEnabled = dataStore[DpiBypassEnabledKey] == true
+
+        if (dpiBypassEnabled && !proxyEnabled) {
+            try {
+                val intent = Intent(this, DpiProxyService::class.java)
+                intent.action = DpiProxyService.ACTION_START
+                startService(intent)
+            } catch (e: Exception) {
+                reportException(e)
+            }
+        } else {
+            try {
+                val intent = Intent(this, DpiProxyService::class.java)
+                intent.action = DpiProxyService.ACTION_STOP
+                startService(intent)
+            } catch (e: Exception) {
+                reportException(e)
+            }
+        }
+
+        if (proxyEnabled) {
+            val username = dataStore[ProxyUsernameKey].orEmpty()
+            val password = dataStore[ProxyPasswordKey].orEmpty()
+            val type = dataStore[ProxyTypeKey].toEnum(defaultValue = Proxy.Type.HTTP)
+
+            if (username.isNotEmpty() || password.isNotEmpty()) {
+                if (type == Proxy.Type.HTTP) {
+                    YouTube.proxyAuth = Credentials.basic(username, password)
+                } else {
+                    YouTube.proxyAuth = null
+                }
+                Authenticator.setDefault(object : Authenticator() {
+                    override fun getPasswordAuthentication() =
+                        PasswordAuthentication(username, password.toCharArray())
+                })
+            } else {
+                YouTube.proxyAuth = null
+                Authenticator.setDefault(null)
+            }
+            try {
+                val address = dataStore[ProxyUrlKey]!!.toInetSocketAddress()
+                YouTube.proxy = Proxy(type, address)
+
+                val host = address.hostString
+                val port = address.port.toString()
+
+                System.clearProperty("http.proxyHost")
+                System.clearProperty("http.proxyPort")
+                System.clearProperty("https.proxyHost")
+                System.clearProperty("https.proxyPort")
+                System.clearProperty("socksProxyHost")
+                System.clearProperty("socksProxyPort")
+
+                when (type) {
+                    Proxy.Type.HTTP -> {
+                        System.setProperty("http.proxyHost", host)
+                        System.setProperty("http.proxyPort", port)
+                        System.setProperty("https.proxyHost", host)
+                        System.setProperty("https.proxyPort", port)
+                    }
+                    Proxy.Type.SOCKS -> {
+                        System.setProperty("socksProxyHost", host)
+                        System.setProperty("socksProxyPort", port)
+                    }
+                    else -> {}
+                }
+
+            } catch (e: Exception) {
+                Toast.makeText(this, "Failed to parse proxy url.", LENGTH_SHORT).show()
+                reportException(e)
+            }
+        } else if (dpiBypassEnabled) {
+            try {
+                val address = "127.0.0.1:1081".toInetSocketAddress()
+                YouTube.proxy = Proxy(Proxy.Type.SOCKS, address)
+                YouTube.proxyAuth = null
+                Authenticator.setDefault(null)
+
+                System.clearProperty("http.proxyHost")
+                System.clearProperty("http.proxyPort")
+                System.clearProperty("https.proxyHost")
+                System.clearProperty("https.proxyPort")
+                System.clearProperty("socksProxyHost")
+                System.clearProperty("socksProxyPort")
+
+                System.setProperty("socksProxyHost", address.hostString)
+                System.setProperty("socksProxyPort", address.port.toString())
+            } catch (e: Exception) {
+                Toast.makeText(this, "Failed to set DPI proxy.", LENGTH_SHORT).show()
+                reportException(e)
+            }
+        } else {
+            YouTube.proxy = null
+            YouTube.proxyAuth = null
+            Authenticator.setDefault(null)
+
+            System.clearProperty("http.proxyHost")
+            System.clearProperty("http.proxyPort")
+            System.clearProperty("https.proxyHost")
+            System.clearProperty("https.proxyPort")
+            System.clearProperty("socksProxyHost")
+            System.clearProperty("socksProxyPort")
         }
     }
 

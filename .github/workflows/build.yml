@@ -77,6 +77,9 @@ jobs:
         with:
           cache-cleanup: on-success
 
+      - name: Android accept licenses
+        uses: SimonMarquis/android-accept-licenses@v1
+        
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 

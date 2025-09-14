@@ -252,6 +252,7 @@ import com.dd3boh.outertune.ui.screens.settings.BackupAndRestore
 import com.dd3boh.outertune.ui.screens.settings.DiscordLoginScreen
 import com.dd3boh.outertune.ui.screens.settings.DiscordSettings
 import com.dd3boh.outertune.ui.screens.settings.ExperimentalSettings
+import com.dd3boh.outertune.ui.screens.settings.dpi.DpiBypassSettings
 import com.dd3boh.outertune.ui.screens.settings.InterfaceSettings
 import com.dd3boh.outertune.ui.screens.settings.LibrarySettings
 import com.dd3boh.outertune.ui.screens.settings.LocalPlayerSettings
@@ -260,6 +261,7 @@ import com.dd3boh.outertune.ui.screens.settings.MonetSettings
 import com.dd3boh.outertune.ui.screens.settings.PlayerSettings
 import com.dd3boh.outertune.ui.screens.settings.SettingsScreen
 import com.dd3boh.outertune.ui.screens.settings.StorageSettings
+import com.dd3boh.outertune.ui.screens.settings.dpi.DpiBypassUIEditor
 import com.dd3boh.outertune.ui.screens.settings.import_from_spotify.ImportFromSpotifyScreen
 import com.dd3boh.outertune.ui.theme.ColorSaver
 import com.dd3boh.outertune.ui.theme.DefaultThemeColor
@@ -1201,6 +1203,12 @@ class MainActivity : ComponentActivity() {
                                     }
                                     composable("settings/experimental") {
                                         ExperimentalSettings(navController, scrollBehavior)
+                                    }
+                                    composable("settings/dpi") {
+                                        DpiBypassSettings(navController, scrollBehavior)
+                                    }
+                                    composable("settings/dpi/config") {
+                                        DpiBypassUIEditor(navController, scrollBehavior)
                                     }
                                     composable("settings/discord") {
                                         DiscordSettings(navController, scrollBehavior)

@@ -140,7 +140,8 @@ import com.dd3boh.outertune.ui.component.ListPreference
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.PreferenceItem
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.dialog.TokenEditorDialog
+import com.dd3boh.outertune.ui.dialog.EditorDialog
+import com.dd3boh.outertune.ui.dialog.InfoLabel
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
@@ -974,25 +975,54 @@ private fun AccountPage(
     }
 
     if (showTokenEditor) {
-        TokenEditorDialog(
-            initialValue = innerTubeCookie,
-            onDone = { newToken ->
-                onInnerTubeCookieChange(newToken)
-                showTokenEditor = false
+        val initialText = buildString {
+            append("***INNERTUBE COOKIE*** =$innerTubeCookie\n\n")
+            append("***VISITOR DATA*** =$visitorData\n\n")
+            append("***DATASYNC ID*** =$dataSyncId\n\n")
+            append("***ACCOUNT NAME*** =$accountName\n\n")
+            append("***ACCOUNT EMAIL*** =$accountEmail\n\n")
+            append("***ACCOUNT CHANNEL HANDLE*** =$accountChannelHandle")
+        }
+
+        fun processAndSaveToken(data: String) {
+            data.split("\n").forEach { line ->
+                when {
+                    line.startsWith("***INNERTUBE COOKIE*** =") ->
+                        onInnerTubeCookieChange(line.substringAfter("***INNERTUBE COOKIE*** ="))
+                    line.startsWith("***VISITOR DATA*** =") ->
+                        onVisitorDataChange(line.substringAfter("***VISITOR DATA*** ="))
+                    line.startsWith("***DATASYNC ID*** =") ->
+                        onDataSyncIdChange(line.substringAfter("***DATASYNC ID*** ="))
+                    line.startsWith("***ACCOUNT NAME*** =") ->
+                        onAccountNameChange(line.substringAfter("***ACCOUNT NAME*** ="))
+                    line.startsWith("***ACCOUNT EMAIL*** =") ->
+                        onAccountEmailChange(line.substringAfter("***ACCOUNT EMAIL*** ="))
+                    line.startsWith("***ACCOUNT CHANNEL HANDLE*** =") ->
+                        onAccountChannelHandleChange(line.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
+                }
+            }
+            showTokenEditor = false
+        }
+
+        EditorDialog(
+            title = stringResource(R.string.edit_token),
+            label = stringResource(R.string.token),
+            initialValue = initialText,
+            onDone = {
+                processAndSaveToken(it)
             },
             onDismiss = { showTokenEditor = false },
-            modifier = Modifier,
-            visitorData = visitorData,
-            dataSyncId = dataSyncId,
-            accountName = accountName,
-            accountEmail = accountEmail,
-            accountChannelHandle = accountChannelHandle,
-            onInnerTubeCookieChange = onInnerTubeCookieChange,
-            onVisitorDataChange = onVisitorDataChange,
-            onDataSyncIdChange = onDataSyncIdChange,
-            onAccountNameChange = onAccountNameChange,
-            onAccountEmailChange = onAccountEmailChange,
-            onAccountChannelHandleChange = onAccountChannelHandleChange
+            validation = { text ->
+                val cookieLine = text.split("\n").find { line ->
+                    line.startsWith("***INNERTUBE COOKIE*** =")
+                }?.substringAfter("***INNERTUBE COOKIE*** =") ?: ""
+                cookieLine.isNotEmpty() && "SAPISID" in parseCookieString(cookieLine)
+            },
+            errorMessage = stringResource(R.string.invalid_token),
+            content = {
+                Spacer(modifier = Modifier.height(8.dp))
+                InfoLabel(text = stringResource(R.string.token_adv_login_description))
+            }
         )
     }
 }

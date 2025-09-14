@@ -51,7 +51,8 @@ import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
 import com.dd3boh.outertune.ui.component.PreferenceEntry
 import com.dd3boh.outertune.ui.component.SwitchPreference
-import com.dd3boh.outertune.ui.dialog.TokenEditorDialog
+import com.dd3boh.outertune.ui.dialog.EditorDialog
+import com.dd3boh.outertune.ui.dialog.InfoLabel
 import com.dd3boh.outertune.utils.rememberPreference
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.utils.parseCookieString
@@ -222,25 +223,54 @@ fun ColumnScope.AccountFrag(navController: NavController) {
 
 
     if (showTokenEditor) {
-        TokenEditorDialog(
-            initialValue = innerTubeCookie,
-            visitorData = visitorData,
-            dataSyncId = dataSyncId,
-            accountName = accountName,
-            accountEmail = accountEmail,
-            accountChannelHandle = accountChannelHandle,
-            onInnerTubeCookieChange = onInnerTubeCookieChange,
-            onVisitorDataChange = onVisitorDataChange,
-            onDataSyncIdChange = onDataSyncIdChange,
-            onAccountNameChange = onAccountNameChange,
-            onAccountEmailChange = onAccountEmailChange,
-            onAccountChannelHandleChange = onAccountChannelHandleChange,
-            onDismiss = { showTokenEditor = false },
-            onDone = { newToken ->
-                onInnerTubeCookieChange(newToken)
-                showTokenEditor = false
+        val initialText = buildString {
+            append("***INNERTUBE COOKIE*** =$innerTubeCookie\n\n")
+            append("***VISITOR DATA*** =$visitorData\n\n")
+            append("***DATASYNC ID*** =$dataSyncId\n\n")
+            append("***ACCOUNT NAME*** =$accountName\n\n")
+            append("***ACCOUNT EMAIL*** =$accountEmail\n\n")
+            append("***ACCOUNT CHANNEL HANDLE*** =$accountChannelHandle")
+        }
+
+        fun processAndSaveToken(data: String) {
+            data.split("\n").forEach {
+                when {
+                    it.startsWith("***INNERTUBE COOKIE*** =") ->
+                        onInnerTubeCookieChange(it.substringAfter("***INNERTUBE COOKIE*** ="))
+                    it.startsWith("***VISITOR DATA*** =") ->
+                        onVisitorDataChange(it.substringAfter("***VISITOR DATA*** ="))
+                    it.startsWith("***DATASYNC ID*** =") ->
+                        onDataSyncIdChange(it.substringAfter("***DATASYNC ID*** ="))
+                    it.startsWith("***ACCOUNT NAME*** =") ->
+                        onAccountNameChange(it.substringAfter("***ACCOUNT NAME*** ="))
+                    it.startsWith("***ACCOUNT EMAIL*** =") ->
+                        onAccountEmailChange(it.substringAfter("***ACCOUNT EMAIL*** ="))
+                    it.startsWith("***ACCOUNT CHANNEL HANDLE*** =") ->
+                        onAccountChannelHandleChange(it.substringAfter("***ACCOUNT CHANNEL HANDLE*** ="))
+                }
+            }
+            showTokenEditor = false
+        }
+
+        EditorDialog(
+            title = stringResource(R.string.edit_token),
+            label = stringResource(R.string.token),
+            initialValue = initialText,
+            onDone = {
+                processAndSaveToken(it)
             },
-            modifier = Modifier
+            onDismiss = { showTokenEditor = false },
+            validation = {
+                val cookieLine = it.split("\n").find { line ->
+                    line.startsWith("***INNERTUBE COOKIE*** =")
+                }?.substringAfter("***INNERTUBE COOKIE*** =") ?: ""
+                cookieLine.isNotEmpty() && "SAPISID" in parseCookieString(cookieLine)
+            },
+            errorMessage = stringResource(R.string.invalid_token),
+            content = {
+                Spacer(modifier = Modifier.height(8.dp))
+                InfoLabel(text = stringResource(R.string.token_adv_login_description))
+            }
         )
     }
 }
