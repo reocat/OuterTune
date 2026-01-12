@@ -488,15 +488,10 @@ fun Lyrics(
                                 }
                             )
                     ) {
-<<<<<<< HEAD
-                        val isCurrentLine = currentPos.toULong() in item.start..item.end
-                        if (isCurrentLine && lyricsFancy && item.words != null && !context.isPowerSaver()) {
-=======
                         if (currentPos.toULong() in item.start..item.end + 100.toULong() && lyricsFancy
                             && item.words != null && !context.isPowerSaver()
                         ) { // word by word
                             // now do eye bleach to make lyric line babies
->>>>>>> b0a58f841 (ui: Fix lyrics translations highlighting/jumping)
                             val style = LocalTextStyle.current.copy(
                                 fontSize = lyricsFontSize.sp,
                                 color = textColor,
