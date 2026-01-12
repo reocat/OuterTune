@@ -823,68 +823,6 @@ fun BottomSheetPlayer(
             }
         }
 
-<<<<<<< HEAD
-        Box(modifier = modifier.fillMaxSize()) {
-            AnimatedVisibility(
-                visible = !powerManager.isPowerSaveMode && state.isExpanded,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500))
-            ) {
-                AnimatedContent(
-                    targetState = mediaMetadata,
-                    transitionSpec = { fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000))) },
-                    label = "playerBackground"
-                ) { metadata ->
-                    if (playerBackground == PlayerBackgroundStyle.BLUR) {
-                        val scrimColorFilter = ColorFilter.tint(Color.Black.copy(alpha = 0.3f), BlendMode.SrcOver)
-                        if (metadata?.isLocal == true) {
-                            AsyncImageLocal(
-                                image = { imageCache.getLocalThumbnail(metadata.localPath, false) },
-                                contentScale = ContentScale.FillBounds,
-                                colorFilter = scrimColorFilter,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .blur(200.dp)
-                            )
-                        } else {
-                            AsyncImage(
-                                model = metadata?.thumbnailUrl,
-                                contentDescription = "Blurred Album Art",
-                                contentScale = ContentScale.FillBounds,
-                                colorFilter = scrimColorFilter,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .blur(200.dp)
-                            )
-                        }
-                    }
-                }
-
-                AnimatedContent(
-                    targetState = gradientColors,
-                    transitionSpec = { fadeIn(tween(1000)) togetherWith fadeOut(tween(1000)) },
-                    label = "playerGradient"
-                ) { colors ->
-                    if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Brush.verticalGradient(colors))
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.2f))
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = !powerManager.isPowerSaveMode && state.isExpanded && isPlaying && playerBackground == PlayerBackgroundStyle.GRADIENT && gradientColors.isNotEmpty(),
-                    enter = fadeIn(tween(1000)),
-                    exit = fadeOut(tween(1000))
-=======
-
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode && wideScreen) {
             val vPadding = max(
                 WindowInsets.safeDrawing.getTop(LocalDensity.current),
@@ -904,7 +842,6 @@ fun BottomSheetPlayer(
                     modifier = Modifier
                         .weight(1f)
                         .nestedScroll(state.preUpPostDownNestedScrollConnection)
->>>>>>> 0f5a489c8 (ui: TIL moving image bg is ludicrously expensive)
                 ) {
                     val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
                     val shimmerTranslate by infiniteTransition.animateFloat(
