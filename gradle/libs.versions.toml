@@ -20,7 +20,7 @@ leakcanary = "3.0-alpha-8"
 
 [libraries]
 adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
-guava = { group = "com.google.guava", name = "guava", version = "33.4.8-jre" }
+guava = { group = "com.google.guava", name = "guava", version = "33.7.1-jre" }
 coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version = "1.10.2" }
 concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.3.0" }
 
